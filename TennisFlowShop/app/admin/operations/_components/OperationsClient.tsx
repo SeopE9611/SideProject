@@ -1335,10 +1335,10 @@ export default function OperationsClient() {
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
             <span className="inline-flex items-center gap-2">
               <ClipboardCheck className="h-4 w-4 text-primary" />
-              보조 운영 정보
+              업무 유형별 현황
             </span>
             <span className="text-ui-label font-normal text-muted-foreground">
-              대표 업무·처리 순서·마감 참고치
+              대표 업무 합계에 더하지 않는 유형별 참고 신호 · 필요할 때 펼쳐 확인
             </span>
           </summary>
           <div className="border-t border-border/60 p-2">
@@ -2100,12 +2100,6 @@ export default function OperationsClient() {
                         (primarySignal ? toOperatorSentence(primarySignal.title) : null) ??
                         cancelBadge?.label ??
                         null;
-                      const linkedDocumentLabel =
-                        isGroup && children[0]
-                          ? `${opsKindLabel(children[0].kind)} ${children[0].id}${
-                              children.length > 1 ? ` 외 ${children.length - 1}건` : ""
-                            }`
-                          : null;
                       const rowBaseToneClass = idx % 2 === 0 ? "bg-background" : "bg-muted/[0.12]";
                       const warnEmphasisClass = warn
                         ? "border-l-2 border-l-warning/60 bg-warning/[0.08]"
@@ -2179,17 +2173,36 @@ export default function OperationsClient() {
                                 <span className={cn("block truncate", adminDataTable.primaryText)}>
                                   {customerName || "-"}
                                 </span>
+                                <Link
+                                  href={g.anchor.href}
+                                  className={cn(adminDataTable.referenceTrigger, "font-mono")}
+                                >
+                                  {docLabel}
+                                </Link>
                                 <AdminReferencePopover
                                   title="업무 참조 정보"
                                   trigger={
                                     <button type="button" className={adminDataTable.referenceTrigger}>
-                                      <span className="truncate font-mono">{docLabel}</span>
+                                      참조 정보
                                     </button>
                                   }
                                   items={[
-                                    { label: "문서 ID", value: g.anchor.id },
-                                    { label: "이메일", value: customerEmail || null },
-                                    { label: "연결 문서", value: linkedDocumentLabel },
+                                    {
+                                      label: "문서 ID",
+                                      value: g.anchor.id,
+                                      copyValue: g.anchor.id,
+                                    },
+                                    {
+                                      label: "이메일",
+                                      value: customerEmail || null,
+                                      copyValue: customerEmail || undefined,
+                                    },
+                                    ...(children.map((item, itemIndex) => ({
+                                      label: `연결 문서${children.length > 1 ? ` ${itemIndex + 1}` : ""}`,
+                                      value: item.id,
+                                      href: item.href,
+                                      copyValue: item.id,
+                                    })) ?? []),
                                     {
                                       label: "결제",
                                       value: g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel ?? null,
@@ -2205,6 +2218,26 @@ export default function OperationsClient() {
                                 <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
                                   {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인"}
                                 </Badge>
+                                {g.anchor.paymentDisplayLabel || g.anchor.paymentLabel ? (
+                                  <Badge
+                                    variant={
+                                      g.anchor.paymentStateKind === "paid"
+                                        ? "success"
+                                        : g.anchor.paymentStateKind === "bank_pending" ||
+                                            g.anchor.paymentStateKind === "pg_pending" ||
+                                            g.anchor.paymentStateKind === "pending"
+                                          ? "warning"
+                                          : g.anchor.paymentStateKind === "canceled" ||
+                                              g.anchor.paymentStateKind === "refunded" ||
+                                              g.anchor.paymentStateKind === "failed"
+                                            ? "danger"
+                                            : "info"
+                                    }
+                                  >
+                                    {g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel}
+                                  </Badge>
+                                ) : null}
+                                <span className={adminTypography.money}>{won(g.anchor.amount)}</span>
                                 {exceptionLabel ? (
                                   <p
                                     className={adminDataTable.attentionText}

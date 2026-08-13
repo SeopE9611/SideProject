@@ -134,6 +134,13 @@ export type AdminOperationsSummary = {
 };
 
 export type OperationGroupCounts = {
+  /** 주문관리 기본 목록에서 주문 문서와 연결 신청서를 합친 대표 행 수 */
+  orderManagementRepresentativeRows?: number;
+  /** 운영업무 목록의 대여 대표 행 수 */
+  rentalRepresentativeRows?: number;
+  /** 주문·대여에 연결되지 않은 교체서비스 신청서 대표 행 수 */
+  standaloneStringingRepresentativeRows?: number;
+  /** 주문·대여·단독 교체서비스를 합친 전체 대표 업무 수 */
   totalRepresentativeTasks: number;
   todayRepresentativeTasks?: number;
 };

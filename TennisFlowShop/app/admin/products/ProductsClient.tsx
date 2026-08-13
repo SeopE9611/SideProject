@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   CheckCircle,
   CheckCircle2,
-  MoreHorizontal,
   Package,
   PackageSearch,
   Plus,
@@ -14,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -23,6 +23,7 @@ import BrandFilter from "@/app/admin/products/product-filters/BrandFilter";
 import MaterialFilter from "@/app/admin/products/product-filters/MaterialFilter";
 import StockStatusFilter from "@/app/admin/products/product-filters/StockStatusFilter";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
@@ -31,14 +32,7 @@ import { adminSurface, adminTypography } from "@/components/admin/admin-typograp
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -77,6 +71,7 @@ type Product = {
   gauge: string;
   material: string;
   price: number;
+  images?: string[];
   isVisible?: boolean;
   inventory?: { stock: number; lowStock?: number };
   computedStatus?: StatusKey;
@@ -653,25 +648,39 @@ export default function ProductsClient() {
                       const statusKey: StatusKey = (s.computedStatus ?? "active") as StatusKey;
                       const S = STATUS_UI[statusKey];
                       const isHidden = s.isVisible === false;
+                      const thumbnail = s.images?.find(
+                        (image) => typeof image === "string" && image.trim().length > 0,
+                      );
                       return (
                         <TableRow
                           key={s._id}
                           className={adminDataTable.row}
                         >
                           <TableCell className={adminDataTable.cellLeft}>
-                            <div className={adminDataTable.cellStack}>
-                              <Link
-                                href={`/products/${s._id}`}
-                                className={cn(adminDataTable.primaryLine, "block hover:text-primary")}
-                                title={s.name}
-                              >
-                                {s.name}
-                              </Link>
-                              <div className={adminDataTable.categoryText}>
-                                {brandLabel(s.brand)} · {s.gauge} · {materialLabel(s.material)}
+                            <div className="flex min-w-0 items-center gap-3">
+                              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md border border-border bg-muted/30">
+                                <Image
+                                  src={thumbnail ?? "/placeholder.svg"}
+                                  alt={thumbnail ? `${s.name} 상품 이미지` : "상품 이미지 없음"}
+                                  fill
+                                  sizes="44px"
+                                  className="object-cover"
+                                />
                               </div>
-                              <div className={adminDataTable.secondaryLine} title={s.sku}>
-                                SKU {s.sku}
+                              <div className={adminDataTable.cellStack}>
+                                <Link
+                                  href={`/products/${s._id}`}
+                                  className={cn(adminDataTable.primaryLine, "block hover:text-primary")}
+                                  title={s.name}
+                                >
+                                  {s.name}
+                                </Link>
+                                <div className={adminDataTable.categoryText}>
+                                  {brandLabel(s.brand)} · {s.gauge} · {materialLabel(s.material)}
+                                </div>
+                                <div className={adminDataTable.secondaryLine} title={s.sku}>
+                                  SKU {s.sku}
+                                </div>
                               </div>
                             </div>
                           </TableCell>
@@ -713,36 +722,23 @@ export default function ProductsClient() {
                               <Button asChild size="sm" variant="outline">
                                 <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
                               </Button>
-                              <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-9 w-9 p-0 hover:bg-muted dark:hover:bg-muted"
-                                  aria-label={`${s.name} 상품 관리 메뉴`}
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="border-border">
-                                <DropdownMenuLabel>작업</DropdownMenuLabel>
+                              <AdminRowActionMenu
+                                ariaLabel={`${s.name} 상품 작업 메뉴 열기`}
+                                destructiveActions={
+                                  <DropdownMenuItem
+                                    className="text-destructive"
+                                    onClick={() => setPendingDeleteProductId(s._id)}
+                                  >
+                                    삭제
+                                  </DropdownMenuItem>
+                                }
+                              >
                                 <DropdownMenuItem asChild>
                                   <Link href={`/products/${s._id}`}>
                                     {isHidden ? "관리자 미리보기" : "상세 보기"}
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-destructive"
-                                  onClick={() => setPendingDeleteProductId(s._id)}
-                                >
-                                  삭제
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                              </DropdownMenu>
+                              </AdminRowActionMenu>
                             </div>
                           </TableCell>
                         </TableRow>

@@ -14,19 +14,13 @@ import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHea
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -66,8 +60,6 @@ import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   CreditCard,
-  Eye,
-  MoreHorizontal,
   PackageSearch,
   Search,
   Truck,
@@ -1097,19 +1089,26 @@ export default function OrdersClient() {
                               <AdminReferencePopover
                                 title="주문·신청 참조 정보"
                                 trigger={
-                                  <button type="button" className={adminDataTable.referenceTrigger}>
-                                    <span className="truncate">
-                                      {kind.label} · {shortenId(order.id)}
-                                      {link.label !== "단독" ? ` · ${link.label}` : ""}
-                                    </span>
+                                    <button type="button" className={adminDataTable.referenceTrigger}>
+                                      <span className="truncate">
+                                        참조 정보 · {shortenId(order.id)}
+                                      </span>
                                   </button>
                                 }
                                 items={[
-                                  { label: "문서 ID", value: order.id },
-                                  { label: "이메일", value: order.customer.email || null },
+                                  { label: "문서 ID", value: order.id, copyValue: order.id },
+                                  {
+                                    label: "이메일",
+                                    value: order.customer.email || null,
+                                    copyValue: order.customer.email || undefined,
+                                  },
                                   { label: "문서 유형", value: `${kind.label} · ${link.label}` },
                                   { label: "시나리오", value: flow.label },
-                                  { label: "연결 문서", value: linkedDocumentId ?? null },
+                                  {
+                                    label: "연결 문서",
+                                    value: linkedDocumentId ?? null,
+                                    copyValue: linkedDocumentId ?? undefined,
+                                  },
                                 ]}
                               />
                               <span className="ml-auto shrink-0 text-ui-label tabular-nums text-foreground/70">
@@ -1198,7 +1197,25 @@ export default function OrdersClient() {
                         {/* 결제 셀 */}
                         <TableCell className={cn(adminDataTable.moneyCell, "py-2")}>
                           <div className="flex flex-col items-end gap-1">
-                            <span className={adminDataTable.secondaryText}>{paymentState.label}</span>
+                            <Badge
+                              variant={
+                                paymentState.kind === "paid"
+                                  ? "success"
+                                  : paymentState.kind === "bank_pending" ||
+                                      paymentState.kind === "pg_pending" ||
+                                      paymentState.kind === "pending"
+                                    ? "warning"
+                                    : paymentState.kind === "canceled" ||
+                                        paymentState.kind === "refunded" ||
+                                        paymentState.kind === "failed"
+                                      ? "danger"
+                                      : paymentState.kind === "other"
+                                        ? "info"
+                                        : "neutral"
+                              }
+                            >
+                              {paymentState.label}
+                            </Badge>
                             <span className={adminDataTable.primaryText}>
                               {formatCurrency(order.total)}
                             </span>
@@ -1268,43 +1285,8 @@ export default function OrdersClient() {
                                 {nextActionLabel}
                               </Link>
                             </Button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2"
-                                >
-                                  <MoreHorizontal className="h-3.5 w-3.5" />
-                                  <span className="sr-only">주문 작업 메뉴 열기</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="min-w-max">
-                                <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                <DropdownMenuItem asChild className="whitespace-nowrap">
-                                  <Link
-                                    href={
-                                      order.__type === "stringing_application"
-                                        ? `/admin/applications/stringing/${order.id}`
-                                        : `/admin/orders/${order.id}`
-                                    }
-                                    onClick={() => {
-                                      if (order.__type === "stringing_application") {
-                                        useStringingStore
-                                          .getState()
-                                          .setSelectedApplicationId(order.id);
-                                      } else {
-                                        useOrderStore.getState().setSelectedOrderId(order.id);
-                                      }
-                                    }}
-                                  >
-                                    <Eye className="mr-2 h-4 w-4" /> 상세 보기
-                                  </Link>
-                                </DropdownMenuItem>
-
+                            <AdminRowActionMenu ariaLabel="주문 부가 작업 메뉴 열기">
                                 {canSyncNicePayment(order) && (
-                                  <>
-                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                       className="whitespace-nowrap"
                                       title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
@@ -1318,10 +1300,7 @@ export default function OrdersClient() {
                                         ? "확인 중..."
                                         : "PG 상태 확인"}
                                     </DropdownMenuItem>
-                                  </>
                                 )}
-
-                                <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   className="whitespace-nowrap"
                                   onClick={() => {
@@ -1338,8 +1317,7 @@ export default function OrdersClient() {
                                 >
                                   <Truck className="mr-2 h-4 w-4" /> {shippingActionLabel}
                                 </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            </AdminRowActionMenu>
                           </div>
                         </TableCell>
                       </TableRow>

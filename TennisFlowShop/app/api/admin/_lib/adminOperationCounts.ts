@@ -525,6 +525,9 @@ export async function countAdminOperationGroupCounts(
   ]);
 
   return {
+    orderManagementRepresentativeRows: orders + standaloneStringing,
+    rentalRepresentativeRows: rentals,
+    standaloneStringingRepresentativeRows: standaloneStringing,
     totalRepresentativeTasks: orders + rentals + standaloneStringing,
     // 실제 오늘 생성/변경 기준이 아니라 현재 남은 대표 업무 기준입니다.
     todayRepresentativeTasks: orders + rentals + standaloneStringing,
@@ -671,7 +674,6 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
     countAdminOperationGroupCounts(db),
   ]);
 
-  const orderAndStringing = orders + stringing;
   const offline = operationTaskCounts.offline;
   const operations =
     operationGroupCounts.totalRepresentativeTasks +
@@ -683,7 +685,7 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
 
   const counts: NavigationCounts = {
     operations,
-    orders: orderAndStringing,
+    orders: operationGroupCounts.orderManagementRepresentativeRows,
     rentals,
     offline,
     academyApplications,

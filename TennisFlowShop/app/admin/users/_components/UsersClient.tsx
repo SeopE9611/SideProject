@@ -19,6 +19,7 @@ import {
   type UserStatusKey,
 } from "@/app/admin/users/_lib/usersClientUtils";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
@@ -80,7 +81,6 @@ import {
   Filter,
   Loader2,
   Mail,
-  MoreHorizontal,
   Search,
   Trash2,
   UserCheck,
@@ -1363,21 +1363,9 @@ export default function UsersClient() {
                               <Button asChild size="sm" variant="outline">
                                 <Link href={`/admin/users/${u.id}`}>상세</Link>
                               </Button>
-                              <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 p-0"
-                                  aria-label={`${u.name || u.email || "회원"} 관리 메뉴`}
-                                >
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="min-w-max">
-                                <DropdownMenuItem asChild className="whitespace-nowrap">
-                                  <Link href={`/admin/users/${u.id}`}>상세 보기</Link>
-                                </DropdownMenuItem>
+                              <AdminRowActionMenu
+                                ariaLabel={`${u.name || u.email || "회원"} 작업 메뉴 열기`}
+                              >
                                 <DropdownMenuItem
                                   className="whitespace-nowrap"
                                   onSelect={(e) => {
@@ -1387,8 +1375,7 @@ export default function UsersClient() {
                                 >
                                   포인트 내역/조정
                                 </DropdownMenuItem>
-                              </DropdownMenuContent>
-                              </DropdownMenu>
+                              </AdminRowActionMenu>
                             </div>
                           </TableCell>
                         </TableRow>
