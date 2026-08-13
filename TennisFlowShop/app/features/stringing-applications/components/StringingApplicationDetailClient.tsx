@@ -33,6 +33,8 @@ import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import LinkedDocsCard, { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import SiteContainer from "@/components/layout/SiteContainer";
@@ -101,7 +103,7 @@ import {
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
 import useSWR from "swr";
 
 const CancelStringingDialog = dynamic(
@@ -115,6 +117,27 @@ interface Props {
   backUrl?: string /** 뒤로 가기 링크(관리자 기본: '/admin/orders') */;
   isAdmin?: boolean /** 관리자 여부(기본: true) */;
   userEditableStatuses?: string[] /** 일반 사용자가 편집 가능한 상태 */;
+}
+
+function StringingDetailShell({ isAdmin, children }: { isAdmin: boolean; children: ReactNode }) {
+  if (isAdmin) {
+    return (
+      <AdminPageShell variant="wide" className="space-y-4">
+        {children}
+      </AdminPageShell>
+    );
+  }
+
+  return (
+    <div>
+      <SiteContainer
+        variant="wide"
+        className={`${mypageDetailLayout.contentContainer} max-w-none px-0 bp-sm:px-0 bp-md:px-0`}
+      >
+        {children}
+      </SiteContainer>
+    </div>
+  );
 }
 
 interface ApplicationDetail {
@@ -768,21 +791,8 @@ export default function StringingApplicationDetailClient({
 
     return (
       <main className="w-full">
-        <div
-          className={cn(
-            isAdmin &&
-              "mx-auto w-full max-w-[1280px] px-5 py-5",
-          )}
-        >
-          <SiteContainer
-            variant={isAdmin ? "full" : "wide"}
-            className={
-              isAdmin
-                ? "space-y-6 px-0"
-                : mypageDetailLayout.contentContainer
-            }
-          >
-            <div className={cn("mx-auto w-full", isAdmin && "max-w-[1500px]")}>
+        <AdminPageShell variant="wide">
+          <div className="w-full">
               <div className="mb-8 rounded-2xl border border-border/60 bg-card p-5 shadow-sm shadow-foreground/[0.02]">
                 <div className="space-y-3">
                   <Skeleton className="h-8 w-52" />
@@ -829,9 +839,8 @@ export default function StringingApplicationDetailClient({
                   </CardContent>
                 </Card>
               </div>
-            </div>
-          </SiteContainer>
-        </div>
+          </div>
+        </AdminPageShell>
       </main>
     );
   };
@@ -1630,149 +1639,78 @@ export default function StringingApplicationDetailClient({
           }
         />
       )}
-      <div
-        className={cn(
-          isAdmin &&
-            "mx-auto w-full max-w-[1280px] px-5 py-5",
-        )}
-      >
-        <SiteContainer
-          variant={isAdmin ? "full" : "wide"}
-          className={
-            isAdmin
-              ? "space-y-6 px-0"
-              : `${mypageDetailLayout.contentContainer} max-w-none px-0 bp-sm:px-0 bp-md:px-0`
-          }
-        >
-          {isLoading ? (
-            <div
-              className={cn(
-                "mx-auto w-full max-w-[1500px] px-4 py-2 text-ui-body-sm text-foreground/80",
-                isAdmin
-                  ? "border-l-2 border-primary/30 bg-primary/5"
-                  : "border-l-2 border-brand-highlight-ink/30 bg-brand-highlight-muted/35",
-              )}
-            >
-              최신 상태를 확인하고 있습니다...
-            </div>
-          ) : null}
-          <div className={cn("mx-auto w-full", isAdmin && "max-w-[1500px]")}>
+      <StringingDetailShell isAdmin={isAdmin}>
+        {isLoading ? (
+          <div
+            className={cn(
+              "w-full px-4 py-2 text-ui-body-sm text-foreground/80",
+              isAdmin
+                ? "border-l-2 border-primary/30 bg-primary/5"
+                : "mx-auto max-w-[1500px] border-l-2 border-brand-highlight-ink/30 bg-brand-highlight-muted/35",
+            )}
+          >
+            최신 상태를 확인하고 있습니다...
+          </div>
+        ) : null}
+        <div className={cn("w-full", !isAdmin && "mx-auto")}>
             {/* 관리자 헤더 */}
             {isAdmin && (
-              <div className={cn("mb-8 rounded-2xl p-6", adminSurface.cardMuted)}>
-                <div
-                  className={cn(
-                    "mb-4",
-                    isAdmin
-                      ? "flex flex-row items-center justify-between gap-3"
-                      : "flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between bp-sm:mb-6",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "flex min-w-0 gap-3",
-                      isAdmin ? "items-center gap-4" : "items-start",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "shrink-0 rounded-xl p-3 ring-1",
-                        isAdmin
-                          ? "bg-primary/10 ring-primary/10"
-                          : "bg-brand-highlight-muted/45 ring-brand-highlight-ink/15",
-                      )}
-                    >
-                      {isAdmin ? (
-                        <Settings className="h-8 w-8 text-foreground" />
-                      ) : (
-                        <Target className="h-8 w-8 text-foreground" />
-                      )}
-                    </div>
-                    <div className={cn("min-w-0", !isAdmin && "space-y-2")}>
-                      {!isAdmin && (
-                        <div className="text-ui-label font-medium text-brand-highlight-ink">
-                          마이페이지
-                        </div>
-                      )}
-                      <h1
-                        className={cn(
-                          "break-keep leading-tight tracking-normal text-foreground",
-                          isAdmin
-                            ? "text-ui-page-title-lg font-semibold"
-                            : "text-ui-section-title font-semibold sm:text-ui-page-title bp-sm:text-ui-page-title-lg",
-                        )}
-                      >
-                        {isAdmin ? applicationContext.title : "교체서비스 신청 상세"}
-                      </h1>
-                      {!isAdmin && (
-                        <p className={cn("max-w-2xl text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body", isAdmin && "!text-ui-body")}>
-                          현재 상태와 다음 행동을 먼저 확인하고, 라켓·스트링·결제·배송 상세는 필요한
-                          섹션에서 확인할 수 있습니다.
-                        </p>
-                      )}
-                      {isAdmin ? (
-                        <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-ui-body-sm text-foreground/75">
-                          <span className="font-medium text-foreground/90">
-                            신청 ID: #{toShortApplicationId(data.id)}
-                          </span>
-                          <span
-                            className="max-w-full truncate font-mono text-ui-label"
-                            title={data.id}
-                          >
-                            {data.id}
-                          </span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 gap-1 px-2 text-ui-label"
-                            aria-label="전체 신청 ID 복사"
-                            onClick={() => {
-                              void navigator.clipboard
-                                .writeText(data.id)
-                                .then(() => showSuccessToast("신청 ID가 복사되었습니다."))
-                                .catch(() => {});
-                            }}
-                          >
-                            <Copy className="h-3.5 w-3.5" />
-                            복사
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex min-w-0 flex-wrap items-center gap-2 text-ui-body-sm text-muted-foreground">
-                          <ApplicationStatusBadge status={data.status} />
+              <>
+                <AdminPageHeader
+                  variant="detail"
+                  className="flex-wrap"
+                  title={applicationContext.title}
+                  description={applicationContext.description}
+                  icon={Settings}
+                  scope={`전체 신청 ID: ${data.id}`}
+                  helperText={`신청번호 #${toShortApplicationId(data.id)} · 신청일 ${new Date(data.requestedAt).toLocaleDateString()}`}
+                  actions={
+                    <TooltipProvider>
+                      <div className="flex w-auto flex-wrap items-center justify-end gap-1.5">
+                        <ApplicationStatusBadge status={data.status} />
+                        <Badge
+                          variant={paymentStatusBadgeSpec.variant}
+                          className={cn(badgeBase, badgeSizeSm)}
+                        >
+                          {paymentStatusLabel}
+                        </Badge>
+                        {linkedOrderStatusLabel ? (
                           <Badge
-                            variant="outline"
-                            className={cn(badgeBase, badgeSizeSm, "bg-card")}
+                            variant={linkedOrderStatusBadgeSpec.variant}
+                            className={cn(badgeBase, badgeSizeSm)}
                           >
-                            {applicationContext.label}
+                            주문 · {linkedOrderStatusLabel}
                           </Badge>
-                          <span className="break-all font-medium">
-                            신청번호: #{toShortApplicationId(data.id)}
-                          </span>
-                          <span className="tabular-nums">
-                            신청일 {new Date(data.requestedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <TooltipProvider>
-                    <div
-                      className={cn(
-                        isAdmin
-                          ? "flex w-auto flex-wrap items-center justify-end gap-1.5"
-                          : "flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center bp-lg:justify-end",
-                      )}
-                    >
+                        ) : null}
+                        {linkedRentalStatusLabel ? (
+                          <Badge
+                            variant={linkedRentalStatusBadgeSpec.variant}
+                            className={cn(badgeBase, badgeSizeSm)}
+                          >
+                            대여 · {linkedRentalStatusLabel}
+                          </Badge>
+                        ) : null}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 gap-1 px-2 text-ui-label"
+                          aria-label="전체 신청 ID 복사"
+                          onClick={() => {
+                            void navigator.clipboard
+                              .writeText(data.id)
+                              .then(() => showSuccessToast("신청 ID가 복사되었습니다."))
+                              .catch(() => {});
+                          }}
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          복사
+                        </Button>
                       <Button
                         asChild
                         variant="outline"
                         size="sm"
-                        className={cn(
-                          "mr-1 w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
-                          isAdmin ? "h-9 w-auto" : "min-h-11 bp-sm:w-auto",
-                        )}
+                        className="mr-1 h-9 w-auto overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         <Link href={backUrl}>
                           <span>신청 목록으로 돌아가기</span>
@@ -1780,7 +1718,7 @@ export default function StringingApplicationDetailClient({
                       </Button>
 
                       {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
-                      {isAdmin && !isLinkedApplication && (
+                      {!isLinkedApplication && (
                         <Button
                           asChild
                           variant="outline"
@@ -1805,22 +1743,15 @@ export default function StringingApplicationDetailClient({
                             )}
                           >
                             <Button
+                              type="button"
                               variant={isEditMode ? "destructive" : "outline"}
                               size="sm"
                               disabled={!isEditableAllowed}
-                              className={
-                                !isEditableAllowed
-                                  ? cn(
-                                      "w-full cursor-not-allowed opacity-50",
-                                      isAdmin ? "w-auto" : "bp-sm:w-auto",
-                                    )
-                                  : isEditMode
-                                    ? cn("w-full", isAdmin ? "w-auto" : "bp-sm:w-auto")
-                                    : cn(
-                                        "w-full border-border bg-card hover:bg-muted",
-                                        isAdmin ? "w-auto" : "bp-sm:w-auto",
-                                      )
-                              }
+                              className={cn(
+                                "w-auto",
+                                !isEditableAllowed && "cursor-not-allowed opacity-50",
+                                !isEditMode && "border-border bg-card hover:bg-muted",
+                              )}
                               onClick={() => {
                                 if (!isEditableAllowed) return;
                                 setIsEditMode((m) => !m);
@@ -1835,9 +1766,74 @@ export default function StringingApplicationDetailClient({
                           <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>
                         )}
                       </Tooltip>
+                      </div>
+                    </TooltipProvider>
+                  }
+                />
+
+                <AdminDetailSectionNav
+                  className="mb-4"
+                  items={[
+                    { href: "#admin-stringing-cancel", label: "처리 작업" },
+                    ...(cancelInfo
+                      ? [{ href: "#admin-stringing-cancel-request", label: "취소 요청" }]
+                      : []),
+                    ...(linkedDocs.length > 0
+                      ? [{ href: "#admin-stringing-linked-docs", label: "연결 문서" }]
+                      : []),
+                    { href: "#admin-stringing-spec", label: "작업 정보" },
+                    { href: "#admin-stringing-payment", label: "결제정보" },
+                    { href: "#admin-stringing-shipping", label: "수령/배송" },
+                    { href: "#admin-stringing-request", label: "요청사항" },
+                    { href: "#admin-stringing-history", label: "이력" },
+                  ]}
+                />
+
+                <AdminNextActionPanel
+                  tone={nextActionGuide.tone}
+                  badgeLabel={applicationContext.label}
+                  stage={appGuide.stage}
+                  nextActionTitle={nextActionGuide.title}
+                  nextActionDescription={nextActionGuide.description}
+                  primaryAction={
+                    nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                      <Button asChild size="sm" className="justify-center">
+                        <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                      </Button>
+                    ) : !isLinkedApplication && !isCancelled ? (
+                      <Button asChild size="sm" className="justify-center">
+                        <a href="#admin-stringing-cancel">상태 변경 확인</a>
+                      </Button>
+                    ) : null
+                  }
+                  secondaryActions={recommendedActions.slice(0, 2).map((action) => (
+                    <Button
+                      key={`${action.href}-${action.label}`}
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="bg-transparent"
+                    >
+                      <a href={action.href}>{action.label}</a>
+                    </Button>
+                  ))}
+                  note={
+                    isLinkedApplication
+                      ? `연결된 ${data.orderId ? "주문" : "대여"}에서 상태 변경·취소·환불을 처리합니다.`
+                      : applicationContext.description
+                  }
+                  footer={
+                    <div>
+                      <span className="font-medium text-foreground">최근 처리 이력:</span>{" "}
+                      {latestProcessingHistoryStatusLabel} · {latestProcessingDate}
+                      {latestProcessingHistory?.description ? (
+                        <span className="ml-2 text-muted-foreground">
+                          {latestProcessingHistory.description}
+                        </span>
+                      ) : null}
                     </div>
-                  </TooltipProvider>
-                </div>
+                  }
+                />
 
                 {/* 신청 요약 정보 */}
                 {!isAdmin && (
@@ -2109,27 +2105,7 @@ export default function StringingApplicationDetailClient({
                     />
                   </div>
                 )}
-              </div>
-            )}
-
-            {isAdmin && (
-              <AdminDetailSectionNav
-                className="mb-4"
-                items={[
-                  { href: "#admin-stringing-cancel", label: "처리 작업" },
-                  ...(cancelInfo
-                    ? [{ href: "#admin-stringing-cancel-request", label: "취소 요청" }]
-                    : []),
-                  ...(linkedDocs.length > 0
-                    ? [{ href: "#admin-stringing-linked-docs", label: "연결 문서" }]
-                    : []),
-                  { href: "#admin-stringing-spec", label: "작업 정보" },
-                  { href: "#admin-stringing-payment", label: "결제정보" },
-                  { href: "#admin-stringing-shipping", label: "수령/배송" },
-                  { href: "#admin-stringing-request", label: "요청사항" },
-                  { href: "#admin-stringing-history", label: "이력" },
-                ]}
-              />
+              </>
             )}
 
             {isAdmin && (
@@ -2186,51 +2162,6 @@ export default function StringingApplicationDetailClient({
                   />
                 </div>
 
-                <AdminNextActionPanel
-                  tone={nextActionGuide.tone}
-                  badgeLabel={applicationContext.label}
-                  stage={appGuide.stage}
-                  nextActionTitle={nextActionGuide.title}
-                  nextActionDescription={nextActionGuide.description}
-                  primaryAction={
-                    nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                      <Button asChild size="sm" className="justify-center">
-                        <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
-                      </Button>
-                    ) : !isLinkedApplication && !isCancelled ? (
-                      <Button asChild size="sm" className="justify-center">
-                        <a href="#admin-stringing-cancel">상태 변경 확인</a>
-                      </Button>
-                    ) : null
-                  }
-                  secondaryActions={recommendedActions.slice(0, 2).map((action) => (
-                    <Button
-                      key={`${action.href}-${action.label}`}
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="bg-transparent"
-                    >
-                      <a href={action.href}>{action.label}</a>
-                    </Button>
-                  ))}
-                  note={
-                    isLinkedApplication
-                      ? `연결된 ${data.orderId ? "주문" : "대여"}에서 상태 변경·취소·환불을 처리합니다.`
-                      : applicationContext.description
-                  }
-                  footer={
-                    <div>
-                      <span className="font-medium text-foreground">최근 처리 이력:</span>{" "}
-                      {latestProcessingHistoryStatusLabel} · {latestProcessingDate}
-                      {latestProcessingHistory?.description ? (
-                        <span className="ml-2 text-muted-foreground">
-                          {latestProcessingHistory.description}
-                        </span>
-                      ) : null}
-                    </div>
-                  }
-                />
               </section>
             )}
 
@@ -3729,9 +3660,8 @@ export default function StringingApplicationDetailClient({
                 </div>
               )}
             </div>
-          </div>
-        </SiteContainer>
-      </div>
+        </div>
+      </StringingDetailShell>
 
       {isAdmin && (
         <AdminConfirmDialog

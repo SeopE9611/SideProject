@@ -597,7 +597,12 @@ export default function AdminReviewListClient() {
             ) : null}
             {selected.length > 0 ? <span>선택 {selected.length}개</span> : null}
             <span>로드 {rows.length}개</span>
-            <span>전체 {data?.[0]?.total ?? 0}개</span>
+            <span>
+              전체{" "}
+              {typeof data?.[0]?.total === "number"
+                ? `${data[0].total.toLocaleString("ko-KR")}개`
+                : "-"}
+            </span>
           </>
         }
       >

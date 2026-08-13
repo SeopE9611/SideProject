@@ -13,6 +13,8 @@ import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
@@ -1090,45 +1092,58 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
   };
 
   return (
-    <AdminPageShell variant="wide" className="space-y-6 py-8">
+    <AdminPageShell variant="wide" className="space-y-4">
       <div>
-        {/* 개선된 관리자 헤더 */}
-        <div className={cn("mb-6 p-6", adminSurface.cardMuted)}>
-          <div className="mb-4 flex flex-row items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-4">
-              <div className="bg-card rounded-full p-3 shadow-md">
-                <Settings className="h-8 w-8 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <h1 className={adminTypography.pageTitle}>주문 상세 관리</h1>
-                <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-ui-body-sm text-foreground/75">
-                  <span className="font-medium text-foreground/90">주문 ID: #{shortOrderId}</span>
-                  <span
-                    className="max-w-full truncate font-mono text-ui-label"
-                    title={orderDetail._id}
+        <div className="mb-4 space-y-4">
+          <AdminPageHeader
+            variant="detail"
+            className="flex-wrap"
+            title={`주문 ${shortOrderId} 상세`}
+            description="현재 주문의 결제·배송·교체서비스 연결 상태를 관리합니다."
+            icon={Settings}
+            scope={`전체 주문 ID: ${orderDetail._id}`}
+            helperText="상태 변경 전 결제·배송 정보와 연결 작업을 함께 확인하세요."
+            actions={
+              <>
+                {needsCancelFinalization ? (
+                  <Badge
+                    className={cn(
+                      summaryBadgeClass,
+                      "border-destructive/30 bg-destructive/10 text-destructive",
+                    )}
                   >
-                    {orderDetail._id}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 gap-1 px-2 text-ui-label"
-                    aria-label="전체 주문 ID 복사"
-                    onClick={() => {
-                      void navigator.clipboard
-                        .writeText(orderDetail._id)
-                        .then(() => showSuccessToast("주문 ID가 복사되었습니다."))
-                        .catch(() => {});
-                    }}
+                    PG 결제취소 감지
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant={getOrderStatusBadgeSpec(localStatus).variant}
+                    className={summaryBadgeClass}
                   >
-                    <Copy className="h-3.5 w-3.5" />
-                    복사
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-2">
+                    {getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
+                  </Badge>
+                )}
+                <Badge
+                  variant={getPaymentStatusBadgeSpec(paymentBadgeStatus).variant}
+                  className={summaryBadgeClass}
+                >
+                  {paymentStatusDisplayLabel}
+                </Badge>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 px-2 text-ui-label"
+                  aria-label="전체 주문 ID 복사"
+                  onClick={() => {
+                    void navigator.clipboard
+                      .writeText(orderDetail._id)
+                      .then(() => showSuccessToast("주문 ID가 복사되었습니다."))
+                      .catch(() => {});
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  복사
+                </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -1141,6 +1156,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 </Link>
               </Button>
               <Button
+                type="button"
                 variant={isEditMode ? "destructive" : "outline"}
                 size="sm"
                 onClick={() => setIsEditMode(!isEditMode)}
@@ -1153,6 +1169,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 {isEditMode ? "편집 취소" : "편집 모드"}
               </Button>
               <Button
+                type="button"
                 onClick={handleShippingUpdate}
                 className="w-auto whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90"
               >
@@ -1170,8 +1187,9 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                       ? "배송 정보 수정하기"
                       : "배송 정보 등록하기"}
               </Button>
-            </div>
-          </div>
+              </>
+            }
+          />
 
           {/* 상태 요약 카드 */}
           <div className={adminSurface.statusGrid}>
@@ -1284,30 +1302,23 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
           </div>
         </div>
 
-        <nav
-          aria-label="주문 상세 섹션 바로가기"
-          className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-border/70 bg-card px-4 py-3 shadow-sm"
-        >
-          {[
-            ["다음 처리", "#admin-order-action"],
-            ...(cancelInfo ? [["취소 요청", "#admin-order-cancel"]] : []),
-            ...(isLinkedStringingOrder ? [["교체서비스", "#admin-order-linked"]] : []),
-            ["고객정보", "#admin-order-customer"],
-            ["결제정보", "#admin-order-payment"],
-            ["배송정보", "#admin-order-shipping"],
-            ["주문품목", "#admin-order-items"],
-            ["메모", "#admin-order-notes"],
-            ["이력", "#admin-order-history"],
-          ].map(([label, href]) => (
-            <a
-              key={href}
-              href={href}
-              className="inline-flex h-8 items-center rounded-full border border-border/70 bg-background px-3 text-ui-label font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
+        <AdminDetailSectionNav
+          className="mb-4"
+          label="주문 상세 섹션"
+          items={[
+            { href: "#admin-order-action", label: "다음 처리" },
+            ...(cancelInfo ? [{ href: "#admin-order-cancel", label: "취소 요청" }] : []),
+            ...(isLinkedStringingOrder
+              ? [{ href: "#admin-order-linked", label: "교체서비스" }]
+              : []),
+            { href: "#admin-order-customer", label: "고객정보" },
+            { href: "#admin-order-payment", label: "결제정보" },
+            { href: "#admin-order-shipping", label: "배송정보" },
+            { href: "#admin-order-items", label: "주문품목" },
+            { href: "#admin-order-notes", label: "메모" },
+            { href: "#admin-order-history", label: "이력" },
+          ]}
+        />
 
         <div id="admin-order-action">
           <AdminNextActionPanel
