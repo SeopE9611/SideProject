@@ -16,6 +16,7 @@ export const coreContractFiles = [
   "apps-in-toss-payment-execution.contract.test.mjs",
   "apps-in-toss-payment-snapshot.contract.test.mjs",
   "apps-in-toss-payment-finalization.contract.test.mjs",
+  "apps-in-toss-racket-purchase-payment.contract.test.mjs",
   "apps-in-toss-payment-refund.contract.test.mjs",
   "apps-in-toss-payment-completion.contract.test.mjs",
   "apps-in-toss-admin-reconciliation.contract.test.mjs",
