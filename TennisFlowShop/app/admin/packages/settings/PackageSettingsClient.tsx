@@ -437,7 +437,7 @@ export default function PackageSettingsClient() {
         <div className="space-y-8">
           <Card className={adminSurface.card}>
             <CardContent className="p-6">
-              <div className="grid gap-2 grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <Skeleton className="h-16 w-full" />
                 <Skeleton className="h-16 w-full" />
               </div>
@@ -447,7 +447,7 @@ export default function PackageSettingsClient() {
           <div className="space-y-4">
             <Skeleton className="h-8 w-52" />
             <Skeleton className="h-4 w-80" />
-            <div className="grid gap-6 grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2">
               {Array.from({ length: 4 }).map((_, index) => (
                 <Card key={index} className={adminSurface.card}>
                   <CardHeader className="space-y-2">
@@ -644,7 +644,7 @@ export default function PackageSettingsClient() {
                 </Button>
               </div>
 
-              <div className="grid gap-6 grid-cols-2">
+              <div className="grid gap-6 lg:grid-cols-2">
                 {sortedPackageConfigs.map((pkg) => (
                   <Card key={pkg.id} className={adminSurface.card}>
                     <CardHeader className="border-b border-border/60 bg-muted/20">
@@ -722,7 +722,7 @@ export default function PackageSettingsClient() {
                               고객에게 표시될 패키지명, 이용 횟수, 판매 가격, 유효기간을 설정합니다.
                             </p>
 
-                            <div className="mt-4 grid gap-4 grid-cols-2">
+                            <div className="mt-4 grid gap-4 sm:grid-cols-2">
                               <div>
                                 <Label htmlFor={`name-${pkg.id}`}>패키지명</Label>
                                 <Input
@@ -758,7 +758,7 @@ export default function PackageSettingsClient() {
                               소수점 첫째 자리까지 표시됩니다.
                             </p>
 
-                            <div className="mt-4 grid gap-4 grid-cols-2">
+                            <div className="mt-4 grid gap-4 sm:grid-cols-2">
                               <div>
                                 <Label htmlFor={`price-${pkg.id}`}>판매 가격 (원)</Label>
                                 <FormattedNumberInput
@@ -867,7 +867,7 @@ export default function PackageSettingsClient() {
                               줍니다.
                             </p>
 
-                            <div className="mt-4 grid gap-3 grid-cols-2">
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
                               <div
                                 className={cn(
                                   adminSurface.fieldPanel,
@@ -950,7 +950,7 @@ export default function PackageSettingsClient() {
                                   </div>
                                 </div>
 
-                                <div className="grid gap-2 grid-cols-3">
+                                <div className="grid gap-2 sm:grid-cols-3">
                                   <div className="rounded-lg border border-border/60 bg-card p-3 text-center">
                                     <p className="text-xs text-muted-foreground">회당 금액</p>
                                     <p className="mt-1 text-sm font-semibold text-foreground">
@@ -1072,7 +1072,7 @@ export default function PackageSettingsClient() {
                     </ul>
                   </div>
                 )}
-                <div className="grid gap-4 grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="rounded-xl border border-border/60 bg-card p-4">
                     <p className="text-sm font-semibold text-foreground">기간/알림</p>
                     <p className="mt-1 text-xs text-muted-foreground">

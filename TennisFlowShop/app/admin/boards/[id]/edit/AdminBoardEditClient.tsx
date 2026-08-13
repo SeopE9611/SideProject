@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { AdminFormField } from "@/components/admin/AdminFormField";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -149,8 +149,7 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
             </div>
           ) : (
             <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="title">제목</Label>
+              <AdminFormField htmlFor="title" label="제목" required>
                 <Input
                   id="title"
                   value={title}
@@ -158,10 +157,9 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
                   maxLength={120}
                   required
                 />
-              </div>
+              </AdminFormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="category">카테고리</Label>
+              <AdminFormField htmlFor="category" label="카테고리">
                 <Input
                   id="category"
                   value={category}
@@ -169,10 +167,9 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
                   placeholder="예: general"
                   maxLength={40}
                 />
-              </div>
+              </AdminFormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="content">내용</Label>
+              <AdminFormField htmlFor="content" label="내용" required>
                 <Textarea
                   id="content"
                   value={content}
@@ -180,7 +177,7 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
                   className="min-h-[320px]"
                   required
                 />
-              </div>
+              </AdminFormField>
 
               <div className={cn("flex justify-end p-3", adminSurface.stickyToolbar)}>
                 <Button type="submit" disabled={isSubmitting}>

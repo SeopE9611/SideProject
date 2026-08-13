@@ -174,7 +174,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
   }
 
   return (
-    <div className="space-y-5 py-6 px-8">
+    <div className="space-y-5 px-4 py-6 sm:px-8">
       <AdminPageHeader
         title={title}
         description={description}
@@ -208,8 +208,8 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
           description="고객에게 노출되는 클래스명과 프로그램 소개를 입력합니다."
           contentClassName="pt-4"
         >
-          <div className="grid gap-5 grid-cols-2">
-            <div className="space-y-2 col-span-2">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="space-y-2 sm:col-span-2">
               <Label className={adminTypography.bodyStrong} htmlFor="academy-class-name">
                 클래스명 <span className="text-destructive">*</span>
               </Label>
@@ -223,7 +223,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
               />
             </div>
 
-            <div className="space-y-2 col-span-2">
+            <div className="space-y-2 sm:col-span-2">
               <Label className={adminTypography.bodyStrong} htmlFor="academy-class-description">
                 설명
               </Label>
@@ -245,7 +245,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
           description="수업 유형, 레벨, 강사와 장소 정보를 관리합니다."
           contentClassName="pt-4"
         >
-          <div className="grid gap-5 grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
               <Label className={adminTypography.bodyStrong}>수업 유형</Label>
               <Select
@@ -319,8 +319,8 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
           description="운영에 중요한 일정, 모집 정원, 기준 수강료를 입력합니다."
           contentClassName="pt-4"
         >
-          <div className="grid gap-5 grid-cols-2">
-            <div className="space-y-2 col-span-2">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="space-y-2 sm:col-span-2">
               <Label className={adminTypography.bodyStrong} htmlFor="academy-class-schedule">
                 일정 안내
               </Label>
@@ -369,7 +369,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
           description="저장 후 관리자 클래스 목록과 사용자 노출 상태에 반영됩니다."
           contentClassName="pt-4"
         >
-          <div className="grid gap-5 grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
               <Label className={adminTypography.bodyStrong}>상태</Label>
               <Select
