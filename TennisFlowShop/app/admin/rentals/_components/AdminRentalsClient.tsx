@@ -49,7 +49,7 @@ import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import {
   Select,
@@ -567,10 +567,10 @@ export default function AdminRentalsClient() {
         />
 
         <details className={cn("mb-5 rounded-lg border px-4 py-3", adminSurface.cardMuted)}>
-          <summary className="cursor-pointer text-sm font-semibold text-foreground">
+          <summary className={cn("cursor-pointer", adminTypography.panelTitle)}>
             대여 업무 가이드
           </summary>
-          <div className="mt-3 grid gap-2 text-sm text-muted-foreground grid-cols-3">
+          <div className={cn("mt-3 grid grid-cols-3 gap-2", adminTypography.body)}>
             <p>
               <strong className="text-foreground">결제대기</strong> · 결제 확인 후 인도 처리
             </p>
@@ -600,14 +600,14 @@ export default function AdminRentalsClient() {
       <Card className={cn("mb-5 px-6 py-5", adminSurface.filterCard)}>
         <CardHeader className="pb-3">
           <CardTitle>대여 찾기</CardTitle>
-          <CardDescription className="text-sm leading-relaxed break-keep">
+          <CardDescription className={cn("break-keep", adminTypography.body)}>
             빠른 보기로 주요 업무를 좁히거나 상태, 결제, 운송장, 날짜 조건과 검색어를 조합하세요.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-center gap-2" aria-label="빠른 보기">
-            <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
+            <span className={cn("mr-1", adminTypography.panelTitleCompact)}>빠른 보기</span>
             <Button
               size="sm"
               variant={!hasActiveFilters ? "default" : "outline"}
@@ -809,8 +809,8 @@ export default function AdminRentalsClient() {
           <div className="flex items-center justify-between">
             {hasResolvedData && !hasDataError && data ? (
               <>
-                <CardTitle className="text-base font-medium">대여 목록</CardTitle>
-                <p className="text-xs text-muted-foreground">총 {data.total}개의 대여</p>
+                <CardTitle className={adminTypography.sectionTitle}>대여 목록</CardTitle>
+                <p className={adminTypography.metaMuted}>총 {data.total}개의 대여</p>
               </>
             ) : (
               <>
@@ -886,7 +886,7 @@ export default function AdminRentalsClient() {
                   <TableCell colSpan={5} className={tdClasses}>
                     <div className="flex flex-col items-center gap-2">
                       <Search className="h-8 w-8 text-muted-foreground/50" />
-                      <p className="text-sm text-muted-foreground">
+                      <p className={adminTypography.body}>
                         아직 등록된 대여가 없습니다. 새 대여가 접수되면 이곳에 표시됩니다.
                       </p>
                     </div>

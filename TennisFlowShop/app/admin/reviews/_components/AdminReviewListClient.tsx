@@ -513,7 +513,12 @@ export default function AdminReviewListClient() {
               <p className={adminTypography.caption}>유형별 후기</p>
               <TrendingUp className="h-5 w-5 text-foreground" />
             </div>
-            <div className="grid gap-x-6 gap-y-1 text-xs text-muted-foreground tabular-nums grid-cols-2">
+            <div
+              className={cn(
+                "grid grid-cols-2 gap-x-6 gap-y-1 tabular-nums",
+                adminTypography.metaMuted,
+              )}
+            >
               <span>상품 후기 {metrics?.byContext?.product ?? 0}</span>
               <span>상품·교체서비스 후기 {metrics?.byContext?.product_stringing ?? 0}</span>
               <span>교체서비스 후기 {metrics?.byContext?.standalone_stringing ?? 0}</span>
@@ -757,10 +762,15 @@ export default function AdminReviewListClient() {
                   {/* 평점 / 도움돼요 */}
                   <div className={`min-w-0 ${dim} text-center`}>
                     <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-                      <span className="text-sm font-semibold tabular-nums text-foreground">
+                      <span className={adminTypography.numeric}>
                         {r.rating}/5
                       </span>
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1",
+                          adminTypography.tableSecondary,
+                        )}
+                      >
                         <ThumbsUp className="h-3 w-3" />
                         {r.helpfulCount ?? 0}
                       </span>
@@ -1159,7 +1169,7 @@ export default function AdminReviewListClient() {
               )}
             </Button>
           ) : (
-            <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
+            <span className={adminTypography.metaMuted}>마지막 페이지입니다</span>
           ))}
       </div>
       {rows.length > 0 && isValidating && (
