@@ -82,6 +82,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
 
       {currentStatus !== "public" && currentStatus !== "published" ? (
         <Button
+          type="button"
           disabled={pendingAction !== null}
           onClick={() => runStatusChange("public")}
           className="bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -91,6 +92,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
         </Button>
       ) : (
         <Button
+          type="button"
           disabled={pendingAction !== null}
           onClick={() => runStatusChange("hidden")}
           variant="secondary"
@@ -101,6 +103,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
       )}
 
       <Button
+        type="button"
         disabled={pendingAction !== null}
         variant="destructive"
         onClick={() => setDeleteConfirmOpen(true)}
