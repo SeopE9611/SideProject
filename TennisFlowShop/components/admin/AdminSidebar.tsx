@@ -33,7 +33,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
       <aside
         className={cn(
           "sticky top-4 h-[calc(100vh-2rem)] shrink-0",
-          "border-r border-border/60 bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/60",
+          "border-r border-border/60 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
           "dark:bg-background/70 dark:border-border",
           "transition-[width] duration-300 ease-in-out will-change-[width]",
           collapsed ? "w-16" : "w-64",
@@ -85,18 +85,16 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
                       href={item.href}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         active
-                          ? "bg-primary/10 text-primary ring-1 ring-primary/20 dark:bg-primary/20"
-                          : "text-muted-foreground hover:bg-primary/10 dark:text-muted-foreground dark:hover:bg-primary/20 hover:text-foreground",
+                          ? "bg-primary/10 font-medium text-primary dark:bg-primary/20"
+                          : "text-muted-foreground hover:bg-muted/70 dark:text-muted-foreground hover:text-foreground",
                       )}
                     >
                       <span
                         className={cn(
                           "absolute left-0 top-1/2 h-6 -translate-y-1/2 rounded-r-full bg-primary transition-all",
-                          active
-                            ? "w-1.5 opacity-100"
-                            : "w-0 opacity-0 group-hover:w-1 group-hover:opacity-60",
+                          active ? "w-1 opacity-100" : "w-0 opacity-0",
                         )}
                       />
                       <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />

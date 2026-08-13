@@ -137,6 +137,7 @@ export default function AdminDashboardClientView() {
   return (
     <AdminPageShell variant="wide" className="space-y-6 pb-8">
       <AdminPageHeader
+        variant="default"
         title="관리자 대시보드"
         description="실제 처리를 시작하기 전, 오늘 확인해야 할 운영 상태만 간결하게 요약합니다."
         icon={Activity}

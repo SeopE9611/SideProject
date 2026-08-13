@@ -1028,6 +1028,7 @@ export default function NewStringPage() {
       <AdminPageShell variant="wide">
         <form onSubmit={handleSubmit} className="space-y-6">
           <AdminPageHeader
+            variant="form"
             title="스트링 등록"
             description={basicInfo.name || "새로운 테니스 스트링 정보를 입력하고 등록하세요."}
             icon={Package}

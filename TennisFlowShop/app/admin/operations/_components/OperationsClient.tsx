@@ -1210,6 +1210,7 @@ export default function OperationsClient() {
       {/* 페이지 헤더 */}
       <div className="mx-auto max-w-[1480px]">
         <AdminPageHeader
+          variant="compact"
           title={PAGE_COPY.title}
           description={PAGE_COPY.description}
           icon={Inbox}

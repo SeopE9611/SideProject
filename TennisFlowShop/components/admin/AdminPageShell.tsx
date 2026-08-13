@@ -25,7 +25,7 @@ export default function AdminPageShell({
   return (
     <div
       className={cn(
-        "mx-auto w-full px-3 py-4 2xl:px-5 2xl:py-5",
+        "mx-auto w-full px-2 py-3 xl:px-3 xl:py-4 2xl:px-5 2xl:py-5",
         widthByVariant[variant],
         className,
       )}
