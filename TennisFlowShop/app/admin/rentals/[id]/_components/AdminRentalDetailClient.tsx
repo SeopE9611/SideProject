@@ -735,7 +735,7 @@ export default function AdminRentalDetailClient() {
           <AdminPageHeader
             variant="detail"
             title={`대여 ${shortenId(String(data.id))}`}
-            description={`현재 ${rentalStatusLabels[data.status] || data.status} · ${data.outAt ? `${fmtDateOnly(data.outAt)} 시작` : "대여 시작 전"} · ${data.dueAt ? `${fmtDateOnly(data.dueAt)} 반납 예정` : "반납일 미정"}`}
+            description={`${data.outAt ? `${fmtDateOnly(data.outAt)} 시작` : "대여 시작 전"} · ${data.dueAt ? `${fmtDateOnly(data.dueAt)} 반납 예정` : "반납일 미정"}`}
             icon={Settings}
             scope={`결제 ${paymentLabel} · ${won(data.amount?.total)}`}
             helperText={`고객 ${data.user?.name || data.user?.email || "-"}`}

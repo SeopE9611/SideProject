@@ -521,7 +521,14 @@ export default function ProductsClient() {
                 className={cn("h-9 pl-8", adminTypography.body)}
               />
               {searchTerm && (
-                <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 px-3" onClick={() => handleSearchChange("")}>
+                <Button
+                  type="button"
+                  aria-label="검색어 지우기"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-9 w-9 px-3"
+                  onClick={() => handleSearchChange("")}
+                >
                   <X className="h-4 w-4" />
                 </Button>
               )}

@@ -21,10 +21,10 @@ export default function AdminFilterBar({
     <div
       className={cn("rounded-xl border border-border/70 bg-card/70 p-3.5", className)}
     >
-      <div className="flex flex-row items-end justify-between gap-3">
+      <div className="flex flex-col items-stretch gap-3 min-[1366px]:flex-row min-[1366px]:items-end min-[1366px]:justify-between">
         <div className="min-w-0 flex-1">{children}</div>
         {actions ? (
-          <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">{actions}</div>
         ) : null}
       </div>
       {quickFilters ? (
