@@ -14,7 +14,8 @@ require.extensions[".ts"] = (module, filename) => {
 
 const { AppsPaymentPrepareRequestSchema, calculateAppsRentalPaymentAmount, canonicalizeAppsPaymentPrepareRequest, isSameAppsPaymentPayload } = require("../lib/apps-in-toss/server/payment-prepare-contract.ts");
 const { getAppsInTossPaymentPurpose } = require("../lib/apps-in-toss/server/payment-purpose-contract.ts");
-const { createRentalOrderInTransaction } = require("../app/features/rentals/api/rental-order-transaction.ts");
+const { createRentalOrderInTransaction, rentalReservationVisibilityViewer } = require("../app/features/rentals/api/rental-order-transaction.ts");
+const { buildAppsRentalStringingApplication } = require("../lib/apps-in-toss/server/rental-stringing-application.ts");
 
 const base = {
   purpose: "racket_rental",
@@ -95,4 +96,49 @@ test("transaction-scoped helper는 session을 새로 만들지 않고 paid 예�
   assert.deepEqual(calls, { reads: 1, reserveWrites: 1, inserts: 1, extensions: 1 });
   assert.equal(result.stringingApplicationId, "application-id");
   assert.equal("startTransaction" in session, false);
+});
+
+test("대여 스트링 신청서는 현재 상품 가격과 무관하게 결제 snapshot 장착비를 보존한다", () => {
+  const now = new Date("2026-08-13T00:00:00.000Z");
+  const currentProduct = { mountingFee: 7_000 };
+  const snapshot = {
+    paymentPurpose: "racket_rental", racketId: "racket-id", brand: "Wilson", model: "Blade", displayName: "윌슨 Blade",
+    days: 7, rentalFee: 10_000, deposit: 20_000,
+    refundAccount: { bank: "kb", account: "1234567890", holder: "홍길동" },
+    applicant: { name: "홍길동", email: "Rental@Example.com", phone: "010-1234-5678" },
+    collectionMethod: "visit", shipping: { postalCode: "", address: "", addressDetail: "", deliveryRequest: "" },
+    stringing: { requested: true, stringProductId: "string-id", name: "테스트 스트링", price: 12_000, mountingFee: 5_000, selectedColor: "black", selectedGauge: "1.25", work: { tensionMain: "48", tensionCross: "46", note: "메모", preferredDate: "2026-08-20", preferredTime: "10:00" } },
+    pricing: { rentalFee: 10_000, deposit: 20_000, stringPrice: 12_000, serviceFee: 5_000, total: 47_000 }, payableAmount: 47_000,
+  };
+  const application = buildAppsRentalStringingApplication({ applicationId: "application-id", rentalId: "rental-id", userId: "user-id", snapshot, reservationSnapshot: { slotCount: 1, durationMinutes: 30 }, now });
+
+  assert.equal(application.stringDetails.lines[0].mountingFee, 5_000);
+  assert.equal(application.stringItems[0].mountingFee, 5_000);
+  assert.deepEqual([application.totalPrice, application.serviceFeeBefore, application.serviceFee, application.serviceAmount], [5_000, 5_000, 5_000, 5_000]);
+  assert.equal(application.paymentSource, "rental:rental-id");
+  assert.equal(application.stringDetails.racketType, "윌슨 Blade");
+  assert.deepEqual([application.visitSlotCount, application.visitDurationMinutes], [1, 30]);
+  assert.deepEqual(application.meta, { selectedColor: "black", selectedGauge: "1.25", stockDeductionSource: "rental" });
+  assert.notEqual(application.serviceFee, currentProduct.mountingFee);
+  assert.equal(buildAppsRentalStringingApplication({ applicationId: "unused", rentalId: "rental-id", userId: "user-id", snapshot: { ...snapshot, stringing: { requested: false } }, now }), null);
+});
+
+test("paid 대여 transaction은 admin caller가 전달되어도 공개 사용자 visibility를 강제할 수 있다", async () => {
+  assert.deepEqual(rentalReservationVisibilityViewer("paid", { isAdmin: true }), { isAdmin: false });
+  assert.deepEqual(rentalReservationVisibilityViewer("pending", { isAdmin: true }), { isAdmin: true });
+  const session = {};
+  let racketFilter;
+  const db = { collection(name) {
+    if (name === "used_rackets") return {
+      findOne: async (filter) => { racketFilter = filter; return { quantity: 1, status: "available" }; },
+      updateOne: async () => ({ modifiedCount: 1 }),
+    };
+    return name === "rental_orders" ? {
+      countDocuments: async () => 0,
+      insertOne: async (doc) => ({ insertedId: doc._id }),
+    } : null;
+  } };
+  await createRentalOrderInTransaction({ db, session, rentalId: "rental-id", racketId: "racket-id", rentalDocument: {}, reservePaidRental: true, visibilityViewer: { isAdmin: false } });
+  assert.deepEqual(racketFilter.isVisible, { $ne: false });
+  assert.ok(Array.isArray(racketFilter.$or));
 });

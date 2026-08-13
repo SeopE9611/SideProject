@@ -30,7 +30,7 @@ import { RefundAccountSchema, type RefundAccountInfo } from "@/lib/cancel-reques
 import { deductPoints, getPointsSummary } from "@/lib/points.service";
 import type { MongoClient, Db } from "mongodb";
 import { ObjectId } from "mongodb";
-import { createRentalOrderInTransaction } from "./rental-order-transaction";
+import { createRentalOrderInTransaction, rentalReservationVisibilityViewer } from "./rental-order-transaction";
 
 const POINT_UNIT = 100;
 const PAYMENT_BANKS = new Set(["kakao"] as const);
@@ -548,7 +548,7 @@ export async function createRentalOrderCore(params: {
           rentalDocument: doc,
           idemKey,
           reservePaidRental: initialStatus === "paid",
-          visibilityViewer,
+          visibilityViewer: rentalReservationVisibilityViewer(initialStatus, visibilityViewer),
           afterInsert: async (insertedRentalId) => {
         insertedId = insertedRentalId;
         const rentalIdStr = String(insertedRentalId);

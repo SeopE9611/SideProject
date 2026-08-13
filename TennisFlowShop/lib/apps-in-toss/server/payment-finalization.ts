@@ -10,10 +10,10 @@ import { normalizeEmailForSearch } from "@/lib/search-email";
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import { publicProductFilter, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
-import { submitStringingApplicationCore, type StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import { applyRentalVariantInventoryDeduction, ensureRentalOrdersIdemIndex } from "@/app/features/rentals/api/create-rental-order-core";
 import { createRentalOrderInTransaction } from "@/app/features/rentals/api/rental-order-transaction";
 import { appsInTossPaymentIntents, findAppsInTossPaymentIntentByAttemptId, getAppsInTossPaymentPurpose, recordAppsInTossPaymentFinalized, type AppsInTossPaymentIntentDocument } from "./payment-intents";
+import { buildAppsRentalStringingApplication } from "./rental-stringing-application";
 
 export class AppsPaymentFinalizationError extends Error {
   constructor(public status: number, public code: string, message: string, public business = false) { super(message); this.name = "AppsPaymentFinalizationError"; }
@@ -188,6 +188,7 @@ function classifyRentalBusinessError(error: unknown) {
 async function finalizeRacketRental(params: { db: Db; attemptId: string; userId: ObjectId; identityId: ObjectId }, initial: AppsInTossPaymentIntentDocument) {
   await ensureRentalOrdersIdemIndex(params.db);
   const rentalId = new ObjectId();
+  const applicationId = new ObjectId();
   const client = await clientPromise; const session = client.startSession();
   try {
     await session.withTransaction(async () => {
@@ -219,19 +220,23 @@ async function finalizeRacketRental(params: { db: Db; attemptId: string; userId:
         await createRentalOrderInTransaction({
           db: params.db, session, rentalId, racketId: snapshot.racketId, rentalDocument,
           idemKey: `apps-in-toss:rental:${intent.attemptId}`, reservePaidRental: true, visibilityViewer: { isAdmin: false },
-          afterInsert: stringing ? async (insertedRentalId) => {
+          beforeInsert: stringing ? async () => {
+            if (snapshot.collectionMethod === "visit") {
+              try { await guardVisitReservation({ db: params.db, date: stringing.work.preferredDate, time: stringing.work.preferredTime, slotCount: intent.reservationSnapshot!.slotCount!, session }); }
+              catch (error) {
+                const code = classifyVisitBusinessError(error);
+                if (code) fail(code, "선택한 방문 시간을 예약할 수 없습니다.");
+                throw error;
+              }
+            }
             await applyRentalVariantInventoryDeduction({ db: params.db, session, productId: stringing.stringProductId, selectedColor: stringing.selectedColor, selectedGauge: stringing.selectedGauge, quantity: 1, productName: stringing.name, product: currentStringProduct, visibilityViewer: { isAdmin: false } });
-            const input: StringingApplicationInput = {
-              name: snapshot.applicant.name, email: snapshot.applicant.email, phone: snapshot.applicant.phone,
-              shippingInfo: { ...shipping, collectionMethod: snapshot.collectionMethod }, racketType: snapshot.displayName,
-              stringTypes: [stringing.name], preferredDate: stringing.work.preferredDate || undefined, preferredTime: stringing.work.preferredTime || undefined,
-              requirements: stringing.work.note, packageOptOut: true, selectedColor: stringing.selectedColor, selectedGauge: stringing.selectedGauge,
-              lines: [{ racketType: snapshot.displayName, stringProductId: String(stringing.stringProductId), stringName: stringing.name, tensionMain: stringing.work.tensionMain, tensionCross: stringing.work.tensionCross, note: stringing.work.note, mountingFee: stringing.mountingFee }],
-            };
-            const submitted = await submitStringingApplicationCore({ db: params.db, userId: intent.userId, session, input: { ...input, rentalId: String(insertedRentalId) } });
-            const applicationId = String(submitted.applicationId);
-            await params.db.collection("rental_orders").updateOne({ _id: insertedRentalId }, { $set: { stringingApplicationId: applicationId, isStringServiceApplied: true, updatedAt: new Date() } }, { session });
-            return { stringingApplicationId: applicationId, stringingSubmitted: true };
+          } : undefined,
+          afterInsert: stringing ? async (insertedRentalId) => {
+            const application = buildAppsRentalStringingApplication({ applicationId, rentalId: insertedRentalId, userId: intent.userId, snapshot, reservationSnapshot: intent.reservationSnapshot, now });
+            await params.db.collection("stringing_applications").insertOne(application!, { session });
+            const stringingApplicationId = String(applicationId);
+            await params.db.collection("rental_orders").updateOne({ _id: insertedRentalId }, { $set: { stringingApplicationId, isStringServiceApplied: true, updatedAt: now } }, { session });
+            return { stringingApplicationId, stringingSubmitted: true };
           } : undefined,
         });
       } catch (error) {
