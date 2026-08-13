@@ -344,12 +344,12 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 <Skeleton className="h-9 w-24" />
               </div>
             </div>
-            <div className="grid gap-4 grid-cols-5">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Skeleton key={index} className="h-24 rounded-xl" />
               ))}
             </div>
-            <div className="grid gap-6 grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-2">
               <Skeleton className="h-[360px] rounded-xl" />
               <Skeleton className="h-[360px] rounded-xl" />
             </div>
@@ -593,21 +593,21 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
       />
 
         {/* 요약 KPI */}
-        <div className="mb-6 grid gap-3 grid-cols-5">
-          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <div className={adminSurface.kpiCard}>
             <div className="flex items-center gap-2 mb-1.5">
               <PackageIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">패키지 유형</span>
+              <span className={adminTypography.caption}>패키지 유형</span>
             </div>
-            <p className="text-lg font-medium">{data.packageType}</p>
+            <p className={adminTypography.kpiValueCompact}>{data.packageType}</p>
           </div>
 
-          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+          <div className={adminSurface.kpiCard}>
             <div className="flex items-center gap-2 mb-1.5">
               <Target className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">남은 횟수</span>
+              <span className={adminTypography.caption}>남은 횟수</span>
             </div>
-            <p className="text-lg font-semibold text-primary">
+            <p className={adminTypography.kpiValueCompact}>
               {!data.hasIssuedPass
                 ? "미발급"
                 : typeof data.remainingSessions === "number" &&
@@ -617,12 +617,12 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </p>
           </div>
 
-          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+          <div className={adminSurface.kpiCard}>
             <div className="flex items-center gap-2 mb-1.5">
               <CreditCard className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">결제 금액</span>
+              <span className={adminTypography.caption}>결제 금액</span>
             </div>
-            <p className="text-lg font-medium">
+            <p className={adminTypography.kpiValueCompact}>
               {typeof data.price === "number" && Number.isFinite(data.price)
                 ? new Intl.NumberFormat("ko-KR", { style: "currency", currency: "KRW" }).format(
                     data.price,
@@ -631,19 +631,19 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </p>
           </div>
 
-          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+          <div className={adminSurface.kpiCard}>
             <div className="flex items-center gap-2 mb-1.5">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">만료일</span>
+              <span className={adminTypography.caption}>만료일</span>
             </div>
-            <p className="text-lg font-medium">
+            <p className={adminTypography.kpiValueCompact}>
               {!data.hasIssuedPass ? "미발급" : data.expiryDate ? fmtKDate(expiry) : "확인 필요"}
             </p>
           </div>
-          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+          <div className={adminSurface.kpiCard}>
             <div className="flex items-center gap-2 mb-1.5">
               <CreditCard className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">결제 상태</span>
+              <span className={adminTypography.caption}>결제 상태</span>
             </div>
             <SemanticBadge
               tone={
@@ -676,7 +676,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* 고객 정보 */}
         <Card id="admin-package-customer" className={cn(adminSurface.card, "overflow-hidden")}>
           <CardHeader className="border-b border-border/60 bg-background/70">
@@ -1018,7 +1018,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         {/* 운영 내역 */}
         <Card
           id="admin-package-operation-history"
-          className={cn("col-span-2", adminSurface.tableCard)}
+          className={cn("lg:col-span-2", adminSurface.tableCard)}
         >
           <CardHeader className="border-b border-border/60 bg-background/70">
             <CardTitle className="flex items-center gap-2">

@@ -130,7 +130,7 @@ function formatPrice(price: number | null | undefined) {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="grid gap-1 border-b border-border/60 py-3 last:border-b-0 grid-cols-[140px_1fr]">
+    <div className="grid gap-1 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-[140px_1fr]">
       <div className={adminTypography.metaMuted}>{label}</div>
       <div className={adminTypography.bodyStrong}>{value || "-"}</div>
     </div>
@@ -365,7 +365,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         }
       />
 
-      <div className="grid gap-5 grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-5">
           <AdminPageSection title="신청자 정보" contentClassName="pt-4">
             <InfoRow label="이름" value={item.applicantName} />
@@ -527,7 +527,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             {item.status === "cancelled" ? (
               <p className={adminTypography.caption}>취소된 신청은 수정할 수 없습니다.</p>
             ) : null}
-            <div className="grid gap-3 grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Input
                 value={editForm.applicantName}
                 onChange={(event) =>
@@ -556,7 +556,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               disabled={!canAdminEditApplication || savingEdit}
               maxLength={100}
             />
-            <div className="grid gap-3 grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Select
                 value={editForm.desiredLessonType}
                 onValueChange={(value) =>
