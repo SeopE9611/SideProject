@@ -46,6 +46,22 @@ type AuditListResponse = {
 };
 
 const PAGE_SIZE = 20;
+type AuditQueryState = { page: number; q: string; type: string };
+const AUDIT_QUERY_DEFAULTS: AuditQueryState = { page: 1, q: "", type: "" };
+const parseAuditQueryState = (params: URLSearchParams, defaults: AuditQueryState) => ({
+  page: Math.max(
+    1,
+    Number.parseInt(params.get("page") || String(defaults.page), 10) || defaults.page,
+  ),
+  q: params.get("q") || defaults.q,
+  type: params.get("type") || defaults.type,
+});
+const toAuditQueryParams = (queryState: AuditQueryState) => ({
+  page: queryState.page === 1 ? undefined : queryState.page,
+  q: queryState.q.trim() || undefined,
+  type: queryState.type.trim() || undefined,
+});
+const AUDIT_PAGE_RESET_KEYS: Array<keyof AuditQueryState> = ["q", "type"];
 const AUDIT_TYPE_LABELS: Record<string, string> = {
   "note.create": "내부 메모 작성",
   "note.update": "내부 메모 수정",
@@ -84,29 +100,14 @@ export default function AdminAuditClient() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const { state, patchState, setPage } = useAdminListQueryState<{
-    page: number;
-    q: string;
-    type: string;
-  }>({
+  const { state, patchState, setPage } = useAdminListQueryState<AuditQueryState>({
     pathname: pathname || "/admin/audit",
     searchParams,
     replace: router.replace,
-    defaults: { page: 1, q: "", type: "" },
-    parse: (params, defaults) => ({
-      page: Math.max(
-        1,
-        Number.parseInt(params.get("page") || String(defaults.page), 10) || defaults.page,
-      ),
-      q: params.get("q") || defaults.q,
-      type: params.get("type") || defaults.type,
-    }),
-    toQueryParams: (queryState) => ({
-      page: queryState.page === 1 ? undefined : queryState.page,
-      q: queryState.q.trim() || undefined,
-      type: queryState.type.trim() || undefined,
-    }),
-    pageResetKeys: ["q", "type"],
+    defaults: AUDIT_QUERY_DEFAULTS,
+    parse: parseAuditQueryState,
+    toQueryParams: toAuditQueryParams,
+    pageResetKeys: AUDIT_PAGE_RESET_KEYS,
   });
 
   const key = useMemo(() => {

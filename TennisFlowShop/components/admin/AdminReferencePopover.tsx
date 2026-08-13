@@ -55,7 +55,7 @@ export default function AdminReferencePopover({
         <p className={adminTypography.panelTitle}>{title}</p>
         <dl className="divide-y divide-border rounded-lg border border-border">
           {visibleItems.map((item) => {
-            const copyValue = item.copyValue ?? item.value ?? "";
+            const copyValue = item.copyValue;
             return (
               <div
                 key={item.label}

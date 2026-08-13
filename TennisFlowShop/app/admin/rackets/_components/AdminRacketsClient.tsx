@@ -1,6 +1,7 @@
 "use client";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
@@ -9,13 +10,7 @@ import { RacketBadge } from "@/components/badges/RacketBadge";
 import { AdminSemanticBadge as SemanticBadge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -43,7 +38,6 @@ import {
   ClipboardList,
   Edit,
   Eye,
-  MoreVertical,
   Package,
   Plus,
   Search,
@@ -662,19 +656,9 @@ export default function AdminRacketsClient() {
                                 수정
                               </Link>
                             </Button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
-                                  aria-label={`${item.model || "라켓"} 관리 메뉴`}
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="min-w-max border-border">
-                                <DropdownMenuLabel>작업</DropdownMenuLabel>
+                            <AdminRowActionMenu
+                              ariaLabel={`${item.model || "라켓"} 작업 메뉴 열기`}
+                            >
                                 <DropdownMenuItem asChild className="whitespace-nowrap">
                                   <Link href={`/rackets/${item.id}`} className="flex items-center">
                                     <Eye className="h-4 w-4 mr-2" />
@@ -685,17 +669,7 @@ export default function AdminRacketsClient() {
                                       : "상세 보기"}
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild className="whitespace-nowrap">
-                                  <Link
-                                    href={`/admin/rackets/${item.id}/edit`}
-                                    className="flex items-center"
-                                  >
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    수정
-                                  </Link>
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            </AdminRowActionMenu>
                           </div>
                         </TableCell>
                       </TableRow>
