@@ -574,7 +574,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         icon={PackageIcon}
         scope={`패키지 ID: ${data.id}`}
         helperText="결제·이용권·활성화 상태를 함께 확인한 뒤 운영 작업을 진행하세요."
-        className="flex-row"
+        className="flex-wrap"
         actions={<>
           <SemanticBadge
             tone={
