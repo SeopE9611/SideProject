@@ -8,6 +8,10 @@ export type RentalTransactionExtensionResult = {
   stringingSubmitted?: boolean;
 };
 
+export function rentalReservationVisibilityViewer(status: string, viewer?: VisibilityViewer) {
+  return status === "paid" ? { isAdmin: false } : viewer;
+}
+
 /**
  * 이미 열린 MongoDB transaction에서만 대여 주문의 공통 write set을 수행한다.
  * session을 생성하거나 transaction을 시작/종료하지 않으므로 결제 finalization에서도
@@ -22,6 +26,7 @@ export async function createRentalOrderInTransaction(params: {
   idemKey?: string;
   reservePaidRental: boolean;
   visibilityViewer?: VisibilityViewer;
+  beforeInsert?: () => Promise<void>;
   afterInsert?: (rentalId: ObjectId) => Promise<RentalTransactionExtensionResult | void>;
 }) {
   if (params.reservePaidRental) {
@@ -32,6 +37,8 @@ export async function createRentalOrderInTransaction(params: {
       visibilityViewer: params.visibilityViewer ?? { isAdmin: false },
     });
   }
+
+  await params.beforeInsert?.();
 
   await params.db.collection("rental_orders").insertOne(
     {
