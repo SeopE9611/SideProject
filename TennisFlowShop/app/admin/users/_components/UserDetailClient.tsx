@@ -10,6 +10,8 @@ import { useUserSessions } from "@/app/admin/users/_hooks/useUserSessions";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { InfoItem } from "@/components/admin/InfoItem";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
 import StatusBadge from "@/components/admin/StatusBadge";
@@ -26,7 +28,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,14 +60,12 @@ import {
   ChevronLeft,
   ListTree,
   LogIn,
-  Mail,
   MapPin,
   MonitorSmartphone,
   Pencil,
   Phone,
   RefreshCw,
   ShieldAlert,
-  ShieldCheck,
   ShoppingBag,
   Smartphone,
   Star,
@@ -496,7 +495,7 @@ export default function UserDetailClient({ id }: { id: string }) {
             "before:content-[''] before:absolute before:inset-0 before:bg-border/10 before:opacity-30",
           ].join(" ")}
         />
-        <div className="sticky top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
+        <div className="sticky top-[64px] z-20 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
           <div className="mx-auto w-full max-w-[1500px] flex items-center justify-between gap-2">
             <Skeleton className="h-9 w-28" />
             <div className="flex items-center gap-2">
@@ -534,16 +533,6 @@ export default function UserDetailClient({ id }: { id: string }) {
     );
   }
 
-  const initials = (
-    user.name
-      ?.trim()
-      ?.split(" ")
-      ?.map((s) => s[0])
-      ?.slice(0, 2)
-      .join("") ||
-    user.email?.[0] ||
-    "?"
-  ).toUpperCase();
   const roleValue = form.role ?? user.role;
   const roleChanged = roleValue !== user.role;
   const roleConfirmPhrase = roleChanged ? getRoleConfirmPhrase(user.role, roleValue) : "";
@@ -600,19 +589,10 @@ export default function UserDetailClient({ id }: { id: string }) {
   }
 
   return (
-    <div className="relative">
-      {/* 컬러 워시 + 도트 패턴 */}
-      <div
-        aria-hidden
-        className={[
-          "pointer-events-none absolute inset-0 -z-10",
-          "bg-muted/30",
-          "before:content-[''] before:absolute before:inset-0 before:bg-border/10 before:opacity-30",
-        ].join(" ")}
-      />
+    <AdminPageShell variant="wide" className="space-y-4">
       <TooltipProvider>
         {/* 상단 스티키 액션바 */}
-        <div className="sticky top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
+        <div className="sticky top-[64px] z-20 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card">
           <div className="mx-auto w-full max-w-[1500px] flex items-center justify-between gap-2">
             {/* 좌측: 뒤로 */}
             <div className="flex items-center gap-2">
@@ -820,78 +800,67 @@ export default function UserDetailClient({ id }: { id: string }) {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* 히어로 헤더 */}
-        <div className={cn("mb-6 overflow-hidden", adminSurface.card)}>
-          <div className="flex items-start justify-between gap-4 px-5 py-4">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Avatar className="size-12 shadow-sm ring-2 ring-border">
-                  <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
-                </Avatar>
-                <span
-                  className={cn(
-                    "absolute -right-1 -bottom-1 size-3 rounded-full ring-2 ring-border",
-                    statusKey(user) === "active" && "bg-primary",
-                    statusKey(user) === "suspended" && "bg-muted",
-                    statusKey(user) === "deleted" && "bg-destructive/10 dark:bg-destructive/15",
-                  )}
-                />
-              </div>
-
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="font-semibold tracking-normal text-foreground text-3xl">
-                    {user.name ?? "(이름없음)"}
-                  </h1>
-                  {(() => {
-                    const roleSpec = getUserRoleBadgeSpec(user.role);
-                    return <Badge variant={roleSpec.variant}>{getUserRoleLabel(user.role)}</Badge>;
-                  })()}
-                  <StatusBadge status={statusKey(user)} />
-                </div>
-
-                <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-foreground/75">
-                  <div className="inline-flex items-center gap-1">
-                    <Mail className="h-3.5 w-3.5" />
-                    <button
-                      className="break-all underline decoration-dotted"
-                      onClick={() => copy(user.email)}
-                      title="이메일 복사"
-                    >
-                      {user.email}
-                    </button>
-                  </div>
-                  <div className="inline-flex items-center gap-1">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    <span>회원 ID: </span>
-                    <button
-                      className="break-all underline decoration-dotted"
-                      onClick={() => copy(user.id)}
-                      title="ID 복사"
-                    >
-                      {user.id}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AdminPageHeader
+          variant="detail"
+          title={user.name ?? "(이름없음)"}
+          description={`${user.email} 회원 정보를 관리합니다.`}
+          icon={UserCog}
+          scope={`회원 ID: ${user.id}`}
+          helperText={`가입일 ${fmt(user.createdAt)} · 마지막 로그인 ${fmt(sessionsResp?.items?.[0]?.at ?? user.lastLoginAt)}`}
+          actions={
+            <>
+              {(() => {
+                const roleSpec = getUserRoleBadgeSpec(user.role);
+                return <Badge variant={roleSpec.variant}>{getUserRoleLabel(user.role)}</Badge>;
+              })()}
+              <StatusBadge status={statusKey(user)} />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => copy(user.id)}
+                title={user.id}
+              >
+                ID 복사
+              </Button>
+              <Button type="button" variant="outline" size="sm" asChild>
+                <Link
+                  href="/admin/users"
+                  data-no-unsaved-guard
+                  onClick={(event) => {
+                    if (!confirmLeaveIfDirty()) event.preventDefault();
+                  }}
+                >
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  회원 목록
+                </Link>
+              </Button>
+              <Button
+                type="button"
+                variant={hasDirty ? "destructive" : "outline"}
+                size="sm"
+                onClick={() => setForm({})}
+                disabled={!hasDirty}
+              >
+                {hasDirty ? "편집 취소" : "편집 중"}
+              </Button>
+            </>
+          }
+        />
 
         <AdminDetailSectionNav
-          className="mb-6"
           items={[
             { href: "#admin-user-account", label: "기본정보" },
-            { href: "#admin-user-security", label: "보안/활동" },
-            { href: "#admin-user-activity", label: "거래 요약" },
-            { href: "#admin-user-notes", label: "메모" },
-            { href: "#admin-user-audit", label: "이력" },
-            { href: "#admin-user-danger", label: "관리 액션" },
+            { href: "#admin-user-danger", label: "권한·상태" },
+            { href: "#admin-user-activity", label: "활동" },
+            { href: "#admin-user-security", label: "세션" },
+            { href: "#admin-user-audit", label: "감사 로그" },
+            { href: "#admin-user-notes", label: "내부 메모" },
           ]}
         />
 
         {/* 좌: 요약/보안/액티비티 KPI/최근 항목 탭  |  우: 프로필 수정 */}
-        <div className="grid gap-6 grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
           {/* 좌측 스택 */}
           <div className="space-y-6">
             {/* 계정 요약 */}
@@ -1317,7 +1286,7 @@ export default function UserDetailClient({ id }: { id: string }) {
           </AlertDialogContent>
         </AlertDialog>
       </TooltipProvider>
-    </div>
+    </AdminPageShell>
   );
 }
 

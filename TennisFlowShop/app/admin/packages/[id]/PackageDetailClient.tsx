@@ -561,20 +561,34 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   };
 
   return (
-    <AdminPageShell variant="wide" className="py-6">
+    <AdminPageShell variant="wide" className="space-y-4">
       {isLoading ? (
         <div className="mb-4 rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-muted-foreground">
           최신 상태를 확인하고 있습니다...
         </div>
       ) : null}
       <AdminPageHeader
-        title="패키지 상세 관리"
+        variant="detail"
+        title={`패키지 ${data.id.slice(0, 8)}…${data.id.slice(-6)}`}
         description="결제 상태, 이용 횟수, 만료일과 패키지 운영 이력을 확인하고 관리합니다."
         icon={PackageIcon}
-        scope={`범위: ${data.packageType} · ${data.id.slice(0, 8)}…${data.id.slice(-6)}`}
+        scope={`패키지 ID: ${data.id}`}
         helperText="결제·이용권·활성화 상태를 함께 확인한 뒤 운영 작업을 진행하세요."
         className="flex-row"
         actions={<>
+          <SemanticBadge
+            tone={
+              getPaymentStatusBadgeSpec(getAdminPackagePaymentLabel(data.paymentState)).tone
+            }
+          >
+            결제 {getAdminPackagePaymentLabel(data.paymentState)}
+          </SemanticBadge>
+          <SemanticBadge {...getAdminPackageUsageBadgeSpec(data.usageState)}>
+            이용권 {getAdminPackageUsageLabel(data.usageState)}
+          </SemanticBadge>
+          <SemanticBadge {...getAdminPackageActivationBadgeSpec(data.activationState)}>
+            활성화 {getAdminPackageActivationLabel(data.activationState)}
+          </SemanticBadge>
           <Button type="button" variant="ghost" size="sm" onClick={() => {
             navigator.clipboard.writeText(data.id);
             showSuccessToast("패키지 ID가 복사되었습니다.");
@@ -592,8 +606,18 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         </>}
       />
 
+      <AdminDetailSectionNav
+        items={[
+          { href: "#admin-package-next-action", label: "다음 처리" },
+          { href: "#admin-package-payment", label: "상태·결제정보" },
+          { href: "#admin-package-customer", label: "고객정보" },
+          { href: "#admin-package-usage-history", label: "사용 내역" },
+          { href: "#admin-package-operation-history", label: "운영 이력" },
+        ]}
+      />
+
         {/* 요약 KPI */}
-        <div className="mb-6 grid gap-3 grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <div className={adminSurface.kpiCard}>
             <div className="flex items-center gap-2 mb-1.5">
               <PackageIcon className="h-4 w-4 text-muted-foreground" />
@@ -655,17 +679,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           </div>
         </div>
 
-      <AdminDetailSectionNav
-        className="mb-4"
-        items={[
-          { href: "#admin-package-customer", label: "고객정보" },
-          { href: "#admin-package-payment", label: "결제/상태" },
-          { href: "#admin-package-usage-history", label: "사용 이력" },
-          { href: "#admin-package-operation-history", label: "운영 내역" },
-        ]}
-      />
-
-      <Card className={cn("mb-6", packageGuide.toneClass)}>
+      <Card id="admin-package-next-action" className={packageGuide.toneClass}>
         <CardContent className="p-4">
           <div>
               <p className="text-sm font-semibold">{packageGuide.title}</p>
@@ -676,7 +690,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* 고객 정보 */}
         <Card id="admin-package-customer" className={cn(adminSurface.card, "overflow-hidden")}>
           <CardHeader className="border-b border-border/60 bg-background/70">
@@ -687,7 +701,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <CardDescription>구매자 연락처와 서비스 유형을 분리해 확인합니다.</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid gap-3 grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <AdminCompactField
                 label={
                   <span className="inline-flex items-center gap-1.5">
@@ -800,7 +814,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               )}
             </div>
 
-            <div className="grid gap-2 grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <div className="rounded-lg bg-card p-3 text-sm">
                 활성화 상태:{" "}
                 <SemanticBadge {...getAdminPackageActivationBadgeSpec(data.activationState)}>
@@ -941,7 +955,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         <Card
           id="admin-package-usage-history"
           className={cn(
-            "border-border bg-card dark:bg-card dark:border-border col-span-2",
+            "border-border bg-card dark:bg-card dark:border-border xl:col-span-2",
             adminSurface.tableCard,
           )}
         >
@@ -1018,7 +1032,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         {/* 운영 내역 */}
         <Card
           id="admin-package-operation-history"
-          className={cn("col-span-2", adminSurface.tableCard)}
+          className={cn("xl:col-span-2", adminSurface.tableCard)}
         >
           <CardHeader className="border-b border-border/60 bg-background/70">
             <CardTitle className="flex items-center gap-2">
