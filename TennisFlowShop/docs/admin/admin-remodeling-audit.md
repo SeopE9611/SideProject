@@ -143,6 +143,43 @@
 - 다음 권장 단계는 Step 3-C 오프라인 고객 상세 및 남은 상세 화면 조사이며, 이후 Step 4에서
   등록·수정 폼을 진행한다.
 
+### Step 3-C — 오프라인 고객 상세 적용 및 상세 화면 전수조사
+
+- `/admin/offline/customers/[id]`에 `AdminPageShell wide`, `AdminPageHeader detail`과 실제 카드
+  anchor에 연결한 `AdminDetailSectionNav`를 적용했다. 헤더에는 고객명, 전화번호, 전체 고객 ID,
+  등록일·최근 방문일·회원 연결 상태와 목록·ID 복사·최근 기록 액션을 배치했다.
+- 기본 1열에서 `xl` 이상일 때만 2열이 되도록 본문을 정리하고, 고객 요약과 기본 정보도 좁은
+  화면에서 1열로 흐르게 했다. 삭제는 일반 헤더 액션에서 분리해 마지막 위험 작업 섹션으로 옮겼다.
+- 고객 기본 정보·연락처·내부 메모, 온라인 회원 검색·연결·해제, 누적 정산 요약, 포인트 처리,
+  패키지 조회·판매·환불·사용, 오프라인 작업·매출 이력과 고객 삭제 기능을 보존했다. API URL,
+  SWR key·fetcher, mutation, 확인 문구와 데이터 계산은 변경하지 않았다.
+
+#### 실제 `[id]` 라우트·클라이언트 전수조사 결과
+
+아래 분류는 `app/admin`의 실제 `[id]/page.tsx`, `[id]/*Client.tsx`,
+`[id]/_components/*.tsx`를 확인하고, 라우트가 외부 공용 클라이언트를 렌더하는 경우 그 실제 파일까지
+추적한 결과다. 조사만 한 화면은 완료로 간주하지 않는다.
+
+| 분류 | 라우트 | 실제 렌더 파일과 공통 구조 | 상태 |
+| --- | --- | --- | --- |
+| 완료 | `/admin/orders/[id]` | `app/features/orders/components/OrderDetailClient.tsx`; Shell·detail Header·section nav 사용 | 완료 |
+| 완료 | `/admin/applications/stringing/[id]` | `app/features/stringing-applications/components/StringingApplicationDetailClient.tsx`; 관리자 분기에 Shell·detail Header·section nav 사용 | 완료 |
+| 완료 | `/admin/rentals/[id]` | `_components/AdminRentalDetailClient.tsx`; Shell·detail Header·section nav 사용 | 완료 |
+| 완료 | `/admin/users/[id]` | `app/admin/users/_components/UserDetailClient.tsx`; Shell·detail Header·section nav 사용 | 완료 |
+| 완료 | `/admin/packages/[id]` | `PackageDetailClient.tsx`; Shell·detail Header·section nav 사용 | 완료 |
+| 완료 | `/admin/offline/customers/[id]` | `_components/OfflineCustomerDetailClient.tsx`; Step 3-C에서 Shell·detail Header·section nav 적용 | 완료 |
+| 단순 상세 | `/admin/academy/classes/[id]` | `_components/AcademyClassDetailClient.tsx`; Shell·기본 Header 사용, detail 변형·section nav 없음 | 미완료 |
+| 복합 상세 | `/admin/academy/applications/[id]` | `_components/AcademyApplicationDetailClient.tsx`; 배정·상태 처리 밀도가 높고 Shell·기본 Header 사용, detail 변형·section nav 없음 | 미완료 |
+| 복합 상세 | `/admin/boards/[id]` | 서버 `page.tsx`가 상세와 관리 액션을 직접 렌더; Shell·기본 Header 사용, detail 변형·section nav 없음 | 미완료 |
+| 별도 도구 | `/admin/reviews/[id]` | `page.tsx`는 `/admin/reviews`로 redirect하며 `ReviewDetailClient.tsx`를 렌더하지 않음 | 별도 검토 |
+| 등록·수정 폼 | `/admin/products/[id]/edit`, `/admin/rackets/[id]/edit`, `/admin/academy/classes/[id]/edit`, `/admin/boards/[id]/edit` | 각 edit 클라이언트 또는 공용 폼을 렌더 | Step 4 후보 |
+| 등록·수정 폼 | `/admin/orders/[id]/shipping-update`, `/admin/applications/stringing/[id]/shipping-update` | 각 `ShippingFormClient.tsx` 또는 배송 폼을 렌더 | 별도 폼 후보 |
+
+`ReviewDetailClient.tsx`는 실제 파일은 남아 있지만 현재 `[id]` 라우트에서는 사용하지 않으므로 상세
+리모델링 완료 화면으로 세지 않는다. 이번 조사에서 새로운 상세 라우트는 추정하거나 추가하지 않았다.
+다음 실제 상세 후보는 아카데미 클래스 상세, 아카데미 신청 상세, 게시글 상세이며, 등록·수정 및 배송
+폼은 Step 4 또는 별도 폼 단계에서 분리해 다룬다.
+
 ## 기능 로직 보존 확인
 
 권한 검사, E2E 우회, `/api/admin/navigation-summary` SWR 키, 사이드바 localStorage 키,
