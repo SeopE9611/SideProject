@@ -287,7 +287,7 @@ export default function AcademyApplicationsClient() {
               </span>
             ) : null}
             <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 tabular-nums">
-              전체 신청: {data?.pagination.total.toLocaleString("ko-KR") ?? 0}건
+              전체 신청: {data ? `${data.pagination.total.toLocaleString("ko-KR")}건` : "-"}
             </span>
           </>
         }

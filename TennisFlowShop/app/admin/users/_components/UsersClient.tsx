@@ -19,6 +19,7 @@ import {
   type UserStatusKey,
 } from "@/app/admin/users/_lib/usersClientUtils";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
@@ -769,10 +770,87 @@ export default function UsersClient() {
       />
 
       <FiltersSection>
-        {/* 검색/필터 바 */}
-        <div className={cn(adminSurface.filterCard, "mb-4")}>
-          <div className="space-y-2">
-            <div className="relative w-full">
+        <AdminFilterBar
+          className="mb-4"
+          actions={
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={resetUserFilters}
+              disabled={!hasCustomFilters}
+              className="h-9"
+            >
+              필터 초기화
+            </Button>
+          }
+          activeFilters={
+            <>
+              {searchQuery.trim() ? (
+                <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                  검색어: {searchQuery.trim()}
+                </span>
+              ) : null}
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                상태:{" "}
+                {statusFilter === "active"
+                  ? "활성"
+                  : statusFilter === "suspended"
+                    ? "비활성"
+                    : statusFilter === "deleted"
+                      ? "삭제됨"
+                      : "전체"}
+              </span>
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                역할:{" "}
+                {roleFilter === "user"
+                  ? "일반"
+                  : roleFilter === "admin"
+                    ? "관리자"
+                    : roleFilter === "superadmin"
+                      ? "최고 관리자"
+                      : "전체"}
+              </span>
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                가입 유형:{" "}
+                {signupFilter === "local"
+                  ? "일반 가입"
+                  : signupFilter === "kakao"
+                    ? "카카오"
+                    : signupFilter === "naver"
+                      ? "네이버"
+                      : signupFilter === "apps_in_toss"
+                        ? "Apps in Toss"
+                        : "전체"}
+              </span>
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                로그인 이력:{" "}
+                {loginFilter === "recent30"
+                  ? "최근 30일"
+                  : loginFilter === "recent90"
+                    ? "최근 90일"
+                    : loginFilter === "nologin"
+                      ? "미로그인"
+                      : "전체"}
+              </span>
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                정렬:{" "}
+                {sort === "created_asc"
+                  ? "가입일 ↑"
+                  : sort === "name_asc"
+                    ? "이름 A→Z"
+                    : sort === "name_desc"
+                      ? "이름 Z→A"
+                      : "가입일 ↓"}
+              </span>
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 tabular-nums">
+                전체 회원: {typeof total === "number" ? `${total.toLocaleString("ko-KR")}명` : "-"}
+              </span>
+            </>
+          }
+        >
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-7">
+            <div className="relative w-full xl:col-span-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="이름/이메일/전화 검색"
@@ -783,140 +861,128 @@ export default function UsersClient() {
               />
             </div>
 
-            <div className="grid gap-2 grid-cols-3">
-              {/* 상태 */}
-              <Select
-                value={statusFilter}
-                onValueChange={(v) => {
-                  if (v === "all" || v === "active" || v === "deleted" || v === "suspended")
-                    patchState({ statusFilter: v });
-                }}
+            {/* 상태 */}
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => {
+                if (v === "all" || v === "active" || v === "deleted" || v === "suspended")
+                  patchState({ statusFilter: v });
+              }}
+            >
+              <SelectTrigger
+                className="h-9 w-full min-w-0 text-ui-label"
+                aria-label="회원 상태 필터"
               >
-                <SelectTrigger
-                  className="h-9 w-full min-w-0 text-ui-label"
-                  aria-label="회원 상태 필터"
-                >
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4" />
-                    <SelectValue placeholder="상태" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">모든 상태</SelectItem>
-                  <SelectItem value="active">활성</SelectItem>
-                  <SelectItem value="suspended">비활성</SelectItem>
-                  <SelectItem value="deleted">삭제됨</SelectItem>
-                </SelectContent>
-              </Select>
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  <SelectValue placeholder="상태" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">모든 상태</SelectItem>
+                <SelectItem value="active">활성</SelectItem>
+                <SelectItem value="suspended">비활성</SelectItem>
+                <SelectItem value="deleted">삭제됨</SelectItem>
+              </SelectContent>
+            </Select>
 
-              {/* 역할 */}
-              <Select
-                value={roleFilter}
-                onValueChange={(v) => {
-                  if (v === "all" || v === "user" || v === "admin" || v === "superadmin")
-                    patchState({ roleFilter: v });
-                }}
+            {/* 역할 */}
+            <Select
+              value={roleFilter}
+              onValueChange={(v) => {
+                if (v === "all" || v === "user" || v === "admin" || v === "superadmin")
+                  patchState({ roleFilter: v });
+              }}
+            >
+              <SelectTrigger
+                className="h-9 w-full min-w-0 text-ui-label"
+                aria-label="회원 역할 필터"
               >
-                <SelectTrigger
-                  className="h-9 w-full min-w-0 text-ui-label"
-                  aria-label="회원 역할 필터"
-                >
-                  <SelectValue placeholder="역할" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">역할 전체</SelectItem>
-                  <SelectItem value="user">일반</SelectItem>
-                  <SelectItem value="admin">관리자</SelectItem>
-                  <SelectItem value="superadmin">최고 관리자</SelectItem>
-                </SelectContent>
-              </Select>
+                <SelectValue placeholder="역할" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">역할 전체</SelectItem>
+                <SelectItem value="user">일반</SelectItem>
+                <SelectItem value="admin">관리자</SelectItem>
+                <SelectItem value="superadmin">최고 관리자</SelectItem>
+              </SelectContent>
+            </Select>
 
-              {/* 가입유형 (SNS) */}
-              <Select
-                value={signupFilter}
-                onValueChange={(v) => {
-                  patchState({
-                    signupFilter: v as "all" | "local" | "kakao" | "naver" | "apps_in_toss",
-                  });
-                }}
+            {/* 가입유형 (SNS) */}
+            <Select
+              value={signupFilter}
+              onValueChange={(v) => {
+                patchState({
+                  signupFilter: v as "all" | "local" | "kakao" | "naver" | "apps_in_toss",
+                });
+              }}
+            >
+              <SelectTrigger
+                className="h-9 w-full min-w-0 text-ui-label"
+                aria-label="회원 가입 유형 필터"
               >
-                <SelectTrigger
-                  className="h-9 w-full min-w-0 text-ui-label"
-                  aria-label="회원 가입 유형 필터"
-                >
-                  <SelectValue placeholder="가입유형" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">가입유형 전체</SelectItem>
-                  <SelectItem value="local">일반 가입</SelectItem>
-                  <SelectItem value="kakao">카카오 가입</SelectItem>
-                  <SelectItem value="naver">네이버 가입</SelectItem>
-                  <SelectItem value="apps_in_toss">Apps in Toss</SelectItem>
-                </SelectContent>
-              </Select>
+                <SelectValue placeholder="가입유형" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">가입유형 전체</SelectItem>
+                <SelectItem value="local">일반 가입</SelectItem>
+                <SelectItem value="kakao">카카오 가입</SelectItem>
+                <SelectItem value="naver">네이버 가입</SelectItem>
+                <SelectItem value="apps_in_toss">Apps in Toss</SelectItem>
+              </SelectContent>
+            </Select>
 
-              {/* 로그인 필터 */}
-              <Select
-                value={loginFilter}
-                onValueChange={(v) => {
-                  patchState({
-                    loginFilter: v as "all" | "nologin" | "recent30" | "recent90",
-                  });
-                }}
+            {/* 로그인 필터 */}
+            <Select
+              value={loginFilter}
+              onValueChange={(v) => {
+                patchState({
+                  loginFilter: v as "all" | "nologin" | "recent30" | "recent90",
+                });
+              }}
+            >
+              <SelectTrigger
+                className="h-9 w-full min-w-0 text-ui-label"
+                aria-label="회원 로그인 이력 필터"
               >
-                <SelectTrigger
-                  className="h-9 w-full min-w-0 text-ui-label"
-                  aria-label="회원 로그인 이력 필터"
-                >
-                  <SelectValue placeholder="로그인" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">로그인 전체</SelectItem>
-                  <SelectItem value="recent30">최근 30일 로그인</SelectItem>
-                  <SelectItem value="recent90">최근 90일 로그인</SelectItem>
-                  <SelectItem value="nologin">미로그인</SelectItem>
-                </SelectContent>
-              </Select>
+                <SelectValue placeholder="로그인" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">로그인 전체</SelectItem>
+                <SelectItem value="recent30">최근 30일 로그인</SelectItem>
+                <SelectItem value="recent90">최근 90일 로그인</SelectItem>
+                <SelectItem value="nologin">미로그인</SelectItem>
+              </SelectContent>
+            </Select>
 
-              {/* 정렬 */}
-              <Select
-                value={sort}
-                onValueChange={(v) => {
-                  if (
-                    v === "created_desc" ||
-                    v === "created_asc" ||
-                    v === "name_asc" ||
-                    v === "name_desc"
-                  )
-                    patchState({ sort: v });
-                }}
+            {/* 정렬 */}
+            <Select
+              value={sort}
+              onValueChange={(v) => {
+                if (
+                  v === "created_desc" ||
+                  v === "created_asc" ||
+                  v === "name_asc" ||
+                  v === "name_desc"
+                )
+                  patchState({ sort: v });
+              }}
+            >
+              <SelectTrigger
+                className="h-9 w-full min-w-0 text-ui-label"
+                aria-label="회원 정렬 기준"
               >
-                <SelectTrigger
-                  className="h-9 w-full min-w-0 text-ui-label"
-                  aria-label="회원 정렬 기준"
-                >
-                  <SelectValue placeholder="정렬" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="created_desc">가입일 ↓</SelectItem>
-                  <SelectItem value="created_asc">가입일 ↑</SelectItem>
-                  <SelectItem value="name_asc">이름 A→Z</SelectItem>
-                  <SelectItem value="name_desc">이름 Z→A</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={resetUserFilters}
-                disabled={!hasCustomFilters}
-                className="h-9 w-full"
-              >
-                필터 초기화
-              </Button>
-            </div>
+                <SelectValue placeholder="정렬" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_desc">가입일 ↓</SelectItem>
+                <SelectItem value="created_asc">가입일 ↑</SelectItem>
+                <SelectItem value="name_asc">이름 A→Z</SelectItem>
+                <SelectItem value="name_desc">이름 Z→A</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
+        </AdminFilterBar>
       </FiltersSection>
 
       <BulkActionsSection>

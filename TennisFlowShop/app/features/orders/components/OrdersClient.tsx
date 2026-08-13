@@ -9,6 +9,7 @@ import ApplicationStatusBadge from "@/app/features/stringing-applications/compon
 import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
@@ -17,7 +18,7 @@ import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -671,6 +679,7 @@ export default function OrdersClient() {
       {/* 제목 및 설명 */}
       <div>
         <AdminPageHeader
+          variant="compact"
           title="주문 관리"
           description="결제 확인, 배송 누락, 취소 요청, 교체서비스 연결 주문을 한곳에서 확인하고 처리합니다."
           icon={PackageSearch}
@@ -698,99 +707,183 @@ export default function OrdersClient() {
         </div>
       </div>
 
-      {/* 필터 및 검색 카드 */}
-      <Card className={cn(adminSurface.filterCard, "mb-3 p-0")}>
-        <CardHeader className="flex flex-row items-center justify-between gap-3 px-4 pb-2 pt-3">
-          <div>
-            <CardTitle className="text-ui-body-sm">주문 찾기</CardTitle>
-            <CardDescription className="text-ui-label">
-              빠른 보기 또는 검색으로 처리 대상을 찾습니다.
-            </CardDescription>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 bg-transparent"
-            aria-expanded={showAdvanced}
-            onClick={() => setShowAdvanced((current) => !current)}
-          >
-            {showAdvanced ? "상세 필터 닫기" : "상세 필터"}
-          </Button>
-        </CardHeader>
-        <CardContent className="px-4 pb-3 pt-0">
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-row items-center gap-3">
-              <div className="flex min-w-0 flex-1 flex-wrap gap-2">
-                {[
-                  ["all", "전체"],
-                  ["payment", "결제 확인"],
-                  ["cancel", "취소 요청"],
-                  ["shipping", "배송 누락"],
-                  ["service", "교체서비스"],
-                  ["product", "일반 주문"],
-                ].map(([value, label]) => (
-                  <Button
-                    key={value}
-                    type="button"
-                    size="sm"
-                    variant={activeQuickView === value ? "default" : "outline"}
-                    onClick={() =>
-                      applyQuickFilter(
-                        value as "all" | "payment" | "cancel" | "shipping" | "service" | "product",
-                      )
-                    }
-                    className="h-8"
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-              <div className="relative w-[320px] shrink-0">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  type="search"
-                  aria-label="주문 통합 검색"
-                  placeholder="주문/신청 ID, 고객명, 이메일 검색..."
-                  className="pl-8 text-ui-label h-9 w-full"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                {searchTerm && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3"
-                    onClick={() => setSearchTerm("")}
-                    aria-label="검색어 지우기"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* 필터 컴포넌트들 */}
-            {showAdvanced ? (
-              <div className="grid w-full grid-cols-3 gap-2 border-t border-border/60 pt-3">
-                <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
-                <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
-                <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
-                <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
-                <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={resetFilters}
-                  className="w-full bg-transparent"
-                >
-                  필터 초기화
-                </Button>
-              </div>
+      <AdminFilterBar
+        className="mb-3"
+        quickFilters={
+          <>
+            <span className="mr-1 text-ui-label font-semibold text-muted-foreground">빠른 보기</span>
+            {[
+              ["all", "전체"],
+              ["payment", "결제 확인"],
+              ["cancel", "취소 요청"],
+              ["shipping", "배송 누락"],
+              ["service", "교체서비스"],
+              ["product", "일반 주문"],
+            ].map(([value, label]) => (
+              <Button
+                key={value}
+                type="button"
+                size="sm"
+                variant={activeQuickView === value ? "default" : "outline"}
+                onClick={() =>
+                  applyQuickFilter(
+                    value as "all" | "payment" | "cancel" | "shipping" | "service" | "product",
+                  )
+                }
+                className="h-8"
+              >
+                {label}
+              </Button>
+            ))}
+          </>
+        }
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 bg-transparent"
+              aria-expanded={showAdvanced}
+              onClick={() => setShowAdvanced((current) => !current)}
+            >
+              {showAdvanced ? "상세 필터 닫기" : "상세 필터"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 bg-transparent"
+              onClick={resetFilters}
+            >
+              필터 초기화
+            </Button>
+          </>
+        }
+        activeFilters={
+          <>
+            <span className="font-medium text-foreground/80">현재 보기: {quickViewLabel}</span>
+            {searchTerm.trim() ? (
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                검색어: {searchTerm.trim()}
+              </span>
+            ) : null}
+            {appliedFilterLabels.map((label) => (
+              <span
+                key={label}
+                className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1"
+              >
+                {label}
+              </span>
+            ))}
+            {selectedDate ? (
+              <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                선택 날짜: {selectedDate.toLocaleDateString("ko-KR")}
+              </span>
+            ) : null}
+            <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 tabular-nums">
+              전체 결과: {data ? `${data.total.toLocaleString("ko-KR")}건` : "-"}
+            </span>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="relative min-w-0">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              type="search"
+              aria-label="주문 통합 검색"
+              placeholder="주문/신청 ID, 고객명, 이메일 검색..."
+              className="h-9 w-full pl-8 pr-9 text-ui-label"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3"
+                onClick={() => setSearchTerm("")}
+                aria-label="검색어 지우기"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             ) : null}
           </div>
-        </CardContent>
-      </Card>
+
+          {showAdvanced ? (
+            <div className="grid w-full grid-cols-1 gap-2 border-t border-border/60 pt-3 md:grid-cols-2 xl:grid-cols-4">
+              <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
+              <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
+              <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
+              <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
+              <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
+              <Select
+                value={cancelFilter}
+                onValueChange={(value) =>
+                  setCancelFilter(value as "all" | "requested" | "approved" | "rejected")
+                }
+              >
+                <SelectTrigger className="h-9" aria-label="취소 상태 필터">
+                  <SelectValue placeholder="취소 상태" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">취소 상태 전체</SelectItem>
+                  <SelectItem value="requested">취소 요청</SelectItem>
+                  <SelectItem value="approved">취소 승인</SelectItem>
+                  <SelectItem value="rejected">취소 거절</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                type="date"
+                aria-label="주문 날짜 필터"
+                className="h-9"
+                value={
+                  selectedDate
+                    ? new Intl.DateTimeFormat("en-CA", {
+                        timeZone: "Asia/Seoul",
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      }).format(selectedDate)
+                    : ""
+                }
+                onChange={(event) =>
+                  setSelectedDate(
+                    event.target.value
+                      ? new Date(`${event.target.value}T00:00:00+09:00`)
+                      : undefined,
+                  )
+                }
+              />
+              <div className="flex min-w-0 gap-2">
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as "date" | "total")}>
+                  <SelectTrigger className="h-9 min-w-0 flex-1" aria-label="주문 정렬 기준">
+                    <SelectValue placeholder="정렬 기준" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date">주문일</SelectItem>
+                    <SelectItem value="total">결제 금액</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={sortDirection}
+                  onValueChange={(value) => setSortDirection(value as "asc" | "desc")}
+                >
+                  <SelectTrigger className="h-9 min-w-0 flex-1" aria-label="주문 정렬 방향">
+                    <SelectValue placeholder="정렬 방향" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="desc">내림차순</SelectItem>
+                    <SelectItem value="asc">오름차순</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </AdminFilterBar>
 
       {/* 주문 목록 테이블 */}
       <Card className={cn("px-4 py-3", adminSurface.tableCard)}>

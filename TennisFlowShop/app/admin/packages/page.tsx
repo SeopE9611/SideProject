@@ -27,6 +27,7 @@ import {
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
@@ -71,7 +72,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import useSWR from "swr";
 
 const PAYMENT_CHECK_PRESET = "payment-check" as const;
@@ -298,7 +299,6 @@ export default function PackageOrdersClient() {
     sortDirection,
   } = state;
   const debouncedSearch = useDebouncedValue(searchTerm, 300);
-  const [showDetailedFilters, setShowDetailedFilters] = useState(false);
 
   // 한 페이지에 보여줄 항목 수
   const limit = 10;
@@ -632,17 +632,12 @@ export default function PackageOrdersClient() {
     <AdminPageShell variant="wide" className="py-6">
       {/* 제목 및 설명 */}
       <AdminPageHeader
+        variant="compact"
         title="패키지 관리"
         description="고객이 구매한 스트링 패키지 이용권의 결제 상태, 잔여 횟수, 만료일을 관리합니다."
         icon={Package}
         scope="범위: 구매된 패키지 이용권"
         helperText="패키지 상품 구성은 패키지 설정에서 관리합니다."
-        className="flex-row"
-        actions={
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin/packages/settings">패키지 설정</Link>
-          </Button>
-        }
       />
 
       {/* 통계 카드 */}
@@ -728,325 +723,269 @@ export default function PackageOrdersClient() {
         </Card>
       </div>
 
-      {/* 빠른 보기 */}
-      <Card className={cn("mb-4", adminSurface.cardMuted)}>
-        <CardContent className="flex flex-wrap items-center gap-2 p-4">
-          <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={!hasAnyFilter ? "default" : "outline"}
-            onClick={resetFilters}
-          >
-            전체
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={attentionFilter === "needs_attention" ? "default" : "outline"}
-            onClick={() =>
-              applyQuickView({
-                attentionFilter: "needs_attention",
-              })
-            }
-          >
-            운영 확인 필요
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={
-              usageFilter === "available" && paymentFilter === "paid" && attentionFilter === "clear"
-                ? "default"
-                : "outline"
-            }
-            onClick={() =>
-              applyQuickView({
-                usageFilter: "available",
-                paymentFilter: "paid",
-                attentionFilter: "clear",
-              })
-            }
-          >
-            사용 가능
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={paymentFilter === "pending_any" ? "default" : "outline"}
-            onClick={() =>
-              applyQuickView({
-                paymentFilter: "pending_any",
-              })
-            }
-          >
-            결제 확인 대기
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={activationFilter === "pending_issue" ? "default" : "outline"}
-            onClick={() =>
-              applyQuickView({
-                activationFilter: "pending_issue",
-              })
-            }
-          >
-            발급 처리 중
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant={presetFilter === PAYMENT_CHECK_PRESET ? "default" : "outline"}
-            onClick={() => applyQuickView({ presetFilter: PAYMENT_CHECK_PRESET })}
-          >
-            결제·활성화 확인
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* 현재 보기 요약 */}
-      <div
-        className={cn(
-          "mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border px-4 py-3 text-sm",
-          adminSurface.cardMuted,
-        )}
+      <AdminFilterBar
+        className="mb-6"
+        quickFilters={
+          <>
+            <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
+            <Button
+              type="button"
+              size="sm"
+              variant={!hasAnyFilter ? "default" : "outline"}
+              onClick={resetFilters}
+            >
+              전체
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={attentionFilter === "needs_attention" ? "default" : "outline"}
+              onClick={() => applyQuickView({ attentionFilter: "needs_attention" })}
+            >
+              운영 확인 필요
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={
+                usageFilter === "available" && paymentFilter === "paid" && attentionFilter === "clear"
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() =>
+                applyQuickView({
+                  usageFilter: "available",
+                  paymentFilter: "paid",
+                  attentionFilter: "clear",
+                })
+              }
+            >
+              사용 가능
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={paymentFilter === "pending_any" ? "default" : "outline"}
+              onClick={() => applyQuickView({ paymentFilter: "pending_any" })}
+            >
+              결제 확인 대기
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={activationFilter === "pending_issue" ? "default" : "outline"}
+              onClick={() => applyQuickView({ activationFilter: "pending_issue" })}
+            >
+              발급 처리 중
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={presetFilter === PAYMENT_CHECK_PRESET ? "default" : "outline"}
+              onClick={() => applyQuickView({ presetFilter: PAYMENT_CHECK_PRESET })}
+            >
+              결제·활성화 확인
+            </Button>
+          </>
+        }
+        actions={
+          <>
+            <Button type="button" variant="outline" size="sm" className="h-9" onClick={resetFilters}>
+              필터 초기화
+            </Button>
+            <Button asChild variant="outline" size="sm" className="h-9">
+              <Link href="/admin/packages/settings">패키지 설정</Link>
+            </Button>
+          </>
+        }
+        activeFilters={
+          <>
+            <span className="font-medium text-foreground/80">현재 보기: {currentViewLabel}</span>
+            {activeFilterLabels.map((label) => (
+              <span
+                key={label}
+                className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1"
+              >
+                {label}
+              </span>
+            ))}
+            <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 tabular-nums">
+              전체 결과: {totalCount === null ? "-" : `${totalCount.toLocaleString("ko-KR")}건`}
+            </span>
+          </>
+        }
       >
-        <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
-
-        {activeFilterLabels.length > 0 && (
-          <p className="text-muted-foreground">필터: {activeFilterLabels.join(" / ")}</p>
-        )}
-
-        {totalCount !== null && (
-          <p className="text-muted-foreground">총 {totalCount.toLocaleString("ko-KR")}건</p>
-        )}
-
-        {hasAnyFilter && (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            className="ml-auto w-auto"
-            onClick={resetFilters}
-          >
-            필터 초기화
-          </Button>
-        )}
-      </div>
-
-      {/* 필터 및 검색 카드 */}
-      <Card className={cn("mb-6", adminSurface.filterCard)}>
-        <CardHeader className="flex gap-3 flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              패키지 찾기
-            </CardTitle>
-            <CardDescription>
-              빠른 보기로 주요 상태를 좁히거나 패키지 상태, 유형, 결제 상태, 고객 정보를 조합해
-              검색하세요.
-            </CardDescription>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            aria-expanded={showDetailedFilters}
-            aria-controls="admin-package-detailed-filters"
-            onClick={() => setShowDetailedFilters((shown) => !shown)}
-          >
-            {showDetailedFilters ? <X className="mr-2 h-4 w-4" /> : <Filter className="mr-2 h-4 w-4" />}
-            {showDetailedFilters ? "상세 필터 닫기" : "상세 필터 열기"}
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            {/* 검색 input */}
-            <div className="w-full max-w-md">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="패키지 ID, 고객명, 이메일 검색..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => patchState({ searchTerm: e.target.value })}
-                />
-                {searchTerm && (
-                  <Button
-                    type="button"
-                    aria-label="검색어 지우기"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3"
-                    onClick={() => patchState({ searchTerm: "" })}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {showDetailedFilters && (
-              <div id="admin-package-detailed-filters" className="space-y-4">
-            {/* 필터 컴포넌트들 */}
-            <div className="grid w-full gap-2 border-t pt-3 grid-cols-7">
-              <Select
-                value={usageFilter}
-                onValueChange={(v) => {
-                  if (isUsageFilter(v)) patchState({ usageFilter: v });
-                }}
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
+          <div className="relative min-w-0">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="패키지 ID, 고객명, 이메일 검색..."
+              className="h-9 pl-8 pr-9"
+              value={searchTerm}
+              onChange={(e) => patchState({ searchTerm: e.target.value })}
+            />
+            {searchTerm ? (
+              <Button
+                type="button"
+                aria-label="검색어 지우기"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3"
+                onClick={() => patchState({ searchTerm: "" })}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="이용권 상태" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">모든 이용권</SelectItem>
-                  <SelectItem value="available">사용 가능</SelectItem>
-                  <SelectItem value="not_issued">미발급</SelectItem>
-                  <SelectItem value="paused">일시정지</SelectItem>
-                  <SelectItem value="exhausted">횟수 소진</SelectItem>
-                  <SelectItem value="expired">기간 만료</SelectItem>
-                  <SelectItem value="cancelled">이용권 취소</SelectItem>
-                  <SelectItem value="unknown">상태 미확인</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={packageTypeFilter}
-                onValueChange={(v) => {
-                  if (isPackageTypeFilter(v)) patchState({ packageTypeFilter: v });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="패키지 유형" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">모든 유형</SelectItem>
-                  <SelectItem value="10회권">10회권</SelectItem>
-                  <SelectItem value="30회권">30회권</SelectItem>
-                  <SelectItem value="50회권">50회권</SelectItem>
-                  <SelectItem value="100회권">100회권</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={paymentFilter}
-                onValueChange={(v) => {
-                  if (isPaymentFilter(v)) patchState({ paymentFilter: v });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="결제 상태" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">모든 결제</SelectItem>
-                  <SelectItem value="pending_any">결제 확인 대기</SelectItem>
-                  <SelectItem value="bank_pending">입금 확인 대기</SelectItem>
-                  <SelectItem value="pg_pending">PG 승인 확인 대기</SelectItem>
-                  <SelectItem value="pending">일반 결제 확인 대기</SelectItem>
-                  <SelectItem value="paid">결제 완료</SelectItem>
-                  <SelectItem value="failed">결제 실패</SelectItem>
-                  <SelectItem value="cancelled">결제 취소</SelectItem>
-                  <SelectItem value="refunding">환불 처리 중</SelectItem>
-                  <SelectItem value="refunded">환불 완료</SelectItem>
-                  <SelectItem value="unknown">결제 상태 미확인</SelectItem>
-                  <SelectItem value="not_required">결제 불필요</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={activationFilter}
-                onValueChange={(v) => isActivationFilter(v) && patchState({ activationFilter: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="활성화 상태" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">모든 활성화 상태</SelectItem>
-                  <SelectItem value="active">활성화 완료</SelectItem>
-                  <SelectItem value="awaiting_payment">결제 확인 후 활성화</SelectItem>
-                  <SelectItem value="pending_issue">발급 처리 중</SelectItem>
-                  <SelectItem value="paused">활성화 일시정지</SelectItem>
-                  <SelectItem value="ended">이용 종료</SelectItem>
-                  <SelectItem value="cancelled">활성화 취소</SelectItem>
-                  <SelectItem value="failed">발급 처리 실패</SelectItem>
-                  <SelectItem value="unknown">상태 미확인</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={attentionFilter}
-                onValueChange={(v) => isAttentionFilter(v) && patchState({ attentionFilter: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="운영 확인" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="needs_attention">확인 필요</SelectItem>
-                  <SelectItem value="clear">확인 완료</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={serviceTypeFilter}
-                onValueChange={(v) => {
-                  if (isServiceTypeFilter(v)) patchState({ serviceTypeFilter: v });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="서비스 유형" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">모든 서비스</SelectItem>
-                  <SelectItem value="방문">방문</SelectItem>
-                  <SelectItem value="출장">출장</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button variant="outline" onClick={resetFilters} className="w-full bg-transparent">
-                필터 초기화
+                <X className="h-4 w-4" />
               </Button>
-            </div>
-
-            <div className="flex gap-2 border-t pt-3 flex-row items-end">
-              <div className="w-56">
-                <label className={adminTypography.meta} htmlFor="package-sort-by">정렬 기준</label>
-                <Select value={sortBy ?? "default"} onValueChange={(value) => patchState({ sortBy: value === "default" ? null : value as SortKey })}>
-                  <SelectTrigger id="package-sort-by"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {sortOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button type="button" variant="outline" disabled={!sortBy} onClick={() => patchState({ sortDirection: sortDirection === "asc" ? "desc" : "asc" })} aria-label={`정렬 방향: ${sortDirection === "asc" ? "오름차순" : "내림차순"}`}>
-                {sortDirection === "asc" ? "오름차순" : "내림차순"}
-              </Button>
-            </div>
-              </div>
-            )}
-
-            {presetFilter === PAYMENT_CHECK_PRESET && (
-              <div className="flex flex-wrap items-center gap-2 border-t pt-3">
-                <Badge variant="secondary" className="w-fit">
-                  패키지 결제/활성화 대기
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  온라인 패키지 주문 중 결제 확인 또는 활성화 처리가 필요한 건만 표시합니다.
-                </span>
-              </div>
-            )}
+            ) : null}
           </div>
-        </CardContent>
-      </Card>
+
+          <Select
+            value={usageFilter}
+            onValueChange={(v) => {
+              if (isUsageFilter(v)) patchState({ usageFilter: v });
+            }}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="이용권 상태" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">모든 이용권</SelectItem>
+              <SelectItem value="available">사용 가능</SelectItem>
+              <SelectItem value="not_issued">미발급</SelectItem>
+              <SelectItem value="paused">일시정지</SelectItem>
+              <SelectItem value="exhausted">횟수 소진</SelectItem>
+              <SelectItem value="expired">기간 만료</SelectItem>
+              <SelectItem value="cancelled">이용권 취소</SelectItem>
+              <SelectItem value="unknown">상태 미확인</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={packageTypeFilter}
+            onValueChange={(v) => {
+              if (isPackageTypeFilter(v)) patchState({ packageTypeFilter: v });
+            }}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="패키지 유형" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">모든 유형</SelectItem>
+              <SelectItem value="10회권">10회권</SelectItem>
+              <SelectItem value="30회권">30회권</SelectItem>
+              <SelectItem value="50회권">50회권</SelectItem>
+              <SelectItem value="100회권">100회권</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={paymentFilter}
+            onValueChange={(v) => {
+              if (isPaymentFilter(v)) patchState({ paymentFilter: v });
+            }}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="결제 상태" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">모든 결제</SelectItem>
+              <SelectItem value="pending_any">결제 확인 대기</SelectItem>
+              <SelectItem value="bank_pending">입금 확인 대기</SelectItem>
+              <SelectItem value="pg_pending">PG 승인 확인 대기</SelectItem>
+              <SelectItem value="pending">일반 결제 확인 대기</SelectItem>
+              <SelectItem value="paid">결제 완료</SelectItem>
+              <SelectItem value="failed">결제 실패</SelectItem>
+              <SelectItem value="cancelled">결제 취소</SelectItem>
+              <SelectItem value="refunding">환불 처리 중</SelectItem>
+              <SelectItem value="refunded">환불 완료</SelectItem>
+              <SelectItem value="unknown">결제 상태 미확인</SelectItem>
+              <SelectItem value="not_required">결제 불필요</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={activationFilter}
+            onValueChange={(v) => isActivationFilter(v) && patchState({ activationFilter: v })}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="활성화 상태" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">모든 활성화 상태</SelectItem>
+              <SelectItem value="active">활성화 완료</SelectItem>
+              <SelectItem value="awaiting_payment">결제 확인 후 활성화</SelectItem>
+              <SelectItem value="pending_issue">발급 처리 중</SelectItem>
+              <SelectItem value="paused">활성화 일시정지</SelectItem>
+              <SelectItem value="ended">이용 종료</SelectItem>
+              <SelectItem value="cancelled">활성화 취소</SelectItem>
+              <SelectItem value="failed">발급 처리 실패</SelectItem>
+              <SelectItem value="unknown">상태 미확인</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={attentionFilter}
+            onValueChange={(v) => isAttentionFilter(v) && patchState({ attentionFilter: v })}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="운영 확인" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="needs_attention">확인 필요</SelectItem>
+              <SelectItem value="clear">확인 완료</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={serviceTypeFilter}
+            onValueChange={(v) => {
+              if (isServiceTypeFilter(v)) patchState({ serviceTypeFilter: v });
+            }}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="서비스 유형" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">모든 서비스</SelectItem>
+              <SelectItem value="방문">방문</SelectItem>
+              <SelectItem value="출장">출장</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="flex min-w-0 gap-2">
+            <Select
+              value={sortBy ?? "default"}
+              onValueChange={(value) =>
+                patchState({ sortBy: value === "default" ? null : (value as SortKey) })
+              }
+            >
+              <SelectTrigger id="package-sort-by" className="h-9 min-w-0 flex-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 shrink-0"
+              disabled={!sortBy}
+              onClick={() =>
+                patchState({ sortDirection: sortDirection === "asc" ? "desc" : "asc" })
+              }
+              aria-label={`정렬 방향: ${sortDirection === "asc" ? "오름차순" : "내림차순"}`}
+            >
+              {sortDirection === "asc" ? "오름차순" : "내림차순"}
+            </Button>
+          </div>
+        </div>
+      </AdminFilterBar>
 
       {/* 패키지 목록 테이블 */}
       <Card className={adminSurface.tableCard}>
