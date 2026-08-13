@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { getRacketAvailability, getRacketDetail } from "../api/rackets";
 import { formatPrice } from "../lib/product-labels";
+import { getRacketRentalAvailability, RACKET_RENTAL_AVAILABILITY_MESSAGES } from "../lib/racket-rental-availability";
 import { gripSizeLabel, racketBrandLabel, racketConditionLabel, stringPatternLabel, validRacketSalePrice } from "../lib/racket-labels";
 import type { RacketAvailability, RacketDetail as RacketDetailType } from "../types/racket";
 
@@ -31,11 +32,9 @@ export default function RacketDetail({ racketId, onBack, onPurchase, onRental }:
   const saleEnded = racket.status === "sold" || availability.quantity <= 0;
   const hasValidSalePrice = displayPrice !== null && Number.isFinite(displayPrice) && displayPrice > 0;
   const canPurchase = availability.available > 0 && hasValidSalePrice && !saleEnded;
-  const rentalFees = [racket.rental?.fee?.d7, racket.rental?.fee?.d15, racket.rental?.fee?.d30];
-  const validRentalPrice = rentalFees.some((fee) => Number.isInteger(fee) && Number(fee) >= 0);
-  const validDeposit = Number.isInteger(racket.rental?.deposit) && Number(racket.rental?.deposit) >= 0;
-  const canRent = racket.rental?.enabled === true && availability.available > 0 && validRentalPrice && validDeposit && racket.status !== "sold";
-  const rentalAvailabilityLabel = racket.rental?.enabled !== true ? "대여 운영 중지" : availability.available <= 0 ? "전량 대여 중" : !validRentalPrice || !validDeposit ? "대여 요금 확인 필요" : "대여 가능";
+  const rentalReason = getRacketRentalAvailability(racket, availability);
+  const canRent = rentalReason === "available";
+  const rentalAvailabilityLabel = canRent ? "대여 가능" : RACKET_RENTAL_AVAILABILITY_MESSAGES[rentalReason];
   const reviewCount = Math.max(0, racket.reviewSummary?.count ?? racket.reviewCount ?? racket.ratingCount ?? 0);
   const rating = Math.max(0, racket.reviewSummary?.average ?? racket.ratingAvg ?? racket.ratingAverage ?? 0);
   const availabilityLabel = saleEnded ? "판매 종료" : availability.available <= 0 && availability.count > 0 ? "전량 대여 중" : availability.available > 0 ? `구매 가능한 재고 ${availability.available}개` : "현재 구매 불가";

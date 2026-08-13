@@ -19,7 +19,7 @@ export default function ActivityScreen({ onHome }: { onHome: () => void }) {
   useEffect(() => { const controller = new AbortController(); void load(controller.signal); return () => controller.abort(); }, [load]);
   const login = async () => { try { await auth.login(); } catch { setState("error"); } };
   return <main className="min-h-dvh bg-white pb-[calc(32px+env(safe-area-inset-bottom))] text-[#191f28]">
-    <section className="pt-[calc(16px+env(safe-area-inset-top))]"><Top title={<Top.TitleParagraph size={22}>내 이용내역</Top.TitleParagraph>} subtitleBottom={<Top.SubtitleParagraph size={17}>MiniApp에서 접수한 주문과 교체서비스</Top.SubtitleParagraph>} /></section>
+    <section className="pt-[calc(16px+env(safe-area-inset-top))]"><Top title={<Top.TitleParagraph size={22}>내 이용내역</Top.TitleParagraph>} subtitleBottom={<Top.SubtitleParagraph size={17}>MiniApp에서 접수한 주문·대여·교체서비스</Top.SubtitleParagraph>} /></section>
     <section className="px-6">
       <button type="button" className="mb-5 border-0 bg-transparent p-0 text-sm font-bold text-[#688d00]" onClick={onHome}>홈으로</button>
       {auth.status !== "authenticated" && <div className="rounded-[20px] bg-[#f2f4f6] p-5 text-center"><p className="m-0 text-sm text-[#6b7684]">이용내역을 확인하려면 토스 로그인이 필요해요.</p><button className="mt-4 min-h-[48px] w-full rounded-2xl border-0 bg-[#191f28] font-bold text-white" onClick={() => void login()}>토스로 로그인하기</button></div>}
