@@ -209,7 +209,7 @@ function StringingApplicationStepThree({
           </h1>
 
           <p className="mt-2 mb-0 break-keep text-sm leading-[1.6] text-[#6b7684]">
-            {isRacketPurchase ? "메인·크로스 장력과 작업 요청을 입력해주세요." : "장착할 라켓명과 메인·크로스 텐션을 입력해주세요."}
+            {isRacketRental ? "대여 라켓에 적용할 메인·크로스 장력과 작업 요청을 입력해주세요." : isRacketPurchase ? "메인·크로스 장력과 작업 요청을 입력해주세요." : "장착할 라켓명과 메인·크로스 텐션을 입력해주세요."}
           </p>
         </div>
 
