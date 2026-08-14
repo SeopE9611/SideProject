@@ -15,6 +15,7 @@ import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { formatKoreanDateTime } from "@/lib/korean-date";
 import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import { cn } from "@/lib/utils";
@@ -30,17 +31,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowDown, ArrowUp, ArrowUpDown, CreditCard, MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, CreditCard } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type Item = {
@@ -626,9 +621,19 @@ export default function PrivatePaymentsClient() {
                                   label: "오프라인",
                                   value:
                                     item.offlineLink?.status === "linked"
-                                      ? `연결됨 · ${item.offlineLink.offlineCustomerId}`
+                                      ? "연결됨"
                                       : "연결 없음",
                                 },
+                                ...(item.offlineLink?.status === "linked" &&
+                                item.offlineLink.offlineCustomerId
+                                  ? [
+                                      {
+                                        label: "오프라인 고객 ID",
+                                        value: item.offlineLink.offlineCustomerId,
+                                        copyValue: item.offlineLink.offlineCustomerId,
+                                      },
+                                    ]
+                                  : []),
                               ]}
                             />
                           </div>
@@ -664,11 +669,13 @@ export default function PrivatePaymentsClient() {
                             <Badge
                               variant={
                                 paymentStatusLabel === "결제완료"
-                                  ? "default"
+                                  ? "success"
+                                  : paymentStatusLabel === "결제대기"
+                                    ? "warning"
                                   : paymentStatusLabel === "결제취소" ||
                                       paymentStatusLabel === "환불완료"
-                                    ? "destructive"
-                                    : "outline"
+                                    ? "danger"
+                                    : "neutral"
                               }
                             >
                               {paymentStatusLabel}
@@ -701,33 +708,53 @@ export default function PrivatePaymentsClient() {
                             <Button type="button" size="sm" variant="outline" onClick={() => edit(item)}>
                               상세
                             </Button>
-                            <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                className="h-8 w-8 p-0"
-                                size="icon"
-                                variant="outline"
-                                aria-label={`${item.title || "개인결제"} 작업 메뉴`}
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <AdminRowActionMenu
+                              ariaLabel={`${item.title || "개인결제"} 작업 메뉴`}
+                              destructiveActions={
+                                item.paymentStatus === "결제완료" ||
+                                item.paymentStatus === "결제대기" ? (
+                                  <>
+                                  {item.paymentStatus === "결제완료" && (
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      disabled={
+                                        cancelingId === item.id ||
+                                        item.cancellationInfo?.status === "processing"
+                                      }
+                                      onSelect={(event) => {
+                                        event.preventDefault();
+                                        openCancelDialog(item);
+                                      }}
+                                    >
+                                      {item.cancellationInfo?.status === "processing"
+                                        ? "취소 처리 확인 중"
+                                        : cancelingId === item.id
+                                          ? "취소 처리 중..."
+                                          : "결제취소"}
+                                    </DropdownMenuItem>
+                                  )}
+                                  {item.paymentStatus === "결제대기" && (
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      onSelect={(event) => {
+                                        event.preventDefault();
+                                        openDeleteDialog(item);
+                                      }}
+                                    >
+                                      결제대기 삭제
+                                    </DropdownMenuItem>
+                                  )}
+                                  </>
+                                ) : undefined
+                              }
+                            >
                               <DropdownMenuItem
                                 onSelect={(event) => {
                                   event.preventDefault();
                                   copy(item.id).catch((e) => setMessage(e.message));
                                 }}
                               >
-                                링크 복사
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onSelect={(event) => {
-                                  event.preventDefault();
-                                  edit(item);
-                                }}
-                              >
-                                상세/수정
+                                결제 링크 복사
                               </DropdownMenuItem>
                               {item.paymentStatus === "결제완료" &&
                                 item.offlineLink?.status !== "linked" && (
@@ -767,40 +794,7 @@ export default function PrivatePaymentsClient() {
                                     보관
                                   </DropdownMenuItem>
                                 ))}
-                              {(item.paymentStatus === "결제완료" ||
-                                item.paymentStatus === "결제대기") && <DropdownMenuSeparator />}
-                              {item.paymentStatus === "결제완료" && (
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  disabled={
-                                    cancelingId === item.id ||
-                                    item.cancellationInfo?.status === "processing"
-                                  }
-                                  onSelect={(event) => {
-                                    event.preventDefault();
-                                    openCancelDialog(item);
-                                  }}
-                                >
-                                  {item.cancellationInfo?.status === "processing"
-                                    ? "취소 처리 확인 중"
-                                    : cancelingId === item.id
-                                      ? "취소 처리 중..."
-                                      : "결제취소"}
-                                </DropdownMenuItem>
-                              )}
-                              {item.paymentStatus === "결제대기" && (
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  onSelect={(event) => {
-                                    event.preventDefault();
-                                    openDeleteDialog(item);
-                                  }}
-                                >
-                                  결제대기 삭제
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                            </DropdownMenu>
+                            </AdminRowActionMenu>
                           </div>
                         </td>
                       </tr>
@@ -825,7 +819,7 @@ export default function PrivatePaymentsClient() {
       >
         <DialogContent className="max-h-[90vh] overflow-y-auto border-border/70 shadow-2xl sm:max-w-3xl [&>button:first-of-type]:rounded-full [&>button:first-of-type]:p-1.5 [&>button:first-of-type]:text-muted-foreground [&>button:first-of-type]:hover:bg-muted [&>button:first-of-type]:hover:text-foreground">
           <DialogHeader className="gap-1.5 pr-8">
-            <DialogTitle>{editing ? "개인결제 상세/수정" : "개인결제 생성"}</DialogTitle>
+            <DialogTitle>{editing ? "개인결제 상세 및 수정" : "개인결제 생성"}</DialogTitle>
             <DialogDescription>
               고객 정보는 선택 입력이며, 실제 결제 화면에서 고객이 다시 입력할 수 있습니다.
             </DialogDescription>

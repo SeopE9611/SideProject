@@ -75,7 +75,7 @@ export default function AdminSummaryCard({
             compact ? "mt-1" : "mt-3",
             "block",
             adminTypography.actionLabel,
-            accentClass[tone],
+            href || onAction ? accentClass[tone] : "text-foreground/75",
           )}
         >
           {actionLabel}
@@ -83,8 +83,11 @@ export default function AdminSummaryCard({
       ) : null}
     </>
   );
+  const interactive = Boolean(href || onAction);
   const styles = cn(
-    "block w-full rounded-xl border text-left shadow-sm transition-[border-color,box-shadow] hover:shadow-md",
+    "block w-full rounded-lg border text-left",
+    interactive &&
+      "cursor-pointer transition-colors hover:border-foreground/20 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     compact ? "p-3" : "p-4",
     toneClass[tone],
     active && "ring-2 ring-ring/60",

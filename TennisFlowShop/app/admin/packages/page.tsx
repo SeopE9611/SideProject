@@ -1116,11 +1116,14 @@ export default function PackageOrdersClient() {
                                 {pkg.packageType}
                                 {pkg.serviceType ? ` · ${pkg.serviceType}` : ""}
                               </p>
+                              <span className={cn(adminDataTable.secondaryLine, "font-mono")}>
+                                {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
+                              </span>
                               <AdminReferencePopover
                                 title={`${displayName} 패키지 참조`}
                                 trigger={
                                   <button type="button" className={adminDataTable.referenceTrigger}>
-                                    {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
+                                    참조 정보
                                   </button>
                                 }
                                 items={[

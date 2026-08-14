@@ -56,7 +56,7 @@ export default function AdminTaskCard({
       size="sm"
       variant="outline"
       wrap="responsive"
-      className={cn("min-h-8 w-full bg-background/70 py-1", adminTypography.actionLabel)}
+      className={cn("min-h-8 w-fit bg-background/70 py-1", adminTypography.actionLabel)}
       onClick={href ? undefined : onAction}
     >
       {href ? <Link href={href}>{actionLabel}</Link> : actionLabel}
@@ -64,7 +64,7 @@ export default function AdminTaskCard({
   ) : null;
 
   return (
-    <Card className={cn("shadow-sm", toneClass[tone], className)}>
+    <Card className={cn("rounded-lg shadow-none", toneClass[tone], className)}>
       <CardHeader className="p-3 pb-2.5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -86,12 +86,12 @@ export default function AdminTaskCard({
             {typeof count === "number" ? `${count.toLocaleString("ko-KR")}건` : count}
           </span>
         </div>
-        <p className={cn("min-h-[40px] break-words text-foreground/80", adminTypography.body)}>
+        <p className={cn("break-words text-foreground/80", adminTypography.body)}>
           {description}
         </p>
         {meta ? <div className={cn("text-foreground/75", adminTypography.meta)}>{meta}</div> : null}
       </CardHeader>
-      {action ? <CardContent className="p-3 pt-0">{action}</CardContent> : null}
+      {action ? <CardContent className="flex justify-start p-3 pt-0">{action}</CardContent> : null}
     </Card>
   );
 }
