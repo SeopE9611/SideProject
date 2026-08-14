@@ -7,6 +7,7 @@ import useSWRInfinite from "swr/infinite";
 
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,7 +22,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,6 @@ import {
   EyeOff,
   Loader2,
   MessageSquare,
-  MoreHorizontal,
   Search,
   Star,
   ThumbsUp,
@@ -799,7 +798,7 @@ export default function AdminReviewListClient() {
                     )}
                     {r.isDeleted && (
                       <div className="mt-0.5">
-                        <Badge variant="secondary" className="h-5 shrink-0 whitespace-nowrap">
+                        <Badge variant="danger" className="h-5 shrink-0 whitespace-nowrap">
                           삭제됨
                         </Badge>
                       </div>
@@ -855,9 +854,11 @@ export default function AdminReviewListClient() {
                     className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className={adminDataTable.secondaryText}>
+                    <Badge
+                      variant={r.moderationStatus === "visible" ? "success" : "neutral"}
+                    >
                       {r.moderationStatus === "visible" ? "관리자 공개" : "관리자 숨김"}
-                    </span>
+                    </Badge>
                     <div className="h-6 flex items-center">
                       <Switch
                         checked={r.moderationStatus === "visible"}
@@ -869,6 +870,7 @@ export default function AdminReviewListClient() {
                   {/* 액션 */}
                   <div className="flex justify-self-end gap-1 pl-1">
                     <Button
+                      type="button"
                       variant="outline"
                       size="sm"
                       className="h-8"
@@ -876,23 +878,13 @@ export default function AdminReviewListClient() {
                     >
                       상세 보기
                     </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-background dark:hover:bg-card"
-                          aria-label={`${r.userName || r._id} 후기 관리 메뉴`}
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-44 min-w-max"
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                    <div
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <AdminRowActionMenu
+                        ariaLabel={`${r.userName || r._id} 후기 관리 메뉴`}
+                        destructiveActions={
                         <DropdownMenuItem
                           onPointerDown={(e) => e.stopPropagation()}
                           className="cursor-pointer whitespace-nowrap text-destructive focus:text-destructive"
@@ -901,8 +893,9 @@ export default function AdminReviewListClient() {
                           <Trash2 className="mr-2 h-4 w-4" />
                           <span>삭제</span>
                         </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               );
@@ -925,6 +918,7 @@ export default function AdminReviewListClient() {
             </span>
             <div className="flex items-center gap-2">
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setSelected([])}
@@ -934,6 +928,7 @@ export default function AdminReviewListClient() {
               </Button>
 
               <Button
+                type="button"
                 data-cy="bulk-visible"
                 variant="secondary"
                 size="sm"
@@ -948,6 +943,7 @@ export default function AdminReviewListClient() {
                 선택 공개
               </Button>
               <Button
+                type="button"
                 data-cy="bulk-hidden"
                 variant="outline"
                 size="sm"
@@ -962,6 +958,7 @@ export default function AdminReviewListClient() {
                 선택 비공개
               </Button>
               <Button
+                type="button"
                 variant="destructive"
                 size="sm"
                 onClick={() => setConfirmBulkDeleteOpen(true)}

@@ -9,17 +9,13 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from "@/lib/admin/adminFetcher";
@@ -46,7 +42,6 @@ import {
   DollarSign,
   FileDown,
   Loader2,
-  MoreHorizontal,
   Package,
   RefreshCw,
   Trash2,
@@ -1108,26 +1103,23 @@ export default function SettlementsClient() {
                               )}
                               검증
                             </Button>
-                            <DropdownMenu modal={false}>
-                              <DropdownMenuTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted dark:hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                  aria-label="작업 메뉴 열기"
+                            <AdminRowActionMenu
+                              ariaLabel={`${row.yyyymm} 정산 스냅샷 작업 메뉴`}
+                              destructiveActions={
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={async () => {
+                                    setPendingDeleteAction({
+                                      type: "single",
+                                      yyyymm: String(row.yyyymm),
+                                    });
+                                  }}
                                 >
-                                  <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                                </button>
-                              </DropdownMenuTrigger>
-
-                              <DropdownMenuContent
-                                align="end"
-                                sideOffset={8}
-                                collisionPadding={8}
-                                className="z-50 w-44"
-                                onCloseAutoFocus={(e) => e.preventDefault()}
-                              >
-                                  {" "}
-                                  <DropdownMenuLabel>작업</DropdownMenuLabel>
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  삭제
+                                </DropdownMenuItem>
+                              }
+                            >
                                   <DropdownMenuItem
                                     disabled={doing.rebuild === row.yyyymm}
                                     onSelect={() => void rebuildSnapshotRow(row)}
@@ -1139,21 +1131,7 @@ export default function SettlementsClient() {
                                     )}
                                     갱신
                                   </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
-                                    onSelect={async () => {
-                                      setPendingDeleteAction({
-                                        type: "single",
-                                        yyyymm: String(row.yyyymm),
-                                      });
-                                    }}
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    삭제
-                                  </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            </AdminRowActionMenu>
                           </div>
                         </div>
                       </div>
