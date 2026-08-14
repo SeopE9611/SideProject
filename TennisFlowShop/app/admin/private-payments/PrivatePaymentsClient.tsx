@@ -618,7 +618,7 @@ export default function PrivatePaymentsClient() {
                                 </button>
                               }
                               items={[
-                                { label: "결제 ID", value: item.id },
+                                { label: "결제 ID", value: item.id, copyValue: item.id },
                                 { label: "설명", value: item.description || null },
                                 { label: "활성 상태", value: statusLabel(item.status) },
                                 { label: "보관", value: item.archivedAt ? "보관됨" : "보관 안 됨" },
@@ -644,8 +644,16 @@ export default function PrivatePaymentsClient() {
                                 </button>
                               }
                               items={[
-                                { label: "전화", value: item.customerPhone || null },
-                                { label: "이메일", value: item.customerEmail || null },
+                                {
+                                  label: "전화",
+                                  value: item.customerPhone || null,
+                                  copyValue: item.customerPhone || undefined,
+                                },
+                                {
+                                  label: "이메일",
+                                  value: item.customerEmail || null,
+                                  copyValue: item.customerEmail || undefined,
+                                },
                               ]}
                             />
                           </div>

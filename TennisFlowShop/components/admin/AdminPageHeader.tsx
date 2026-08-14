@@ -15,17 +15,17 @@ type AdminPageHeaderProps = {
 };
 
 const headerStyles = {
-  default: "mb-4 border-border/70 bg-card/80 p-4 shadow-sm",
-  compact: "mb-3 border-border/60 bg-card/60 px-4 py-3",
-  detail: "mb-4 border-border bg-card px-5 py-4",
-  form: "mb-4 border-border/70 bg-card/70 px-5 py-3.5",
+  default: "mb-4 px-1 py-1",
+  compact: "mb-3 px-1 py-0.5",
+  detail: "mb-4 rounded-xl border border-border bg-card px-5 py-4",
+  form: "mb-4 rounded-xl border border-border/70 bg-card/70 px-5 py-3.5",
 } as const;
 
 const iconStyles = {
-  default: "h-9 w-9 rounded-lg",
-  compact: "h-8 w-8 rounded-md",
-  detail: "h-10 w-10 rounded-lg",
-  form: "h-9 w-9 rounded-lg",
+  default: "h-9 w-9 text-primary",
+  compact: "h-8 w-8 text-primary",
+  detail: "h-10 w-10 rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20",
+  form: "h-9 w-9 rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20",
 } as const;
 
 export default function AdminPageHeader({
@@ -41,16 +41,16 @@ export default function AdminPageHeader({
   return (
     <div
       className={cn(
-        "flex flex-row items-start justify-between gap-3 rounded-xl border",
+        "flex flex-wrap items-start justify-between gap-3",
         headerStyles[variant],
         className,
       )}
     >
-      <div className="flex min-w-0 items-start gap-3">
+      <div className="flex min-w-[min(100%,32rem)] flex-1 items-start gap-3">
         {Icon ? (
           <div
             className={cn(
-              "flex shrink-0 items-center justify-center border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20",
+              "flex shrink-0 items-center justify-center",
               iconStyles[variant],
             )}
           >
@@ -66,18 +66,15 @@ export default function AdminPageHeader({
             <div
               className={cn("mt-1.5 flex flex-wrap items-center gap-1.5", adminTypography.caption)}
             >
-              {scope ? (
-                <span className="rounded-md border border-border/70 bg-muted/40 px-2 py-1">
-                  {scope}
-                </span>
-              ) : null}
+              {scope ? <span className="break-words">{scope}</span> : null}
+              {scope && helperText ? <span aria-hidden="true">·</span> : null}
               {helperText ? <span>{helperText}</span> : null}
             </div>
           )}
         </div>
       </div>
 
-      {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
   );
 }
