@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import useSWR from "swr";
-import { ArrowLeft, BookOpen, Eye, MoreHorizontal, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Eye, Search, Trash2 } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
@@ -26,10 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Select,
@@ -257,14 +255,15 @@ export default function AcademyApplicationsClient() {
         }
       />
 
-      <div className="grid gap-3 grid-cols-6">
-        <SummaryCard label="전체" value={counts.all} active={status === "all"} />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <SummaryCard label="전체" value={counts.all} active={status === "all"} onSelect={() => { setStatus("all"); setPage(1); }} />
         {ACADEMY_APPLICATION_STATUSES.map((item) => (
           <SummaryCard
             key={item}
             label={getAcademyApplicationStatusLabel(item)}
             value={counts[item]}
             active={status === item}
+            onSelect={() => { setStatus(item); setPage(1); }}
           />
         ))}
       </div>
@@ -445,18 +444,10 @@ export default function AcademyApplicationsClient() {
                             <Eye className="mr-1 h-4 w-4" />
                             상세 보기
                           </Button>
-                          {item.status === "cancelled" ? <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              aria-label={`${item.applicantName || "신청"} 관리 메뉴`}
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="min-w-max">
+                          {item.status === "cancelled" ? (
+                            <AdminRowActionMenu
+                              ariaLabel={`${item.applicantName || "신청"} 관리 메뉴`}
+                              destructiveActions={
                               <DropdownMenuItem
                                 className="whitespace-nowrap text-destructive focus:text-destructive"
                                 disabled={deletingId === item._id}
@@ -468,8 +459,9 @@ export default function AcademyApplicationsClient() {
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 {deletingId === item._id ? "삭제 중..." : "삭제"}
                               </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu> : null}
+                              }
+                            />
+                          ) : null}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -540,11 +532,16 @@ export default function AcademyApplicationsClient() {
   );
 }
 
-function SummaryCard({ label, value, active }: { label: string; value: number; active: boolean }) {
+function SummaryCard({ label, value, active, onSelect }: { label: string; value: number; active: boolean; onSelect: () => void }) {
   return (
-    <div className={cn(adminSurface.kpiCard, active ? "border-primary/40 bg-primary/5" : "")}>
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onSelect}
+      className={cn(adminSurface.kpiCard, "min-w-0 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-muted/20", active ? "border-primary/40 bg-primary/5" : "")}
+    >
       <div className={adminTypography.metaMuted}>{label}</div>
       <div className={cn("mt-2", adminTypography.kpiValueCompact)}>{value}</div>
-    </div>
+    </button>
   );
 }

@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import useSWR from "swr";
-import { BookOpen, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { BookOpen, EyeOff, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import {
   AlertDialog,
@@ -26,10 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Select,
@@ -154,9 +152,25 @@ function ApplicationStatsCell({ item }: { item: AcademyClass }) {
   );
 }
 
-function SummaryCard({ label, value, active }: { label: string; value: number; active?: boolean }) {
+function SummaryCard({
+  label,
+  value,
+  active,
+  onSelect,
+}: {
+  label: string;
+  value: number;
+  active?: boolean;
+  onSelect: () => void;
+}) {
   return (
-    <Card className={cn(adminSurface.kpiCard, active ? "border-primary/50 bg-primary/5" : "")}>
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onSelect}
+      className="min-w-0 cursor-pointer rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+    <Card className={cn(adminSurface.kpiCard, "h-full hover:bg-muted/20", active ? "border-primary/50 bg-primary/5" : "")}>
       <CardContent className="p-4">
         <div className={adminTypography.caption}>{label}</div>
         <div className={cn("mt-2 whitespace-nowrap", adminTypography.kpiValueCompact)}>
@@ -164,6 +178,7 @@ function SummaryCard({ label, value, active }: { label: string; value: number; a
         </div>
       </CardContent>
     </Card>
+    </button>
   );
 }
 
@@ -287,14 +302,15 @@ export default function AcademyClassesClient() {
         scope="도깨비테니스 아카데미"
       />
 
-      <div className="grid gap-3 grid-cols-5">
-        <SummaryCard label="전체" value={counts.all} active={status === "all"} />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        <SummaryCard label="전체" value={counts.all} active={status === "all"} onSelect={() => { setStatus("all"); setPage(1); }} />
         {ACADEMY_CLASS_STATUSES.map((item) => (
           <SummaryCard
             key={item}
             label={getAcademyClassStatusLabel(item)}
             value={counts[item]}
             active={status === item}
+            onSelect={() => { setStatus(item); setPage(1); }}
           />
         ))}
       </div>
@@ -510,18 +526,34 @@ export default function AcademyClassesClient() {
                           <Button type="button" variant="outline" size="sm" onClick={() => goToDetail(classId)}>
                             상세 보기
                           </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label={`${item.name || "클래스"} 관리 메뉴`}
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="min-w-max">
+                          <AdminRowActionMenu
+                            ariaLabel={`${item.name || "클래스"} 관리 메뉴`}
+                            destructiveActions={
+                            <DropdownMenuItem
+                              disabled={isDeleteDisabled}
+                              className="whitespace-nowrap text-destructive focus:text-destructive"
+                              onSelect={(event) => {
+                                event.preventDefault();
+                                if (isDeleteDisabled) {
+                                  if (blockingApplicationTotal > 0) {
+                                    showErrorToast(
+                                      "이 클래스에는 취소되지 않은 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 내리려면 숨김 처리를 사용하세요.",
+                                    );
+                                  }
+                                  return;
+                                }
+                                setPendingAction({ type: "delete", item });
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {blockingApplicationTotal > 0
+                                ? "삭제 불가: 진행 중 신청 내역 있음"
+                                : deletingId === classId
+                                  ? "삭제 중"
+                                  : "삭제"}
+                            </DropdownMenuItem>
+                            }
+                          >
                             <DropdownMenuItem
                               className="whitespace-nowrap"
                               onSelect={(event) => {
@@ -548,31 +580,7 @@ export default function AcademyClassesClient() {
                                   ? "처리 중"
                                   : "숨김 처리"}
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              disabled={isDeleteDisabled}
-                              className="whitespace-nowrap text-destructive focus:text-destructive"
-                              onSelect={(event) => {
-                                event.preventDefault();
-                                if (isDeleteDisabled) {
-                                  if (blockingApplicationTotal > 0) {
-                                    showErrorToast(
-                                      "이 클래스에는 취소되지 않은 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 내리려면 숨김 처리를 사용하세요.",
-                                    );
-                                  }
-                                  return;
-                                }
-                                setPendingAction({ type: "delete", item });
-                              }}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              {blockingApplicationTotal > 0
-                                ? "삭제 불가: 진행 중 신청 내역 있음"
-                                : deletingId === classId
-                                  ? "삭제 중"
-                                  : "삭제"}
-                            </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          </AdminRowActionMenu>
                         </div>
                       </TableCell>
                     </TableRow>
