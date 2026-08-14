@@ -1014,6 +1014,11 @@ export default function AdminRentalsClient() {
                             </>
                           }
                           alert={exceptionLabel}
+                          alertTone={
+                            r.cancelRequest?.status === "requested"
+                              ? "danger"
+                              : "attention"
+                          }
                         />
                       </TableCell>
                       <TableCell
