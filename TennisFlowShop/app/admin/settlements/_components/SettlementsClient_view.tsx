@@ -1105,6 +1105,13 @@ export default function SettlementsClient() {
                             </Button>
                             <AdminRowActionMenu
                               ariaLabel={`${row.yyyymm} 정산 스냅샷 작업 메뉴`}
+                              dropdownProps={{ modal: false }}
+                              contentProps={{
+                                sideOffset: 8,
+                                collisionPadding: 8,
+                                className: "z-50 w-44",
+                                onCloseAutoFocus: (event) => event.preventDefault(),
+                              }}
                               destructiveActions={
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
