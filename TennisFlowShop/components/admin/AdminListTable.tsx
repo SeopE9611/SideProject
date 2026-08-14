@@ -49,7 +49,7 @@ export function AdminListTable({
   );
 }
 
-export function AdminListRow({ className }: { className?: string }) {
+export function AdminListRow({ className }: { className?: string } = {}) {
   return cn(adminDataTable.row, "group align-top hover:bg-muted/30", className);
 }
 
@@ -57,18 +57,30 @@ export function AdminStatusGroup({
   primary,
   secondary,
   alert,
+  alertTone = "attention",
   className,
 }: {
   primary: ReactNode;
   secondary?: ReactNode;
   alert?: ReactNode;
+  alertTone?: "attention" | "danger";
   className?: string;
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col items-start gap-1.5", className)}>
       {primary}
       {secondary ? <div className={adminDataTable.secondaryLine}>{secondary}</div> : null}
-      {alert ? <div className={adminDataTable.attentionText}>{alert}</div> : null}
+      {alert ? (
+        <div
+          className={
+            alertTone === "danger"
+              ? adminDataTable.dangerText
+              : adminDataTable.attentionText
+          }
+        >
+          {alert}
+        </div>
+      ) : null}
     </div>
   );
 }
