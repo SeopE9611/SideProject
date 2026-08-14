@@ -547,10 +547,10 @@ export default function AcademyClassesClient() {
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               {blockingApplicationTotal > 0
-                                ? "삭제 불가: 진행 중 신청 내역 있음"
+                                ? "영구 삭제 불가: 진행 중 신청 내역 있음"
                                 : deletingId === classId
-                                  ? "삭제 중"
-                                  : "삭제"}
+                                  ? "영구 삭제 중"
+                                  : "영구 삭제"}
                             </DropdownMenuItem>
                             }
                           >

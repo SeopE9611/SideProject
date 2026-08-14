@@ -16,11 +16,9 @@ import {
   ThumbsUp,
   BarChart3,
   FileText,
-  AlertTriangle,
   Trash2,
 } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -36,16 +34,16 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
-import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import { adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 import { buildAdminBoardDetailUrl, buildBoardPublicUrl } from "@/lib/board-public-url-policy";
 import { adminMutator } from "@/lib/admin/adminFetcher";
-import {
-  adminPostVisibilityBadgeVariant,
-  adminReportStatusBadgeVariant,
-} from "@/lib/badge-style";
+import { adminPostVisibilityBadgeVariant, adminReportStatusBadgeVariant } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 
@@ -363,7 +361,7 @@ export default function BoardsClient() {
 
   return (
     <TooltipProvider>
-      <div className="space-y-6 p-6">
+      <AdminPageShell variant="wide" className="space-y-4">
         <AdminPageHeader
           variant="compact"
           title="게시판 관리"
@@ -372,796 +370,502 @@ export default function BoardsClient() {
           scope="범위: 게시글 + 신고"
           helperText="고정 공지와 게시글 상세 수정은 각 게시글 화면에서 처리합니다."
         />
-        <div className="grid gap-5 grid-cols-4">
-          <Card className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
-                  <FileText className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className={adminTypography.caption}>전체 게시글</p>
-                  <p className={adminTypography.kpiValueCompact}>
-                    {postsTotal === null ? "-" : postsTotal.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
-                  <Eye className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className={adminTypography.caption}>공개 게시글</p>
-                  <p className={adminTypography.kpiValueCompact}>
-                    {postsPublicCount === null ? "-" : postsPublicCount.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15">
-                  <AlertTriangle className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className={adminTypography.caption}>대기 중 신고</p>
-                  <p className={adminTypography.kpiValueCompact}>
-                    {reportsPendingCount === null ? "-" : reportsPendingCount.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={adminSurface.kpiCard}>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <EyeOff className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className={adminTypography.caption}>숨김 게시글</p>
-                  <p className={adminTypography.kpiValueCompact}>
-                    {postsHiddenCount === null ? "-" : postsHiddenCount.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Tabs value={tab} onValueChange={(v) => switchTab(v as "posts" | "reports")}>
+            <TabsList className="bg-muted/50">
+              <TabsTrigger value="posts" className="gap-2">
+                <FileText className="h-4 w-4" /> 게시글
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="gap-2">
+                <ShieldAlert className="h-4 w-4" /> 신고
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <p className={adminTypography.metaMuted}>
+            {tab === "posts" ? (
+              <>
+                전체 {postsTotal === null ? "-" : postsTotal.toLocaleString()}건 · 현재 페이지 공개{" "}
+                {postsPublicCount === null ? "-" : postsPublicCount.toLocaleString()}건 · 숨김{" "}
+                {postsHiddenCount === null ? "-" : postsHiddenCount.toLocaleString()}건
+              </>
+            ) : (
+              <>
+                전체 {reportsTotal === null ? "-" : reportsTotal.toLocaleString()}건 · 현재 페이지
+                처리 대기{" "}
+                {reportsPendingCount === null ? "-" : reportsPendingCount.toLocaleString()}건
+              </>
+            )}
+          </p>
         </div>
 
-        <Card className={cn(adminSurface.card, "overflow-hidden")}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
-            <div>
-              <CardTitle className={adminTypography.sectionTitle}>게시글·신고 목록</CardTitle>
-              <p className={cn("mt-1", adminTypography.metaMuted)}>커뮤니티 게시글 및 신고 관리</p>
-            </div>
-
-            <Tabs value={tab} onValueChange={(v) => switchTab(v as any)}>
-              <TabsList className="bg-muted/50">
-                <TabsTrigger value="posts" className="gap-2">
-                  <FileText className="h-4 w-4" />
-                  게시글
-                </TabsTrigger>
-                <TabsTrigger value="reports" className="gap-2">
-                  <ShieldAlert className="h-4 w-4" />
-                  신고
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </CardHeader>
-
-          <div className="px-6 pb-2">
-            <AdminFilterBar
-              actions={
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() =>
-                    tab === "posts"
-                      ? (setPostPage(1), mutatePosts())
-                      : (setReportPage(1), mutateReports())
-                  }
-                  aria-label={tab === "posts" ? "게시글 목록 새로고침" : "신고 목록 새로고침"}
-                >
-                  <RefreshCcw className="h-4 w-4" />
-                </Button>
+        <AdminFilterBar
+          actions={
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() =>
+                tab === "posts"
+                  ? (setPostPage(1), mutatePosts())
+                  : (setReportPage(1), mutateReports())
               }
-              activeFilters={
-                tab === "posts" ? (
-                  <>
-                    {postType !== "all" ? (
-                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
-                        게시판 유형: {resolveBoardLabel(postType)}
-                      </span>
-                    ) : null}
-                    {postStatus !== "all" ? (
-                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
-                        공개 상태: {postStatus === "public" ? "공개" : "숨김"}
-                      </span>
-                    ) : null}
-                    {postQ.trim() ? (
-                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
-                        검색어: {postQ.trim()}
-                      </span>
-                    ) : null}
-                    <span>
-                      전체 게시글 {postsTotal === null ? "-" : postsTotal.toLocaleString()}건
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    {reportType !== "all" ? (
-                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
-                        게시판 유형: {resolveBoardLabel(reportType)}
-                      </span>
-                    ) : null}
-                    <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
-                      처리 상태:{" "}
-                      {reportStatus === "pending"
-                        ? "대기"
-                        : reportStatus === "resolved"
-                          ? "완료"
-                          : reportStatus === "rejected"
-                            ? "반려"
-                            : "전체"}
-                    </span>
-                    {reportQ.trim() ? (
-                      <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
-                        검색어: {reportQ.trim()}
-                      </span>
-                    ) : null}
-                    <span>
-                      전체 신고 {reportsTotal === null ? "-" : reportsTotal.toLocaleString()}건
-                    </span>
-                  </>
-                )
-              }
+              aria-label={tab === "posts" ? "게시글 목록 새로고침" : "신고 목록 새로고침"}
             >
-              {tab === "posts" ? (
-                <div className="grid grid-cols-1 gap-2 xl:grid-cols-[minmax(140px,1fr)_minmax(140px,1fr)_minmax(260px,2fr)]">
-                  <div className="min-w-0">
-                    <Select
-                      value={postType}
-                      onValueChange={(v) => (setPostPage(1), setPostType(v))}
-                    >
-                      <SelectTrigger className="w-full min-w-0 bg-background/50">
-                        <SelectValue placeholder="게시판" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">전체</SelectItem>
-                        {Object.keys(boardLabel).map((k) => (
-                          <SelectItem key={k} value={k}>
-                            {boardLabel[k]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="min-w-0">
-                    <Select
-                      value={postStatus}
-                      onValueChange={(v) => (setPostPage(1), setPostStatus(v))}
-                    >
-                      <SelectTrigger className="w-full min-w-0 bg-background/50">
-                        <SelectValue placeholder="상태" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">전체</SelectItem>
-                        <SelectItem value="public">공개</SelectItem>
-                        <SelectItem value="hidden">숨김</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="min-w-0">
-                    <Input
-                      value={postQ}
-                      onChange={(e) => setPostQ(e.target.value)}
-                      placeholder="제목/작성자/내용 검색"
-                      className="w-full min-w-0 bg-background/50"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-2 xl:grid-cols-[minmax(140px,1fr)_minmax(140px,1fr)_minmax(260px,2fr)]">
-                  <div className="min-w-0">
-                    <Select
-                      value={reportType}
-                      onValueChange={(v) => (setReportPage(1), setReportType(v))}
-                    >
-                      <SelectTrigger className="w-full min-w-0 bg-background/50">
-                        <SelectValue placeholder="게시판" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">전체</SelectItem>
-                        {Object.keys(boardLabel).map((k) => (
-                          <SelectItem key={k} value={k}>
-                            {boardLabel[k]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="min-w-0">
-                    <Select
-                      value={reportStatus}
-                      onValueChange={(v) => (setReportPage(1), setReportStatus(v))}
-                    >
-                      <SelectTrigger className="w-full min-w-0 bg-background/50">
-                        <SelectValue placeholder="상태" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">대기</SelectItem>
-                        <SelectItem value="resolved">완료</SelectItem>
-                        <SelectItem value="rejected">반려</SelectItem>
-                        <SelectItem value="all">전체</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="min-w-0">
-                    <Input
-                      value={reportQ}
-                      onChange={(e) => setReportQ(e.target.value)}
-                      placeholder="사유/신고자 검색"
-                      className="w-full min-w-0 bg-background/50"
-                    />
-                  </div>
-                </div>
-              )}
-            </AdminFilterBar>
+              <RefreshCcw className="h-4 w-4" />
+            </Button>
+          }
+        >
+          {tab === "posts" ? (
+            <div className="grid grid-cols-1 gap-2 xl:grid-cols-[minmax(140px,1fr)_minmax(140px,1fr)_minmax(260px,2fr)]">
+              <Select value={postType} onValueChange={(v) => (setPostPage(1), setPostType(v))}>
+                <SelectTrigger className="w-full min-w-0 bg-background/50">
+                  <SelectValue placeholder="게시판" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {Object.keys(boardLabel).map((k) => (
+                    <SelectItem key={k} value={k}>
+                      {boardLabel[k]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={postStatus} onValueChange={(v) => (setPostPage(1), setPostStatus(v))}>
+                <SelectTrigger className="w-full min-w-0 bg-background/50">
+                  <SelectValue placeholder="상태" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="public">공개</SelectItem>
+                  <SelectItem value="hidden">숨김</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                value={postQ}
+                onChange={(e) => setPostQ(e.target.value)}
+                placeholder="제목/작성자/내용 검색"
+                className="w-full min-w-0 bg-background/50"
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2 xl:grid-cols-[minmax(140px,1fr)_minmax(140px,1fr)_minmax(260px,2fr)]">
+              <Select
+                value={reportType}
+                onValueChange={(v) => (setReportPage(1), setReportType(v))}
+              >
+                <SelectTrigger className="w-full min-w-0 bg-background/50">
+                  <SelectValue placeholder="게시판" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {Object.keys(boardLabel).map((k) => (
+                    <SelectItem key={k} value={k}>
+                      {boardLabel[k]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={reportStatus}
+                onValueChange={(v) => (setReportPage(1), setReportStatus(v))}
+              >
+                <SelectTrigger className="w-full min-w-0 bg-background/50">
+                  <SelectValue placeholder="상태" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">대기</SelectItem>
+                  <SelectItem value="resolved">완료</SelectItem>
+                  <SelectItem value="rejected">반려</SelectItem>
+                  <SelectItem value="all">전체</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                value={reportQ}
+                onChange={(e) => setReportQ(e.target.value)}
+                placeholder="사유/신고자 검색"
+                className="w-full min-w-0 bg-background/50"
+              />
+            </div>
+          )}
+        </AdminFilterBar>
+
+        {tab === "posts" && selectedPostIds.length > 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background px-4 py-3">
+            <div>
+              <p className={adminTypography.bodyStrong}>{selectedPostIds.length}개 게시글 선택</p>
+              <p className={adminTypography.caption}>선택 삭제는 복구할 수 없습니다.</p>
+            </div>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={deleteSelectedPosts}
+              className="gap-1 whitespace-nowrap"
+            >
+              <Trash2 className="h-4 w-4" /> 선택 삭제
+            </Button>
           </div>
+        ) : null}
 
-          <CardContent>
-            {tab === "posts" && (
-              <div className="space-y-4">
-                <div
-                  className={cn(
-                    adminSurface.cardMuted,
-                    "flex flex-wrap items-center justify-between gap-3 px-4 py-3",
-                  )}
-                >
-                  <div className="min-w-[150px] space-y-1">
-                    <p className={adminTypography.bodyStrong}>선택 {selectedPostIds.length}개</p>
-                    <p className={adminTypography.caption}>선택 삭제는 복구할 수 없습니다.</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant={selectedPostIds.length > 0 ? "destructive" : "outline"}
-                    size="sm"
-                    disabled={selectedPostIds.length === 0}
-                    onClick={deleteSelectedPosts}
-                    className="min-h-[40px] gap-1 whitespace-nowrap"
-                  >
-                    <Trash2 className="h-4 w-4" /> 선택 삭제
-                  </Button>
+        <div className="overflow-hidden rounded-lg border border-border">
+          {tab === "posts" ? (
+            <>
+              {postsLoading ? (
+                <div className="space-y-3 p-4">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
                 </div>
-
-                {postsLoading && (
-                  <div className="space-y-3">
-                    <Skeleton className="h-32 w-full" />
-                    <Skeleton className="h-32 w-full" />
-                    <Skeleton className="h-32 w-full" />
-                  </div>
-                )}
-
-                {hasPostsDataError && (
-                  <div
-                    className={cn(
-                      "rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-destructive dark:bg-destructive/15",
-                      adminTypography.body,
-                    )}
-                  >
-                    게시글 목록 로드 실패: {(postsErr as any)?.message ?? "error"}
-                  </div>
-                )}
-
-                {!postsLoading && !hasPostsDataError && (
-                  <>
-                    {posts.length > 0 && (
-                      <div className="flex items-center gap-2 px-2">
+              ) : null}
+              {hasPostsDataError ? (
+                <div className={cn("p-4 text-destructive", adminTypography.body)}>
+                  게시글 목록 로드 실패: {(postsErr as any)?.message ?? "error"}
+                </div>
+              ) : null}
+              {!postsLoading && !hasPostsDataError && posts.length > 0 ? (
+                <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+                  <Checkbox
+                    checked={isCurrentPageAllSelected}
+                    onCheckedChange={(checked) => toggleSelectAllCurrentPage(Boolean(checked))}
+                    aria-label="현재 페이지 게시글 전체 선택"
+                  />
+                  <span className={adminTypography.metaMuted}>현재 페이지 전체 선택</span>
+                </div>
+              ) : null}
+              {!postsLoading && !hasPostsDataError
+                ? posts.map((p) => {
+                    const publicLink = buildBoardPublicUrl({
+                      type: p.type,
+                      id: p.id,
+                      postNo: p.postNo,
+                      status: p.status,
+                    });
+                    const adminLink = buildAdminBoardDetailUrl({ id: p.id });
+                    return (
+                      <div
+                        key={p.id}
+                        className="flex min-w-0 items-start gap-3 border-t border-border p-4 first:border-t-0 hover:bg-muted/20"
+                      >
                         <Checkbox
-                          checked={isCurrentPageAllSelected}
-                          onCheckedChange={(checked) =>
-                            toggleSelectAllCurrentPage(Boolean(checked))
-                          }
-                          aria-label="현재 페이지 게시글 전체 선택"
+                          checked={selectedPostIds.includes(p.id)}
+                          onCheckedChange={() => togglePostSelect(p.id)}
+                          className="mt-1"
+                          aria-label={`${p.title} 게시글 선택`}
                         />
-                        <span className={adminTypography.metaMuted}>현재 페이지 전체 선택</span>
-                      </div>
-                    )}
-                    <div className="space-y-3">
-                      {(posts ?? []).map((p) => (
-                        <Card key={p.id} className={cn("group", adminSurface.tableCard)}>
-                          <CardContent className="p-5">
-                            {/**
-                             * 게시글 카드 링크 생성 규칙
-                             * 1) 공개 라우트 생성 시 외부 게시판 URL 사용
-                             * 2) 실패 시 관리자 내부 상세(/admin/boards/[id])로 fallback
-                             * 3) fallback도 없으면 링크 비활성화 + 사유 툴팁
-                             */}
-                            {(() => {
-                              const publicLink = buildBoardPublicUrl({
-                                type: p.type,
-                                id: p.id,
-                                postNo: p.postNo,
-                                status: p.status,
-                              });
-                              const fallbackLink = buildAdminBoardDetailUrl({
-                                id: p.id,
-                              });
-                              const href = publicLink.ok ? publicLink.url : fallbackLink;
-                              const linkBlockedReason = publicLink.ok ? null : publicLink.reason;
-                              const tooltipMessage = linkBlockedReason
-                                ? getBoardLinkBlockedReason(
-                                    linkBlockedReason,
-                                    Boolean(fallbackLink),
-                                  )
-                                : null;
-
-                              return (
-                                <div className="flex items-start justify-between gap-4">
-                                  <Checkbox
-                                    checked={selectedPostIds.includes(p.id)}
-                                    onCheckedChange={() => togglePostSelect(p.id)}
-                                    className="mt-1"
-                                    aria-label={`${p.title} 게시글 선택`}
-                                  />
-                                  <div className="flex-1 space-y-2">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <span className={adminDataTable.categoryText}>
-                                        {resolveBoardLabel(p.type)}
-                                      </span>
-                                      <span className={adminTypography.caption}>
-                                        #{p.postNo ?? "-"}
-                                      </span>
-                                      {p.status === "public" ? (
-                                        <Badge variant={adminPostVisibilityBadgeVariant("public")}>
-                                          공개
-                                        </Badge>
-                                      ) : (
-                                        <Badge variant={adminPostVisibilityBadgeVariant("hidden")}>
-                                          숨김
-                                        </Badge>
-                                      )}
-                                    </div>
-
-                                    {href ? (
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <Link
-                                            href={href}
-                                            className="block group/link"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                          >
-                                            <h3
-                                              className={cn(
-                                                "inline-flex items-center gap-2 transition-colors group-hover/link:text-primary",
-                                                adminTypography.bodyStrong,
-                                              )}
-                                            >
-                                              {p.title}
-                                              <ExternalLink className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
-                                            </h3>
-                                          </Link>
-                                        </TooltipTrigger>
-                                        {tooltipMessage && (
-                                          <TooltipContent>{tooltipMessage}</TooltipContent>
-                                        )}
-                                      </Tooltip>
-                                    ) : (
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <span
-                                            className={cn(
-                                              "inline-flex cursor-not-allowed items-center gap-2 text-muted-foreground/80",
-                                              adminTypography.bodyStrong,
-                                            )}
-                                            aria-disabled="true"
-                                          >
-                                            {p.title}
-                                            <ExternalLink className="h-4 w-4 opacity-60" />
-                                          </span>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          {getBoardLinkBlockedReason(linkBlockedReason, false)}
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    )}
-
-                                    <div
-                                      className={cn(
-                                        "flex items-center gap-4",
-                                        adminTypography.metaMuted,
-                                      )}
-                                    >
-                                      <span className="font-medium">{p.nickname || "-"}</span>
-                                      <span>{fmt(p.createdAt)}</span>
-                                    </div>
-
-                                    <div
-                                      className={cn(
-                                        "flex items-center gap-4",
-                                        adminTypography.meta,
-                                      )}
-                                    >
-                                      <div className="flex items-center gap-1.5">
-                                        <BarChart3 className="h-4 w-4 text-primary" />
-                                        <span className="font-medium">{p.views}</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <ThumbsUp className="h-4 w-4 text-primary" />
-                                        <span className="font-medium">{p.likes}</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <MessageSquare className="h-4 w-4 text-foreground" />
-                                        <span className="font-medium">{p.commentsCount}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => togglePostVisibility(p)}
-                                    className="gap-2 shrink-0 whitespace-nowrap min-h-[40px]"
-                                  >
-                                    {p.status === "public" ? (
-                                      <>
-                                        <EyeOff className="h-4 w-4" />
-                                        숨김
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Eye className="h-4 w-4" />
-                                        공개
-                                      </>
-                                    )}
-                                  </Button>
-                                </div>
-                              );
-                            })()}
-                          </CardContent>
-                        </Card>
-                      ))}
-
-                      {shouldShowPostsEmptyState && (
-                        <Card className="border-dashed border-border/40">
-                          <CardContent className="flex flex-col items-center justify-center py-16">
-                            <FileText className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                            <p className={adminTypography.metaMuted}>
-                              {isPostsActualEmptyState
-                                ? "등록된 게시글이 없습니다."
-                                : isPostsSearchEmptyState && hasPostFilterApplied
-                                  ? "검색/필터 조건에 맞는 게시글이 없습니다."
-                                  : "표시할 게시글이 없습니다."}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </div>
-
-                    {!!posts &&
-                      posts.length > 0 &&
-                      postsTotal !== null &&
-                      postsTotalPages !== null && (
-                        <div className="flex items-center justify-between gap-3 border-t border-border/40 pt-5 flex-row">
-                          <div className={adminTypography.metaMuted}>
-                            총 <span className="font-semibold text-foreground">{postsTotal}</span>건
-                            · 페이지{" "}
-                            <span className="font-semibold text-foreground">{postPage}</span> /{" "}
-                            {postsTotalPages}
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={adminDataTable.categoryText}>
+                              {resolveBoardLabel(p.type)}
+                            </span>
+                            <span className={adminTypography.caption}>#{p.postNo ?? "-"}</span>
+                            <Badge variant={adminPostVisibilityBadgeVariant(p.status)}>
+                              {p.status === "public" ? "공개" : "숨김"}
+                            </Badge>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setPostPage((p) => Math.max(1, p - 1))}
-                              disabled={postPage <= 1}
-                              className="border-border/40 hover:border-border/60"
-                            >
-                              이전
-                            </Button>
-                            <div
+                          {adminLink ? (
+                            <Link
+                              href={adminLink}
                               className={cn(
-                                "flex h-9 items-center rounded-md border border-border/40 bg-background/50 px-3",
+                                "block line-clamp-2 hover:text-primary",
                                 adminTypography.bodyStrong,
                               )}
                             >
-                              {postPage}
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setPostPage((p) => Math.min(postsTotalPages, p + 1))}
-                              disabled={postPage >= postsTotalPages}
-                              className="border-border/40 hover:border-border/60"
-                            >
-                              다음
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                  </>
-                )}
-              </div>
-            )}
-
-            {tab === "reports" && (
-              <div className="space-y-4">
-                {reportsLoading && (
-                  <div className="space-y-3">
-                    <Skeleton className="h-40 w-full" />
-                    <Skeleton className="h-40 w-full" />
-                    <Skeleton className="h-40 w-full" />
-                  </div>
-                )}
-
-                {hasReportsDataError && (
-                  <div
-                    className={cn(
-                      "rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-destructive dark:bg-destructive/15",
-                      adminTypography.body,
-                    )}
-                  >
-                    신고 목록 로드 실패: {(reportsErr as any)?.message ?? "error"}
-                  </div>
-                )}
-
-                {!reportsLoading && !hasReportsDataError && (
-                  <>
-                    <div className="space-y-3">
-                      {(reports ?? []).map((r) => {
-                        const isPending = r.status === "pending";
-                        // 신고 대상 링크는 공개 URL 우선, 실패 시 관리자 상세 fallback 규칙을 동일 적용한다.
-                        const publicLink = buildBoardPublicUrl({
-                          type: r.boardType,
-                          id: r.post?.id,
-                          postNo: r.post?.postNo,
-                          status: r.post?.status,
-                        });
-                        const fallbackLink = buildAdminBoardDetailUrl({
-                          id: r.post?.id,
-                        });
-                        const postHref = publicLink.ok ? publicLink.url : fallbackLink;
-                        const postLinkReason = publicLink.ok ? null : publicLink.reason;
-
-                        return (
-                          <Card
-                            key={r.id}
+                              {p.title}
+                            </Link>
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span
+                                  className={cn(
+                                    "block line-clamp-2 cursor-not-allowed text-muted-foreground",
+                                    adminTypography.bodyStrong,
+                                  )}
+                                  aria-disabled="true"
+                                >
+                                  {p.title}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {getBoardLinkBlockedReason(null, false)}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          <div
                             className={cn(
-                              "group",
-                              adminSurface.tableCard,
-                              isPending ? "border-warning/50 bg-warning/10 dark:bg-warning/15" : "",
+                              "flex min-w-0 flex-wrap gap-x-4 gap-y-1",
+                              adminTypography.metaMuted,
                             )}
                           >
-                            <CardContent className="p-5">
-                              <div className="space-y-4">
-                                <div className="flex items-start justify-between gap-4">
-                                  <div className="flex-1 space-y-2">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <span className={adminDataTable.categoryText}>
-                                        {r.targetType === "post" ? "게시글" : "댓글"} ·{" "}
-                                        {resolveBoardLabel(r.boardType)}
-                                      </span>
-                                      {r.status === "pending" && (
-                                        <Badge variant={adminReportStatusBadgeVariant("pending")}>
-                                          대기
-                                        </Badge>
-                                      )}
-                                      {r.status === "resolved" && (
-                                        <Badge variant={adminReportStatusBadgeVariant("resolved")}>
-                                          완료
-                                        </Badge>
-                                      )}
-                                      {r.status === "rejected" && (
-                                        <Badge variant={adminReportStatusBadgeVariant("rejected")}>
-                                          반려
-                                        </Badge>
-                                      )}
-                                    </div>
-
-                                    <div>
-                                      <p className={cn("mb-1", adminTypography.caption)}>
-                                        신고 사유
-                                      </p>
-                                      <p className={adminTypography.bodyStrong}>{r.reason}</p>
-                                    </div>
-
-                                    <div>
-                                      <p className={cn("mb-1", adminTypography.caption)}>
-                                        신고 대상
-                                      </p>
-                                      {postHref ? (
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <Link
-                                              href={postHref}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className={cn(
-                                                "inline-flex items-center gap-2 transition-colors hover:text-primary group/link",
-                                                adminTypography.body,
-                                              )}
-                                            >
-                                              {r.post?.title ?? "(제목 없음)"}
-                                              <ExternalLink className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
-                                            </Link>
-                                          </TooltipTrigger>
-                                          {postLinkReason && (
-                                            <TooltipContent>
-                                              {getBoardLinkBlockedReason(
-                                                postLinkReason,
-                                                Boolean(fallbackLink),
-                                              )}
-                                            </TooltipContent>
-                                          )}
-                                        </Tooltip>
-                                      ) : (
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <span
-                                              className={cn(
-                                                "inline-flex cursor-not-allowed items-center gap-2 text-muted-foreground",
-                                                adminTypography.body,
-                                              )}
-                                              aria-disabled="true"
-                                            >
-                                              {r.post?.title ?? "(대상 글 정보 없음)"}
-                                              <ExternalLink className="h-4 w-4 opacity-60" />
-                                            </span>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            {getBoardLinkBlockedReason(postLinkReason, false)}
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      )}
-                                    </div>
-
-                                    <div
-                                      className={cn(
-                                        "flex items-center gap-4 pt-2",
-                                        adminTypography.metaMuted,
-                                      )}
-                                    >
-                                      <span>
-                                        신고자:{" "}
-                                        <span className="font-medium">
-                                          {r.reporterDisplay || r.reporterNickname || "-"}
-                                        </span>
-                                      </span>
-                                      <span>{fmt(r.createdAt)}</span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div
-                                  className={cn(
-                                    adminSurface.cardMuted,
-                                    "flex gap-3 border-t border-border/60 p-3 flex-row items-center justify-between",
-                                  )}
-                                >
-                                  <div className="space-y-1">
-                                    <p className={adminTypography.bodyStrong}>신고 처리 액션</p>
-                                    <p className={adminTypography.caption}>
-                                      완료/반려는 신고 상태만 정리하고, 대상 숨김은 게시글 노출에
-                                      영향을 줍니다.
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-wrap gap-2 justify-end">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      disabled={!isPending}
-                                      onClick={() => processReport(r, "resolve")}
-                                      className="gap-2"
-                                    >
-                                      <CheckCircle2 className="h-4 w-4" />
-                                      완료
-                                    </Button>
-
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      disabled={!isPending}
-                                      onClick={() => processReport(r, "reject")}
-                                      className="gap-2"
-                                    >
-                                      <XCircle className="h-4 w-4" />
-                                      반려
-                                    </Button>
-
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      disabled={!isPending}
-                                      onClick={() => processReport(r, "resolve_hide_target")}
-                                      className="gap-2"
-                                    >
-                                      <ShieldAlert className="h-4 w-4" />
-                                      대상 숨김 + 완료
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-
-                      {shouldShowReportsEmptyState && (
-                        <Card
-                          className={cn(adminSurface.cardMuted, "border-dashed border-border/60")}
-                        >
-                          <CardContent className="flex flex-col items-center justify-center py-16">
-                            <ShieldAlert className="mb-3 h-12 w-12 text-muted-foreground/50" />
-                            <p className={adminTypography.metaMuted}>
-                              현재 조건에 맞는 신고가 없습니다.
-                            </p>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </div>
-
-                    {!!reports &&
-                      reports.length > 0 &&
-                      reportsTotal !== null &&
-                      reportsTotalPages !== null && (
-                        <div className="flex items-center justify-between gap-3 border-t border-border/40 pt-5 flex-row">
-                          <div className={adminTypography.metaMuted}>
-                            총 <span className="font-semibold text-foreground">{reportsTotal}</span>
-                            건 · 페이지{" "}
-                            <span className="font-semibold text-foreground">{reportPage}</span> /{" "}
-                            {reportsTotalPages}
+                            <span className="max-w-full truncate font-medium">
+                              {p.nickname || "-"}
+                            </span>
+                            <span>{fmt(p.createdAt)}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setReportPage((p) => Math.max(1, p - 1))}
-                              disabled={reportPage <= 1}
-                              className="border-border/40 hover:border-border/60"
-                            >
-                              이전
-                            </Button>
-                            <div
-                              className={cn(
-                                "flex h-9 items-center rounded-md border border-border/40 bg-background/50 px-3",
-                                adminTypography.bodyStrong,
-                              )}
-                            >
-                              {reportPage}
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                setReportPage((p) => Math.min(reportsTotalPages, p + 1))
-                              }
-                              disabled={reportPage >= reportsTotalPages}
-                              className="border-border/40 hover:border-border/60"
-                            >
-                              다음
-                            </Button>
+                          <div className={cn("flex items-center gap-4", adminTypography.meta)}>
+                            <span className="flex items-center gap-1">
+                              <BarChart3 className="h-4 w-4" />
+                              {p.views}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <ThumbsUp className="h-4 w-4" />
+                              {p.likes}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageSquare className="h-4 w-4" />
+                              {p.commentsCount}
+                            </span>
                           </div>
                         </div>
-                      )}
-                  </>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                        <AdminRowActionMenu ariaLabel={`${p.title} 게시글 작업 메뉴`}>
+                          {publicLink.ok ? (
+                            <DropdownMenuItem asChild>
+                              <a href={publicLink.url} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                공개 페이지 열기
+                              </a>
+                            </DropdownMenuItem>
+                          ) : null}
+                          <DropdownMenuItem onSelect={() => togglePostVisibility(p)}>
+                            {p.status === "public" ? (
+                              <EyeOff className="mr-2 h-4 w-4" />
+                            ) : (
+                              <Eye className="mr-2 h-4 w-4" />
+                            )}
+                            {p.status === "public" ? "숨김 처리" : "공개 처리"}
+                          </DropdownMenuItem>
+                        </AdminRowActionMenu>
+                      </div>
+                    );
+                  })
+                : null}
+              {shouldShowPostsEmptyState ? (
+                <div className="p-12 text-center">
+                  <FileText className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
+                  <p className={adminTypography.metaMuted}>
+                    {isPostsActualEmptyState
+                      ? "등록된 게시글이 없습니다."
+                      : isPostsSearchEmptyState
+                        ? "검색/필터 조건에 맞는 게시글이 없습니다."
+                        : "표시할 게시글이 없습니다."}
+                  </p>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <>
+              {reportsLoading ? (
+                <div className="space-y-3 p-4">
+                  <Skeleton className="h-28 w-full" />
+                  <Skeleton className="h-28 w-full" />
+                </div>
+              ) : null}
+              {hasReportsDataError ? (
+                <div className={cn("p-4 text-destructive", adminTypography.body)}>
+                  신고 목록 로드 실패: {(reportsErr as any)?.message ?? "error"}
+                </div>
+              ) : null}
+              {!reportsLoading && !hasReportsDataError
+                ? (reports ?? []).map((r) => {
+                    const isPending = r.status === "pending";
+                    const publicLink = buildBoardPublicUrl({
+                      type: r.boardType,
+                      id: r.post?.id,
+                      postNo: r.post?.postNo,
+                      status: r.post?.status,
+                    });
+                    const adminLink = buildAdminBoardDetailUrl({ id: r.post?.id });
+                    const targetText =
+                      r.targetType === "comment"
+                        ? r.comment?.content || "(댓글 내용 없음)"
+                        : r.post?.title || "(제목 없음)";
+                    return (
+                      <div
+                        key={r.id}
+                        className="flex min-w-0 flex-wrap items-start gap-4 border-t border-border p-4 first:border-t-0 hover:bg-muted/20"
+                      >
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={adminDataTable.categoryText}>
+                              {r.targetType === "post" ? "게시글" : "댓글"} ·{" "}
+                              {resolveBoardLabel(r.boardType)}
+                            </span>
+                            <Badge variant={adminReportStatusBadgeVariant(r.status)}>
+                              {r.status === "pending"
+                                ? "대기"
+                                : r.status === "resolved"
+                                  ? "완료"
+                                  : "반려"}
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className={adminTypography.caption}>신고 사유</p>
+                            <p className={cn("line-clamp-2", adminTypography.bodyStrong)}>
+                              {r.reason}
+                            </p>
+                          </div>
+                          <div>
+                            <p className={adminTypography.caption}>신고 대상</p>
+                            {adminLink ? (
+                              <Link
+                                href={adminLink}
+                                className={cn(
+                                  "block line-clamp-2 hover:text-primary",
+                                  adminTypography.body,
+                                )}
+                              >
+                                {targetText}
+                              </Link>
+                            ) : (
+                              <span
+                                className={cn(
+                                  "block line-clamp-2 text-muted-foreground",
+                                  adminTypography.body,
+                                )}
+                              >
+                                {targetText}
+                              </span>
+                            )}
+                            {publicLink.ok ? (
+                              <a
+                                href={publicLink.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cn(
+                                  "mt-1 inline-flex items-center gap-1 hover:text-primary",
+                                  adminTypography.caption,
+                                )}
+                              >
+                                공개 페이지 열기 <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            ) : null}
+                          </div>
+                          <div
+                            className={cn(
+                              "flex min-w-0 flex-wrap gap-x-4 gap-y-1",
+                              adminTypography.metaMuted,
+                            )}
+                          >
+                            <span className="max-w-full truncate">
+                              신고자: {r.reporterDisplay || r.reporterNickname || "-"}
+                            </span>
+                            <span>{fmt(r.createdAt)}</span>
+                          </div>
+                        </div>
+                        {isPending ? (
+                          <div className="flex shrink-0 items-center gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => processReport(r, "resolve")}
+                              className="gap-2"
+                            >
+                              <CheckCircle2 className="h-4 w-4" />
+                              완료
+                            </Button>
+                            <AdminRowActionMenu
+                              ariaLabel={`${targetText} 신고 작업 메뉴`}
+                              destructiveActions={
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={() => processReport(r, "resolve_hide_target")}
+                                >
+                                  <ShieldAlert className="mr-2 h-4 w-4" />
+                                  대상 숨김 + 완료
+                                </DropdownMenuItem>
+                              }
+                            >
+                              <DropdownMenuItem onSelect={() => processReport(r, "reject")}>
+                                <XCircle className="mr-2 h-4 w-4" />
+                                반려
+                              </DropdownMenuItem>
+                            </AdminRowActionMenu>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })
+                : null}
+              {shouldShowReportsEmptyState ? (
+                <div className="p-12 text-center">
+                  <ShieldAlert className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
+                  <p className={adminTypography.metaMuted}>현재 조건에 맞는 신고가 없습니다.</p>
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+
+        {tab === "posts" && posts.length > 0 && postsTotal !== null && postsTotalPages !== null ? (
+          <Pagination
+            total={postsTotal}
+            page={postPage}
+            pages={postsTotalPages}
+            setPage={setPostPage}
+          />
+        ) : null}
+        {tab === "reports" &&
+        reports &&
+        reports.length > 0 &&
+        reportsTotal !== null &&
+        reportsTotalPages !== null ? (
+          <Pagination
+            total={reportsTotal}
+            page={reportPage}
+            pages={reportsTotalPages}
+            setPage={setReportPage}
+          />
+        ) : null}
+      </AdminPageShell>
     </TooltipProvider>
+  );
+}
+
+function Pagination({
+  total,
+  page,
+  pages,
+  setPage,
+}: {
+  total: number;
+  page: number;
+  pages: number;
+  setPage: (updater: (page: number) => number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
+      <div className={adminTypography.metaMuted}>
+        총 <span className="font-semibold text-foreground">{total}</span>건 · 페이지{" "}
+        <span className="font-semibold text-foreground">{page}</span> / {pages}
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page <= 1}
+        >
+          이전
+        </Button>
+        <div
+          className={cn(
+            "flex h-9 items-center rounded-md border border-border px-3",
+            adminTypography.bodyStrong,
+          )}
+        >
+          {page}
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setPage((p) => Math.min(pages, p + 1))}
+          disabled={page >= pages}
+        >
+          다음
+        </Button>
+      </div>
+    </div>
   );
 }

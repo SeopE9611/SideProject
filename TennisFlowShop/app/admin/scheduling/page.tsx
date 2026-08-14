@@ -16,7 +16,7 @@ import {
 
 // shadcn/ui
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -253,7 +253,7 @@ export default function StringingSettingsPage() {
     return (
       <AdminPageShell variant="wide" className="space-y-6">
         <div className="h-10 w-72 animate-pulse rounded-lg bg-muted" />
-        <div className="grid gap-6 grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <div className={cn(adminSurface.card, "h-96 animate-pulse")} />
           <div className={cn(adminSurface.card, "h-96 animate-pulse")} />
         </div>
@@ -281,6 +281,8 @@ export default function StringingSettingsPage() {
     <TooltipProvider delayDuration={120}>
       <AdminPageShell variant="wide" className="space-y-6">
         <AdminPageHeader
+          variant="form"
+          className="flex-wrap"
           title="예약 · 영업일 설정"
           description="교체서비스 예약 가능 시간, 영업 요일, 휴무일, 예외일을 관리합니다."
           icon={CalendarDays}
@@ -289,60 +291,27 @@ export default function StringingSettingsPage() {
         />
 
         <div className={cn(adminSurface.fieldPanelMuted, "overflow-hidden p-0")}>
-          <div className="flex items-start gap-4 p-6">
-            <div className="rounded-xl bg-muted p-2.5 shadow-sm">
+          <div className="flex items-start gap-3 p-4">
+            <div className="rounded-md bg-muted p-2">
               <Info className="h-5 w-5" />
             </div>
             <div className="flex-1 text-sm leading-relaxed text-muted-foreground">
-              <p className="font-semibold text-foreground mb-2">
-                운영 정책 변경은 예약에 큰 영향을 줍니다. 변경 전 개발자/운영팀과 상의하세요.
+              <p className="mb-1 font-semibold text-foreground">
+                저장 후 신규 예약에 즉시 반영됩니다
               </p>
-              <ul className="space-y-1.5">
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                  <span>
-                    <strong className="font-medium text-foreground">동시 수용량:</strong> 같은
-                    시간대 동시 접수 가능한 신청 수
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                  <span>
-                    <strong className="font-medium text-foreground">영업 시간/간격:</strong> 슬롯의
-                    시작·종료 시각과 간격
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                  <span>
-                    <strong className="font-medium text-foreground">영업 요일:</strong> 기본 영업
-                    요일
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                  <span>
-                    <strong className="font-medium text-foreground">휴무일:</strong> 특정 날짜를
-                    휴무로 지정
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
-                  <span>
-                    <strong className="font-medium text-foreground">예외일:</strong> 특정 날짜만
-                    영업/시간·간격·수용량을 오버라이드
-                  </span>
-                </li>
-              </ul>
+              <p>
+                동시 수용량과 영업 시간은 예약 슬롯 수에 영향을 줍니다. 휴무일과 예외일은 기본 영업
+                요일보다 우선하며, 기존 예약 데이터는 이 화면에서 수정하지 않습니다.
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-6 grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <Card className={cn("overflow-hidden", adminSurface.card)}>
             <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
               <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-                <div className="rounded-xl bg-primary/10 p-2 text-primary dark:bg-primary/20">
+                <div className="rounded-md bg-primary/10 p-2 text-primary dark:bg-primary/20">
                   <Clock className="h-5 w-5" />
                 </div>
                 기본 슬롯 설정
@@ -354,7 +323,7 @@ export default function StringingSettingsPage() {
                   <Label className="text-sm font-medium text-foreground">
                     {/* was: text-foreground */}동시 수용량
                   </Label>
-                  <Badge variant="brand" className="shadow-sm px-3 py-1">
+                  <Badge variant="brand" className="px-3 py-1">
                     {capacity}명
                   </Badge>
                 </div>
@@ -372,7 +341,7 @@ export default function StringingSettingsPage() {
                 </p>
               </div>
 
-              <div className="grid gap-4 grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="start" className="text-sm font-medium text-foreground">
                     영업 시작
@@ -416,12 +385,7 @@ export default function StringingSettingsPage() {
                     }}
                     className="w-32 border-border focus:border-border focus:ring-ring"
                   />
-                  <Badge
-                    variant="outline"
-                    className="border-dashed border-border text-muted-foreground"
-                  >
-                    예: 30분 → 10:00, 10:30…
-                  </Badge>
+                  <span className="text-xs text-muted-foreground">예: 30분 → 10:00, 10:30…</span>
                 </div>
               </div>
 
@@ -443,12 +407,9 @@ export default function StringingSettingsPage() {
                     }}
                     className="w-32 border-border focus:border-border focus:ring-ring"
                   />
-                  <Badge
-                    variant="outline"
-                    className="border-dashed border-border text-muted-foreground"
-                  >
+                  <span className="text-xs text-muted-foreground">
                     예: 30 → 오늘부터 30일 이내만 신청 가능 (최대 180)
-                  </Badge>
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -457,7 +418,7 @@ export default function StringingSettingsPage() {
           <Card className={cn("overflow-hidden", adminSurface.card)}>
             <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
               <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-                <div className="rounded-xl bg-muted p-2">
+                <div className="rounded-md bg-muted p-2">
                   <CalendarDays className="h-5 w-5" />
                 </div>
                 영업 요일 · 휴무일
@@ -476,8 +437,8 @@ export default function StringingSettingsPage() {
                         variant={on ? "default" : "outline"}
                         className={
                           on
-                            ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 border-0 font-medium"
-                            : "bg-card text-muted-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground border-border"
+                            ? "border-0 bg-primary font-medium text-primary-foreground"
+                            : "border-border bg-card text-muted-foreground hover:bg-muted/20 hover:text-foreground"
                         }
                         onClick={() =>
                           setBusinessDays((prev) =>
@@ -508,7 +469,6 @@ export default function StringingSettingsPage() {
                   />
                   <Button
                     type="button"
-                    className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
                     onClick={() => {
                       if (!holidayInput) return;
                       if (!holidays.includes(holidayInput))
@@ -521,11 +481,11 @@ export default function StringingSettingsPage() {
                 </div>
 
                 {sortedHolidays.length > 0 ? (
-                  <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                  <ul className="mt-4 overflow-hidden rounded-lg border border-border bg-card">
                     {sortedHolidays.map((h) => (
                       <li
                         key={h}
-                        className="flex items-center justify-between px-4 py-3 text-sm hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors"
+                        className="flex items-center justify-between border-t border-border px-4 py-3 text-sm first:border-t-0 hover:bg-muted/20"
                       >
                         <span className="font-medium text-foreground">{h}</span>
                         <Button
@@ -533,6 +493,8 @@ export default function StringingSettingsPage() {
                           variant="ghost"
                           size="sm"
                           className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive hover:text-destructive"
+                          aria-label={`${h} 휴무일 삭제`}
+                          title={`${h} 휴무일 삭제`}
                           onClick={() => setHolidays((prev) => prev.filter((x) => x !== h))}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -551,7 +513,7 @@ export default function StringingSettingsPage() {
         <Card className={cn("overflow-hidden", adminSurface.card)}>
           <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
             <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-              <div className="rounded-xl bg-muted p-2">
+              <div className="rounded-md bg-muted p-2">
                 <Users className="h-5 w-5" />
               </div>
               예외일 (특별 운영/휴무)
@@ -560,8 +522,8 @@ export default function StringingSettingsPage() {
 
           <CardContent className="space-y-6 p-6">
             <div className={adminSurface.fieldPanelMuted}>
-              <div className="grid gap-4 grid-cols-6">
-                <div className="col-span-2 space-y-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+                <div className="space-y-2 xl:col-span-2">
                   <Label className="text-xs font-medium text-foreground">날짜</Label>
                   <Input
                     type="date"
@@ -571,7 +533,7 @@ export default function StringingSettingsPage() {
                   />
                 </div>
 
-                <div className="flex items-center gap-2 pt-7">
+                <div className="flex items-center gap-2 pt-0 xl:pt-7">
                   <Switch
                     checked={!!exInput.closed}
                     onCheckedChange={(v) => setExInput({ ...exInput, closed: v })}
@@ -637,7 +599,6 @@ export default function StringingSettingsPage() {
               <div className="mt-4 flex items-center gap-2">
                 <Button
                   type="button"
-                  className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
                   onClick={() => {
                     if (!exInput.date) {
                       showErrorToast("날짜는 필수입니다.");
@@ -664,7 +625,7 @@ export default function StringingSettingsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground bg-transparent"
+                  className="border-border bg-transparent hover:bg-muted/20 hover:text-foreground"
                   onClick={() => setExInput({ date: "" })}
                 >
                   입력 초기화
@@ -673,16 +634,16 @@ export default function StringingSettingsPage() {
             </div>
 
             {sortedExceptions.length > 0 ? (
-              <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <ul className="overflow-hidden rounded-lg border border-border bg-card">
                 {sortedExceptions.map((ex) => (
                   <li
                     key={ex.date}
-                    className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors"
+                    className="flex items-start justify-between gap-4 border-t border-border px-5 py-4 first:border-t-0 hover:bg-muted/20"
                   >
                     <div className="flex-1">
                       <div className="font-semibold text-foreground mb-1">{ex.date}</div>
                       {ex.closed ? (
-                        <Badge variant="destructive">휴무</Badge>
+                        <Badge variant="danger">휴무</Badge>
                       ) : (
                         <div className="text-sm text-muted-foreground space-y-0.5">
                           <div>
@@ -715,20 +676,26 @@ export default function StringingSettingsPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Button
+                        type="button"
                         size="icon"
                         variant="ghost"
                         className="hover:bg-primary/10 dark:hover:bg-primary/20 text-primary"
                         onClick={() => setExInput(ex)}
+                        aria-label={`${ex.date} 예외일 수정`}
+                        title={`${ex.date} 예외일 수정`}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
+                        type="button"
                         size="icon"
                         variant="ghost"
                         className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive"
                         onClick={() =>
                           setExceptions((prev) => prev.filter((x) => x.date !== ex.date))
                         }
+                        aria-label={`${ex.date} 예외일 삭제`}
+                        title={`${ex.date} 예외일 삭제`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -742,25 +709,39 @@ export default function StringingSettingsPage() {
               </div>
             )}
           </CardContent>
+        </Card>
 
-          <CardFooter className="flex justify-end gap-3 border-t border-border/60 bg-muted/20 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background px-4 py-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <Badge variant={isDirty ? "warning" : "success"}>
+              {isDirty ? "저장되지 않은 변경" : "저장됨"}
+            </Badge>
+            <span className="text-sm text-muted-foreground">
+              {isDirty
+                ? "저장해야 신규 예약에 반영됩니다."
+                : "현재 화면과 저장된 설정이 일치합니다."}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
             <Button
+              type="button"
+              variant="outline"
+              onClick={resetToDefaults}
+              className="border-border bg-transparent hover:bg-muted/20 hover:text-foreground"
+            >
+              기본값으로
+            </Button>
+            <Button
+              type="button"
               onClick={save}
               disabled={saving}
-              className="bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 disabled:opacity-50"
+              className="bg-primary text-primary-foreground disabled:opacity-50"
             >
               <Save className="mr-2 h-4 w-4" />
               {saving ? "저장 중…" : "저장"}
             </Button>
-            <Button
-              variant="outline"
-              onClick={resetToDefaults}
-              className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground bg-transparent"
-            >
-              기본값으로
-            </Button>
-          </CardFooter>
-        </Card>
+          </div>
+        </div>
       </AdminPageShell>
     </TooltipProvider>
   );
