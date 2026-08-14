@@ -953,8 +953,12 @@ export default function AdminRentalsClient() {
                                 </button>
                               }
                               items={[
-                                { label: "대여 ID", value: rid },
-                                { label: "이메일", value: r.customer?.email || null },
+                                { label: "대여 ID", value: rid, copyValue: rid },
+                                {
+                                  label: "이메일",
+                                  value: r.customer?.email || null,
+                                  copyValue: r.customer?.email || undefined,
+                                },
                                 { label: "서비스", value: svc.label },
                                 { label: "연결", value: link?.label ?? "연결 없음" },
                                 { label: "시나리오", value: flow.label },
@@ -963,6 +967,9 @@ export default function AdminRentalsClient() {
                                   value: r.stringingApplicationId
                                     ? String(r.stringingApplicationId)
                                     : null,
+                                  copyValue: r.stringingApplicationId
+                                    ? String(r.stringingApplicationId)
+                                    : undefined,
                                 },
                               ]}
                             />

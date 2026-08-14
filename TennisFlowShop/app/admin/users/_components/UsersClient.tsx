@@ -1272,9 +1272,17 @@ export default function UsersClient() {
                                   </button>
                                 }
                                 items={[
-                                  { label: "회원 ID", value: u.id },
-                                  { label: "이메일", value: u.email },
-                                  { label: "전화", value: formatKoreanPhone(u.phone || "") || u.phone },
+                                  { label: "회원 ID", value: u.id, copyValue: u.id },
+                                  {
+                                    label: "이메일",
+                                    value: u.email,
+                                    copyValue: u.email || undefined,
+                                  },
+                                  {
+                                    label: "전화",
+                                    value: formatKoreanPhone(u.phone || "") || u.phone,
+                                    copyValue: u.phone || undefined,
+                                  },
                                 ]}
                               />
                             </div>
@@ -1313,11 +1321,16 @@ export default function UsersClient() {
                                   </button>
                                 }
                                 items={[
-                                  { label: "이메일", value: u.email },
+                                  {
+                                    label: "이메일",
+                                    value: u.email,
+                                    copyValue: u.email || undefined,
+                                  },
                                   {
                                     label: "전화",
                                     value: formatKoreanPhone(u.phone || "") || u.phone,
                                     href: u.phone ? `tel:${u.phone}` : undefined,
+                                    copyValue: u.phone || undefined,
                                   },
                                   {
                                     label: "주소",

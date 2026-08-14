@@ -1124,8 +1124,12 @@ export default function PackageOrdersClient() {
                                   </button>
                                 }
                                 items={[
-                                  { label: "패키지 ID", value: pkg.id },
-                                  { label: "이메일", value: pkg.customer?.email },
+                                  { label: "패키지 ID", value: pkg.id, copyValue: pkg.id },
+                                  {
+                                    label: "이메일",
+                                    value: pkg.customer?.email,
+                                    copyValue: pkg.customer?.email || undefined,
+                                  },
                                   { label: "패키지", value: pkg.packageType },
                                   { label: "서비스", value: pkg.serviceType },
                                 ]}
