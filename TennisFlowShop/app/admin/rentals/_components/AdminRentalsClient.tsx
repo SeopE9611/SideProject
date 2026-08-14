@@ -1,6 +1,12 @@
 "use client";
 
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import {
+  AdminListRow,
+  AdminListTable,
+  AdminRowActions,
+  AdminStatusGroup,
+} from "@/components/admin/AdminListTable";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
@@ -8,7 +14,6 @@ import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -803,26 +808,12 @@ export default function AdminRentalsClient() {
         </div>
       </AdminFilterBar>
 
-      <Card className={cn("px-4 py-5", adminSurface.tableCard)}>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            {hasResolvedData && !hasDataError && data ? (
-              <>
-                <CardTitle className={adminTypography.sectionTitle}>대여 목록</CardTitle>
-                <p className={adminTypography.metaMuted}>총 {data.total}개의 대여</p>
-              </>
-            ) : (
-              <>
-                <Skeleton className="h-5 w-24 rounded bg-muted dark:bg-card" />
-                <Skeleton className="h-4 w-36 rounded bg-card" />
-              </>
-            )}
-          </div>
-          <p className="px-6 -mt-2 mb-2 text-ui-label text-muted-foreground">
-            대여 ID를 선택하면 연락처와 연결 신청서를 확인할 수 있습니다.
-          </p>
-        </CardHeader>
-        <CardContent className="relative overflow-x-auto pr-2">
+      <AdminListTable
+        title="대여 목록"
+        viewLabel={status ? getRentalStatusDisplayLabel(status) : "전체 대여"}
+        resultLabel={hasResolvedData && !hasDataError && data ? `총 ${data.total}건` : "불러오는 중…"}
+        description="고객, 대여 라켓, 반납 일정, 결제와 보증금 상태를 한 행에서 확인할 수 있습니다."
+      >
           <Table className="min-w-[980px] w-full table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
@@ -922,7 +913,7 @@ export default function AdminRentalsClient() {
                   return (
                     <TableRow
                       key={rid || `row-${idx}`}
-                      className="group align-top transition-colors hover:bg-muted/40"
+                      className={AdminListRow()}
                     >
                       <TableCell className={cn(tdClasses, "py-2 pl-5")}>
                         <div className={adminDataTable.cellStack}>
@@ -1001,8 +992,9 @@ export default function AdminRentalsClient() {
                         </div>
                       </TableCell>
                       <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
-                        <div className={cn(adminDataTable.cellStack, "text-left")}>
-                          {(() => {
+                        <AdminStatusGroup
+                          className="text-left"
+                          primary={(() => {
                             const spec = getRentalStatusBadgeSpec(r.status);
                             return (
                               <Badge
@@ -1013,24 +1005,16 @@ export default function AdminRentalsClient() {
                               </Badge>
                             );
                           })()}
-                          <p className={adminDataTable.secondaryLine}>
+                          secondary={
+                            <>
                             {shippingLabel}
                             {applicationStatusLabel
                               ? ` · 교체서비스 ${applicationStatusLabel}`
                               : ""}
-                          </p>
-                          {exceptionLabel ? (
-                            <p
-                              className={
-                                r.cancelRequest?.status === "requested"
-                                  ? adminDataTable.dangerText
-                                  : adminDataTable.attentionText
-                              }
-                            >
-                              {exceptionLabel}
-                            </p>
-                          ) : null}
-                        </div>
+                            </>
+                          }
+                          alert={exceptionLabel}
+                        />
                       </TableCell>
                       <TableCell
                         className={cn(
@@ -1079,7 +1063,7 @@ export default function AdminRentalsClient() {
                           "w-[130px] py-2 group-hover:bg-muted/40",
                         )}
                       >
-                        <div className="flex items-center justify-end gap-1">
+                        <AdminRowActions>
                           <Button
                             asChild
                             size="sm"
@@ -1145,7 +1129,7 @@ export default function AdminRentalsClient() {
                                 </>
                               )}
                           </AdminRowActionMenu>
-                        </div>
+                        </AdminRowActions>
                       </TableCell>
                     </TableRow>
                   );
@@ -1190,8 +1174,7 @@ export default function AdminRentalsClient() {
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </AdminListTable>
       <AdminConfirmDialog
         open={pendingAction !== null}
         onOpenChange={(open) => {

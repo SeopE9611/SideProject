@@ -19,7 +19,7 @@ export default function AdminFilterBar({
 }: AdminFilterBarProps) {
   return (
     <div
-      className={cn("rounded-lg border border-border bg-background px-3 py-2.5", className)}
+      className={cn("rounded-xl border border-border/70 bg-background px-4 py-3 shadow-sm", className)}
     >
       <div className="flex flex-col items-stretch gap-3 min-[1366px]:flex-row min-[1366px]:items-end min-[1366px]:justify-between">
         <div className="min-w-0 flex-1">{children}</div>
@@ -28,12 +28,12 @@ export default function AdminFilterBar({
         ) : null}
       </div>
       {quickFilters ? (
-        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3">
           {quickFilters}
         </div>
       ) : null}
       {activeFilters ? (
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border/50 pt-3 text-ui-label text-muted-foreground">
           {activeFilters}
         </div>
       ) : null}

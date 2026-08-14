@@ -13,13 +13,13 @@ import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import { AdminListRow, AdminListTable, AdminRowActions } from "@/components/admin/AdminListTable";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
@@ -878,27 +878,13 @@ export default function OrdersClient() {
       </AdminFilterBar>
 
       {/* 주문 목록 테이블 */}
-      <Card className={cn("px-4 py-3", adminSurface.tableCard)}>
-        <CardHeader className="px-2 pb-2 pt-0">
-          <div className="flex items-center justify-between">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-              <CardTitle className="text-ui-body font-medium">주문 목록</CardTitle>
-              <span className="text-ui-label font-medium text-foreground/80">{quickViewLabel}</span>
-              {searchTerm.trim() ? (
-                <span className="truncate text-ui-label text-muted-foreground">검색: {searchTerm.trim()}</span>
-              ) : null}
-              {appliedFilterLabels.length > 0 ? (
-                <span className="truncate text-ui-label text-muted-foreground">
-                  필터: {appliedFilterLabels.join(" / ")}
-                </span>
-              ) : null}
-            </div>
-            <p className="shrink-0 text-ui-label text-muted-foreground">
-              {data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "불러오는 중…"}
-            </p>
-          </div>
-        </CardHeader>
-        <CardContent className="relative min-h-[420px] overflow-x-auto pr-2">
+      <AdminListTable
+        title="주문 목록"
+        viewLabel={quickViewLabel}
+        resultLabel={data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "불러오는 중…"}
+        description="고객, 상품, 핵심 상태와 다음 처리 항목을 한 행에서 확인할 수 있습니다."
+        contentClassName="min-h-[420px]"
+      >
           <Table className="min-w-[1080px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
@@ -1060,11 +1046,7 @@ export default function OrdersClient() {
                     return (
                       <TableRow
                         key={order.id}
-                        className={cn(
-                          "group",
-                          adminSurface.tableRow,
-                          "align-top transition-colors hover:bg-muted/35",
-                        )}
+                        className={AdminListRow()}
                       >
                         <TableCell
                           className={cn(
@@ -1265,7 +1247,7 @@ export default function OrdersClient() {
                             "w-[160px] py-2 group-hover:bg-muted/25",
                           )}
                         >
-                          <div className="flex items-center justify-end gap-1">
+                          <AdminRowActions>
                             <Button
                               asChild
                               size="sm"
@@ -1318,7 +1300,7 @@ export default function OrdersClient() {
                                   <Truck className="mr-2 h-4 w-4" /> {shippingActionLabel}
                                 </DropdownMenuItem>
                             </AdminRowActionMenu>
-                          </div>
+                          </AdminRowActions>
                         </TableCell>
                       </TableRow>
                     );
@@ -1367,8 +1349,7 @@ export default function OrdersClient() {
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </AdminListTable>
     </AdminPageShell>
   );
 }
