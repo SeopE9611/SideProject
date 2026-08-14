@@ -85,9 +85,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         role="status"
       >
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <strong className="font-bold">관리자 콘솔은 데스크톱 전용입니다.</strong>
+          <strong className="font-bold">관리자 콘솔은 데스크톱 전용입니다</strong>
           <span className="font-medium">
-            정확한 업무 처리를 위해 1280px 이상의 PC 환경을 사용해 주세요.
+            정확한 업무 처리를 위해 1280px 이상의 PC 환경을 사용해 주세요
           </span>
         </p>
       </div>
