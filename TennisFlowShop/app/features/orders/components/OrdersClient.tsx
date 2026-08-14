@@ -10,13 +10,21 @@ import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
-import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { AdminListRow, AdminListTable, AdminRowActions } from "@/components/admin/AdminListTable";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminMoneyBlock,
+  AdminRowActions,
+  AdminStatusGroup,
+} from "@/components/admin/AdminListTable";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
-import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
@@ -30,14 +38,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { getAdminOrderPaymentState } from "@/lib/admin/order-payment-display";
 import {
   badgeBase,
@@ -58,7 +58,9 @@ import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
 import type { ApiResponse, OrderWithType } from "@/lib/types/order";
 import { cn } from "@/lib/utils";
 import {
-  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CreditCard,
   PackageSearch,
   Search,
@@ -69,6 +71,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
+
+const ORDER_LIST_COLUMNS =
+  "grid-cols-[minmax(230px,1.15fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_120px_140px]";
 
 export default function OrdersClient() {
   const router = useRouter();
@@ -534,10 +539,6 @@ export default function OrdersClient() {
     }
   };
 
-  // 공통 스타일 상수
-  const thClasses = cn(adminDataTable.headCenter, "border-b border-border/30");
-  const tdClasses = cn(adminDataTable.cell, "border-b border-border/30 text-left");
-
   // 배송정보 업데이트 네비게이션
   const handleShippingUpdate = async (orderId: string) => {
     try {
@@ -679,7 +680,7 @@ export default function OrdersClient() {
         />
       </div>
 
-      <div className="mb-3 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 shadow-sm">
+      <div className="mb-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-2">
         <div className="flex flex-row items-center justify-between gap-2">
           <details className="group min-w-0">
             <summary className="cursor-pointer list-none text-ui-body-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
@@ -877,442 +878,426 @@ export default function OrdersClient() {
         </div>
       </AdminFilterBar>
 
-      {/* 주문 목록 테이블 */}
+      {/* 주문 목록 */}
       <AdminListTable
         title="주문 목록"
         viewLabel={quickViewLabel}
         resultLabel={data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "불러오는 중…"}
         description="고객, 상품, 핵심 상태와 다음 처리 항목을 한 행에서 확인할 수 있습니다."
         contentClassName="min-h-[420px]"
+        columnsClassName={ORDER_LIST_COLUMNS}
+        ariaLabel="주문 관리 목록"
       >
-          <Table className="min-w-[1080px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
-            <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
-              <TableRow>
-                <AdminSortableTableHead
-                  label="고객 / 주문 · 접수"
-                  active={sortBy === "date"}
-                  direction={sortDirection}
-                  align="left"
-                  onSort={() => handleSort("date")}
-                  className={cn(thClasses, "w-[220px] text-left")}
-                />
-                <TableHead className={cn(thClasses, "w-[210px] text-left")}>
-                  상품 / 서비스
-                </TableHead>
-                <TableHead className={cn(thClasses, "w-[190px] text-left")}>진행 / 예외</TableHead>
-                <AdminSortableTableHead
-                  label="결제"
-                  active={sortBy === "total"}
-                  direction={sortDirection}
-                  align="right"
-                  onSort={() => handleSort("total")}
-                  className={cn(thClasses, "w-[130px] text-right")}
-                />
-                <TableHead className={cn(thClasses, "w-[170px] text-left")}>
-                  배송 / 수령
-                </TableHead>
-                <TableHead className={cn(adminDataTable.stickyActionHead, "w-[160px]")}>
-                  액션
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {error ? (
-                <TableRow>
-                  <TableCell colSpan={6} className={tdClasses}>
-                    <AsyncState
-                      kind="error"
-                      tone="admin"
-                      variant="inline"
-                      resourceName="주문 데이터"
-                      onAction={() => {
-                        void mutate();
-                      }}
-                    />
-                  </TableCell>
-                </TableRow>
-              ) : !data ? (
-                <TableRow>
-                  <TableCell colSpan={6} className={tdClasses}>
-                    <div className="space-y-2 py-2">
-                      {Array.from({ length: 6 }).map((_, index) => (
-                        <div
-                          key={`orders-table-skeleton-${index}`}
-                          className="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-2"
-                        >
-                          {Array.from({ length: 7 }).map((__, cellIndex) => (
-                            <Skeleton
-                              key={`orders-table-skeleton-${index}-${cellIndex}`}
-                              className="h-6 w-full"
-                            />
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : data.items.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className={tdClasses}>
-                    <AsyncState
-                      kind="empty"
-                      tone="admin"
-                      variant="inline"
-                      resourceName="주문 데이터"
-                    />
-                  </TableCell>
-                </TableRow>
+        <AdminListColumnHeader columnsClassName={ORDER_LIST_COLUMNS}>
+          <div
+            role="columnheader"
+            aria-sort={
+              sortBy === "date" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5"
+          >
+            <button
+              type="button"
+              aria-label="접수일 정렬"
+              onClick={() => handleSort("date")}
+              className={cn(
+                "inline-flex min-h-8 items-center gap-1 rounded-sm text-left transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sortBy === "date" && "text-primary",
+              )}
+            >
+              주문 / 고객
+              {sortBy === "date" ? (
+                sortDirection === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
               ) : (
-                groupLinkedOrders(orders).map((group, groupIdx) => {
-                  // 이 그룹이 "상품 상품 구매 + 교체서비스 신청서" 묶음인지 체크
-                  const hasStringingAppInGroup = group.some(
-                    (o) => o.__type === "stringing_application",
-                  );
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            상품 / 서비스
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            상태 / 처리
+          </div>
+          <div
+            role="columnheader"
+            aria-sort={
+              sortBy === "total" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5 text-right"
+          >
+            <button
+              type="button"
+              aria-label="결제 금액 정렬"
+              onClick={() => handleSort("total")}
+              className={cn(
+                "ml-auto inline-flex min-h-8 items-center justify-end gap-1 rounded-sm text-right transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sortBy === "total" && "text-primary",
+              )}
+            >
+              결제 금액
+              {sortBy === "total" ? (
+                sortDirection === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
+              ) : (
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
+            다음 작업
+          </div>
+        </AdminListColumnHeader>
 
-                  const borderColors = [
-                    "border-border",
-                    "border-border",
-                    "border-border",
-                    "border-border",
-                    "border-border",
-                  ];
-                  const borderColor = borderColors[groupIdx % borderColors.length];
-                  const isGrouped = group.length > 1;
+        <AdminListBody>
+          {error ? (
+            <AdminListRow columnsClassName={ORDER_LIST_COLUMNS} ariaLabel="주문 목록 오류">
+              <AdminListCell className="col-span-5 py-6">
+                <AsyncState
+                  kind="error"
+                  tone="admin"
+                  variant="inline"
+                  resourceName="주문 데이터"
+                  onAction={() => {
+                    void mutate();
+                  }}
+                />
+              </AdminListCell>
+            </AdminListRow>
+          ) : !data ? (
+            Array.from({ length: 4 }).map((_, rowIndex) => (
+              <AdminListRow
+                key={`orders-list-skeleton-${rowIndex}`}
+                columnsClassName={ORDER_LIST_COLUMNS}
+                ariaLabel="주문 불러오는 중"
+              >
+                {Array.from({ length: 5 }).map((__, cellIndex) => (
+                  <AdminListCell key={`orders-list-skeleton-${rowIndex}-${cellIndex}`}>
+                    <Skeleton className="h-6 w-full" />
+                  </AdminListCell>
+                ))}
+              </AdminListRow>
+            ))
+          ) : data.items.length === 0 ? (
+            <AdminListRow columnsClassName={ORDER_LIST_COLUMNS} ariaLabel="주문 목록 비어 있음">
+              <AdminListCell className="col-span-5 py-6">
+                <AsyncState
+                  kind="empty"
+                  tone="admin"
+                  variant="inline"
+                  resourceName="주문 데이터"
+                />
+              </AdminListCell>
+            </AdminListRow>
+          ) : (
+            groupLinkedOrders(orders).map((group) => {
+              const hasStringingAppInGroup = group.some(
+                (o) => o.__type === "stringing_application",
+              );
+              const anchorOrder = group.find((o) => o.__type === "order") ?? null;
+              const anchorHasRacket = hasRacketItems((anchorOrder as any)?.items);
 
-                  const anchorOrder = group.find((o) => o.__type === "order") ?? null;
-                  const anchorHasRacket = hasRacketItems((anchorOrder as any)?.items);
+              return group.map((order) => {
+                const linkedApplication =
+                  getLatestStringingApplicationInGroup(group) ??
+                  (order as any).linkedStringingApplication ??
+                  null;
+                const isLinkedProductOrder =
+                  order.__type === "order" &&
+                  (hasStringingAppInGroup || (order as any).hasStringingApplication === true);
+                const expectsStringingApplication =
+                  order.__type === "order" && order.shippingInfo?.withStringService === true;
+                const needsStringingApplication =
+                  expectsStringingApplication && !isLinkedProductOrder;
+                const paymentState = getAdminOrderPaymentState({
+                  paymentStatus: order.paymentStatus,
+                  paymentMethod: order.paymentMethod,
+                  paymentProvider: order.paymentProvider,
+                  totalPrice: order.total,
+                });
+                const isIntegratedApp =
+                  order.__type === "stringing_application" &&
+                  !!order.linkedOrderId &&
+                  !!anchorOrder;
+                const hasCancelRequest =
+                  order.cancelStatus === "requested" ||
+                  linkedApplication?.cancelStatus === "requested";
+                const kind = getKindBadge(order);
+                const link = getLinkBadge(order, isLinkedProductOrder);
+                const flow = getFlowBadge(order, {
+                  isLinkedProductOrder,
+                  anchorHasRacket,
+                  isIntegratedApp,
+                });
+                const actionMethodSource =
+                  order.__type === "stringing_application"
+                    ? ((order as any)?.shippingInfo?.shippingMethod ??
+                      (order as any)?.collectionMethod)
+                    : (order as any)?.shippingInfo;
+                const shippingActionLabel = isVisitPickupOrder(actionMethodSource)
+                  ? "수령 정보 등록"
+                  : "배송 정보 등록";
+                const productSummary = getProductServiceSummary(order, linkedApplication);
+                const nextActionLabel = getOrderNextAction(order, {
+                  isLinkedProductOrder,
+                  needsStringingApplication,
+                  paymentState,
+                });
+                const detailHref =
+                  order.__type === "stringing_application"
+                    ? `/admin/applications/stringing/${order.id}`
+                    : `/admin/orders/${order.id}`;
+                const linkedDocumentId =
+                  order.__type === "stringing_application"
+                    ? order.linkedOrderId
+                    : linkedApplication?.id;
+                const methodSource =
+                  order.__type === "stringing_application" &&
+                  anchorOrder &&
+                  (order as any).linkedOrderId
+                    ? (anchorOrder as any)
+                    : (order as any);
+                const shippingMethod = getShippingMethodBadge(methodSource);
+                const trackingLabel = isLinkedProductOrder
+                  ? "신청서에서 관리"
+                  : getTrackingBadge(order).label;
+                const linkedStatusLabel = linkedApplication?.status
+                  ? (getCommonApplicationStatusLabel(linkedApplication.status) ??
+                    linkedApplication.status)
+                  : null;
+                const needsCancelFinalization =
+                  order.__type === "order" && needsOrderCancelFinalization(order);
+                const statusLabel = getOrderStatusLabelForDisplay(
+                  order.status,
+                  (order as any).shippingInfo,
+                );
+                const normalizedStatus = statusLabel.replace(/\s/g, "");
+                const normalizedPayment = paymentState.label.replace(/\s/g, "");
+                const isPaymentEquivalent = normalizedStatus === normalizedPayment;
+                const statusSpec = getOrderStatusBadgeSpec(order.status);
+                const exceptionLabel = needsCancelFinalization
+                  ? "주문 취소 후처리 필요"
+                  : hasCancelRequest
+                    ? "취소 요청"
+                    : needsStringingApplication
+                      ? "교체 신청서 미접수"
+                      : trackingLabel === "미등록"
+                        ? "배송 정보 미등록"
+                      : null;
+                const paymentVariant =
+                  paymentState.kind === "paid"
+                    ? "success"
+                    : paymentState.kind === "bank_pending" ||
+                        paymentState.kind === "pg_pending" ||
+                        paymentState.kind === "pending"
+                      ? "warning"
+                      : paymentState.kind === "canceled" ||
+                          paymentState.kind === "refunded" ||
+                          paymentState.kind === "failed"
+                        ? "danger"
+                        : paymentState.kind === "other"
+                          ? "info"
+                          : "neutral";
+                const paymentMeta = order.paymentMethod || order.paymentProvider || paymentState.label;
 
-                  return group.map((order) => {
-                    // 통합 주문 행에서도 연결 신청서 핵심 정보를 빠르게 읽기 위한 참조
-                    const linkedApplication =
-                      getLatestStringingApplicationInGroup(group) ??
-                      (order as any).linkedStringingApplication ??
-                      null;
-                    const isLinkedProductOrder =
-                      order.__type === "order" &&
-                      (hasStringingAppInGroup || (order as any).hasStringingApplication === true);
-
-                    // 각 행의 상태 계산
-                    const expectsStringingApplication =
-                      order.__type === "order" && order.shippingInfo?.withStringService === true;
-
-                    const needsStringingApplication =
-                      expectsStringingApplication && !isLinkedProductOrder;
-
-                    const paymentState = getAdminOrderPaymentState({
-                      paymentStatus: order.paymentStatus,
-                      paymentMethod: order.paymentMethod,
-                      paymentProvider: order.paymentProvider,
-                      totalPrice: order.total,
-                    });
-
-                    const isIntegratedApp =
-                      order.__type === "stringing_application" &&
-                      !!order.linkedOrderId &&
-                      !!anchorOrder;
-                    const hasCancelRequest =
-                      order.cancelStatus === "requested" ||
-                      linkedApplication?.cancelStatus === "requested";
-                    const kind = getKindBadge(order);
-                    const link = getLinkBadge(order, isLinkedProductOrder);
-                    const flow = getFlowBadge(order, {
-                      isLinkedProductOrder,
-                      anchorHasRacket,
-                      isIntegratedApp,
-                    });
-                    const actionMethodSource =
-                      order.__type === "stringing_application"
-                        ? ((order as any)?.shippingInfo?.shippingMethod ??
-                          (order as any)?.collectionMethod)
-                        : (order as any)?.shippingInfo;
-                    const shippingActionLabel = isVisitPickupOrder(actionMethodSource)
-                      ? "수령 정보 등록"
-                      : "배송 정보 등록";
-                    const productSummary = getProductServiceSummary(order, linkedApplication);
-                    const nextActionLabel = getOrderNextAction(order, {
-                      isLinkedProductOrder,
-                      needsStringingApplication,
-                      paymentState,
-                    });
-                    const detailHref =
-                      order.__type === "stringing_application"
-                        ? `/admin/applications/stringing/${order.id}`
-                        : `/admin/orders/${order.id}`;
-                    const linkedDocumentId =
-                      order.__type === "stringing_application"
-                        ? order.linkedOrderId
-                        : linkedApplication?.id;
-
-                    return (
-                      <TableRow
-                        key={order.id}
-                        className={AdminListRow()}
-                      >
-                        <TableCell
-                          className={cn(
-                            tdClasses,
-                            "py-2 pl-5 border-l-4",
-                            isGrouped ? borderColor : "border-transparent",
-                          )}
-                        >
-                          <div className={adminDataTable.cellStack}>
-                            <p className={adminDataTable.primaryLine}>
-                              {order.customer.name
-                                .replace(/\s*\(비회원\)\s*$/, "")
-                                .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
-                            </p>
-                            <div className="flex min-w-0 items-center gap-1.5">
-                              {hasCancelRequest ? (
-                                <AlertTriangle
-                                  className="h-3.5 w-3.5 shrink-0 text-warning"
-                                  aria-label="취소 요청 있음"
-                                />
-                              ) : null}
-                              <AdminReferencePopover
-                                title="주문·신청 참조 정보"
-                                trigger={
-                                    <button type="button" className={adminDataTable.referenceTrigger}>
-                                      <span className="truncate">
-                                        참조 정보 · {shortenId(order.id)}
-                                      </span>
-                                  </button>
-                                }
-                                items={[
-                                  { label: "문서 ID", value: order.id, copyValue: order.id },
-                                  {
-                                    label: "이메일",
-                                    value: order.customer.email || null,
-                                    copyValue: order.customer.email || undefined,
-                                  },
-                                  { label: "문서 유형", value: `${kind.label} · ${link.label}` },
-                                  { label: "시나리오", value: flow.label },
-                                  {
-                                    label: "연결 문서",
-                                    value: linkedDocumentId ?? null,
-                                    copyValue: linkedDocumentId ?? undefined,
-                                  },
-                                ]}
-                              />
-                              <span className="ml-auto shrink-0 text-ui-label tabular-nums text-foreground/70">
-                                {formatDate(order.date)}
-                              </span>
-                            </div>
-                          </div>
-                        </TableCell>
-                        {/* 상품/서비스 셀 */}
-                        <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
-                          <div className="min-w-0 text-left align-top">
-                            <p className="line-clamp-2 break-keep text-ui-body-sm font-medium leading-snug text-foreground">
-                              {productSummary.primary}
-                            </p>
-                            {productSummary.details.length > 0 && (
-                              <p className="mt-1 line-clamp-1 break-keep text-ui-label text-foreground/70">
-                                {productSummary.details.join(" · ")}
-                              </p>
-                            )}
-                          </div>
-                        </TableCell>
-                        {/* 진행/예외 셀 */}
-                        <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
-                          {order.__type === "stringing_application" ? (
-                            <div className={adminDataTable.cellStack}>
-                              <ApplicationStatusBadge status={order.status} />
-                              {hasCancelRequest ? (
-                                <p className={adminDataTable.dangerText}>취소 요청</p>
-                              ) : null}
-                            </div>
-                          ) : (
-                            (() => {
-                              const st = getOrderStatusBadgeSpec(order.status);
-                              const needsCancelFinalization = needsOrderCancelFinalization(order);
-                              const statusLabel = getOrderStatusLabelForDisplay(
-                                order.status,
-                                (order as any).shippingInfo,
-                              );
-                              const normalizedStatus = statusLabel.replace(/\s/g, "");
-                              const normalizedPayment = paymentState.label.replace(/\s/g, "");
-                              const isPaymentEquivalent =
-                                normalizedStatus === normalizedPayment ||
-                                (normalizedStatus === "결제완료" && normalizedPayment === "결제완료");
-                              const exceptionLabel = needsCancelFinalization
-                                ? "주문 취소 후처리 필요"
-                                : hasCancelRequest
-                                  ? "취소 요청"
-                                  : needsStringingApplication
-                                    ? "교체 신청서 미접수"
-                                    : null;
-                              const linkedStatusLabel = linkedApplication?.status
-                                ? (getCommonApplicationStatusLabel(linkedApplication.status) ??
-                                  linkedApplication.status)
-                                : null;
-
-                              return (
-                                <div className={adminDataTable.cellStack}>
-                                  <Badge
-                                    variant={isPaymentEquivalent ? "secondary" : st.variant}
-                                    className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-                                    title={isPaymentEquivalent ? `주문 상태: ${statusLabel}` : undefined}
-                                  >
-                                    {isPaymentEquivalent ? "결제 단계" : statusLabel}
-                                  </Badge>
-                                  {isLinkedProductOrder && linkedStatusLabel ? (
-                                    <p className={adminDataTable.secondaryLine}>
-                                      교체서비스 · {linkedStatusLabel}
-                                    </p>
-                                  ) : null}
-                                  {exceptionLabel ? (
-                                    <p
-                                      className={
-                                        needsCancelFinalization || hasCancelRequest
-                                          ? adminDataTable.dangerText
-                                          : adminDataTable.attentionText
-                                      }
-                                    >
-                                      {exceptionLabel}
-                                    </p>
-                                  ) : null}
-                                </div>
-                              );
-                            })()
-                          )}
-                        </TableCell>
-                        {/* 결제 셀 */}
-                        <TableCell className={cn(adminDataTable.moneyCell, "py-2")}>
-                          <div className="flex flex-col items-end gap-1">
+                return (
+                  <AdminListRow
+                    key={order.id}
+                    columnsClassName={ORDER_LIST_COLUMNS}
+                    ariaLabel={`${order.customer.name} ${kind.label}`}
+                  >
+                    <AdminListCell>
+                      <AdminListPrimary
+                        title={order.customer.name
+                          .replace(/\s*\(비회원\)\s*$/, "")
+                          .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
+                        meta={
+                          <>
                             <Badge
-                              variant={
-                                paymentState.kind === "paid"
-                                  ? "success"
-                                  : paymentState.kind === "bank_pending" ||
-                                      paymentState.kind === "pg_pending" ||
-                                      paymentState.kind === "pending"
-                                    ? "warning"
-                                    : paymentState.kind === "canceled" ||
-                                        paymentState.kind === "refunded" ||
-                                        paymentState.kind === "failed"
-                                      ? "danger"
-                                      : paymentState.kind === "other"
-                                        ? "info"
-                                        : "neutral"
+                              variant="secondary"
+                              className={cn(badgeBase, badgeSizeSm, kind.className)}
+                            >
+                              {kind.label}
+                            </Badge>
+                            <span className="font-mono">ID {shortenId(order.id)}</span>
+                            <span className="tabular-nums">{formatDate(order.date)}</span>
+                          </>
+                        }
+                        supporting={
+                          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                            <span>{link.label} · {flow.shortLabel}</span>
+                            <AdminReferencePopover
+                              title="주문·신청 참조 정보"
+                              trigger={
+                                <button type="button" className={adminDataTable.referenceTrigger}>
+                                  연락처·참조 보기
+                                </button>
                               }
+                              items={[
+                                { label: "문서 ID", value: order.id, copyValue: order.id },
+                                {
+                                  label: "이메일",
+                                  value: order.customer.email || null,
+                                  copyValue: order.customer.email || undefined,
+                                },
+                                { label: "문서 유형", value: `${kind.label} · ${link.label}` },
+                                { label: "시나리오", value: flow.label },
+                                {
+                                  label: "연결 문서",
+                                  value: linkedDocumentId ?? null,
+                                  copyValue: linkedDocumentId ?? undefined,
+                                },
+                              ]}
+                            />
+                          </div>
+                        }
+                      />
+                    </AdminListCell>
+
+                    <AdminListCell>
+                      <AdminListPrimary
+                        title={productSummary.primary}
+                        meta={
+                          productSummary.details.length > 0
+                            ? productSummary.details.join(" · ")
+                            : order.__type === "stringing_application"
+                              ? "교체서비스 접수"
+                              : `상품 ${order.items.length}종`
+                        }
+                        supporting={
+                          isLinkedProductOrder
+                            ? "연결 신청서 있음 · 교체서비스 포함"
+                            : order.__type === "stringing_application" && order.linkedOrderId
+                              ? "주문에 연결된 신청서"
+                              : flow.shortLabel
+                        }
+                      />
+                    </AdminListCell>
+
+                    <AdminListCell>
+                      <AdminStatusGroup
+                        primary={
+                          <>
+                            {order.__type === "stringing_application" ? (
+                              <ApplicationStatusBadge status={order.status} />
+                            ) : !isPaymentEquivalent ? (
+                              <Badge
+                                variant={statusSpec.variant}
+                                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
+                              >
+                                {statusLabel}
+                              </Badge>
+                            ) : null}
+                            <Badge
+                              variant={paymentVariant}
+                              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
                             >
                               {paymentState.label}
                             </Badge>
-                            <span className={adminDataTable.primaryText}>
-                              {formatCurrency(order.total)}
-                            </span>
-                          </div>
-                        </TableCell>
-                        {/* 배송/수령 셀 */}
-                        <TableCell className={cn(tdClasses, "py-2")}>
-                          <div className="flex flex-col items-start gap-1">
-                            {(() => {
-                              const methodSource =
-                                order.__type === "stringing_application" &&
-                                anchorOrder &&
-                                (order as any).linkedOrderId
-                                  ? (anchorOrder as any)
-                                  : (order as any);
-                              const m = getShippingMethodBadge(methodSource);
-                              return (
-                                <span className={adminDataTable.primaryText} title={`수령방식 코드: ${String(m.code ?? "null")}`}>
-                                  {m.label}
-                                </span>
-                              );
-                            })()}
-                            {(() => {
-                              if (isLinkedProductOrder) {
-                                return (
-                                  <span className={adminDataTable.secondaryText}>
-                                    신청서에서 관리
-                                  </span>
-                                );
-                              }
-                              const t = getTrackingBadge(order);
-                              return (
-                                <span
-                                  className={adminDataTable.secondaryText}
-                                  title="택배인 경우만 운송장 등록/미등록 의미가 있습니다."
-                                >
-                                  {t.label}
-                                </span>
-                              );
-                            })()}
-                          </div>
-                        </TableCell>
-                        {/* 작업 메뉴 셀 */}
-                        <TableCell
-                          className={cn(
-                            adminDataTable.stickyActionCell,
-                            "w-[160px] py-2 group-hover:bg-muted/25",
-                          )}
-                        >
-                          <AdminRowActions>
-                            <Button
-                              asChild
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-ui-label font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2"
-                            >
-                              <Link
-                                href={detailHref}
-                                onClick={() => {
-                                  if (order.__type === "stringing_application") {
-                                    useStringingStore.getState().setSelectedApplicationId(order.id);
-                                  } else {
-                                    useOrderStore.getState().setSelectedOrderId(order.id);
-                                  }
-                                }}
-                              >
-                                {nextActionLabel}
-                              </Link>
-                            </Button>
-                            <AdminRowActionMenu ariaLabel="주문 부가 작업 메뉴 열기">
-                                {canSyncNicePayment(order) && (
-                                    <DropdownMenuItem
-                                      className="whitespace-nowrap"
-                                      title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
-                                      disabled={syncingNiceOrderId === order.id}
-                                      onClick={() => {
-                                        void handleNicePaymentSync(order.id);
-                                      }}
-                                    >
-                                      <CreditCard className="mr-2 h-4 w-4" />
-                                      {syncingNiceOrderId === order.id
-                                        ? "확인 중..."
-                                        : "PG 상태 확인"}
-                                    </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem
-                                  className="whitespace-nowrap"
-                                  onClick={() => {
-                                    // 신청서 행이면 신청서 배송등록으로 바로 이동
-                                    if (order.__type === "stringing_application") {
-                                      router.push(
-                                        `/admin/applications/stringing/${order.id}/shipping-update`,
-                                      );
-                                      return;
-                                    }
-                                    // 주문 행이면: 연결된 신청서가 있으면 신청서로 리다이렉트(위 handleShippingUpdate 로직)
-                                    handleShippingUpdate(order.id);
-                                  }}
-                                >
-                                  <Truck className="mr-2 h-4 w-4" /> {shippingActionLabel}
-                                </DropdownMenuItem>
-                            </AdminRowActionMenu>
-                          </AdminRowActions>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  });
-                })
-              )}
-            </TableBody>
-          </Table>
+                          </>
+                        }
+                        secondary={
+                          <>
+                            {shippingMethod.label} · {trackingLabel}
+                            {isLinkedProductOrder && linkedStatusLabel
+                              ? ` · 교체서비스 ${linkedStatusLabel}`
+                              : ""}
+                          </>
+                        }
+                        alert={exceptionLabel}
+                        alertTone={
+                          needsCancelFinalization || hasCancelRequest ? "danger" : "attention"
+                        }
+                      />
+                    </AdminListCell>
 
-          {/* 페이지네이션 */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
+                    <AdminListCell align="end">
+                      <AdminMoneyBlock
+                        amount={formatCurrency(order.total)}
+                        meta={paymentMeta}
+                      />
+                    </AdminListCell>
+
+                    <AdminListCell align="end">
+                      <AdminRowActions>
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="ghost"
+                          className="h-auto min-h-8 max-w-[132px] whitespace-normal break-keep border border-border/70 px-2.5 py-1.5 text-ui-label font-medium leading-tight hover:border-border hover:bg-muted/40 focus-visible:ring-2"
+                        >
+                          <Link
+                            href={detailHref}
+                            onClick={() => {
+                              if (order.__type === "stringing_application") {
+                                useStringingStore.getState().setSelectedApplicationId(order.id);
+                              } else {
+                                useOrderStore.getState().setSelectedOrderId(order.id);
+                              }
+                            }}
+                          >
+                            {nextActionLabel}
+                          </Link>
+                        </Button>
+                        <AdminRowActionMenu ariaLabel="주문 부가 작업 메뉴 열기">
+                          {canSyncNicePayment(order) ? (
+                            <DropdownMenuItem
+                              className="whitespace-nowrap"
+                              title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
+                              disabled={syncingNiceOrderId === order.id}
+                              onClick={() => {
+                                void handleNicePaymentSync(order.id);
+                              }}
+                            >
+                              <CreditCard className="mr-2 h-4 w-4" />
+                              {syncingNiceOrderId === order.id ? "확인 중..." : "PG 상태 확인"}
+                            </DropdownMenuItem>
+                          ) : null}
+                          <DropdownMenuItem
+                            className="whitespace-nowrap"
+                            onClick={() => {
+                              if (order.__type === "stringing_application") {
+                                router.push(
+                                  `/admin/applications/stringing/${order.id}/shipping-update`,
+                                );
+                                return;
+                              }
+                              handleShippingUpdate(order.id);
+                            }}
+                          >
+                            <Truck className="mr-2 h-4 w-4" /> {shippingActionLabel}
+                          </DropdownMenuItem>
+                        </AdminRowActionMenu>
+                      </AdminRowActions>
+                    </AdminListCell>
+                  </AdminListRow>
+                );
+              });
+            })
+          )}
+        </AdminListBody>
+
+        {totalPages > 1 ? (
+          <div role="rowgroup" className="border-t border-border">
+            <div role="row">
+              <div
+                role="cell"
+                aria-colspan={5}
+                className="flex flex-wrap items-center justify-center gap-1 px-4 py-3"
+              >
               <Button
                 size="sm"
                 variant="outline"
@@ -1347,8 +1332,10 @@ export default function OrdersClient() {
               >
                 다음
               </Button>
+              </div>
             </div>
-          )}
+          </div>
+        ) : null}
       </AdminListTable>
     </AdminPageShell>
   );

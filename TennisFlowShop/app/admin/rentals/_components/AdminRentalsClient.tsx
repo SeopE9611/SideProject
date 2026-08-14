@@ -2,8 +2,13 @@
 
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
   AdminListRow,
   AdminListTable,
+  AdminMoneyBlock,
   AdminRowActions,
   AdminStatusGroup,
 } from "@/components/admin/AdminListTable";
@@ -11,20 +16,11 @@ import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
-import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   badgeBase,
   badgeSizeSm,
@@ -36,7 +32,9 @@ import { shortenId } from "@/lib/shorten";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
-  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Eye,
   Package,
   Search,
@@ -83,6 +81,9 @@ type RentalRow = AdminRentalListItemDto & {
   dueAt: string | null;
   depositRefundedAt: string | null;
 };
+
+const RENTAL_LIST_COLUMNS =
+  "grid-cols-[minmax(220px,1.1fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_130px_130px]";
 
 const PAY_FILTERS: AdminRentalPaymentFilter[] = ["all", "unpaid", "paid"];
 const SHIP_FILTERS: AdminRentalShippingFilter[] = [
@@ -524,23 +525,6 @@ export default function AdminRentalsClient() {
   }
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / pageSize)) : null;
-  const thClasses = cn(adminDataTable.headCenter, "border-b border-border/30");
-  const tdClasses = cn(adminDataTable.cellCompact, "border-b border-border/30 text-center");
-
-  function PaymentBadge({ item }: { item: RentalRow }) {
-    const paymentLabel =
-      item.paymentStatusLabel ?? (derivePaymentStatus(item) === "paid" ? "결제완료" : "결제대기");
-    const pay = getPaymentStatusBadgeSpec(paymentLabel);
-    return (
-      <Badge
-        variant={pay.variant}
-        className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
-      >
-        {paymentLabel}
-      </Badge>
-    );
-  }
-
   function getShippingLabel(item: RentalRow) {
     if (item.servicePickupMethod === "SHOP_VISIT") {
       return "운송장 불필요";
@@ -813,338 +797,390 @@ export default function AdminRentalsClient() {
         viewLabel={status ? getRentalStatusDisplayLabel(status) : "전체 대여"}
         resultLabel={hasResolvedData && !hasDataError && data ? `총 ${data.total}건` : "불러오는 중…"}
         description="고객, 대여 라켓, 반납 일정, 결제와 보증금 상태를 한 행에서 확인할 수 있습니다."
+        columnsClassName={RENTAL_LIST_COLUMNS}
+        ariaLabel="대여 관리 목록"
       >
-          <Table className="min-w-[980px] w-full table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0]">
-            <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
-              <TableRow>
-                <TableHead className={cn(thClasses, "w-[200px] text-left")}>대여 / 고객</TableHead>
-                <AdminSortableTableHead
-                  label="라켓/기간"
-                  active={sortBy === "date"}
-                  direction={sortDirection}
-                  onSort={() => handleSort("date")}
-                  className={cn(
-                    thClasses,
-                    "w-[240px] border-l border-border/20 text-left",
-                  )}
-                />
-                <TableHead
-                  className={cn(thClasses, "w-[210px] border-l border-border/20 text-left")}
-                >
-                  진행 / 예외
-                </TableHead>
-                <AdminSortableTableHead
-                  label="결제/보증금"
-                  active={sortBy === "total"}
-                  direction={sortDirection}
-                  align="right"
-                  onSort={() => handleSort("total")}
-                  className={cn(
-                    thClasses,
-                    "w-[200px] border-l border-border/20 text-right",
-                  )}
-                />
-                <TableHead
-                  className={cn(adminDataTable.stickyActionHead, "w-[130px]")}
-                >
-                  액션
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array.from({ length: pageSize }).map((_, rowIdx) => (
-                  <TableRow key={rowIdx}>
-                    {Array.from({ length: 5 }).map((_, cellIdx) => (
-                      <TableCell
-                        key={cellIdx}
-                        className={cellIdx > 0 ? "border-l border-border/20" : undefined}
-                      >
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : hasDataError ? (
-                <TableRow>
-                  <TableCell colSpan={5} className={tdClasses}>
-                    데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
-                  </TableCell>
-                </TableRow>
-              ) : shouldShowActualEmpty ? (
-                <TableRow>
-                  <TableCell colSpan={5} className={tdClasses}>
-                    <div className="flex flex-col items-center gap-2">
-                      <Search className="h-8 w-8 text-muted-foreground/50" />
-                      <p className={adminTypography.body}>
-                        아직 등록된 대여가 없습니다. 새 대여가 접수되면 이곳에 표시됩니다.
-                      </p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : shouldShowSearchEmpty ? (
-                <TableRow>
-                  <TableCell colSpan={5} className={tdClasses}>
-                    적용한 검색어와 필터에 맞는 대여가 없습니다. 조건을 조정하거나 필터를 초기화해
-                    주세요.
-                  </TableCell>
-                </TableRow>
+        <AdminListColumnHeader columnsClassName={RENTAL_LIST_COLUMNS}>
+          <div
+            role="columnheader"
+            aria-sort={
+              sortBy === "date" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5"
+          >
+            <button
+              type="button"
+              aria-label="생성일 정렬"
+              onClick={() => handleSort("date")}
+              className={cn(
+                "inline-flex min-h-8 items-center gap-1 rounded-sm text-left transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sortBy === "date" && "text-primary",
+              )}
+            >
+              대여 / 고객
+              {sortBy === "date" ? (
+                sortDirection === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
               ) : (
-                rentals.map((r, idx) => {
-                  const rid = r.id;
-                  const svc = getServiceBadge(r);
-                  const link = getLinkBadge(r);
-                  const flow = getFlowBadge(r);
-                  const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
-                  const nextActionLabel = getRentalNextAction(r);
-                  const isReturned = isRentalReturnedStatus(r.status);
-                  const shippingLabel = getShippingLabel(r);
-                  const applicationStatusLabel = r.stringingApplicationStatus
-                    ? getStringingApplicationStatusDisplayLabel(r.stringingApplicationStatus)
-                    : null;
-                  const exceptionLabel =
-                    r.cancelRequest?.status === "requested"
-                      ? "취소 요청"
-                      : warnMissingApp
-                        ? "신청서 연결 필요"
-                        : isReturned && !r.depositRefundedAt
-                          ? "보증금 환불 확인 필요"
-                          : null;
-                  return (
-                    <TableRow
-                      key={rid || `row-${idx}`}
-                      className={AdminListRow()}
-                    >
-                      <TableCell className={cn(tdClasses, "py-2 pl-5")}>
-                        <div className={adminDataTable.cellStack}>
-                          <p className={adminDataTable.primaryLine}>
-                            {r.customer?.name || "고객명 없음"}
-                          </p>
-                          <div className="flex min-w-0 items-center gap-1.5">
-                            {r.cancelRequest?.status === "requested" ? (
-                              <AlertTriangle
-                                className="h-3.5 w-3.5 shrink-0 text-warning"
-                                aria-label="취소 요청된 대여"
-                              />
-                            ) : null}
-                            <Link
-                              href={`/admin/rentals/${rid}`}
-                              className={cn(adminDataTable.secondaryLine, "font-mono")}
-                              title={`대여 ${rid} 상세로 이동`}
-                            >
-                              {shortenId(rid)}
-                            </Link>
-                            <span className={cn(adminDataTable.secondaryLine, "truncate")}>
-                              {svc.label}
-                            </span>
-                            <AdminReferencePopover
-                              title="대여 참조 정보"
-                              trigger={
-                                <button type="button" className={adminDataTable.referenceTrigger}>
-                                  참조 정보
-                                </button>
-                              }
-                              items={[
-                                { label: "대여 ID", value: rid, copyValue: rid },
-                                {
-                                  label: "이메일",
-                                  value: r.customer?.email || null,
-                                  copyValue: r.customer?.email || undefined,
-                                },
-                                { label: "서비스", value: svc.label },
-                                { label: "연결", value: link?.label ?? "연결 없음" },
-                                { label: "시나리오", value: flow.label },
-                                {
-                                  label: "신청서 ID",
-                                  value: r.stringingApplicationId
-                                    ? String(r.stringingApplicationId)
-                                    : null,
-                                  copyValue: r.stringingApplicationId
-                                    ? String(r.stringingApplicationId)
-                                    : undefined,
-                                },
-                              ]}
-                            />
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
-                        <div className="min-w-0 text-left">
-                          {rid ? (
-                            <Link
-                              href={`/admin/rentals/${rid}`}
-                              className="line-clamp-2 break-keep font-semibold leading-snug underline-offset-2 hover:underline"
-                              title={`${racketBrandLabel(r.brand)} ${r.model}`}
-                            >
-                              {racketBrandLabel(r.brand)} {r.model}
-                            </Link>
-                          ) : (
-                            <span className="line-clamp-2 break-keep font-medium">
-                              {racketBrandLabel(r.brand)} {r.model}
-                            </span>
-                          )}
-                          <p className="mt-1 text-xs text-foreground/70 tabular-nums">
-                            시작 {r.createdAt ? formatDate(r.createdAt) : "미등록"} · {r.days}일
-                          </p>
-                          <p className="text-xs text-foreground/70 tabular-nums">
-                            반납 예정 {r.dueAt ? formatDate(r.dueAt) : "미등록"}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
-                        <AdminStatusGroup
-                          className="text-left"
-                          primary={(() => {
-                            const spec = getRentalStatusBadgeSpec(r.status);
-                            return (
-                              <Badge
-                                variant={spec.variant}
-                                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-                              >
-                                {getRentalStatusDisplayLabel(r.status)}
-                              </Badge>
-                            );
-                          })()}
-                          secondary={
-                            <>
-                            {shippingLabel}
-                            {applicationStatusLabel
-                              ? ` · 교체서비스 ${applicationStatusLabel}`
-                              : ""}
-                            </>
-                          }
-                          alert={exceptionLabel}
-                          alertTone={
-                            r.cancelRequest?.status === "requested"
-                              ? "danger"
-                              : "attention"
-                          }
-                        />
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          tdClasses,
-                          "border-l border-border/20 py-2 text-right tabular-nums",
-                        )}
-                      >
-                        <div className="flex flex-col items-end gap-1">
-                          <PaymentBadge item={r} />
-                          <span className="font-semibold tabular-nums text-foreground">
-                            {won(r.amount.total)}
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            라켓 / 기간
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            상태 / 인도·반납
+          </div>
+          <div
+            role="columnheader"
+            aria-sort={
+              sortBy === "total" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5 text-right"
+          >
+            <button
+              type="button"
+              aria-label="결제 금액 정렬"
+              onClick={() => handleSort("total")}
+              className={cn(
+                "ml-auto inline-flex min-h-8 items-center justify-end gap-1 rounded-sm text-right transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sortBy === "total" && "text-primary",
+              )}
+            >
+              결제 / 보증금
+              {sortBy === "total" ? (
+                sortDirection === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
+              ) : (
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
+            다음 작업
+          </div>
+        </AdminListColumnHeader>
+
+        <AdminListBody>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, rowIndex) => (
+              <AdminListRow
+                key={`rentals-list-skeleton-${rowIndex}`}
+                columnsClassName={RENTAL_LIST_COLUMNS}
+                ariaLabel="대여 불러오는 중"
+              >
+                {Array.from({ length: 5 }).map((__, cellIndex) => (
+                  <AdminListCell key={`rentals-list-skeleton-${rowIndex}-${cellIndex}`}>
+                    <Skeleton className="h-6 w-full" />
+                  </AdminListCell>
+                ))}
+              </AdminListRow>
+            ))
+          ) : hasDataError ? (
+            <AdminListRow columnsClassName={RENTAL_LIST_COLUMNS} ariaLabel="대여 목록 오류">
+              <AdminListCell className="col-span-5 py-6 text-center">
+                데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+              </AdminListCell>
+            </AdminListRow>
+          ) : shouldShowActualEmpty ? (
+            <AdminListRow columnsClassName={RENTAL_LIST_COLUMNS} ariaLabel="대여 목록 비어 있음">
+              <AdminListCell className="col-span-5 py-6">
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <Search className="h-8 w-8 text-muted-foreground/50" />
+                  <p className={adminTypography.body}>
+                    아직 등록된 대여가 없습니다. 새 대여가 접수되면 이곳에 표시됩니다.
+                  </p>
+                </div>
+              </AdminListCell>
+            </AdminListRow>
+          ) : shouldShowSearchEmpty ? (
+            <AdminListRow columnsClassName={RENTAL_LIST_COLUMNS} ariaLabel="대여 검색 결과 없음">
+              <AdminListCell className="col-span-5 py-6 text-center">
+                적용한 검색어와 필터에 맞는 대여가 없습니다. 조건을 조정하거나 필터를 초기화해
+                주세요.
+              </AdminListCell>
+            </AdminListRow>
+          ) : (
+            rentals.map((r, idx) => {
+              const rid = r.id;
+              const svc = getServiceBadge(r);
+              const link = getLinkBadge(r);
+              const flow = getFlowBadge(r);
+              const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
+              const nextActionLabel = getRentalNextAction(r);
+              const isReturned = isRentalReturnedStatus(r.status);
+              const shippingLabel = getShippingLabel(r);
+              const applicationStatusLabel = r.stringingApplicationStatus
+                ? getStringingApplicationStatusDisplayLabel(r.stringingApplicationStatus)
+                : null;
+              const exceptionLabel =
+                r.cancelRequest?.status === "requested"
+                  ? "취소 요청"
+                  : warnMissingApp
+                    ? "신청서 연결 필요"
+                    : isReturned && !r.depositRefundedAt
+                      ? "보증금 환불 확인 필요"
+                      : null;
+              const rentalStatusSpec = getRentalStatusBadgeSpec(r.status);
+              const paymentLabel =
+                r.paymentStatusLabel ??
+                (derivePaymentStatus(r) === "paid" ? "결제완료" : "결제대기");
+              const paymentSpec = getPaymentStatusBadgeSpec(paymentLabel);
+
+              return (
+                <AdminListRow
+                  key={rid || `row-${idx}`}
+                  columnsClassName={RENTAL_LIST_COLUMNS}
+                  ariaLabel={`${r.customer?.name || "고객명 없음"} 대여`}
+                >
+                  <AdminListCell>
+                    <AdminListPrimary
+                      title={r.customer?.name || "고객명 없음"}
+                      meta={
+                        <>
+                          <span className="font-mono">ID {shortenId(rid)}</span>
+                          <span className="tabular-nums">
+                            {r.createdAt ? formatDate(r.createdAt) : "생성일 미등록"}
                           </span>
+                        </>
+                      }
+                      supporting={
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                          <Badge
+                            variant={svc.variant}
+                            className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
+                          >
+                            {svc.label}
+                          </Badge>
+                          <span>{link?.label ?? "신청서 연결 없음"} · {flow.flow === 7 ? "통합" : "단독"}</span>
                           <AdminReferencePopover
-                            title="결제·보증금 구성"
-                            align="end"
+                            title="대여 참조 정보"
                             trigger={
                               <button type="button" className={adminDataTable.referenceTrigger}>
-                                금액 구성
+                                연락처·연결 문서 보기
                               </button>
                             }
                             items={[
-                              { label: "총액", value: won(r.amount.total) },
-                              { label: "수수료", value: won(r.amount.fee) },
-                              { label: "보증금", value: won(r.amount.deposit) },
+                              { label: "대여 ID", value: rid, copyValue: rid },
                               {
-                                label: "스트링",
-                                value:
-                                  (r.amount.stringPrice ?? 0) > 0
-                                    ? won(r.amount.stringPrice ?? 0)
-                                    : null,
+                                label: "이메일",
+                                value: r.customer?.email || null,
+                                copyValue: r.customer?.email || undefined,
                               },
+                              { label: "서비스", value: svc.label },
+                              { label: "연결", value: link?.label ?? "연결 없음" },
+                              { label: "시나리오", value: flow.label },
                               {
-                                label: "교체비",
-                                value:
-                                  (r.amount.stringingFee ?? 0) > 0
-                                    ? won(r.amount.stringingFee ?? 0)
-                                    : null,
+                                label: "신청서 ID",
+                                value: r.stringingApplicationId
+                                  ? String(r.stringingApplicationId)
+                                  : null,
+                                copyValue: r.stringingApplicationId
+                                  ? String(r.stringingApplicationId)
+                                  : undefined,
                               },
                             ]}
                           />
                         </div>
-                      </TableCell>
-                      <TableCell
-                        className={cn(
-                          adminDataTable.stickyActionCell,
-                          "w-[130px] py-2 group-hover:bg-muted/40",
-                        )}
-                      >
-                        <AdminRowActions>
-                          <Button
-                            asChild
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-xs font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2"
-                          >
-                            <Link href={`/admin/rentals/${rid}`}>{nextActionLabel}</Link>
-                          </Button>
-                          <AdminRowActionMenu
-                            ariaLabel={`${r.customer?.name || r.id} 대여 관리 메뉴`}
-                          >
-                              {r.stringingApplicationId && (
-                                <DropdownMenuItem asChild>
-                                  <Link
-                                    href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
-                                  >
-                                    <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
-                                  </Link>
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuSeparator />
-                              {(r.status === "paid" || r.status === "out") && (
-                                <DropdownMenuItem
-                                  className="whitespace-nowrap"
-                                  onClick={() =>
-                                    setPendingAction({
-                                      type: "return",
-                                      rentalId: rid,
-                                    })
-                                  }
-                                  disabled={busyId === rid}
-                                >
-                                  <Package className="mr-2 h-4 w-4" /> 반납 처리
-                                </DropdownMenuItem>
-                              )}
-                              {isReturned && (
-                                <>
-                                  {r.depositRefundedAt ? (
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        setPendingAction({
-                                          type: "refundClear",
-                                          rentalId: rid,
-                                        })
-                                      }
-                                      disabled={busyId === rid}
-                                    >
-                                      <Truck className="mr-2 h-4 w-4" /> 환불 해제
-                                    </DropdownMenuItem>
-                                  ) : (
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        setPendingAction({
-                                          type: "refundMark",
-                                          rentalId: rid,
-                                        })
-                                      }
-                                      disabled={busyId === rid}
-                                    >
-                                      <Truck className="mr-2 h-4 w-4" /> 환불 처리
-                                    </DropdownMenuItem>
-                                  )}
-                                </>
-                              )}
-                          </AdminRowActionMenu>
-                        </AdminRowActions>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                      }
+                    />
+                  </AdminListCell>
 
-          {!hasDataError && totalPages && totalPages > 1 && (
-            <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
+                  <AdminListCell>
+                    <AdminListPrimary
+                      title={
+                        rid ? (
+                          <Link
+                            href={`/admin/rentals/${rid}`}
+                            className="underline-offset-2 hover:underline"
+                            title={`${racketBrandLabel(r.brand)} ${r.model}`}
+                          >
+                            {racketBrandLabel(r.brand)} {r.model}
+                          </Link>
+                        ) : (
+                          `${racketBrandLabel(r.brand)} ${r.model}`
+                        )
+                      }
+                      meta={
+                        <>
+                          <span className="tabular-nums">
+                            시작 {r.createdAt ? formatDate(r.createdAt) : "미등록"}
+                          </span>
+                          <span>{r.days}일</span>
+                        </>
+                      }
+                      supporting={
+                        <span className="tabular-nums">
+                          반납 예정 {r.dueAt ? formatDate(r.dueAt) : "미등록"}
+                        </span>
+                      }
+                    />
+                  </AdminListCell>
+
+                  <AdminListCell>
+                    <AdminStatusGroup
+                      primary={
+                        <>
+                          <Badge
+                            variant={rentalStatusSpec.variant}
+                            className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
+                          >
+                            {getRentalStatusDisplayLabel(r.status)}
+                          </Badge>
+                          <Badge
+                            variant={paymentSpec.variant}
+                            className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
+                          >
+                            {paymentLabel}
+                          </Badge>
+                        </>
+                      }
+                      secondary={
+                        <>
+                          {shippingLabel}
+                          {applicationStatusLabel
+                            ? ` · 교체서비스 ${applicationStatusLabel}`
+                            : ""}
+                        </>
+                      }
+                      alert={exceptionLabel}
+                      alertTone={
+                        r.cancelRequest?.status === "requested" ? "danger" : "attention"
+                      }
+                    />
+                  </AdminListCell>
+
+                  <AdminListCell align="end">
+                    <AdminMoneyBlock
+                      amount={won(r.amount.total)}
+                      meta={`보증금 ${won(r.amount.deposit)} · ${r.depositRefundedAt ? "환불 완료" : "미환불"}`}
+                      detailAction={
+                        <AdminReferencePopover
+                          title="결제·보증금 구성"
+                          align="end"
+                          trigger={
+                            <button type="button" className={adminDataTable.referenceTrigger}>
+                              금액 상세 보기
+                            </button>
+                          }
+                          items={[
+                            { label: "총액", value: won(r.amount.total) },
+                            { label: "수수료", value: won(r.amount.fee) },
+                            { label: "보증금", value: won(r.amount.deposit) },
+                            {
+                              label: "스트링",
+                              value:
+                                (r.amount.stringPrice ?? 0) > 0
+                                  ? won(r.amount.stringPrice ?? 0)
+                                  : null,
+                            },
+                            {
+                              label: "교체비",
+                              value:
+                                (r.amount.stringingFee ?? 0) > 0
+                                  ? won(r.amount.stringingFee ?? 0)
+                                  : null,
+                            },
+                          ]}
+                        />
+                      }
+                    />
+                  </AdminListCell>
+
+                  <AdminListCell align="end">
+                    <AdminRowActions>
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="ghost"
+                        className="h-auto min-h-8 max-w-[132px] whitespace-normal break-keep border border-border/70 px-2.5 py-1.5 text-ui-label font-medium leading-tight hover:border-border hover:bg-muted/40 focus-visible:ring-2"
+                      >
+                        <Link href={`/admin/rentals/${rid}`}>{nextActionLabel}</Link>
+                      </Button>
+                      <AdminRowActionMenu ariaLabel={`${r.customer?.name || r.id} 대여 관리 메뉴`}>
+                        {r.stringingApplicationId ? (
+                          <>
+                            <DropdownMenuItem asChild>
+                              <Link
+                                href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
+                              >
+                                <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        ) : null}
+                        {r.status === "paid" || r.status === "out" ? (
+                          <DropdownMenuItem
+                            className="whitespace-nowrap"
+                            onClick={() =>
+                              setPendingAction({
+                                type: "return",
+                                rentalId: rid,
+                              })
+                            }
+                            disabled={busyId === rid}
+                          >
+                            <Package className="mr-2 h-4 w-4" /> 반납 처리
+                          </DropdownMenuItem>
+                        ) : null}
+                        {isReturned ? (
+                          r.depositRefundedAt ? (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                setPendingAction({
+                                  type: "refundClear",
+                                  rentalId: rid,
+                                })
+                              }
+                              disabled={busyId === rid}
+                            >
+                              <Truck className="mr-2 h-4 w-4" /> 환불 해제
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                setPendingAction({
+                                  type: "refundMark",
+                                  rentalId: rid,
+                                })
+                              }
+                              disabled={busyId === rid}
+                            >
+                              <Truck className="mr-2 h-4 w-4" /> 환불 처리
+                            </DropdownMenuItem>
+                          )
+                        ) : null}
+                      </AdminRowActionMenu>
+                    </AdminRowActions>
+                  </AdminListCell>
+                </AdminListRow>
+              );
+            })
+          )}
+        </AdminListBody>
+
+        {!hasDataError && totalPages && totalPages > 1 ? (
+          <div role="rowgroup" className="border-t border-border">
+            <div role="row">
+              <div
+                role="cell"
+                aria-colspan={5}
+                className="flex flex-wrap items-center justify-center gap-1 px-4 py-3"
+              >
               <Button
                 size="sm"
                 variant="outline"
@@ -1177,8 +1213,10 @@ export default function AdminRentalsClient() {
               >
                 다음
               </Button>
+              </div>
             </div>
-          )}
+          </div>
+        ) : null}
       </AdminListTable>
       <AdminConfirmDialog
         open={pendingAction !== null}

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 
 type AdminListTableProps = {
@@ -12,9 +12,11 @@ type AdminListTableProps = {
   children: ReactNode;
   className?: string;
   contentClassName?: string;
+  columnsClassName?: string;
+  ariaLabel?: string;
 };
 
-/** 관리자 목록의 결과 메타와 list-table 표면을 한 규격으로 묶는 공통 프레임입니다. */
+/** 관리자 목록의 결과 메타와 CSS Grid list-table 표면을 한 규격으로 묶습니다. */
 export function AdminListTable({
   title,
   viewLabel,
@@ -23,14 +25,19 @@ export function AdminListTable({
   children,
   className,
   contentClassName,
+  columnsClassName,
+  ariaLabel = title,
 }: AdminListTableProps) {
   return (
-    <Card className={cn("overflow-hidden border-border/70 shadow-sm", className)}>
-      <CardHeader className="border-b border-border/60 bg-muted/15 px-5 py-4">
+    <section
+      aria-label={ariaLabel}
+      className={cn("overflow-hidden rounded-lg border border-border bg-background", className)}
+    >
+      <header className="border-b border-border bg-muted/15 px-4 py-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <CardTitle className="text-ui-body font-semibold">{title}</CardTitle>
+              <h2 className="text-ui-body font-semibold text-foreground">{title}</h2>
               <span className="text-ui-label font-medium text-primary">{viewLabel}</span>
             </div>
             {description ? (
@@ -41,16 +48,134 @@ export function AdminListTable({
             {resultLabel}
           </p>
         </div>
-      </CardHeader>
-      <CardContent className={cn("relative overflow-x-auto p-0", contentClassName)}>
+      </header>
+      <div
+        role="table"
+        aria-label={ariaLabel}
+        data-columns-class={columnsClassName}
+        className={cn("min-w-0", contentClassName)}
+      >
         {children}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
-export function AdminListRow({ className }: { className?: string } = {}) {
-  return cn(adminDataTable.row, "group align-top hover:bg-muted/30", className);
+export function AdminListColumnHeader({
+  children,
+  className,
+  columnsClassName,
+}: {
+  children: ReactNode;
+  className?: string;
+  columnsClassName: string;
+}) {
+  return (
+    <div
+      role="row"
+      className={cn(
+        "grid min-h-10 min-w-0 items-center border-b border-border bg-muted/20",
+        adminTypography.tableHeader,
+        columnsClassName,
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function AdminListBody({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div role="rowgroup" className={className}>
+      {children}
+    </div>
+  );
+}
+
+export function AdminListRow({
+  children,
+  className,
+  columnsClassName,
+  ariaLabel,
+}: {
+  children: ReactNode;
+  className?: string;
+  columnsClassName: string;
+  ariaLabel?: string;
+}) {
+  return (
+    <div
+      role="row"
+      aria-label={ariaLabel}
+      className={cn(
+        "grid min-h-[88px] min-w-0 items-center border-b border-border transition-[background-color] last:border-b-0 hover:bg-muted/20",
+        columnsClassName,
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function AdminListCell({
+  children,
+  className,
+  align = "start",
+}: {
+  children: ReactNode;
+  className?: string;
+  align?: "start" | "center" | "end";
+}) {
+  return (
+    <div
+      role="cell"
+      className={cn(
+        "min-w-0 px-4 py-3",
+        align === "start" && "text-left",
+        align === "center" && "text-center [&>*]:mx-auto",
+        align === "end" && "text-right [&>*]:ml-auto",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function AdminListPrimary({
+  title,
+  meta,
+  supporting,
+  className,
+}: {
+  title: ReactNode;
+  meta?: ReactNode;
+  supporting?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("min-w-0 space-y-1.5", className)}>
+      <div className={cn("line-clamp-2 break-keep", adminTypography.tablePrimary)}>{title}</div>
+      {meta ? (
+        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-ui-label text-muted-foreground">
+          {meta}
+        </div>
+      ) : null}
+      {supporting ? (
+        <div className="line-clamp-2 text-ui-label leading-relaxed text-foreground/80">
+          {supporting}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export function AdminStatusGroup({
@@ -68,8 +193,10 @@ export function AdminStatusGroup({
 }) {
   return (
     <div className={cn("flex min-w-0 flex-col items-start gap-1.5", className)}>
-      {primary}
-      {secondary ? <div className={adminDataTable.secondaryLine}>{secondary}</div> : null}
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5">{primary}</div>
+      {secondary ? (
+        <div className={cn("line-clamp-2", adminDataTable.secondaryLine)}>{secondary}</div>
+      ) : null}
       {alert ? (
         <div
           className={
@@ -85,6 +212,26 @@ export function AdminStatusGroup({
   );
 }
 
+export function AdminMoneyBlock({
+  amount,
+  meta,
+  detailAction,
+  className,
+}: {
+  amount: ReactNode;
+  meta?: ReactNode;
+  detailAction?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex min-w-0 flex-col items-end gap-1 text-right", className)}>
+      <div className={adminTypography.money}>{amount}</div>
+      {meta ? <div className="text-ui-label text-muted-foreground">{meta}</div> : null}
+      {detailAction ? <div className="text-ui-label">{detailAction}</div> : null}
+    </div>
+  );
+}
+
 export function AdminRowActions({ children }: { children: ReactNode }) {
-  return <div className="flex items-center justify-end gap-1.5">{children}</div>;
+  return <div className="flex min-w-0 items-center justify-end gap-1.5">{children}</div>;
 }

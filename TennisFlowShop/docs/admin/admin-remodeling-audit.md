@@ -331,3 +331,24 @@
 - 관리자 전체 디자인, 오프라인 관리, 오프라인 고객·작업 등록 흐름, 오프라인 매출 요약과 작업
   목록 분리, 등록·수정 폼 전체, 실제 1280/1440/1920 브라우저 최종 QA는 완료 범위가 아니다.
 - 다음 단계는 `Admin UX Reset 2-E: 오프라인 관리 신규 작업·기존 작업 흐름 분리`다.
+
+## Admin Table V2 Phase 1 — 주문·대여 행 구조 전면 교체
+
+- PR #2482는 기존 table wrapper를 공통화한 단계였으며 실제 행 정보 구조를 교체한 작업은
+  아니었다.
+- 주문·대여의 기존 semantic Table 본문을 CSS Grid 기반 list-table hybrid로 교체했다.
+- 주문의 6열을 주문·고객, 상품·서비스, 상태·처리, 결제 금액, 다음 작업의 5개 정보 영역으로
+  축소했다.
+- 대여도 대여·고객, 라켓·기간, 상태·인도·반납, 결제·보증금, 다음 작업의 동일한 5영역 규격을
+  적용했다.
+- 세로 divider와 sticky action cell을 제거하고 하나의 외곽 surface와 수평 행 구분선만
+  사용했다.
+- ID·고객·대상·상태·금액·다음 action을 기본 행에 유지했다.
+- 연락처·참조·연결 문서·금액 popover trigger를 결과가 명확한 문구로 변경했다.
+- 각 행은 primary action 1개와 기존 overflow menu 1개로 통일했다.
+- API URL, SWR key·fetcher, mutation, 상태 계산, 정렬 state·server query와 pagination은
+  변경하지 않았다.
+- 관리자 전체 Table V2, 운영업무·패키지 관리 적용, 상품·라켓·회원 적용과 브라우저 최종 QA는
+  이 단계의 완료 범위가 아니다.
+
+다음 단계는 `Admin Table V2 Phase 2: 운영업무·패키지 관리에 검증된 V2 정보 슬롯 적용`이다.
