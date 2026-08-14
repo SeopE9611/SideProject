@@ -40,6 +40,7 @@ export type SidebarItem = {
   href: string;
   icon: ComponentType<{ className?: string }>;
   key?: SidebarBadgeKey;
+  badgeLabel?: string;
 };
 
 export type SidebarSection = {
@@ -67,30 +68,35 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         href: "/admin/operations",
         icon: Inbox,
         key: "operations",
+        badgeLabel: "확인",
       },
       {
         title: "주문 관리",
         href: "/admin/orders",
         icon: PackageSearch,
         key: "orders",
+        badgeLabel: "확인",
       },
       {
         title: "대여 관리",
         href: "/admin/rentals",
         icon: ClipboardList,
         key: "rentals",
+        badgeLabel: "확인",
       },
       {
         title: "오프라인 관리",
         href: "/admin/offline",
         icon: Store,
         key: "offline",
+        badgeLabel: "확인",
       },
       {
         title: "아카데미 신청 관리",
         href: "/admin/academy/applications",
         icon: BookOpen,
         key: "academyApplications",
+        badgeLabel: "확인",
       },
       {
         title: "교체서비스 예약 설정",
@@ -107,18 +113,21 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         href: "/admin/products",
         icon: Boxes,
         key: "products",
+        badgeLabel: "확인",
       },
       {
         title: "라켓 관리",
         href: "/admin/rackets",
         icon: MdSportsTennis,
         key: "rackets",
+        badgeLabel: "확인",
       },
       {
         title: "패키지 관리",
         href: "/admin/packages",
         icon: Package,
         key: "packages",
+        badgeLabel: "확인",
       },
       {
         title: "패키지 설정",
@@ -135,25 +144,28 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         href: "/admin/boards",
         icon: MessageCircle,
         key: "boards",
+        badgeLabel: "확인",
       },
       {
         title: "후기 관리",
         href: "/admin/reviews",
         icon: Star,
         key: "reviews",
+        badgeLabel: "확인",
       },
     ],
   },
   {
     label: "고객/운영",
     items: [
-      { title: "회원 관리", href: "/admin/users", icon: Users, key: "users" },
+      { title: "회원 관리", href: "/admin/users", icon: Users, key: "users", badgeLabel: "확인" },
       { title: "개인결제 관리", href: "/admin/private-payments", icon: CreditCard },
       {
         title: "정산 관리",
         href: "/admin/settlements",
         icon: ChartBar,
         key: "settlements",
+        badgeLabel: "확인",
       },
       revenueReportItem,
       { title: "감사 로그", href: "/admin/audit", icon: History },

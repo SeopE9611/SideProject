@@ -54,6 +54,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
             </Link>
           )}
           <button
+            type="button"
             onClick={() => setCollapsed((v) => !v)}
             className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:border-border dark:bg-card dark:text-muted-foreground"
             aria-label={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
@@ -79,6 +80,9 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
                   const Icon = item.icon;
                   const active = isAdminNavActive(pathname ?? "", item.href);
                   const count = item.key ? badgeCounts[item.key] : undefined;
+                  const countDescription = count
+                    ? `${item.badgeLabel ?? "확인"} 필요 ${count.toLocaleString("ko-KR")}건`
+                    : undefined;
 
                   const link = (
                     <Link
@@ -101,10 +105,12 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
                       {!collapsed && <span className="truncate">{item.title}</span>}
                       {!!count && !collapsed && (
                         <Badge
-                          variant="secondary"
-                          className={cn("ml-auto", adminTypography.sidebarCount)}
+                          variant="warning"
+                          className={cn("ml-auto shrink-0 whitespace-nowrap", adminTypography.sidebarCount)}
+                          title={countDescription}
+                          aria-label={countDescription}
                         >
-                          {count > 99 ? "99+" : count}
+                          {item.badgeLabel ?? "확인"} {count > 99 ? "99+" : count}
                         </Badge>
                       )}
                     </Link>
@@ -115,7 +121,9 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
                       {collapsed ? (
                         <Tooltip>
                           <TooltipTrigger asChild>{link}</TooltipTrigger>
-                          <TooltipContent side="right">{item.title}</TooltipContent>
+                          <TooltipContent side="right">
+                            {item.title}{countDescription ? ` · ${countDescription}` : ""}
+                          </TooltipContent>
                         </Tooltip>
                       ) : (
                         link

@@ -4,18 +4,12 @@ import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -39,7 +33,6 @@ import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   Eye,
-  MoreHorizontal,
   Package,
   Search,
   Truck,
@@ -943,13 +936,21 @@ export default function AdminRentalsClient() {
                                 aria-label="취소 요청된 대여"
                               />
                             ) : null}
+                            <Link
+                              href={`/admin/rentals/${rid}`}
+                              className={cn(adminDataTable.secondaryLine, "font-mono")}
+                              title={`대여 ${rid} 상세로 이동`}
+                            >
+                              {shortenId(rid)}
+                            </Link>
+                            <span className={cn(adminDataTable.secondaryLine, "truncate")}>
+                              {svc.label}
+                            </span>
                             <AdminReferencePopover
                               title="대여 참조 정보"
                               trigger={
                                 <button type="button" className={adminDataTable.referenceTrigger}>
-                                  <span className="truncate">
-                                    대여 · {shortenId(rid)} · {svc.label}
-                                  </span>
+                                  참조 정보
                                 </button>
                               }
                               items={[
@@ -1039,14 +1040,15 @@ export default function AdminRentalsClient() {
                       >
                         <div className="flex flex-col items-end gap-1">
                           <PaymentBadge item={r} />
+                          <span className="font-semibold tabular-nums text-foreground">
+                            {won(r.amount.total)}
+                          </span>
                           <AdminReferencePopover
                             title="결제·보증금 구성"
                             align="end"
                             trigger={
                               <button type="button" className={adminDataTable.referenceTrigger}>
-                                <span className="font-semibold tabular-nums text-foreground">
-                                  {won(r.amount.total)}
-                                </span>
+                                금액 구성
                               </button>
                             }
                             items={[
@@ -1086,24 +1088,9 @@ export default function AdminRentalsClient() {
                           >
                             <Link href={`/admin/rentals/${rid}`}>{nextActionLabel}</Link>
                           </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2"
-                                aria-label={`${r.customer?.name || r.id} 대여 관리 메뉴`}
-                              >
-                                <MoreHorizontal className="h-3.5 w-3.5" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="min-w-max">
-                              <DropdownMenuLabel>작업</DropdownMenuLabel>
-                              <DropdownMenuItem asChild className="whitespace-nowrap">
-                                <Link href={`/admin/rentals/${rid}`}>
-                                  <Eye className="mr-2 h-4 w-4" /> 상세 보기
-                                </Link>
-                              </DropdownMenuItem>
+                          <AdminRowActionMenu
+                            ariaLabel={`${r.customer?.name || r.id} 대여 관리 메뉴`}
+                          >
                               {r.stringingApplicationId && (
                                 <DropdownMenuItem asChild>
                                   <Link
@@ -1157,8 +1144,7 @@ export default function AdminRentalsClient() {
                                   )}
                                 </>
                               )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          </AdminRowActionMenu>
                         </div>
                       </TableCell>
                     </TableRow>

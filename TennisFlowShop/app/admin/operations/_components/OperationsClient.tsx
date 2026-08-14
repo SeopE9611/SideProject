@@ -23,7 +23,6 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
-import AdminTaskCard from "@/components/admin/AdminTaskCard";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
@@ -840,7 +839,7 @@ export default function OperationsClient() {
         dedupingInterval: 60_000,
       },
     );
-  const { data: appsInTossReconciliation } = useSWR<AppsInTossReconciliationResponse>(
+  const { data: appsInTossReconciliation, isLoading: isAppsInTossLoading } = useSWR<AppsInTossReconciliationResponse>(
     "/api/admin/apps-in-toss/reconciliation?issueType=all&environment=all&page=1&limit=1",
     authenticatedSWRFetcher,
     {
@@ -1247,32 +1246,32 @@ export default function OperationsClient() {
         />
 
         {showActionsGuide && (
-          <div
-            className={cn(
-              adminSurface.fieldPanelMuted,
-              "grid gap-1.5 grid-cols-4",
-            )}
-          >
+          <dl className={cn(adminSurface.fieldPanelMuted, "space-y-1.5")}>
             {PAGE_COPY.actions.map((action) => (
-              <div
-                key={action.title}
-                className={cn(adminSurface.fieldPanel, "rounded-md px-2 py-1.5")}
-              >
-                <p className={adminTypography.panelTitle}>{action.title}</p>
-                <p className={cn("mt-0.5 line-clamp-1", adminTypography.body)}>
-                  {action.description}
-                </p>
+              <div key={action.title} className="flex flex-wrap gap-x-2">
+                <dt className={adminTypography.panelTitle}>{action.title}</dt>
+                <dd className={cn("min-w-0 flex-1", adminTypography.body)}>{action.description}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         )}
 
         <Section variant="plain" className="mt-3 space-y-2">
           <SectionHeader
             title="지금 확인할 업무"
             className="border-0 bg-transparent px-0 py-0"
+            aside={
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <span className={adminTypography.bodyStrong}>
+                  처리 필요 총 {dailySummaryValue(representativeTodayCount ?? representativeTotalCount)}
+                </span>
+                <Button type="button" size="sm" variant="outline" onClick={() => applyQuickView("today")}>
+                  오늘 업무 보기
+                </Button>
+              </div>
+            }
           />
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
             <AdminSummaryCard
               title={PAGE_COPY.dailyTodoLabels.urgent}
               value={todayTodoCount ? `${todayTodoCount.urgent}건` : "-"}
@@ -1318,16 +1317,6 @@ export default function OperationsClient() {
                 scrollToOperationsList();
               }}
             />
-            <AdminSummaryCard
-              title="대표 업무 합계"
-              value={dailySummaryValue(representativeTodayCount ?? representativeTotalCount)}
-              description="주문·대여·단독 교체서비스 기준"
-              icon={Inbox}
-              actionLabel="오늘 업무 보기"
-              compact
-              active={activeQuickView === "today"}
-              onAction={() => applyQuickView("today")}
-            />
           </div>
         </Section>
 
@@ -1335,236 +1324,176 @@ export default function OperationsClient() {
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
             <span className="inline-flex items-center gap-2">
               <ClipboardCheck className="h-4 w-4 text-primary" />
-              업무 유형별 현황
+              업무 참고
             </span>
             <span className="text-ui-label font-normal text-muted-foreground">
               대표 업무 합계에 더하지 않는 유형별 참고 신호 · 필요할 때 펼쳐 확인
             </span>
           </summary>
-          <div className="border-t border-border/60 p-2">
-          <details className="rounded-xl border border-border/60 bg-muted/20">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
-              <span className="inline-flex items-center gap-2">
-                <ClipboardCheck className="h-4 w-4 text-primary" />
-                대표 업무·확인 항목
-              </span>
-              <span className="text-ui-label font-normal text-muted-foreground">
-                전체 신호 보기
-              </span>
-            </summary>
-            <Section className="border-0 shadow-none">
-              <SectionHeader
-                title="대표 업무와 확인 항목"
-                description="운영 업무와 별도 확인 항목을 한눈에 확인합니다."
-                aside={
-                  <p className={cn("max-w-[360px] break-words text-right", adminTypography.body)}>
-                    상단 합계와 확인 항목 카드는 집계 기준이 다르며, 검색과 필터는 아래 목록에
-                    적용됩니다.
+          <div className="space-y-4 border-t border-border/60 p-3">
+            <section aria-labelledby="operation-reference-types">
+              <h2 id="operation-reference-types" className={adminTypography.panelTitle}>
+                업무 유형별 현황
+              </h2>
+              <p className={cn("mt-1", adminTypography.metaMuted)}>
+                상단 대표 업무 합계와 별도로 확인하는 운영 신호입니다.
+              </p>
+              <div className="mt-2 space-y-1.5">
+                {!taskCounts || isAppsInTossLoading ? (
+                  <p className={adminTypography.metaMuted}>확인 중</p>
+                ) : practicalTaskCards.filter((task) => task.count > 0).length === 0 &&
+                  (taskCounts.offline ?? 0) === 0 &&
+                  (appsInTossReconciliation?.summary.total ?? 0) === 0 &&
+                  (taskCounts.academyApplications ?? 0) === 0 ? (
+                  <p className={adminTypography.metaMuted}>
+                    별도 확인이 필요한 업무 유형이 없습니다.
                   </p>
-                }
-              />
-              <SectionBody>
-                <div className="grid gap-2 grid-cols-4">
-                  {practicalTaskCards.map((task) => (
-                    <AdminTaskCard
-                      key={task.title}
-                      title={task.title}
-                      count={task.count}
-                      description={task.description}
-                      tone={task.tone}
-                      actionLabel={task.action}
-                      onAction={task.onClick}
-                    />
-                  ))}
-                  <AdminTaskCard
-                    title="오프라인 미결제/보정"
-                    count={taskCounts?.offline ?? 0}
-                    description="미결제·발급 실패·보정 필요 확인"
-                    tone="warning"
-                    actionLabel="미결제 보정"
-                    href="/admin/offline/reconciliation"
-                  />
-                  <AdminTaskCard
-                    title="Apps in Toss 결제 점검"
-                    count={appsInTossReconciliation?.summary.total ?? "—"}
-                    description="토스 앱 결제 중 자동 처리 미완료·대사 필요 건 확인"
-                    tone="warning"
-                    actionLabel="결제 점검 열기"
-                    href="/admin/operations/apps-in-toss-reconciliation"
-                  />
-                  <AdminTaskCard
-                    title="아카데미 상담"
-                    count={taskCounts?.academyApplications ?? 0}
-                    description="상담 대기·등록 확정 대기 확인"
-                    tone="info"
-                    actionLabel="상담 대기 확인"
-                    href="/admin/academy/applications"
-                  />
-                </div>
-              </SectionBody>
-            </Section>
-          </details>
-          <details className="mt-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 text-sm">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold text-foreground [&::-webkit-details-marker]:hidden">
-              <span className="inline-flex items-center gap-2">
-                <ChevronRight className="h-4 w-4 text-primary" />
-                <span>처리 순서</span>
-                <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>
-                  권장 처리 순서
-                </Badge>
-              </span>
-            </summary>
-            <p className={cn("mt-1", adminTypography.metaMuted)}>
-              처음 접속했다면 핵심 순서만 먼저 확인하세요.
-            </p>
-            <ol className={cn("mt-2 grid grid-cols-2 gap-1.5", adminTypography.metaMuted)}>
-              <li>
-                <span className="font-semibold text-foreground">1.</span> 취소 요청과 결제 확인을
-                먼저 처리합니다.
-              </li>
-              <li>
-                <span className="font-semibold text-foreground">2.</span> 패키지 결제 확인은 패키지
-                목록에서 분리 확인합니다.
-              </li>
-              <li>
-                <span className="font-semibold text-foreground">3.</span> 배송/반송 미등록과 교체
-                작업 단계를 확인합니다.
-              </li>
-              <li>
-                <span className="font-semibold text-foreground">4.</span> 대여 반납, 오프라인 보정,
-                상담 대기를 마감합니다.
-              </li>
-            </ol>
-          </details>
-
-          <details className="mt-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
-              <span className="inline-flex items-center gap-2">
-                <Inbox className="h-4 w-4 text-primary" />
-                오늘 업무 마감
-              </span>
-              <span className="text-ui-label font-normal text-muted-foreground">마감 참고치</span>
-            </summary>
-            <div className="mt-2 flex gap-1 flex-row items-center justify-between">
-              <div>
-                <h2 className={adminTypography.panelTitle}>오늘 업무 마감 요약</h2>
-                <p className="text-xs text-muted-foreground">
-                  오늘 상태 변경 참고치, 남은 대표 업무, 별도 확인 항목을 구분해서 확인합니다.
-                </p>
+                ) : (
+                  [
+                    ...practicalTaskCards,
+                    {
+                      title: "오프라인 미결제/보정",
+                      count: taskCounts.offline ?? 0,
+                      description: "미결제·발급 실패·보정 필요 확인",
+                      action: "미결제 보정",
+                      href: "/admin/offline/reconciliation",
+                      tone: "warning" as const,
+                    },
+                    {
+                      title: "Apps in Toss 결제 점검",
+                      count: appsInTossReconciliation?.summary.total ?? 0,
+                      description: "토스 앱 결제 중 자동 처리 미완료·대사 필요 건 확인",
+                      action: "결제 점검 열기",
+                      href: "/admin/operations/apps-in-toss-reconciliation",
+                      tone: "warning" as const,
+                    },
+                    {
+                      title: "아카데미 상담",
+                      count: taskCounts.academyApplications ?? 0,
+                      description: "상담 대기·등록 확정 대기 확인",
+                      action: "상담 대기 확인",
+                      href: "/admin/academy/applications",
+                      tone: "info" as const,
+                    },
+                  ]
+                    .filter((task) => task.count > 0)
+                    .map((task) => (
+                      <div
+                        key={task.title}
+                        className="flex min-w-0 flex-wrap items-center gap-2 rounded-md border border-border/60 bg-background/50 px-3 py-2"
+                      >
+                        <div className="min-w-[min(100%,18rem)] flex-1">
+                          <p className={cn("break-words", adminTypography.panelTitle)}>{task.title}</p>
+                          <p className={cn("break-words", adminTypography.metaMuted)}>
+                            {task.description}
+                          </p>
+                        </div>
+                        <Badge variant={task.tone} className="shrink-0 whitespace-nowrap">
+                          {task.count.toLocaleString("ko-KR")}건
+                        </Badge>
+                        {"href" in task && task.href ? (
+                          <Button asChild size="sm" variant="outline" className="w-fit shrink-0">
+                            <Link href={task.href}>{task.action}</Link>
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="w-fit shrink-0"
+                            onClick={"onClick" in task ? task.onClick : undefined}
+                          >
+                            {task.action}
+                          </Button>
+                        )}
+                      </div>
+                    ))
+                )}
               </div>
-              <Badge variant="outline">{dailySummary?.date ?? "오늘"}</Badge>
-            </div>
+            </section>
 
-            <div className="mt-3 grid gap-2 grid-cols-4">
-              <Card className="border-border/50 bg-background/50 shadow-none">
-                <CardHeader className="p-2.5 pb-1">
-                  <CardTitle className={adminTypography.panelTitle}>오늘 상태 변경 참고</CardTitle>
-                  <CardDescription className={adminTypography.kpiValue}>
-                    {dailySummaryValue(dailySummary?.completedToday.total)}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-2.5 pt-0 text-xs leading-snug text-muted-foreground">
-                  {dailySummary
-                    ? [
-                        dailySummaryInlineValue("주문", dailySummary.completedToday.orders),
-                        dailySummaryInlineValue(
-                          "교체",
-                          dailySummary.completedToday.stringingApplications,
-                        ),
-                        dailySummaryInlineValue("대여", dailySummary.completedToday.rentals),
-                        dailySummaryInlineValue("오프라인", dailySummary.completedToday.offline),
-                        dailySummaryInlineValue(
-                          "아카데미",
-                          dailySummary.completedToday.academyApplications,
-                        ),
-                      ].join(" · ")
-                    : dailySummaryError
-                      ? "요약을 불러오지 못했습니다."
-                      : "불러오는 중..."}
-                </CardContent>
-              </Card>
+            <section aria-labelledby="operation-processing-order">
+              <h2 id="operation-processing-order" className={adminTypography.panelTitle}>
+                처리 순서
+              </h2>
+              <ol className={cn("mt-2 space-y-1.5", adminTypography.metaMuted)}>
+                <li><span className="font-semibold text-foreground">1. 주의 업무</span> — 취소 요청과 결제 확인을 먼저 처리합니다.</li>
+                <li><span className="font-semibold text-foreground">2. 패키지</span> — 패키지 결제 확인은 패키지 목록에서 분리 확인합니다.</li>
+                <li><span className="font-semibold text-foreground">3. 배송·교체</span> — 배송/반송 미등록과 교체 작업 단계를 확인합니다.</li>
+                <li><span className="font-semibold text-foreground">4. 마감 업무</span> — 대여 반납, 오프라인 보정, 상담 대기를 마감합니다.</li>
+              </ol>
+            </section>
 
-              <Card className="border-border/50 bg-background/50 shadow-none">
-                <CardHeader className="p-2.5 pb-1">
-                  <CardTitle className={adminTypography.panelTitle}>남은 대표 업무</CardTitle>
-                  <CardDescription className={adminTypography.kpiValue}>
-                    {dailySummaryValue(
-                      dailySummary?.operationGroupCounts?.totalRepresentativeTasks ??
-                        representativeTotalCount,
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-2.5 pt-0 text-xs leading-snug text-muted-foreground">
-                  {dailySummary
-                    ? [
-                        dailySummaryInlineValue("취소", dailySummary.remaining.cancelRequests),
-                        dailySummaryInlineValue("결제", dailySummary.remaining.paymentCheck),
-                        dailySummaryInlineValue("배송", dailySummary.remaining.shippingMissing),
-                        dailySummaryInlineValue("교체", dailySummary.remaining.stringingWork),
-                        dailySummaryInlineValue("반납", dailySummary.remaining.rentalDue),
-                      ].join(" · ")
-                    : dailySummaryError
-                      ? "요약을 불러오지 못했습니다."
-                      : "불러오는 중..."}
-                </CardContent>
-              </Card>
-
-              <Card className="border-border/50 bg-background/50 shadow-none">
-                <CardHeader className="p-2.5 pb-1">
-                  <CardTitle className={adminTypography.panelTitle}>확인 항목</CardTitle>
-                  <CardDescription className={adminTypography.kpiValue}>
-                    {dailySummaryValue(
-                      dailySummary?.remaining.packagePaymentCheck ??
-                        taskCounts?.packagePaymentCheck,
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-2.5 pt-0 text-xs leading-snug text-muted-foreground">
-                  패키지 결제 확인은 대표 업무 합계에서 제외하고 별도 집계합니다.
-                </CardContent>
-              </Card>
-
-              <Card className="border-border/50 bg-background/50 shadow-none">
-                <CardHeader className="p-2.5 pb-1">
-                  <CardTitle className={adminTypography.panelTitle}>마감 전 확인</CardTitle>
-                  <CardDescription className={adminTypography.bodyStrong}>
-                    긴급 {dailySummaryValue(dailySummary?.attention.urgentRemaining)} / 확인{" "}
-                    {dailySummaryValue(dailySummary?.attention.watchRemaining)}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 p-3 pt-0">
-                  <p
-                    className={cn(
-                      "text-xs leading-relaxed",
-                      dailySummaryError ? "text-warning" : "text-muted-foreground",
-                    )}
-                  >
-                    {dailySummaryStatusMessage}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="h-8 bg-background/70 text-xs"
-                      onClick={() => applyQuickView("cancelRequests")}
-                    >
-                      긴급 업무 보기
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 text-xs"
-                      onClick={() => applyQuickView("all")}
-                    >
-                      남은 업무 보기
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </details>
+            <section aria-labelledby="operation-daily-close">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 id="operation-daily-close" className={adminTypography.panelTitle}>
+                  오늘 업무 마감
+                </h2>
+                <Badge variant="neutral">{dailySummary?.date ?? "오늘"}</Badge>
+              </div>
+              <dl className="mt-2 divide-y divide-border/60 rounded-md border border-border/60 bg-background/50 px-3">
+                <div className="flex flex-wrap justify-between gap-2 py-2">
+                  <dt className={adminTypography.bodyStrong}>오늘 상태 변경 참고</dt>
+                  <dd className="min-w-0 text-right">
+                    <span className={adminTypography.kpiValue}>{dailySummaryValue(dailySummary?.completedToday.total)}</span>
+                    <p className={adminTypography.metaMuted}>
+                      {dailySummary
+                        ? [
+                            dailySummaryInlineValue("주문", dailySummary.completedToday.orders),
+                            dailySummaryInlineValue("교체", dailySummary.completedToday.stringingApplications),
+                            dailySummaryInlineValue("대여", dailySummary.completedToday.rentals),
+                            dailySummaryInlineValue("오프라인", dailySummary.completedToday.offline),
+                            dailySummaryInlineValue("아카데미", dailySummary.completedToday.academyApplications),
+                          ].join(" · ")
+                        : dailySummaryError ? "요약을 불러오지 못했습니다." : "불러오는 중..."}
+                    </p>
+                  </dd>
+                </div>
+                <div className="flex flex-wrap justify-between gap-2 py-2">
+                  <dt className={adminTypography.bodyStrong}>남은 대표 업무</dt>
+                  <dd className="min-w-0 text-right">
+                    <span className={adminTypography.kpiValue}>
+                      {dailySummaryValue(dailySummary?.operationGroupCounts?.totalRepresentativeTasks ?? representativeTotalCount)}
+                    </span>
+                    <p className={adminTypography.metaMuted}>
+                      {dailySummary
+                        ? [
+                            dailySummaryInlineValue("취소", dailySummary.remaining.cancelRequests),
+                            dailySummaryInlineValue("결제", dailySummary.remaining.paymentCheck),
+                            dailySummaryInlineValue("배송", dailySummary.remaining.shippingMissing),
+                            dailySummaryInlineValue("교체", dailySummary.remaining.stringingWork),
+                            dailySummaryInlineValue("반납", dailySummary.remaining.rentalDue),
+                          ].join(" · ")
+                        : dailySummaryError ? "요약을 불러오지 못했습니다." : "불러오는 중..."}
+                    </p>
+                  </dd>
+                </div>
+                <div className="flex flex-wrap justify-between gap-2 py-2">
+                  <dt className={adminTypography.bodyStrong}>확인 항목</dt>
+                  <dd className="text-right">
+                    <span className={adminTypography.kpiValue}>
+                      {dailySummaryValue(dailySummary?.remaining.packagePaymentCheck ?? taskCounts?.packagePaymentCheck)}
+                    </span>
+                    <p className={adminTypography.metaMuted}>패키지 결제 확인은 대표 업무 합계에서 제외합니다.</p>
+                  </dd>
+                </div>
+                <div className="flex flex-wrap justify-between gap-2 py-2">
+                  <dt className={adminTypography.bodyStrong}>마감 전 확인</dt>
+                  <dd className="min-w-0 text-right">
+                    <p className={adminTypography.bodyStrong}>
+                      긴급 {dailySummaryValue(dailySummary?.attention.urgentRemaining)} / 확인 {dailySummaryValue(dailySummary?.attention.watchRemaining)}
+                    </p>
+                    <p className={cn(dailySummaryError ? "text-warning" : "text-muted-foreground", adminTypography.meta)}>
+                      {dailySummaryStatusMessage}
+                    </p>
+                    <div className="mt-2 flex flex-wrap justify-end gap-2">
+                      <Button type="button" size="sm" variant="outline" onClick={() => applyQuickView("cancelRequests")}>긴급 업무 보기</Button>
+                      <Button type="button" size="sm" variant="ghost" onClick={() => applyQuickView("all")}>남은 업무 보기</Button>
+                    </div>
+                  </dd>
+                </div>
+              </dl>
+            </section>
           </div>
         </details>
 
@@ -1591,10 +1520,8 @@ export default function OperationsClient() {
               </div>
             </div>
           </AdminFilterBar>
-          <details className="mt-2 rounded-lg border border-border/60 bg-muted/10 px-3 py-2">
-            <summary className="cursor-pointer text-ui-body-sm font-semibold text-foreground">
-              주의 항목 정밀 검수
-            </summary>
+          <section className="mt-2 rounded-lg border border-border/60 bg-muted/10 px-3 py-2">
+            <h2 className="text-ui-body-sm font-semibold text-foreground">주의 항목 정밀 검수</h2>
             <p className={cn("mt-1", adminTypography.metaMuted)}>
               결제 불일치, 연결 검수, 단독 신청처럼 추가 확인이 필요한 신호만 좁혀 봅니다.
             </p>
@@ -1654,7 +1581,7 @@ export default function OperationsClient() {
                 전체 보기
               </Button>
             </div>
-          </details>
+          </section>
         </div>
       </div>
 
