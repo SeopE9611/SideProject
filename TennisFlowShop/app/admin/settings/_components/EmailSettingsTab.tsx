@@ -2,6 +2,7 @@
 import { Save, Send } from "lucide-react";
 import { AdminFormActions, AdminFormField } from "@/components/admin/AdminFormField";
 import AdminPageSection from "@/components/admin/AdminPageSection";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import type { UseFormReturn } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
@@ -35,10 +36,10 @@ export function EmailSettingsTab({
   isSendingTestEmail: boolean;
   onSendTest: () => void;
 }) {
-  const sourceLabel = {
-    database: "관리자 저장 설정 사용 중",
-    environment: "배포 환경 SMTP 설정 사용 중",
-    unconfigured: "SMTP 미설정",
+  const sourceSpec = {
+    database: { tone: "success" as const, label: "관리자 저장 설정 사용 중" },
+    environment: { tone: "info" as const, label: "배포 환경 SMTP 설정 사용 중" },
+    unconfigured: { tone: "warning" as const, label: "SMTP 미설정" },
   }[smtpSource];
 
   return (
@@ -53,11 +54,17 @@ export function EmailSettingsTab({
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="space-y-5">
-            <div className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body}`}>
-              현재 상태: {sourceLabel}
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background px-3 py-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <Badge tone={sourceSpec.tone}>{sourceSpec.label}</Badge>
+                <span className={adminTypography.metaMuted}>현재 SMTP 설정 소스</span>
+              </div>
+              <Badge tone={form.formState.isDirty ? "warning" : "success"}>
+                {form.formState.isDirty ? "저장되지 않은 변경" : "저장됨"}
+              </Badge>
             </div>
-            <div className="grid grid-cols-3 gap-5">
-              <AdminFormField htmlFor="smtpHost" label="SMTP 서버 주소" className="col-span-2">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+              <AdminFormField htmlFor="smtpHost" label="SMTP 서버 주소" className="lg:col-span-2">
                 <Input id="smtpHost" {...form.register("smtpHost")} />
               </AdminFormField>
               <AdminFormField htmlFor="smtpPort" label="SMTP 포트">
@@ -70,7 +77,7 @@ export function EmailSettingsTab({
               <AdminFormField
                 htmlFor="smtpUsername"
                 label="SMTP 사용자 이름"
-                className="col-span-2"
+                className="lg:col-span-2"
               >
                 <Input id="smtpUsername" {...form.register("smtpUsername")} />
               </AdminFormField>
@@ -96,7 +103,7 @@ export function EmailSettingsTab({
               <AdminFormField htmlFor="senderName" label="발신자 이름">
                 <Input id="senderName" {...form.register("senderName")} />
               </AdminFormField>
-              <AdminFormField htmlFor="senderEmail" label="발신 이메일" className="col-span-2">
+              <AdminFormField htmlFor="senderEmail" label="발신 이메일" className="lg:col-span-2">
                 <Input id="senderEmail" type="email" {...form.register("senderEmail")} />
               </AdminFormField>
               <AdminFormField
@@ -105,7 +112,7 @@ export function EmailSettingsTab({
                 description={
                   hasSmtpPassword ? "비워 두면 현재 저장된 비밀번호를 유지합니다." : undefined
                 }
-                className="col-span-3"
+                className="lg:col-span-3"
               >
                 <Input
                   id="smtpPassword"
@@ -128,7 +135,7 @@ export function EmailSettingsTab({
             </Button>
             <Button disabled={isBootstrapping || form.formState.isSubmitting} type="submit">
               <Save className="mr-2 h-4 w-4" />
-              설정 저장
+              이메일 설정 저장
             </Button>
           </AdminFormActions>
         </form>

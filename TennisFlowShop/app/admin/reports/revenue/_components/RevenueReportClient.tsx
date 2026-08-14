@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import {
   BarChartBig,
-  Calendar,
   DatabaseZap,
   Eye,
   FileDown,
@@ -16,6 +15,7 @@ import {
   Store,
   WalletCards,
 } from "lucide-react";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
@@ -267,43 +267,56 @@ function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3 grid-cols-3">
-          <SummaryCard
-            title="온라인 매출"
-            value={formatKRW(snapshot.report.online.paidAmount)}
-            sub="저장 당시 값"
-          />
-          <SummaryCard
-            title="오프라인 매출"
-            value={formatKRW(snapshot.report.offline.paidAmount)}
-            sub="저장 당시 값"
-          />
-          <SummaryCard
-            title="참고 합계"
-            value={formatKRW(snapshot.report.combinedPreview.paidAmount)}
-            sub="정산 지급액 계산 미사용"
-            tone="warning"
-          />
-          <SummaryCard
-            title="개인결제 환불"
-            value={formatKRW(snapshot.report.online.refundedAmount)}
-            sub="저장 당시 온라인 환불 기준"
-            tone="danger"
-          />
-          <SummaryCard
-            title="오프라인 환불"
-            value={formatKRW(snapshot.report.offline.refundedAmount)}
-            sub="저장 당시 값"
-            tone="danger"
-          />
-          <SummaryCard
-            title="오프라인 미결제"
-            value={formatKRW(snapshot.report.offline.pendingAmount)}
-            sub="저장 당시 값"
-            tone="warning"
-          />
-        </div>
-        <dl className={cn(adminSurface.fieldPanel, "grid gap-2 bg-background/60 p-4 grid-cols-2", adminTypography.body)}>
+        <dl className="grid grid-cols-1 gap-x-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="space-y-1 border-b border-border/60 py-3">
+            <dt className={adminTypography.caption}>온라인 매출</dt>
+            <dd className={adminTypography.money}>
+              {formatKRW(snapshot.report.online.paidAmount)}
+            </dd>
+            <dd className={adminTypography.caption}>저장 당시 값</dd>
+          </div>
+          <div className="space-y-1 border-b border-border/60 py-3">
+            <dt className={adminTypography.caption}>오프라인 매출</dt>
+            <dd className={adminTypography.money}>
+              {formatKRW(snapshot.report.offline.paidAmount)}
+            </dd>
+            <dd className={adminTypography.caption}>저장 당시 값</dd>
+          </div>
+          <div className="space-y-1 border-b border-border/60 py-3">
+            <dt className={adminTypography.caption}>참고 합계</dt>
+            <dd className={adminTypography.money}>
+              {formatKRW(snapshot.report.combinedPreview.paidAmount)}
+            </dd>
+            <dd className={adminTypography.caption}>정산 지급액 계산 미사용</dd>
+          </div>
+          <div className="space-y-1 border-b border-border/60 py-3">
+            <dt className={adminTypography.caption}>개인결제 환불</dt>
+            <dd className={adminTypography.money}>
+              {formatKRW(snapshot.report.online.refundedAmount)}
+            </dd>
+            <dd className={adminTypography.caption}>저장 당시 온라인 환불 기준</dd>
+          </div>
+          <div className="space-y-1 border-b border-border/60 py-3">
+            <dt className={adminTypography.caption}>오프라인 환불</dt>
+            <dd className={adminTypography.money}>
+              {formatKRW(snapshot.report.offline.refundedAmount)}
+            </dd>
+            <dd className={adminTypography.caption}>저장 당시 값</dd>
+          </div>
+          <div className="space-y-1 border-b border-border/60 py-3">
+            <dt className={adminTypography.caption}>오프라인 미결제</dt>
+            <dd className={adminTypography.money}>
+              {formatKRW(snapshot.report.offline.pendingAmount)}
+            </dd>
+            <dd className={adminTypography.caption}>저장 당시 값</dd>
+          </div>
+        </dl>
+        <dl
+          className={cn(
+            "grid grid-cols-1 gap-x-4 gap-y-2 rounded-lg border border-border bg-background/60 p-4 md:grid-cols-2",
+            adminTypography.body,
+          )}
+        >
           <Row
             label="상태"
             value={
@@ -316,7 +329,7 @@ function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) 
           />
           <Row label="최초 생성" value={formatDateTime(snapshot.createdAt)} />
           <Row label="마지막 저장" value={formatDateTime(snapshot.updatedAt)} />
-          <div className="col-span-2">
+          <div className="md:col-span-2">
             <Row label="메모" value={snapshot.memo?.trim() || "-"} />
           </div>
         </dl>
@@ -340,35 +353,34 @@ function SnapshotDiffCard({
   );
 
   return (
-    <Card className="border-dashed border-border bg-background">
-      <CardHeader className="space-y-3">
-        <div className="flex items-start gap-3 flex-row justify-between">
-          <div>
-            <CardTitle className={cn("flex items-center gap-2", adminTypography.panelTitle)}>
-              <DatabaseZap className="h-4 w-4" /> 실시간 리포트와 스냅샷 차이
-            </CardTitle>
-            <p className={cn("mt-2 text-muted-foreground", adminTypography.body)}>
-              아래 차이는 현재 실시간 리포트 값에서 저장된 스냅샷 값을 뺀 값입니다.
-            </p>
-            <p className={cn("mt-1", adminTypography.caption)}>
-              이 비교는 운영 확인용이며 정산 지급액 계산에는 사용되지 않습니다. 스냅샷과 실시간
-              리포트는 별도 기준입니다.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant={changedCount === 0 ? "secondary" : "outline"}>
-              {changedCount === 0
-                ? "변동 없음"
-                : `주요 항목 변동 ${changedCount.toLocaleString("ko-KR")}건`}
-            </Badge>
-            <Badge variant="secondary">
-              참고 순매출 {formatSnapshotDiff(combinedNetDiff, "currency")}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className={cn(adminSurface.tableCard, "overflow-x-auto")}>
+    <details className="rounded-xl border border-dashed border-border bg-background">
+      <summary className="flex cursor-pointer list-none flex-wrap items-start justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+        <span className={cn("flex items-center gap-2", adminTypography.panelTitle)}>
+          <DatabaseZap className="h-4 w-4" /> 실시간 리포트와 저장된 스냅샷 차이
+        </span>
+        <span
+          className={cn(
+            "flex flex-wrap justify-end gap-x-3 gap-y-1",
+            adminTypography.metaMuted,
+          )}
+        >
+          <span>
+            {changedCount === 0
+              ? "변동 없음"
+              : `주요 항목 변동 ${changedCount.toLocaleString("ko-KR")}건`}
+          </span>
+          <span>참고 순매출 차이 {formatSnapshotDiff(combinedNetDiff, "currency")}</span>
+        </span>
+      </summary>
+      <div className="border-t border-border px-5 py-4">
+        <p className={cn("text-muted-foreground", adminTypography.body)}>
+          아래 차이는 현재 실시간 리포트 값에서 저장된 스냅샷 값을 뺀 값입니다.
+        </p>
+        <p className={cn("mt-1", adminTypography.caption)}>
+          이 비교는 운영 확인용이며 정산 지급액 계산에는 사용되지 않습니다. 스냅샷과 실시간
+          리포트는 별도 기준입니다.
+        </p>
+        <div className={cn(adminSurface.tableCard, "mt-4 overflow-x-auto")}>
           <table className="w-full min-w-[720px]">
             <thead className={adminSurface.tableHeader}>
               <tr>
@@ -407,8 +419,8 @@ function SnapshotDiffCard({
           차이 공식: 현재 실시간 값 - 저장된 스냅샷 값. 일별 series 차이 비교는 이번 화면에서
           제공하지 않습니다.
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </details>
   );
 }
 
@@ -581,7 +593,8 @@ export default function RevenueReportClient() {
   return (
     <AdminPageShell variant="wide" className="space-y-6">
       <AdminPageHeader
-        className="flex-row"
+        variant="compact"
+        className="flex-wrap"
         title="온라인/오프라인 매출 리포트"
         description="온라인 정산 기준 매출과 오프라인 운영 매출을 분리해 비교합니다. 참고 합계는 정산 지급액 계산에 사용되지 않습니다."
         icon={BarChartBig}
@@ -599,28 +612,64 @@ export default function RevenueReportClient() {
         }
       />
 
-      <Card className={adminSurface.filterCard}>
-        <CardHeader className="px-0 pt-0">
-          <CardTitle className={cn("flex items-center gap-2", adminTypography.panelTitle)}>
-            <Calendar className="h-4 w-4" /> 기간 필터
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => applyPreset("today")}>
-              오늘
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => applyPreset("month")}>
-              이번 달
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => applyPreset("7d")}>
-              최근 7일
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => applyPreset("30d")}>
-              최근 30일
-            </Button>
-          </div>
-          <div className="grid items-end gap-3 grid-cols-[1fr_1fr_180px_auto_auto_auto]">
+      <div className="space-y-2">
+        <AdminFilterBar
+          quickFilters={
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => applyPreset("today")}
+              >
+                오늘
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => applyPreset("month")}
+              >
+                이번 달
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => applyPreset("7d")}
+              >
+                최근 7일
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => applyPreset("30d")}
+              >
+                최근 30일
+              </Button>
+            </>
+          }
+          actions={
+            <>
+              <Button type="button" onClick={submit} className="w-auto">
+                <Search className="mr-2 h-4 w-4" />
+                검색
+              </Button>
+              <Button type="button" variant="outline" onClick={reset} className="w-auto">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                초기화
+              </Button>
+              <Button asChild type="button" variant="secondary" className="w-auto">
+                <a href={csvDownloadHref} download>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  CSV 다운로드
+                </a>
+              </Button>
+            </>
+          }
+        >
+          <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-2 xl:grid-cols-3">
             <div className="space-y-1.5">
               <Label htmlFor="report-from">시작일</Label>
               <Input
@@ -656,76 +705,113 @@ export default function RevenueReportClient() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="button" onClick={submit} className="w-auto">
-              <Search className="mr-2 h-4 w-4" />
-              검색
-            </Button>
-            <Button type="button" variant="outline" onClick={reset} className="w-auto">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              초기화
-            </Button>
-            <Button asChild type="button" variant="secondary" className="w-auto">
-              <a href={csvDownloadHref} download>
-                <FileDown className="mr-2 h-4 w-4" />
-                CSV 다운로드
-              </a>
-            </Button>
           </div>
-          <p className={adminTypography.caption}>
-            CSV 다운로드는 현재 조회 중인 실시간 리포트 기준입니다. 스냅샷 CSV는 아래 월별 리포트
-            스냅샷 카드에서 별도로 다운로드합니다.
-          </p>
-        </CardContent>
-      </Card>
+        </AdminFilterBar>
+        <p className={adminTypography.caption}>
+          CSV 다운로드는 현재 조회 중인 실시간 리포트 기준입니다. 스냅샷 CSV는 아래 월별 리포트
+          스냅샷 카드에서 별도로 다운로드합니다.
+        </p>
+      </div>
 
-      <Card className={cn(adminSurface.card, "border-primary/20")}>
-        <CardHeader>
-          <CardTitle className={cn("flex items-center gap-2", adminTypography.panelTitle)}>
-            <DatabaseZap className="h-4 w-4" /> 월별 리포트 스냅샷
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className={cn(adminSurface.fieldPanelMuted, adminTypography.body, "p-4 text-muted-foreground")}>
-            {monthlySnapshotTarget ? (
-              <p>
-                <strong className="text-foreground">
-                  {monthlySnapshotTarget.yyyymm} 월별 스냅샷 저장 가능
-                </strong>{" "}
-                · 저장 시 서버에서 {monthlySnapshotTarget.from} ~ {monthlySnapshotTarget.to} 범위를
-                day 기준으로 다시 집계합니다.
-              </p>
-            ) : (
-              <p>
-                <strong className="text-foreground">
-                  월별 스냅샷은 월 단위 조회에서 저장할 수 있습니다.
-                </strong>{" "}
-                시작일은 해당 월 1일, 종료일은 해당 월 말일로 선택해주세요.
-              </p>
-            )}
-            <ul className="mt-3 list-disc space-y-1 pl-5">
-              <li>
-                스냅샷은 저장 시점의 매출 리포트이며, 이후 주문/환불/오프라인 기록 수정에 따라
-                실시간 리포트와 차이가 날 수 있습니다.
-              </li>
-              <li>스냅샷은 정산 지급액 계산에 사용되지 않습니다.</li>
-              <li>
-                이미 저장된 월별 스냅샷을 새로 저장하면 저장 당시의 리포트 값으로 덮어써집니다.
-              </li>
-              <li>
-                자동 생성은 스냅샷 저장을 편하게 하기 위한 기능이며, 정산 지급액 계산에는 사용되지
-                않습니다.
-              </li>
-            </ul>
-            <div className="mt-4 flex gap-3 rounded-lg border border-border bg-background/70 p-3 flex-row items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">이전 달 마감 스냅샷 생성</p>
-                <p className={cn("mt-1", adminTypography.caption)}>
-                  KST 기준 이전 달을 마감 상태로 생성하며, 이미 해당 월 스냅샷이 있으면 새로
-                  생성한 값으로 덮어씁니다.
+      {report ? (
+        <>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <SummaryCard
+              title="온라인 매출"
+              value={formatKRW(report.online.paidAmount)}
+              sub={`${report.online.count.toLocaleString("ko-KR")}건 · 현재 DB 기준 실시간 리포트`}
+              tone="primary"
+            />
+            <SummaryCard
+              title="오프라인 매출"
+              value={formatKRW(report.offline.paidAmount)}
+              sub="현재 DB 기준 실시간 리포트"
+              tone="primary"
+            />
+          </div>
+
+          <div className="rounded-lg border border-warning/30 bg-warning/5 px-4 py-3">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                <Badge tone="warning">참고값</Badge>
+                <p className={adminTypography.caption}>{report.combinedPreview.note}</p>
+              </div>
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+                <div>
+                  <dt className={adminTypography.caption}>온라인 + 오프라인 참고 합계</dt>
+                  <dd className={adminTypography.money}>
+                    {formatKRW(report.combinedPreview.paidAmount)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className={adminTypography.caption}>참고 순매출</dt>
+                  <dd className={adminTypography.money}>
+                    {formatKRW(report.combinedPreview.netAmount)}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          <Card className={cn(adminSurface.card, "border-warning/30 bg-warning/5")}>
+            <CardContent className="flex flex-wrap items-center gap-x-8 gap-y-3 p-4">
+              <div className="mr-auto">
+                <p className={adminTypography.panelTitle}>확인할 금액·예외</p>
+                <p className={adminTypography.caption}>
+                  정상 매출 합계와 분리해 환불·미결제·발급 보정만 모았습니다.
                 </p>
               </div>
+              {[
+                [
+                  "발급 보정",
+                  `${Number(report.offline.issueFailedCount ?? 0).toLocaleString("ko-KR")}건`,
+                ],
+                ["개인결제 환불", formatKRW(report.online.refundedAmount)],
+                ["오프라인 환불", formatKRW(report.offline.refundedAmount)],
+                ["오프라인 미결제", formatKRW(report.offline.pendingAmount)],
+              ].map(([label, value]) => (
+                <div key={label} className="min-w-[120px] text-right">
+                  <p className={adminTypography.caption}>{label}</p>
+                  <p className={adminTypography.money}>{value}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </>
+      ) : null}
+
+      <Card className={cn(adminSurface.card, "border-primary/20")}>
+        <CardHeader className="space-y-0">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <CardTitle className={cn("flex items-center gap-2", adminTypography.panelTitle)}>
+                <DatabaseZap className="h-4 w-4" /> 월별 리포트 스냅샷
+              </CardTitle>
+              {monthlySnapshotTarget ? (
+                <p className={cn("mt-1", adminTypography.metaMuted)}>
+                  <strong className="text-foreground">
+                    {monthlySnapshotTarget.yyyymm} 월별 스냅샷 저장 가능
+                  </strong>{" "}
+                  · 저장 시 서버에서 {monthlySnapshotTarget.from} ~ {monthlySnapshotTarget.to} 범위를
+                  day 기준으로 다시 집계합니다.
+                </p>
+              ) : (
+                <p className={cn("mt-1", adminTypography.metaMuted)}>
+                  <strong className="text-foreground">
+                    월별 스냅샷은 월 단위 조회에서 저장할 수 있습니다.
+                  </strong>{" "}
+                  시작일은 해당 월 1일, 종료일은 해당 월 말일로 선택해주세요.
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <p className={cn("max-w-md", adminTypography.caption)}>
+                <span className="font-medium text-foreground">이전 달 마감 스냅샷 생성</span> · KST
+                기준 이전 달을 마감 상태로 생성하며, 이미 해당 월 스냅샷이 있으면 새로 생성한
+                값으로 덮어씁니다.
+              </p>
               <Button
-                className="w-auto"
+                className="w-auto shrink-0"
                 type="button"
                 variant="secondary"
                 onClick={autoGeneratePreviousMonthSnapshot}
@@ -740,9 +826,33 @@ export default function RevenueReportClient() {
               </Button>
             </div>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <details className="rounded-lg border border-border bg-background">
+            <summary className={cn("cursor-pointer px-4 py-3", adminTypography.bodyStrong)}>
+              스냅샷 기준과 주의사항
+            </summary>
+            <div className={cn("border-t border-border px-4 py-3", adminTypography.body)}>
+              <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+                <li>
+                  스냅샷은 저장 시점의 매출 리포트이며, 이후 주문/환불/오프라인 기록 수정에 따라
+                  실시간 리포트와 차이가 날 수 있습니다.
+                </li>
+                <li>스냅샷은 정산 지급액 계산에 사용되지 않습니다.</li>
+                <li>
+                  이미 저장된 월별 스냅샷을 새로 저장하면 저장 당시의 리포트 값으로
+                  덮어써집니다.
+                </li>
+                <li>
+                  자동 생성은 스냅샷 저장을 편하게 하기 위한 기능이며, 정산 지급액 계산에는
+                  사용되지 않습니다.
+                </li>
+              </ul>
+            </div>
+          </details>
 
           {monthlySnapshotTarget ? (
-            <div className="grid gap-4 grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
               <div className={cn(adminSurface.fieldPanel, "p-4")}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -756,11 +866,11 @@ export default function RevenueReportClient() {
                     </p>
                   </div>
                   {snapshot ? (
-                    <Badge variant={snapshot.status === "finalized" ? "default" : "secondary"}>
+                    <Badge tone={snapshot.status === "finalized" ? "success" : "neutral"}>
                       {snapshot.status === "finalized" ? "마감" : "임시 저장"}
                     </Badge>
                   ) : (
-                    <Badge variant="outline">미저장</Badge>
+                    <Badge tone="warning">미저장</Badge>
                   )}
                 </div>
                 {snapshot ? (
@@ -871,7 +981,7 @@ export default function RevenueReportClient() {
             <p className={cn("mt-1", adminTypography.metaMuted)}>
               필터를 확인한 뒤 다시 시도해주세요.
             </p>
-            <Button className="mt-4" variant="outline" onClick={() => mutate()}>
+            <Button type="button" className="mt-4" variant="outline" onClick={() => mutate()}>
               다시 불러오기
             </Button>
           </CardContent>
@@ -888,60 +998,9 @@ export default function RevenueReportClient() {
 
       {report ? (
         <>
-          <div className="grid gap-4 grid-cols-4">
-            <SummaryCard
-              title="온라인 매출"
-              value={formatKRW(report.online.paidAmount)}
-              sub={`${report.online.count.toLocaleString("ko-KR")}건 · 현재 DB 기준 실시간 리포트`}
-              tone="primary"
-            />
-            <SummaryCard
-              title="오프라인 매출"
-              value={formatKRW(report.offline.paidAmount)}
-              sub="현재 DB 기준 실시간 리포트"
-              tone="primary"
-            />
-            <SummaryCard
-              title="온라인 + 오프라인 참고 합계"
-              value={formatKRW(report.combinedPreview.paidAmount)}
-              sub="정산 지급액 계산에 사용되지 않습니다."
-              tone="warning"
-            />
-            <SummaryCard
-              title="참고 순매출"
-              value={formatKRW(report.combinedPreview.netAmount)}
-              sub="온라인 net + 오프라인 net 단순 합계"
-            />
-          </div>
-
-          <Card className={cn(adminSurface.card, "border-warning/30 bg-warning/5")}>
-            <CardContent className="flex flex-wrap items-center gap-x-8 gap-y-3 p-4">
-              <div className="mr-auto">
-                <p className={adminTypography.panelTitle}>확인할 금액·예외</p>
-                <p className={adminTypography.caption}>
-                  정상 매출 합계와 분리해 환불·미결제·발급 보정만 모았습니다.
-                </p>
-              </div>
-              {[
-                [
-                  "발급 보정",
-                  `${Number(report.offline.issueFailedCount ?? 0).toLocaleString("ko-KR")}건`,
-                ],
-                ["개인결제 환불", formatKRW(report.online.refundedAmount)],
-                ["오프라인 환불", formatKRW(report.offline.refundedAmount)],
-                ["오프라인 미결제", formatKRW(report.offline.pendingAmount)],
-              ].map(([label, value]) => (
-                <div key={label} className="min-w-[120px] text-right">
-                  <p className={adminTypography.caption}>{label}</p>
-                  <p className={adminTypography.money}>{value}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
           <Card className={adminSurface.card}>
             <CardContent className="p-5">
-              <div className="flex items-start gap-3 flex-row justify-between">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className={adminTypography.sectionTitle}>실시간 온라인/오프라인 비교</h2>
                   <p className={cn("mt-1", adminTypography.metaMuted)}>
@@ -949,12 +1008,12 @@ export default function RevenueReportClient() {
                     지급액처럼 사용하지 않습니다.
                   </p>
                 </div>
-                <Badge variant="secondary">
+                <span className={adminTypography.caption}>
                   {report.range.from} ~ {report.range.to} ·{" "}
                   {report.range.groupBy === "day" ? "일별" : "월별"}
-                </Badge>
+                </span>
               </div>
-              <div className="mt-5 grid gap-4 grid-cols-2">
+              <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
                 <div className={cn(adminSurface.fieldPanel, "p-4")}>
                   <h3 className="font-semibold">온라인 매출 세부</h3>
                   <dl className={cn("mt-3 space-y-2", adminTypography.body)}>
@@ -1014,15 +1073,18 @@ export default function RevenueReportClient() {
                 <WalletCards className="h-4 w-4" /> 결제수단별 오프라인 매출
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-3 grid-cols-4">
-              {Object.entries(METHOD_LABELS).map(([key, label]) => (
-                <SummaryCard
-                  key={key}
-                  title={label}
-                  value={formatKRW(report.offline.byMethod[key as keyof typeof METHOD_LABELS])}
-                  sub="오프라인 결제완료 매출"
-                />
-              ))}
+            <CardContent>
+              <dl className="grid grid-cols-2 gap-x-4 xl:grid-cols-4">
+                {Object.entries(METHOD_LABELS).map(([key, label]) => (
+                  <div key={key} className="space-y-1 border-b border-border/60 py-3">
+                    <dt className={adminTypography.caption}>{label}</dt>
+                    <dd className={adminTypography.money}>
+                      {formatKRW(report.offline.byMethod[key as keyof typeof METHOD_LABELS])}
+                    </dd>
+                    <dd className={adminTypography.caption}>오프라인 결제완료 매출</dd>
+                  </div>
+                ))}
+              </dl>
             </CardContent>
           </Card>
 

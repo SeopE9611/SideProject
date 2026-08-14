@@ -59,7 +59,10 @@ import {
   badgeBase,
   badgeSizeSm,
   badgeToneClass,
+  getApplicationStatusBadgeSpec,
+  getOrderStatusBadgeSpec,
   getPaymentStatusBadgeSpec,
+  getRentalStatusBadgeSpec,
   getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -257,7 +260,20 @@ function statusHeadlineOf(item: OpItem) {
     if (lowerStatus.includes("배송완료") || lowerStatus.includes("delivered"))
       return "배송 완료 주문";
     if (lowerStatus.includes("배송중") || lowerStatus.includes("shipped")) return "배송 중 주문";
-    if (lowerStatus.includes("결제")) return "결제 대기 주문";
+    if (item.paymentNeedsCheck === true) return "결제 확인 필요 주문";
+    if (item.needsStringingApplication === true) return "교체서비스 신청서 접수 확인 주문";
+    if (
+      item.paymentStateKind === "paid" ||
+      lowerStatus.includes("결제완료") ||
+      lowerStatus.includes("결제 완료")
+    )
+      return "결제 완료 주문";
+    if (
+      ["결제대기", "결제 대기", "입금대기", "입금 대기", "미입금", "결제 확인 대기"].some(
+        (label) => lowerStatus.includes(label),
+      )
+    )
+      return "결제 확인 필요 주문";
     return status ? `${status} 주문` : "처리 대기 주문";
   }
 
@@ -289,6 +305,54 @@ function statusHeadlineOf(item: OpItem) {
   if (integratedApplication) return "연결 교체 신청 건";
   if (standaloneApplication) return "단독 교체 신청 건";
   return status ? `${status} 신청서` : "신청서 상태 확인 건";
+}
+
+function normalizeOperationStatusLabel(value?: string | null) {
+  return String(value ?? "")
+    .replace(/\s+/g, "")
+    .replace(/[·/_-]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+const OPERATION_EXPLICIT_ACTION_LABELS = new Set([
+  "취소 요청 처리 필요",
+  "교체서비스 신청서 접수 확인",
+  "입금 확인",
+  "결제 확인",
+  "반납 확인",
+  "보증금 환불 확인",
+]);
+const OPERATION_ACTION_KEYWORDS = ["확인", "처리", "등록", "접수", "환불", "반납"];
+const OPERATION_ACTION_FALLBACK: Record<OpItem["kind"], string> = {
+  order: "주문 상세 확인",
+  rental: "대여 상세 확인",
+  stringing_application: "신청서 상세 확인",
+  package_purchase: "패키지 상세 확인",
+};
+
+function operationPrimaryActionLabel(input: {
+  anchor: OpItem;
+  groupCancelRequested: boolean;
+  nextActionText: string;
+}) {
+  if (input.groupCancelRequested) return "취소 요청 처리";
+  if (input.anchor.needsStringingApplication) return "신청서 접수 확인";
+  if (input.anchor.paymentNeedsCheck && input.anchor.paymentActionLabel) {
+    return input.anchor.paymentActionLabel;
+  }
+
+  const nextActionText = input.nextActionText.trim();
+
+  if (
+    OPERATION_EXPLICIT_ACTION_LABELS.has(nextActionText) ||
+    (nextActionText.length <= 18 &&
+      OPERATION_ACTION_KEYWORDS.some((keyword) => nextActionText.includes(keyword)))
+  ) {
+    return nextActionText;
+  }
+
+  return OPERATION_ACTION_FALLBACK[input.anchor.kind];
 }
 
 type PresetKey = "paymentMismatch" | "integratedReview" | "singleApplication";
@@ -1697,7 +1761,7 @@ export default function OperationsClient() {
               </div>
 
               {/* 필터 컴포넌트들 */}
-              <div className="grid w-full gap-2 border-t border-border pt-2.5 grid-cols-5">
+              <div className="grid w-full grid-cols-1 gap-2 border-t border-border pt-2.5 md:grid-cols-2 xl:grid-cols-5">
                 <Select
                   value={kind}
                   onValueChange={(v: any) => {
@@ -1745,7 +1809,7 @@ export default function OperationsClient() {
                 </Select>
                 <p
                   className={cn(
-                    "w-full col-span-5",
+                    "w-full md:col-span-2 xl:col-span-5",
                     adminTypography.metaMuted,
                   )}
                 >
@@ -1811,7 +1875,7 @@ export default function OperationsClient() {
               </div>
 
               {activePresetKey && (
-                <div className="mt-1 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground grid-cols-3">
+                <div className="mt-1 grid grid-cols-1 gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground lg:grid-cols-3">
                   <div>
                     <p className={cn("mb-1", adminTypography.caution)}>현재 결과</p>
                     <p className="text-sm font-medium text-foreground">
@@ -1954,7 +2018,7 @@ export default function OperationsClient() {
                       <TableHead className={cn(thClasses, "w-[150px]")}>주의 / 경과</TableHead>
                       <TableHead className={cn(thClasses, "w-[270px]")}>업무</TableHead>
                       <TableHead className={cn(thClasses, "w-[240px]")}>고객 / 문서</TableHead>
-                      <TableHead className={cn(thClasses, "w-[220px]")}>현재 단계</TableHead>
+                      <TableHead className={cn(thClasses, "w-[220px]")}>상태 / 금액</TableHead>
                       <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[170px]")}>
                         액션
                       </TableHead>
@@ -2015,6 +2079,29 @@ export default function OperationsClient() {
                         anchor: g.anchor,
                         items: g.items,
                       });
+                      const primaryActionLabel = operationPrimaryActionLabel({
+                        anchor: g.anchor,
+                        groupCancelRequested,
+                        nextActionText,
+                      });
+                      const workflowStatusLabel =
+                        g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인";
+                      const paymentStatusLabel =
+                        g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel ?? "";
+                      const isDuplicatePaymentStatus =
+                        Boolean(paymentStatusLabel) &&
+                        normalizeOperationStatusLabel(workflowStatusLabel) ===
+                          normalizeOperationStatusLabel(paymentStatusLabel);
+                      const workflowStatusBadgeSpec =
+                        g.anchor.kind === "order"
+                          ? getOrderStatusBadgeSpec(g.anchor.statusLabel ?? workflowStatusLabel)
+                          : g.anchor.kind === "rental"
+                            ? getRentalStatusBadgeSpec(g.anchor.statusLabel ?? workflowStatusLabel)
+                            : g.anchor.kind === "stringing_application"
+                              ? getApplicationStatusBadgeSpec(
+                                  g.anchor.statusLabel ?? workflowStatusLabel,
+                                )
+                              : { variant: "neutral" as const };
 
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
 
@@ -2142,10 +2229,15 @@ export default function OperationsClient() {
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className={adminDataTable.cellStack}>
-                                <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
-                                  {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인"}
-                                </Badge>
-                                {g.anchor.paymentDisplayLabel || g.anchor.paymentLabel ? (
+                                {!isDuplicatePaymentStatus ? (
+                                  <Badge
+                                    variant={workflowStatusBadgeSpec.variant}
+                                    className={cn(badgeBase, badgeSizeSm)}
+                                  >
+                                    {workflowStatusLabel}
+                                  </Badge>
+                                ) : null}
+                                {paymentStatusLabel ? (
                                   <Badge
                                     variant={
                                       g.anchor.paymentStateKind === "paid"
@@ -2161,7 +2253,7 @@ export default function OperationsClient() {
                                             : "info"
                                     }
                                   >
-                                    {g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel}
+                                    {paymentStatusLabel}
                                   </Badge>
                                 ) : null}
                                 <span className={adminTypography.money}>{won(g.anchor.amount)}</span>
@@ -2183,12 +2275,12 @@ export default function OperationsClient() {
                                   size="sm"
                                   variant="outline"
                                   className={cn(
-                                    "h-8 min-w-[112px] justify-center border-border/70 px-2.5 shadow-sm hover:border-border hover:bg-muted/40 focus-visible:ring-2",
+                                    "h-auto min-h-8 max-w-[150px] justify-center whitespace-normal border-border/70 px-2.5 py-1 text-center leading-tight hover:border-border hover:bg-muted/40 focus-visible:ring-2",
                                     adminTypography.actionLabel,
                                   )}
                                   title={nextActionText}
                                 >
-                                  <Link href={primaryActionTarget.href}>{primaryActionTarget.label}</Link>
+                                  <Link href={primaryActionTarget.href}>{primaryActionLabel}</Link>
                                 </Button>
                                 {g.anchor.canSyncNicePayment && (
                                   <Button

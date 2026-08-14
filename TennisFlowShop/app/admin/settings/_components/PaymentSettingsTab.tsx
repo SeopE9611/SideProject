@@ -1,5 +1,6 @@
 "use client";
 import AdminPageSection from "@/components/admin/AdminPageSection";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { TabsContent } from "@/components/ui/tabs";
 import type { TabErrorState } from "@/types/admin/settings";
@@ -20,13 +21,12 @@ export function PaymentSettingsTab({
     };
   };
 }) {
-  const nicepayStatus = paymentMeta.nicepay.enabled ? "활성" : "비활성";
-  const nicepayModeLabel =
+  const nicepayMode =
     paymentMeta.nicepay.mode === "sandbox"
-      ? "sandbox"
+      ? { tone: "info" as const, label: "Sandbox" }
       : paymentMeta.nicepay.mode === "production"
-        ? "production"
-        : "확인 필요";
+        ? { tone: "success" as const, label: "Production" }
+        : { tone: "warning" as const, label: "확인 필요" };
 
   return (
     <TabsContent value="payment">
@@ -41,24 +41,49 @@ export function PaymentSettingsTab({
             {error.message}
           </div>
         )}
-        <div className="space-y-4">
-          <div className={`${adminSurface.cardMuted} space-y-2 p-4`}>
-            <p className={adminTypography.panelTitle}>NICEPay 상태</p>
-            <p className={adminTypography.body}>사용 PG: {paymentMeta.nicepay.provider}</p>
-            <p className={adminTypography.body}>결제 기능 상태: {nicepayStatus}</p>
-            <p className={adminTypography.body}>결제 모드: {nicepayModeLabel}</p>
-            <p className={`${adminTypography.body} break-all`}>
-              승인 API Base URL: {paymentMeta.nicepay.approveApiBase ?? "미설정"}
-            </p>
-            <p className={adminTypography.body}>
-              Client ID 설정 여부: {paymentMeta.nicepay.hasClientId ? "설정됨" : "미설정"}
-            </p>
-            <p className={adminTypography.body}>
-              Secret Key 설정 여부: {paymentMeta.nicepay.hasSecretKey ? "설정됨" : "미설정"}
-            </p>
+        <div className="overflow-hidden rounded-lg border border-border bg-background">
+          <div className="p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className={adminTypography.panelTitle}>NICEPay 연동 상태</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone={paymentMeta.nicepay.enabled ? "success" : "danger"}>
+                  {paymentMeta.nicepay.enabled ? "활성" : "비활성"}
+                </Badge>
+                <Badge tone={nicepayMode.tone}>{nicepayMode.label}</Badge>
+              </div>
+            </div>
+
+            <dl className="mt-4 divide-y divide-border/60 border-y border-border/60">
+              <div className="grid gap-1 py-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center">
+                <dt className={adminTypography.metaMuted}>사용 PG</dt>
+                <dd className={adminTypography.bodyStrong}>{paymentMeta.nicepay.provider}</dd>
+              </div>
+              <div className="grid gap-1 py-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center">
+                <dt className={adminTypography.metaMuted}>승인 API Base URL</dt>
+                <dd className={`${adminTypography.metaMuted} break-all font-mono`}>
+                  {paymentMeta.nicepay.approveApiBase ?? "미설정"}
+                </dd>
+              </div>
+              <div className="grid gap-1 py-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center">
+                <dt className={adminTypography.metaMuted}>Client ID</dt>
+                <dd>
+                  <Badge tone={paymentMeta.nicepay.hasClientId ? "success" : "warning"}>
+                    {paymentMeta.nicepay.hasClientId ? "설정됨" : "미설정"}
+                  </Badge>
+                </dd>
+              </div>
+              <div className="grid gap-1 py-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center">
+                <dt className={adminTypography.metaMuted}>Secret Key</dt>
+                <dd>
+                  <Badge tone={paymentMeta.nicepay.hasSecretKey ? "success" : "warning"}>
+                    {paymentMeta.nicepay.hasSecretKey ? "설정됨" : "미설정"}
+                  </Badge>
+                </dd>
+              </div>
+            </dl>
           </div>
 
-          <div className={`${adminSurface.cardMuted} space-y-1 p-4`}>
+          <div className="space-y-1 border-t border-border/60 bg-muted/20 px-4 py-3">
             <p className={adminTypography.panelTitle}>운영 안내</p>
             <p className={adminTypography.metaMuted}>
               NICEPay 환경변수는 배포 환경(Vercel)에서 관리합니다.

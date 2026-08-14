@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { adminSurface } from "@/components/admin/admin-typography";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { useAdminSettings } from "./_hooks/useAdminSettings";
 import { UserSettingsTab } from "./_components/UserSettingsTab";
@@ -26,29 +25,38 @@ export default function SettingsPage() {
           icon={Shield}
           scope="범위: 전역 운영 설정"
           helperText="변경 내용은 저장 전까지 적용되지 않으며, 탭 이동 시 확인 절차가 유지됩니다."
+          variant="form"
+          className="flex-wrap"
         />
 
         <Tabs value={vm.activeTab} onValueChange={vm.requestTabChange} className="space-y-4">
           {vm.isBootstrapping && (
             <div
-              className={`${adminSurface.cardMuted} px-4 py-3 bg-primary/10 dark:bg-primary/20`}
+              className="rounded-lg border border-border bg-background px-4 py-3"
               aria-label="설정값 로딩 중"
             >
-              <Skeleton className="h-4 w-52 bg-primary/20" />
+              <Skeleton className="h-4 w-52" />
             </div>
           )}
-          <TabsList className="grid grid-cols-3 gap-2 h-auto">
-            <TabsTrigger value="user">
+          <TabsList className="grid h-auto grid-cols-3 gap-2">
+            <TabsTrigger value="user" className="min-h-10 flex-wrap">
               <User className="h-4 w-4 mr-2" />
               사용자
+              {vm.userForm.formState.isDirty ? (
+                <span className="ml-2 text-ui-label text-muted-foreground">변경 있음</span>
+              ) : null}
             </TabsTrigger>
-            <TabsTrigger value="email">
+            <TabsTrigger value="email" className="min-h-10 flex-wrap">
               <Mail className="h-4 w-4 mr-2" />
               이메일
+              {vm.emailForm.formState.isDirty ? (
+                <span className="ml-2 text-ui-label text-muted-foreground">변경 있음</span>
+              ) : null}
             </TabsTrigger>
-            <TabsTrigger value="payment">
+            <TabsTrigger value="payment" className="min-h-10 flex-wrap">
               <CreditCard className="h-4 w-4 mr-2" />
               결제
+              <span className="ml-2 text-ui-label text-muted-foreground">조회 전용</span>
             </TabsTrigger>
           </TabsList>
 

@@ -711,18 +711,18 @@ export default function StringingSettingsPage() {
           </CardContent>
         </Card>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background px-4 py-3">
+        <div className="sticky bottom-3 z-20 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-background/95 px-4 py-3 supports-[backdrop-filter]:backdrop-blur">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <Badge variant={isDirty ? "warning" : "success"}>
               {isDirty ? "저장되지 않은 변경" : "저장됨"}
             </Badge>
-            <span className="text-sm text-muted-foreground">
+            <span className="min-w-0 flex-1 text-sm text-muted-foreground">
               {isDirty
                 ? "저장해야 신규 예약에 반영됩니다."
                 : "현재 화면과 저장된 설정이 일치합니다."}
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
             <Button
               type="button"
               variant="outline"

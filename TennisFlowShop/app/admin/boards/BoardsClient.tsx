@@ -260,6 +260,37 @@ export default function BoardsClient() {
 
   const hasPostFilterApplied =
     postType !== "all" || postStatus !== "all" || postQ.trim().length > 0;
+  const hasReportFilterApplied =
+    reportType !== "all" || reportStatus !== "pending" || reportQ.trim().length > 0;
+  const reportStatusLabel =
+    reportStatus === "pending"
+      ? "대기"
+      : reportStatus === "resolved"
+        ? "완료"
+        : reportStatus === "rejected"
+          ? "반려"
+          : "전체";
+  const postActiveFilterLabels = hasPostFilterApplied
+    ? [
+        postType !== "all" ? `게시판: ${resolveBoardLabel(postType)}` : null,
+        postStatus !== "all" ? `상태: ${postStatus === "public" ? "공개" : "숨김"}` : null,
+        postQ.trim() ? `검색어: ${postQ.trim()}` : null,
+        `검색 결과 ${postsTotal === null ? "-" : postsTotal.toLocaleString("ko-KR")}건`,
+      ].filter((label): label is string => label !== null)
+    : [];
+  const reportActiveFilterLabels = (
+    hasReportFilterApplied
+      ? [
+          reportType !== "all" ? `게시판: ${resolveBoardLabel(reportType)}` : null,
+          `상태: ${reportStatusLabel}`,
+          reportQ.trim() ? `검색어: ${reportQ.trim()}` : null,
+          `조회 결과 ${reportsTotal === null ? "-" : reportsTotal.toLocaleString("ko-KR")}건`,
+        ]
+      : [
+          "상태: 대기",
+          `조회 결과 ${reportsTotal === null ? "-" : reportsTotal.toLocaleString("ko-KR")}건`,
+        ]
+  ).filter((label): label is string => label !== null);
   const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
 
   const currentPagePostIds = useMemo(() => posts.map((p) => p.id), [posts]);
@@ -385,14 +416,15 @@ export default function BoardsClient() {
           <p className={adminTypography.metaMuted}>
             {tab === "posts" ? (
               <>
-                전체 {postsTotal === null ? "-" : postsTotal.toLocaleString()}건 · 현재 페이지 공개{" "}
+                {hasPostFilterApplied ? "검색 결과" : "전체"}{" "}
+                {postsTotal === null ? "-" : postsTotal.toLocaleString()}건 · 현재 페이지 공개{" "}
                 {postsPublicCount === null ? "-" : postsPublicCount.toLocaleString()}건 · 숨김{" "}
                 {postsHiddenCount === null ? "-" : postsHiddenCount.toLocaleString()}건
               </>
             ) : (
               <>
-                전체 {reportsTotal === null ? "-" : reportsTotal.toLocaleString()}건 · 현재 페이지
-                처리 대기{" "}
+                조회 결과 {reportsTotal === null ? "-" : reportsTotal.toLocaleString()}건 · 현재
+                페이지 처리 대기{" "}
                 {reportsPendingCount === null ? "-" : reportsPendingCount.toLocaleString()}건
               </>
             )}
@@ -414,6 +446,33 @@ export default function BoardsClient() {
             >
               <RefreshCcw className="h-4 w-4" />
             </Button>
+          }
+          activeFilters={
+            tab === "posts" ? (
+              postActiveFilterLabels.length > 0 ? (
+                <>
+                  {postActiveFilterLabels.map((label) => (
+                    <span
+                      key={label}
+                      className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1"
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </>
+              ) : null
+            ) : (
+              <>
+                {reportActiveFilterLabels.map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </>
+            )
           }
         >
           {tab === "posts" ? (

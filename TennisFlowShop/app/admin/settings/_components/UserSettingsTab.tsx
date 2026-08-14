@@ -2,6 +2,7 @@
 import { Save } from "lucide-react";
 import { AdminFormActions, AdminFormField } from "@/components/admin/AdminFormField";
 import AdminPageSection from "@/components/admin/AdminPageSection";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import type { UseFormReturn } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
@@ -35,7 +36,15 @@ export function UserSettingsTab({
           </div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-2 gap-5">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background px-3 py-2">
+            <Badge tone={form.formState.isDirty ? "warning" : "success"}>
+              {form.formState.isDirty ? "저장되지 않은 변경" : "저장됨"}
+            </Badge>
+            <span className={adminTypography.metaMuted}>
+              저장한 설정은 신규 회원가입 정책에 반영됩니다.
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             <div className={`${adminSurface.fieldPanel} flex items-center justify-between gap-4`}>
               <div>
                 <p className={adminTypography.bodyStrong}>회원가입 허용</p>
@@ -68,7 +77,7 @@ export function UserSettingsTab({
               type="submit"
             >
               <Save className="mr-2 h-4 w-4" />
-              설정 저장
+              사용자 설정 저장
             </Button>
           </AdminFormActions>
         </form>
