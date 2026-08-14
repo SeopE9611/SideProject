@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Children, Fragment, isValidElement, type ReactNode } from "react";
 import type * as React from "react";
 import { MoreHorizontal } from "lucide-react";
 
@@ -22,6 +22,13 @@ type AdminRowActionMenuProps = {
   contentProps?: Omit<React.ComponentProps<typeof DropdownMenuContent>, "children">;
 };
 
+function hasRenderableAction(node: ReactNode): boolean {
+  return Children.toArray(node).some((child) => {
+    if (!isValidElement<{ children?: ReactNode }>(child) || child.type !== Fragment) return true;
+    return hasRenderableAction(child.props.children);
+  });
+}
+
 /** 목록의 주 액션과 겹치지 않는 부가 작업을 표시하는 공통 메뉴입니다. */
 export default function AdminRowActionMenu({
   ariaLabel,
@@ -31,6 +38,9 @@ export default function AdminRowActionMenu({
   contentProps,
 }: AdminRowActionMenuProps) {
   const { className: contentClassName, align = "end", ...restContentProps } = contentProps ?? {};
+  const hasActions = hasRenderableAction(children) || hasRenderableAction(destructiveActions);
+
+  if (!hasActions) return null;
 
   return (
     <DropdownMenu {...dropdownProps}>
@@ -39,7 +49,7 @@ export default function AdminRowActionMenu({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2"
+          className="h-8 w-8 rounded-md text-muted-foreground hover:bg-muted/50 hover:text-foreground focus-visible:ring-2"
           aria-label={ariaLabel}
         >
           <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />

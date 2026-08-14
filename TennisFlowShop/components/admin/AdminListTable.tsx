@@ -33,8 +33,8 @@ export function AdminListTable({
       aria-label={ariaLabel}
       className={cn("overflow-hidden rounded-lg border border-border bg-background", className)}
     >
-      <header className="border-b border-border bg-muted/15 px-4 py-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+      <header className="border-b border-border bg-muted/15 px-4 py-2.5">
+        <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-ui-body font-semibold text-foreground">{title}</h2>
@@ -115,7 +115,7 @@ export function AdminListRow({
       role="row"
       aria-label={ariaLabel}
       className={cn(
-        "grid min-h-[88px] min-w-0 items-center border-b border-border transition-[background-color] last:border-b-0 hover:bg-muted/20",
+        "grid min-h-20 min-w-0 items-center border-b border-border transition-[background-color] last:border-b-0 hover:bg-muted/20",
         columnsClassName,
         className,
       )}
@@ -138,7 +138,7 @@ export function AdminListCell({
     <div
       role="cell"
       className={cn(
-        "min-w-0 px-4 py-3",
+        "min-w-0 px-4 py-2.5",
         align === "start" && "text-left",
         align === "center" && "text-center [&>*]:mx-auto",
         align === "end" && "text-right [&>*]:ml-auto",
@@ -162,7 +162,7 @@ export function AdminListPrimary({
   className?: string;
 }) {
   return (
-    <div className={cn("min-w-0 space-y-1.5", className)}>
+    <div className={cn("min-w-0 space-y-1", className)}>
       <div className={cn("line-clamp-2 break-keep", adminTypography.tablePrimary)}>{title}</div>
       {meta ? (
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-ui-label text-muted-foreground">
@@ -192,7 +192,7 @@ export function AdminStatusGroup({
   className?: string;
 }) {
   return (
-    <div className={cn("flex min-w-0 flex-col items-start gap-1.5", className)}>
+    <div className={cn("flex min-w-0 flex-col items-start gap-1", className)}>
       <div className="flex min-w-0 flex-wrap items-center gap-1.5">{primary}</div>
       {secondary ? (
         <div className={cn("line-clamp-2", adminDataTable.secondaryLine)}>{secondary}</div>
@@ -233,5 +233,5 @@ export function AdminMoneyBlock({
 }
 
 export function AdminRowActions({ children }: { children: ReactNode }) {
-  return <div className="flex min-w-0 items-center justify-end gap-1.5">{children}</div>;
+  return <div className="flex min-w-0 items-center justify-end gap-1">{children}</div>;
 }

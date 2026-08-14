@@ -73,7 +73,7 @@ import { useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 const ORDER_LIST_COLUMNS =
-  "grid-cols-[minmax(230px,1.15fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_120px_140px]";
+  "grid-cols-[minmax(230px,1.15fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_120px_120px]";
 
 export default function OrdersClient() {
   const router = useRouter();
@@ -347,44 +347,6 @@ export default function OrdersClient() {
       itemNames.length > 1 ? `외 ${itemNames.length - 1}개` : null,
     ].filter(Boolean);
     return { primary, details };
-  }
-
-  function getOrderNextAction(
-    order: OrderWithType,
-    context: {
-      isLinkedProductOrder: boolean;
-      needsStringingApplication: boolean;
-      paymentState: ReturnType<typeof getAdminOrderPaymentState>;
-    },
-  ) {
-    const { isLinkedProductOrder, needsStringingApplication, paymentState } = context;
-
-    if (order.cancelStatus === "requested") return "취소 처리";
-    if (needsOrderCancelFinalization(order)) return "취소 후처리하기";
-
-    if (paymentState.actionLabel && needsStringingApplication) {
-      return paymentState.kind === "bank_pending" ? "입금·신청서 확인" : "결제·신청서 확인";
-    }
-
-    if (paymentState.actionLabel) {
-      return paymentState.actionLabel;
-    }
-
-    if (needsStringingApplication) {
-      return "신청서 접수 확인";
-    }
-
-    if (isLinkedProductOrder) {
-      return "교체 작업 확인";
-    }
-
-    const tracking = getTrackingBadge(order);
-
-    if (tracking.label.includes("미등록") || tracking.label.includes("없음")) {
-      return "배송 등록하기";
-    }
-
-    return "상세 보기";
   }
 
   // 연결 신청서는 "최신 수정/생성 시각" 기준으로 1건을 선택해 요약에 사용
@@ -958,7 +920,7 @@ export default function OrdersClient() {
             </button>
           </div>
           <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
-            다음 작업
+            조치
           </div>
         </AdminListColumnHeader>
 
@@ -1051,11 +1013,6 @@ export default function OrdersClient() {
                   ? "수령 정보 등록"
                   : "배송 정보 등록";
                 const productSummary = getProductServiceSummary(order, linkedApplication);
-                const nextActionLabel = getOrderNextAction(order, {
-                  isLinkedProductOrder,
-                  needsStringingApplication,
-                  paymentState,
-                });
                 const detailHref =
                   order.__type === "stringing_application"
                     ? `/admin/applications/stringing/${order.id}`
@@ -1237,7 +1194,7 @@ export default function OrdersClient() {
                           asChild
                           size="sm"
                           variant="ghost"
-                          className="h-auto min-h-8 max-w-[132px] whitespace-normal break-keep border border-border/70 px-2.5 py-1.5 text-ui-label font-medium leading-tight hover:border-border hover:bg-muted/40 focus-visible:ring-2"
+                          className="h-8 whitespace-nowrap px-2 text-ui-label font-medium text-foreground/80 hover:bg-muted/50 hover:text-foreground focus-visible:ring-2"
                         >
                           <Link
                             href={detailHref}
@@ -1249,7 +1206,7 @@ export default function OrdersClient() {
                               }
                             }}
                           >
-                            {nextActionLabel}
+                            상세 확인
                           </Link>
                         </Button>
                         <AdminRowActionMenu ariaLabel="주문 부가 작업 메뉴 열기">

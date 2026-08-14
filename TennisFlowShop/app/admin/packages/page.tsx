@@ -1015,7 +1015,7 @@ export default function PackageOrdersClient() {
                   <TableHead
                     className={cn(adminDataTable.stickyActionHead, "top-0 w-[96px]")}
                   >
-                    관리
+                    조치
                   </TableHead>
                 </TableRow>
               </TableHeader>

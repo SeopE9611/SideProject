@@ -83,7 +83,7 @@ type RentalRow = AdminRentalListItemDto & {
 };
 
 const RENTAL_LIST_COLUMNS =
-  "grid-cols-[minmax(220px,1.1fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_130px_130px]";
+  "grid-cols-[minmax(220px,1.1fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_130px_120px]";
 
 const PAY_FILTERS: AdminRentalPaymentFilter[] = ["all", "unpaid", "paid"];
 const SHIP_FILTERS: AdminRentalShippingFilter[] = [
@@ -197,15 +197,6 @@ export default function AdminRentalsClient() {
       flow,
       label: FLOW_LABEL[flow],
     };
-  }
-
-  function getRentalNextAction(r: RentalRow) {
-    if (r.cancelRequest?.status === "requested") return "취소 처리";
-    if (derivePaymentStatus(r) !== "paid") return "결제 확인하기";
-    if (r.status === "paid") return "인도 처리하기";
-    if (r.status === "out") return "반납 처리하기";
-    if (isRentalReturnedStatus(r.status) && !r.depositRefundedAt) return "환불 확인하기";
-    return "대여 상세";
   }
 
   const router = useRouter();
@@ -870,7 +861,7 @@ export default function AdminRentalsClient() {
             </button>
           </div>
           <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
-            다음 작업
+            조치
           </div>
         </AdminListColumnHeader>
 
@@ -920,8 +911,10 @@ export default function AdminRentalsClient() {
               const link = getLinkBadge(r);
               const flow = getFlowBadge(r);
               const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
-              const nextActionLabel = getRentalNextAction(r);
               const isReturned = isRentalReturnedStatus(r.status);
+              const hasRentalMenuActions = Boolean(
+                r.stringingApplicationId || r.status === "paid" || r.status === "out" || isReturned,
+              );
               const shippingLabel = getShippingLabel(r);
               const applicationStatusLabel = r.stringingApplicationStatus
                 ? getStringingApplicationStatusDisplayLabel(r.stringingApplicationStatus)
@@ -1001,19 +994,7 @@ export default function AdminRentalsClient() {
 
                   <AdminListCell>
                     <AdminListPrimary
-                      title={
-                        rid ? (
-                          <Link
-                            href={`/admin/rentals/${rid}`}
-                            className="underline-offset-2 hover:underline"
-                            title={`${racketBrandLabel(r.brand)} ${r.model}`}
-                          >
-                            {racketBrandLabel(r.brand)} {r.model}
-                          </Link>
-                        ) : (
-                          `${racketBrandLabel(r.brand)} ${r.model}`
-                        )
-                      }
+                      title={`${racketBrandLabel(r.brand)} ${r.model}`}
                       meta={
                         <>
                           <span className="tabular-nums">
@@ -1106,65 +1087,67 @@ export default function AdminRentalsClient() {
                         asChild
                         size="sm"
                         variant="ghost"
-                        className="h-auto min-h-8 max-w-[132px] whitespace-normal break-keep border border-border/70 px-2.5 py-1.5 text-ui-label font-medium leading-tight hover:border-border hover:bg-muted/40 focus-visible:ring-2"
+                        className="h-8 whitespace-nowrap px-2 text-ui-label font-medium text-foreground/80 hover:bg-muted/50 hover:text-foreground focus-visible:ring-2"
                       >
-                        <Link href={`/admin/rentals/${rid}`}>{nextActionLabel}</Link>
+                        <Link href={`/admin/rentals/${rid}`}>상세 확인</Link>
                       </Button>
-                      <AdminRowActionMenu ariaLabel={`${r.customer?.name || r.id} 대여 관리 메뉴`}>
-                        {r.stringingApplicationId ? (
-                          <>
-                            <DropdownMenuItem asChild>
-                              <Link
-                                href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
+                      {hasRentalMenuActions ? (
+                        <AdminRowActionMenu ariaLabel={`${r.customer?.name || r.id} 대여 관리 메뉴`}>
+                          {r.stringingApplicationId ? (
+                            <>
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
+                                >
+                                  <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          ) : null}
+                          {r.status === "paid" || r.status === "out" ? (
+                            <DropdownMenuItem
+                              className="whitespace-nowrap"
+                              onClick={() =>
+                                setPendingAction({
+                                  type: "return",
+                                  rentalId: rid,
+                                })
+                              }
+                              disabled={busyId === rid}
+                            >
+                              <Package className="mr-2 h-4 w-4" /> 반납 처리
+                            </DropdownMenuItem>
+                          ) : null}
+                          {isReturned ? (
+                            r.depositRefundedAt ? (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  setPendingAction({
+                                    type: "refundClear",
+                                    rentalId: rid,
+                                  })
+                                }
+                                disabled={busyId === rid}
                               >
-                                <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                          </>
-                        ) : null}
-                        {r.status === "paid" || r.status === "out" ? (
-                          <DropdownMenuItem
-                            className="whitespace-nowrap"
-                            onClick={() =>
-                              setPendingAction({
-                                type: "return",
-                                rentalId: rid,
-                              })
-                            }
-                            disabled={busyId === rid}
-                          >
-                            <Package className="mr-2 h-4 w-4" /> 반납 처리
-                          </DropdownMenuItem>
-                        ) : null}
-                        {isReturned ? (
-                          r.depositRefundedAt ? (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                setPendingAction({
-                                  type: "refundClear",
-                                  rentalId: rid,
-                                })
-                              }
-                              disabled={busyId === rid}
-                            >
-                              <Truck className="mr-2 h-4 w-4" /> 환불 해제
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                setPendingAction({
-                                  type: "refundMark",
-                                  rentalId: rid,
-                                })
-                              }
-                              disabled={busyId === rid}
-                            >
-                              <Truck className="mr-2 h-4 w-4" /> 환불 처리
-                            </DropdownMenuItem>
-                          )
-                        ) : null}
-                      </AdminRowActionMenu>
+                                <Truck className="mr-2 h-4 w-4" /> 환불 해제
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  setPendingAction({
+                                    type: "refundMark",
+                                    rentalId: rid,
+                                  })
+                                }
+                                disabled={busyId === rid}
+                              >
+                                <Truck className="mr-2 h-4 w-4" /> 환불 처리
+                              </DropdownMenuItem>
+                            )
+                          ) : null}
+                        </AdminRowActionMenu>
+                      ) : null}
                     </AdminRowActions>
                   </AdminListCell>
                 </AdminListRow>

@@ -5,6 +5,7 @@ import {
   countAdminOperationGroupCounts,
   countAdminOperationTaskCounts,
   toOperationSignalCounts,
+  withPackageOperationGroupCounts,
 } from "@/app/api/admin/_lib/adminOperationCounts";
 import { requireAdmin } from "@/lib/admin.guard";
 import { createApiPerfLogger } from "@/lib/api/perf";
@@ -148,7 +149,7 @@ export async function GET(req: Request) {
     offline,
     academyApplications,
     operationTaskCounts,
-    operationGroupCounts,
+    baseOperationGroupCounts,
   ] = await Promise.all([
     perf.measure("count.orders.completedToday", () =>
       safeCount(
@@ -204,18 +205,13 @@ export async function GET(req: Request) {
 
   const rentals = rentalIds.length;
   const completedTotal = orders + stringingApplications + rentals + offline + academyApplications;
+  const operationGroupCounts = withPackageOperationGroupCounts(
+    baseOperationGroupCounts,
+    operationTaskCounts.packagePaymentCheck,
+  );
   const remaining = {
     ...operationTaskCounts,
-    total:
-      operationTaskCounts.cancelRequests +
-      operationTaskCounts.paymentCheck +
-      operationTaskCounts.packagePaymentCheck +
-      operationTaskCounts.shippingMissing +
-      operationTaskCounts.stringingWork +
-      operationTaskCounts.rentalDue +
-      operationTaskCounts.linkedReview +
-      operationTaskCounts.offline +
-      operationTaskCounts.academyApplications,
+    total: operationGroupCounts.totalRepresentativeTasks,
   };
 
   const operationSignalCounts = toOperationSignalCounts(operationTaskCounts);

@@ -22,6 +22,7 @@ import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -29,6 +30,7 @@ import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBad
 import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -313,46 +315,6 @@ function normalizeOperationStatusLabel(value?: string | null) {
     .replace(/[·/_-]/g, "")
     .trim()
     .toLowerCase();
-}
-
-const OPERATION_EXPLICIT_ACTION_LABELS = new Set([
-  "취소 요청 처리 필요",
-  "교체서비스 신청서 접수 확인",
-  "입금 확인",
-  "결제 확인",
-  "반납 확인",
-  "보증금 환불 확인",
-]);
-const OPERATION_ACTION_KEYWORDS = ["확인", "처리", "등록", "접수", "환불", "반납"];
-const OPERATION_ACTION_FALLBACK: Record<OpItem["kind"], string> = {
-  order: "주문 상세 확인",
-  rental: "대여 상세 확인",
-  stringing_application: "신청서 상세 확인",
-  package_purchase: "패키지 상세 확인",
-};
-
-function operationPrimaryActionLabel(input: {
-  anchor: OpItem;
-  groupCancelRequested: boolean;
-  nextActionText: string;
-}) {
-  if (input.groupCancelRequested) return "취소 요청 처리";
-  if (input.anchor.needsStringingApplication) return "신청서 접수 확인";
-  if (input.anchor.paymentNeedsCheck && input.anchor.paymentActionLabel) {
-    return input.anchor.paymentActionLabel;
-  }
-
-  const nextActionText = input.nextActionText.trim();
-
-  if (
-    OPERATION_EXPLICIT_ACTION_LABELS.has(nextActionText) ||
-    (nextActionText.length <= 18 &&
-      OPERATION_ACTION_KEYWORDS.some((keyword) => nextActionText.includes(keyword)))
-  ) {
-    return nextActionText;
-  }
-
-  return OPERATION_ACTION_FALLBACK[input.anchor.kind];
 }
 
 type PresetKey = "paymentMismatch" | "integratedReview" | "singleApplication";
@@ -662,57 +624,6 @@ function cancelQuickSignalSpec(cancel?: OpItem["cancel"]): {
     tone: "warning",
     tooltipCopy: "환불 계좌 확인이 필요합니다.",
   };
-}
-
-type PrimaryActionTarget = {
-  href: string;
-  label: string;
-};
-
-function resolvePrimaryActionTarget(group: {
-  anchor: OpItem;
-  items: OpItem[];
-}): PrimaryActionTarget {
-  const { anchor, items } = group;
-  const isIntegratedOrder =
-    anchor.kind === "order" && items.some((item) => item.kind === "stringing_application");
-
-  if (anchor.needsCancelFinalization) {
-    return { href: anchor.href, label: "취소 후처리하기" };
-  }
-
-  if (isIntegratedOrder) {
-    return { href: anchor.href, label: "통합 주문 다음 단계" };
-  }
-
-  if (anchor.kind === "order") {
-    const next = anchor.nextAction ?? "";
-    if (next.includes("결제") || next.includes("입금"))
-      return { href: anchor.href, label: "주문 결제 확인" };
-    if (next.includes("배송") || next.includes("운송장"))
-      return { href: anchor.href, label: "배송 정보 등록" };
-    if (anchor.cancel?.status === "approved_pending_pg_cancel")
-      return { href: anchor.href, label: "PG 상태 확인" };
-    if (anchor.cancel?.status === "requested")
-      return { href: anchor.href, label: "주문 취소 요청 검토" };
-    return { href: anchor.href, label: "주문 상세 확인" };
-  }
-  if (anchor.kind === "stringing_application") {
-    const next = anchor.nextAction ?? "";
-    if (next.includes("반송") || next.includes("운송장"))
-      return { href: anchor.href, label: "반송 운송장 등록" };
-    return { href: anchor.href, label: "교체 작업 상태 확인" };
-  }
-  if (anchor.kind === "rental") {
-    const next = anchor.nextAction ?? "";
-    if (next.includes("보증금") || next.includes("환불"))
-      return { href: anchor.href, label: "보증금 환불 확인" };
-    if (next.includes("반납")) return { href: anchor.href, label: "대여 반납 확인" };
-    if (next.includes("인도") || next.includes("배송") || next.includes("운송장"))
-      return { href: anchor.href, label: "대여 인도 처리" };
-    return { href: anchor.href, label: "대여 상세 확인" };
-  }
-  return { href: anchor.href, label: "패키지 결제 확인" };
 }
 
 function isActionableSignal(signal: AdminOperationsGroup["signals"][number]) {
@@ -1162,7 +1073,7 @@ export default function OperationsClient() {
     data?.operationSignalCounts ??
     navigationSummary?.operationSignalCounts ??
     navigationSummary?.operationTaskCounts;
-  const groupCounts = navigationSummary?.operationGroupCounts ?? data?.operationGroupCounts;
+  const groupCounts = data?.operationGroupCounts ?? navigationSummary?.operationGroupCounts;
   const representativeTodayCount =
     groupCounts?.todayRepresentativeTasks ??
     dailySummary?.operationGroupCounts?.todayRepresentativeTasks ??
@@ -1271,7 +1182,7 @@ export default function OperationsClient() {
         />
       )}
       {/* 페이지 헤더 */}
-      <div className="mx-auto max-w-[1480px]">
+      <div className="w-full">
         <AdminPageHeader
           variant="compact"
           title={PAGE_COPY.title}
@@ -1327,7 +1238,7 @@ export default function OperationsClient() {
             aside={
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <span className={adminTypography.bodyStrong}>
-                  처리 필요 총 {dailySummaryValue(representativeTodayCount ?? representativeTotalCount)}
+                  처리 필요 총 {dailySummaryValue(representativeTotalCount ?? representativeTodayCount)}
                 </span>
                 <Button type="button" size="sm" variant="outline" onClick={() => applyQuickView("today")}>
                   오늘 업무 보기
@@ -1538,7 +1449,7 @@ export default function OperationsClient() {
                     <span className={adminTypography.kpiValue}>
                       {dailySummaryValue(dailySummary?.remaining.packagePaymentCheck ?? taskCounts?.packagePaymentCheck)}
                     </span>
-                    <p className={adminTypography.metaMuted}>패키지 결제 확인은 대표 업무 합계에서 제외합니다.</p>
+                    <p className={adminTypography.metaMuted}>패키지 처리 대상은 전체 대표 업무 합계에 포함됩니다.</p>
                   </dd>
                 </div>
                 <div className="flex flex-wrap justify-between gap-2 py-2">
@@ -1561,9 +1472,9 @@ export default function OperationsClient() {
           </div>
         </details>
 
-        <div className="mt-3 rounded-xl border border-border bg-card p-2">
+        <div className="mt-2 space-y-2">
           <AdminFilterBar
-            className="mb-2 rounded-lg bg-background/70 p-3 shadow-none"
+            className="bg-card shadow-none"
             quickFilters={QUICK_VIEWS.map((view) => (
               <Button
                 key={view.key}
@@ -1584,7 +1495,7 @@ export default function OperationsClient() {
               </div>
             </div>
           </AdminFilterBar>
-          <section className="mt-2 rounded-lg border border-border/60 bg-muted/10 px-3 py-2">
+          <section className="rounded-lg border border-border/60 bg-muted/10 px-3 py-2">
             <h2 className="text-ui-body-sm font-semibold text-foreground">주의 항목 정밀 검수</h2>
             <p className={cn("mt-1", adminTypography.metaMuted)}>
               결제 불일치, 연결 검수, 단독 신청처럼 추가 확인이 필요한 신호만 좁혀 봅니다.
@@ -1652,7 +1563,7 @@ export default function OperationsClient() {
       {/* 필터 및 검색 카드 */}
       <div
         className={cn(
-          "top-3 z-30 mb-3 transition-all duration-200",
+          "top-3 z-30 mb-2 transition-all duration-200",
           isFilterScrolled && "shadow-sm",
         )}
       >
@@ -1909,8 +1820,11 @@ export default function OperationsClient() {
       </div>
 
       {/* 업무 목록 카드 */}
-      <Card className={cn(adminSurface.tableCard, "px-4 py-3")}>
-        <CardHeader id="operations-list" className="scroll-mt-6 p-0 pb-2">
+      <Card className={adminSurface.tableCard}>
+        <CardHeader
+          id="operations-list"
+          className="scroll-mt-6 border-b border-border bg-muted/15 px-4 py-2.5"
+        >
           <div className="flex gap-2 flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className={adminTypography.sectionTitle}>업무 목록</CardTitle>
@@ -1967,12 +1881,12 @@ export default function OperationsClient() {
         </CardHeader>
         <CardContent
           className={cn(
-            "p-0 pt-2",
-            isLoading || shouldShowEmptyState ? "min-h-[360px]" : "min-h-0",
+            "p-0",
+            isLoading ? "min-h-[240px]" : "min-h-0",
           )}
         >
           {isLoading ? (
-            <div className="space-y-4 px-4 py-4">
+            <div>
               <div className="overflow-x-auto">
                 <Table className="min-w-[1060px] table-fixed">
                   <TableHeader>
@@ -1982,7 +1896,7 @@ export default function OperationsClient() {
                           <Skeleton className="h-4 w-24" />
                         </TableHead>
                       ))}
-                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[170px]")}>
+                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[120px]")}>
                         <Skeleton className="ml-auto h-4 w-16" />
                       </TableHead>
                     </TableRow>
@@ -1998,7 +1912,7 @@ export default function OperationsClient() {
                         <TableCell
                           className={cn(
                             tdClasses,
-                            "sticky right-0 z-10 border-l border-border/60 bg-background py-5",
+                            "sticky right-0 z-10 border-l border-border/60 bg-background px-2 py-4",
                           )}
                         >
                           <Skeleton className="ml-auto h-8 w-20" />
@@ -2012,15 +1926,15 @@ export default function OperationsClient() {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <Table className="min-w-[1060px] table-fixed border-separate [border-spacing-block:0.25rem] [border-spacing-inline:0]">
+                <Table className="min-w-[1010px] table-fixed">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
                       <TableHead className={cn(thClasses, "w-[150px]")}>주의 / 경과</TableHead>
                       <TableHead className={cn(thClasses, "w-[270px]")}>업무</TableHead>
                       <TableHead className={cn(thClasses, "w-[240px]")}>고객 / 문서</TableHead>
                       <TableHead className={cn(thClasses, "w-[220px]")}>상태 / 금액</TableHead>
-                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[170px]")}>
-                        액션
+                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[120px]")}>
+                        조치
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -2075,15 +1989,6 @@ export default function OperationsClient() {
                               }
                             : priorityMeta;
                       const headline = statusHeadlineOf(g.anchor);
-                      const primaryActionTarget = resolvePrimaryActionTarget({
-                        anchor: g.anchor,
-                        items: g.items,
-                      });
-                      const primaryActionLabel = operationPrimaryActionLabel({
-                        anchor: g.anchor,
-                        groupCancelRequested,
-                        nextActionText,
-                      });
                       const workflowStatusLabel =
                         g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인";
                       const paymentStatusLabel =
@@ -2105,7 +2010,7 @@ export default function OperationsClient() {
 
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
 
-                      const rowDensityClass = displayDensity === "compact" ? "py-1.5" : "py-2";
+                      const rowDensityClass = displayDensity === "compact" ? "py-1.5" : "py-2.5";
                       const primarySignal = visibleSignalSummary(g.signals, 1).visible[0];
                       const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
                       const exceptionLabel =
@@ -2187,12 +2092,9 @@ export default function OperationsClient() {
                                 <span className={cn("block truncate", adminDataTable.primaryText)}>
                                   {customerName || "-"}
                                 </span>
-                                <Link
-                                  href={g.anchor.href}
-                                  className={cn(adminDataTable.referenceTrigger, "font-mono")}
-                                >
+                                <span className={cn(adminDataTable.secondaryLine, "font-mono")}>
                                   {docLabel}
-                                </Link>
+                                </span>
                                 <AdminReferencePopover
                                   title="업무 참조 정보"
                                   trigger={
@@ -2268,36 +2170,41 @@ export default function OperationsClient() {
                               </div>
                             </TableCell>
 
-                            <TableCell className={cn(tdClasses, rowDensityClass, "text-right", stickyActionCellClass)}>
-                              <div className="flex flex-col items-end gap-1">
+                            <TableCell
+                              className={cn(
+                                tdClasses,
+                                rowDensityClass,
+                                "px-2 text-right",
+                                stickyActionCellClass,
+                              )}
+                            >
+                              <div className="flex items-center justify-end gap-1">
                                 <Button
                                   asChild
                                   size="sm"
-                                  variant="outline"
-                                  className={cn(
-                                    "h-auto min-h-8 max-w-[150px] justify-center whitespace-normal border-border/70 px-2.5 py-1 text-center leading-tight hover:border-border hover:bg-muted/40 focus-visible:ring-2",
-                                    adminTypography.actionLabel,
-                                  )}
+                                  variant="ghost"
+                                  className="h-8 whitespace-nowrap px-2 text-ui-label font-medium text-foreground/80 hover:bg-muted/50 hover:text-foreground focus-visible:ring-2"
                                   title={nextActionText}
                                 >
-                                  <Link href={primaryActionTarget.href}>{primaryActionLabel}</Link>
+                                  <Link href={g.anchor.href}>상세 확인</Link>
                                 </Button>
-                                {g.anchor.canSyncNicePayment && (
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="ghost"
-                                    className={cn("h-7 min-w-[112px] px-2 text-muted-foreground hover:text-foreground", adminTypography.caption)}
-                                    title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
-                                    disabled={syncingNiceOrderId === g.anchor.id}
-                                    onClick={() => {
-                                      void handleNicePaymentSync(g.anchor.id);
-                                    }}
-                                  >
-                                    <CreditCard className="mr-1.5 h-3.5 w-3.5" />
-                                    {syncingNiceOrderId === g.anchor.id ? "확인 중..." : "PG 상태 확인"}
-                                  </Button>
-                                )}
+                                {g.anchor.canSyncNicePayment ? (
+                                  <AdminRowActionMenu ariaLabel={`${docLabel} 부가 작업 메뉴 열기`}>
+                                    <DropdownMenuItem
+                                      className="whitespace-nowrap"
+                                      title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
+                                      disabled={syncingNiceOrderId === g.anchor.id}
+                                      onClick={() => {
+                                        void handleNicePaymentSync(g.anchor.id);
+                                      }}
+                                    >
+                                      <CreditCard className="mr-2 h-4 w-4" />
+                                      {syncingNiceOrderId === g.anchor.id
+                                        ? "확인 중..."
+                                        : "PG 상태 확인"}
+                                    </DropdownMenuItem>
+                                  </AdminRowActionMenu>
+                                ) : null}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -2307,7 +2214,7 @@ export default function OperationsClient() {
 
                     {shouldShowEmptyState && (
                       <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={5} className="py-16 text-center">
+                        <TableCell colSpan={5} className="py-10 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
                             <p className={adminTypography.body}>
@@ -2343,7 +2250,7 @@ export default function OperationsClient() {
 
           {/* 페이지네이션 */}
           {totalPages && totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border px-4 pt-4 mt-4">
+            <div className="flex items-center justify-between border-t border-border px-4 py-3">
               <p className="text-xs text-muted-foreground">
                 {page} / {totalPages} 페이지 (총 {(totalGroups ?? 0).toLocaleString("ko-KR")}그룹)
               </p>

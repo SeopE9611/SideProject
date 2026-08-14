@@ -140,7 +140,9 @@ export type OperationGroupCounts = {
   rentalRepresentativeRows?: number;
   /** 주문·대여에 연결되지 않은 교체서비스 신청서 대표 행 수 */
   standaloneStringingRepresentativeRows?: number;
-  /** 주문·대여·단독 교체서비스를 합친 전체 대표 업무 수 */
+  /** 운영업무 목록의 패키지 처리 대상 대표 행 수 */
+  packageRepresentativeRows?: number;
+  /** 운영업무 목록에 노출되는 전체 대표 업무 수 */
   totalRepresentativeTasks: number;
   todayRepresentativeTasks?: number;
 };

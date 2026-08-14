@@ -126,12 +126,14 @@ const rentalNeedsActionFilter: Filter<Document> = {
               status: {
                 $in: [
                   "created",
+                  "pending",
                   "paid",
                   "ready",
                   "out",
                   "rented",
                   "overdue",
                   "return_requested",
+                  "대기중",
                   "대여중",
                   "연체",
                 ],
@@ -501,6 +503,51 @@ export function toOperationSignalCounts(taskCounts: OperationTaskCounts): Operat
   return { ...taskCounts };
 }
 
+/** 패키지 처리 대상을 운영 목록 대표 행 수에 한 번만 합칩니다. */
+export function withPackageOperationGroupCounts(
+  groupCounts: OperationGroupCounts,
+  packageRepresentativeRows: number,
+): OperationGroupCounts {
+  const previousPackageRows = groupCounts.packageRepresentativeRows ?? 0;
+  const totalWithoutPackages = Math.max(
+    0,
+    groupCounts.totalRepresentativeTasks - previousPackageRows,
+  );
+  const todayWithoutPackages =
+    typeof groupCounts.todayRepresentativeTasks === "number"
+      ? Math.max(0, groupCounts.todayRepresentativeTasks - previousPackageRows)
+      : totalWithoutPackages;
+
+  return {
+    ...groupCounts,
+    packageRepresentativeRows,
+    totalRepresentativeTasks: totalWithoutPackages + packageRepresentativeRows,
+    todayRepresentativeTasks: todayWithoutPackages + packageRepresentativeRows,
+  };
+}
+
+/** 좌측 메뉴 배지는 운영 목록과 각 관리 화면이 공유하는 대표 행 집계만 사용합니다. */
+export function toAdminNavigationAttentionCounts(input: {
+  operationGroupCounts: OperationGroupCounts;
+  operationTaskCounts: OperationTaskCounts;
+  reviews: number;
+  boards: number;
+}): NavigationCounts {
+  const { operationGroupCounts, operationTaskCounts, reviews, boards } = input;
+
+  return {
+    operations: operationGroupCounts.totalRepresentativeTasks,
+    orders: operationGroupCounts.orderManagementRepresentativeRows ?? 0,
+    rentals: operationGroupCounts.rentalRepresentativeRows ?? 0,
+    offline: operationTaskCounts.offline,
+    academyApplications: operationTaskCounts.academyApplications,
+    packages:
+      operationGroupCounts.packageRepresentativeRows ?? operationTaskCounts.packagePaymentCheck,
+    reviews,
+    boards,
+  };
+}
+
 export async function countAdminOperationGroupCounts(
   db: Db,
   options: OperationCountsOptions = {},
@@ -654,45 +701,23 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
   operationGroupCounts: OperationGroupCounts;
   operationSignalCounts: OperationSignalCounts;
 }> {
-  const [
-    orders,
-    stringing,
-    rentals,
-    academyApplications,
-    reviews,
-    boards,
-    operationTaskCounts,
-    operationGroupCounts,
-  ] = await Promise.all([
-    safeCount(db, "orders", orderNeedsActionFilter, "orders needs action"),
-    safeCount(db, "stringing_applications", stringingNeedsActionFilter, "stringing needs action"),
-    safeCount(db, "rental_orders", rentalNeedsActionFilter, "rentals needs action"),
-    safeCount(db, "academy_lesson_applications", academyNeedsActionFilter, "academy applications"),
+  const [reviews, boards, operationTaskCounts, baseOperationGroupCounts] = await Promise.all([
     safeCount(db, "reviews", reviewNeedsActionFilter, "reviews"),
     safeCount(db, "community_posts", boardNeedsActionFilter, "boards"),
     countAdminOperationTaskCounts(db),
     countAdminOperationGroupCounts(db),
   ]);
 
-  const offline = operationTaskCounts.offline;
-  const operations =
-    operationGroupCounts.totalRepresentativeTasks +
-    offline +
-    operationTaskCounts.packagePaymentCheck +
-    academyApplications +
-    reviews +
-    boards;
-
-  const counts: NavigationCounts = {
-    operations,
-    orders: operationGroupCounts.orderManagementRepresentativeRows,
-    rentals,
-    offline,
-    academyApplications,
-    packages: operationTaskCounts.packagePaymentCheck,
+  const operationGroupCounts = withPackageOperationGroupCounts(
+    baseOperationGroupCounts,
+    operationTaskCounts.packagePaymentCheck,
+  );
+  const counts = toAdminNavigationAttentionCounts({
+    operationGroupCounts,
+    operationTaskCounts,
     reviews,
     boards,
-  };
+  });
 
   return {
     counts,
