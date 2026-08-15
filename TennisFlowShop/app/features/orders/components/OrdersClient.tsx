@@ -10,8 +10,6 @@ import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import AdminPageShell from "@/components/admin/AdminPageShell";
 import {
   AdminListBody,
   AdminListCell,
@@ -23,10 +21,12 @@ import {
   AdminRowActions,
   AdminStatusGroup,
 } from "@/components/admin/AdminListTable";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
-import AsyncState from "@/components/system/AsyncState";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
+import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -53,8 +53,8 @@ import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher"
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { shortenId } from "@/lib/shorten";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import type { ApiResponse, OrderWithType } from "@/lib/types/order";
 import { cn } from "@/lib/utils";
 import {
@@ -73,7 +73,7 @@ import { useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 const ORDER_LIST_COLUMNS =
-  "grid-cols-[minmax(230px,1.15fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_120px_120px]";
+  "grid-cols-[minmax(230px,1.15fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_120px_52px]";
 
 export default function OrdersClient() {
   const router = useRouter();
@@ -666,7 +666,9 @@ export default function OrdersClient() {
         className="mb-3"
         quickFilters={
           <>
-            <span className="mr-1 text-ui-label font-semibold text-muted-foreground">빠른 보기</span>
+            <span className="mr-1 text-ui-label font-semibold text-muted-foreground">
+              빠른 보기
+            </span>
             {[
               ["all", "전체"],
               ["payment", "결제 확인"],
@@ -813,7 +815,10 @@ export default function OrdersClient() {
                 }
               />
               <div className="flex min-w-0 gap-2">
-                <Select value={sortBy} onValueChange={(value) => setSortBy(value as "date" | "total")}>
+                <Select
+                  value={sortBy}
+                  onValueChange={(value) => setSortBy(value as "date" | "total")}
+                >
                   <SelectTrigger className="h-9 min-w-0 flex-1" aria-label="주문 정렬 기준">
                     <SelectValue placeholder="정렬 기준" />
                   </SelectTrigger>
@@ -846,7 +851,6 @@ export default function OrdersClient() {
         viewLabel={quickViewLabel}
         resultLabel={data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "불러오는 중…"}
         description="고객, 상품, 핵심 상태와 다음 처리 항목을 한 행에서 확인할 수 있습니다."
-        contentClassName="min-h-[420px]"
         columnsClassName={ORDER_LIST_COLUMNS}
         ariaLabel="주문 관리 목록"
       >
@@ -893,7 +897,7 @@ export default function OrdersClient() {
             aria-sort={
               sortBy === "total" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
             }
-            className="min-w-0 px-4 py-2.5 text-right"
+            className="min-w-0 px-2 py-2.5 text-right"
           >
             <button
               type="button"
@@ -919,8 +923,8 @@ export default function OrdersClient() {
               )}
             </button>
           </div>
-          <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
-            조치
+          <div role="columnheader" className="min-w-0 px-2 py-2.5 text-right">
+            작업
           </div>
         </AdminListColumnHeader>
 
@@ -956,12 +960,7 @@ export default function OrdersClient() {
           ) : data.items.length === 0 ? (
             <AdminListRow columnsClassName={ORDER_LIST_COLUMNS} ariaLabel="주문 목록 비어 있음">
               <AdminListCell className="col-span-5 py-6">
-                <AsyncState
-                  kind="empty"
-                  tone="admin"
-                  variant="inline"
-                  resourceName="주문 데이터"
-                />
+                <AsyncState kind="empty" tone="admin" variant="inline" resourceName="주문 데이터" />
               </AdminListCell>
             </AdminListRow>
           ) : (
@@ -1053,7 +1052,7 @@ export default function OrdersClient() {
                       ? "교체 신청서 미접수"
                       : trackingLabel === "미등록"
                         ? "배송 정보 미등록"
-                      : null;
+                        : null;
                 const paymentVariant =
                   paymentState.kind === "paid"
                     ? "success"
@@ -1068,8 +1067,19 @@ export default function OrdersClient() {
                         : paymentState.kind === "other"
                           ? "info"
                           : "neutral";
-                const paymentMeta = order.paymentMethod || order.paymentProvider || paymentState.label;
+                const paymentMeta =
+                  order.paymentMethod || order.paymentProvider || paymentState.label;
+                const customerName = order.customer.name
+                  .replace(/\s*\(비회원\)\s*$/, "")
+                  .replace(/\s*\(탈퇴한 회원\)\s*$/, "");
 
+                const rowFlowLabel = isLinkedProductOrder
+                  ? "교체서비스 포함"
+                  : order.__type === "stringing_application"
+                    ? order.linkedOrderId
+                      ? "주문 연결 신청서"
+                      : "단독 교체서비스 신청"
+                    : "일반 주문";
                 return (
                   <AdminListRow
                     key={order.id}
@@ -1078,24 +1088,31 @@ export default function OrdersClient() {
                   >
                     <AdminListCell>
                       <AdminListPrimary
-                        title={order.customer.name
-                          .replace(/\s*\(비회원\)\s*$/, "")
-                          .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
+                        title={
+                          <Link
+                            href={detailHref}
+                            onClick={() => {
+                              if (order.__type === "stringing_application") {
+                                useStringingStore.getState().setSelectedApplicationId(order.id);
+                              } else {
+                                useOrderStore.getState().setSelectedOrderId(order.id);
+                              }
+                            }}
+                            className="rounded-sm font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            {customerName}
+                          </Link>
+                        }
                         meta={
                           <>
-                            <Badge
-                              variant="secondary"
-                              className={cn(badgeBase, badgeSizeSm, kind.className)}
-                            >
-                              {kind.label}
-                            </Badge>
+                            <span>{kind.label}</span>
                             <span className="font-mono">ID {shortenId(order.id)}</span>
                             <span className="tabular-nums">{formatDate(order.date)}</span>
                           </>
                         }
                         supporting={
                           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                            <span>{link.label} · {flow.shortLabel}</span>
+                            <span>{rowFlowLabel}</span>
                             <AdminReferencePopover
                               title="주문·신청 참조 정보"
                               trigger={
@@ -1139,7 +1156,9 @@ export default function OrdersClient() {
                             ? "연결 신청서 있음 · 교체서비스 포함"
                             : order.__type === "stringing_application" && order.linkedOrderId
                               ? "주문에 연결된 신청서"
-                              : flow.shortLabel
+                              : order.__type === "stringing_application"
+                                ? "단독 교체서비스 신청"
+                                : "일반 상품 주문"
                         }
                       />
                     </AdminListCell>
@@ -1182,34 +1201,12 @@ export default function OrdersClient() {
                     </AdminListCell>
 
                     <AdminListCell align="end">
-                      <AdminMoneyBlock
-                        amount={formatCurrency(order.total)}
-                        meta={paymentMeta}
-                      />
+                      <AdminMoneyBlock amount={formatCurrency(order.total)} meta={paymentMeta} />
                     </AdminListCell>
 
-                    <AdminListCell align="end">
+                    <AdminListCell align="end" className="px-2">
                       <AdminRowActions>
-                        <Button
-                          asChild
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 whitespace-nowrap px-2 text-ui-label font-medium text-foreground/80 hover:bg-muted/50 hover:text-foreground focus-visible:ring-2"
-                        >
-                          <Link
-                            href={detailHref}
-                            onClick={() => {
-                              if (order.__type === "stringing_application") {
-                                useStringingStore.getState().setSelectedApplicationId(order.id);
-                              } else {
-                                useOrderStore.getState().setSelectedOrderId(order.id);
-                              }
-                            }}
-                          >
-                            상세 확인
-                          </Link>
-                        </Button>
-                        <AdminRowActionMenu ariaLabel="주문 부가 작업 메뉴 열기">
+                        <AdminRowActionMenu ariaLabel={`${customerName} 주문 부가 작업 메뉴 열기`}>
                           {canSyncNicePayment(order) ? (
                             <DropdownMenuItem
                               className="whitespace-nowrap"
@@ -1255,40 +1252,40 @@ export default function OrdersClient() {
                 aria-colspan={5}
                 className="flex flex-wrap items-center justify-center gap-1 px-4 py-3"
               >
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-              >
-                이전
-              </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
+                  이전
+                </Button>
 
-              {getPaginationItems(page, totalPages).map((it, idx) =>
-                typeof it === "number" ? (
-                  <Button
-                    key={`page-${it}`}
-                    size="sm"
-                    variant={it === page ? "default" : "outline"}
-                    onClick={() => setPage(it)}
-                  >
-                    {it}
-                  </Button>
-                ) : (
-                  <span key={`dots-${idx}`} className="px-2 text-muted-foreground">
-                    …
-                  </span>
-                ),
-              )}
+                {getPaginationItems(page, totalPages).map((it, idx) =>
+                  typeof it === "number" ? (
+                    <Button
+                      key={`page-${it}`}
+                      size="sm"
+                      variant={it === page ? "default" : "outline"}
+                      onClick={() => setPage(it)}
+                    >
+                      {it}
+                    </Button>
+                  ) : (
+                    <span key={`dots-${idx}`} className="px-2 text-muted-foreground">
+                      …
+                    </span>
+                  ),
+                )}
 
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-              >
-                다음
-              </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                >
+                  다음
+                </Button>
               </div>
             </div>
           </div>

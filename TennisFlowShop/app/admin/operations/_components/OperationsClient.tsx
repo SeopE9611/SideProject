@@ -3,7 +3,6 @@
 import {
   AlertTriangle,
   BellRing,
-  ChevronRight,
   ClipboardCheck,
   CreditCard,
   Inbox,
@@ -14,17 +13,28 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminMoneyBlock,
+  AdminRowActions,
+  AdminStatusGroup,
+} from "@/components/admin/AdminListTable";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
-import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
+import { Section, SectionHeader } from "@/components/admin/Section";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import AsyncState from "@/components/system/AsyncState";
@@ -40,17 +50,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { opsKindLabel } from "@/lib/admin-ops-taxonomy";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
-import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
 import {
   formatElapsedText,
   getElapsedHours,
@@ -170,48 +171,6 @@ function toOperatorSentence(text?: string | null) {
 
 function flowLabelText(item: OpItem) {
   return item.flowLabel?.trim() || FLOW_LABEL_BY_ID[item.flow] || "미분류";
-}
-
-function groupNextActionText(group: {
-  guide: { nextAction?: string | null };
-  anchor: OpItem;
-  cancelRequested: boolean;
-  reviewLevel?: ReviewLevel;
-}) {
-  // 취소 요청은 다른 안내보다 우선합니다.
-  if (group.cancelRequested) {
-    return "취소 요청 처리 필요";
-  }
-
-  // 교체서비스 포함 주문인데 아직 신청서가 없는 경우
-  if (group.anchor.needsStringingApplication) {
-    // 결제 확인과 신청서 확인이 모두 필요한 경우
-    if (group.anchor.paymentNeedsCheck && group.anchor.paymentActionLabel) {
-      return `${group.anchor.paymentActionLabel} · 교체서비스 신청서 접수 확인`;
-    }
-
-    return "교체서비스 신청서 접수 확인";
-  }
-
-  // 일반 주문에서 결제 확인만 필요한 경우
-  if (
-    group.anchor.kind === "order" &&
-    group.anchor.paymentNeedsCheck &&
-    group.anchor.paymentActionLabel
-  ) {
-    return group.anchor.paymentActionLabel;
-  }
-
-  // 그 외에는 기존 업무 가이드를 사용합니다.
-  if (group.guide.nextAction?.trim()) {
-    return toOperatorSentence(group.guide.nextAction);
-  }
-
-  if (group.reviewLevel === "info") {
-    return "자동 계산 정보 있음";
-  }
-
-  return "조치 필요 없음";
 }
 
 function getOperationPriorityMeta(input: {
@@ -637,16 +596,8 @@ function visibleSignalSummary(signals: AdminOperationsGroup["signals"], max = 3)
   return { visible, hiddenCount };
 }
 
-const thClasses = cn(adminDataTable.head, "border-b border-border/30");
-const tdClasses = cn(adminDataTable.cellTop, "border-b border-border/30");
-const th = thClasses;
-const td = tdClasses;
-
-// 액션 컬럼은 본문 셀이 sticky(right)로 고정되어 있으므로,
-// 헤더도 동일하게 sticky 처리해 가로 스크롤 시 컬럼 머리글이 어긋나지 않게 맞춘다.
-// 단, header 배경색은 thead의 bg-muted/50과 동일 톤을 써서 "액션"만 색이 달라 보이는 현상을 방지.
-const stickyActionHeadClass =
-  "sticky right-0 z-20 border-l border-border/60 bg-muted/20 text-right";
+const OPERATIONS_LIST_COLUMNS =
+  "grid-cols-[130px_minmax(220px,1.15fr)_minmax(210px,1fr)_minmax(180px,0.85fr)_52px]";
 
 export default function OperationsClient() {
   const router = useRouter();
@@ -1819,465 +1770,402 @@ export default function OperationsClient() {
         </Card>
       </div>
 
-      {/* 업무 목록 카드 */}
-      <Card className={adminSurface.tableCard}>
-        <CardHeader
-          id="operations-list"
-          className="scroll-mt-6 border-b border-border bg-muted/15 px-4 py-2.5"
-        >
-          <div className="flex gap-2 flex-row items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CardTitle className={adminTypography.sectionTitle}>업무 목록</CardTitle>
-              {activePresetKey && (
-                <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>
-                  {PRESET_CONFIG[activePresetKey].label}
-                </Badge>
-              )}
+      {/* 업무 목록 */}
+      <AdminListTable
+        title="업무 목록"
+        viewLabel={activePresetKey ? PRESET_CONFIG[activePresetKey].label : activeQuickViewMeta.label}
+        resultLabel={
+          typeof totalGroups === "number"
+            ? `총 ${totalGroups.toLocaleString("ko-KR")}건 · ${totalPages ? `${page}/${totalPages}페이지` : "페이지 계산 중"}`
+            : "목록을 불러오는 중…"
+        }
+        description="우선순위, 업무 대상, 고객, 상태와 부가 작업을 한 행에서 확인합니다."
+        columnsClassName={OPERATIONS_LIST_COLUMNS}
+        ariaLabel="운영업무 목록"
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <span className="text-ui-label text-muted-foreground">표시 정보</span>
+            <div className="inline-flex items-center rounded-md border border-border p-0.5">
+              <Button
+                type="button"
+                size="sm"
+                variant={displayDensity === "default" ? "secondary" : "ghost"}
+                className="h-6 px-2 text-xs"
+                onClick={() => setDisplayDensity("default")}
+                aria-pressed={displayDensity === "default"}
+              >
+                기본
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={displayDensity === "compact" ? "secondary" : "ghost"}
+                className="h-6 px-2 text-xs"
+                onClick={() => setDisplayDensity("compact")}
+                aria-pressed={displayDensity === "compact"}
+              >
+                핵심만
+              </Button>
             </div>
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-muted-foreground">
-                {typeof totalGroups === "number"
-                  ? `총 ${totalGroups.toLocaleString("ko-KR")}건 · ${totalPages ? `${page}/${totalPages}페이지` : "페이지 계산 중"}`
-                  : "목록을 불러오는 중…"}
-              </p>
-                <span className="inline text-xs text-muted-foreground">
-                  표시 정보
-              </span>
-              <div className="inline-flex items-center rounded-md border border-border p-0.5">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={displayDensity === "default" ? "secondary" : "ghost"}
-                  className="h-6 px-2 text-xs"
-                  onClick={() => setDisplayDensity("default")}
-                  aria-pressed={displayDensity === "default"}
-                >
-                  기본
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={displayDensity === "compact" ? "secondary" : "ghost"}
-                  className="h-6 px-2 text-xs"
-                  onClick={() => setDisplayDensity("compact")}
-                  aria-pressed={displayDensity === "compact"}
-                >
-                  핵심만
-                </Button>
-              </div>
-              {(activeQuickView !== "all" || activeFilterCount > 0) && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2 text-xs"
-                  onClick={reset}
-                >
-                  필터 초기화
-                </Button>
-              )}
-            </div>
+            {activeQuickView !== "all" || activeFilterCount > 0 ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2 text-xs"
+                onClick={reset}
+              >
+                필터 초기화
+              </Button>
+            ) : null}
           </div>
-        </CardHeader>
-        <CardContent
-          className={cn(
-            "p-0",
-            isLoading ? "min-h-[240px]" : "min-h-0",
-          )}
-        >
+        }
+      >
+        <AdminListColumnHeader columnsClassName={OPERATIONS_LIST_COLUMNS}>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            우선 / 경과
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            업무 / 대상
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            고객 / 참조
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            상태 / 금액
+          </div>
+          <div role="columnheader" className="min-w-0 px-2 py-2.5 text-right">
+            작업
+          </div>
+        </AdminListColumnHeader>
+
+        <AdminListBody>
           {isLoading ? (
-            <div>
-              <div className="overflow-x-auto">
-                <Table className="min-w-[1060px] table-fixed">
-                  <TableHeader>
-                    <TableRow className={adminSurface.tableRow}>
-                      {Array.from({ length: 4 }).map((_, idx) => (
-                        <TableHead key={idx} className={thClasses}>
-                          <Skeleton className="h-4 w-24" />
-                        </TableHead>
-                      ))}
-                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[120px]")}>
-                        <Skeleton className="ml-auto h-4 w-16" />
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Array.from({ length: 6 }).map((_, idx) => (
-                      <TableRow key={idx}>
-                        {Array.from({ length: 4 }).map((_, cellIndex) => (
-                          <TableCell key={cellIndex} className={cn(tdClasses, "py-5")}>
-                            <Skeleton className="h-5 w-3/4" />
-                          </TableCell>
-                        ))}
-                        <TableCell
+            Array.from({ length: 4 }).map((_, rowIndex) => (
+              <AdminListRow
+                key={`operations-list-skeleton-${rowIndex}`}
+                columnsClassName={OPERATIONS_LIST_COLUMNS}
+                ariaLabel="운영업무 불러오는 중"
+              >
+                {Array.from({ length: 5 }).map((__, cellIndex) => (
+                  <AdminListCell key={`operations-list-skeleton-${rowIndex}-${cellIndex}`}>
+                    <Skeleton className="h-6 w-full" />
+                  </AdminListCell>
+                ))}
+              </AdminListRow>
+            ))
+          ) : quickViewFilteredGroups.length > 0 ? (
+            quickViewFilteredGroups.map((g) => {
+              const isGroup = g.items.length > 1;
+              const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
+              const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
+              const warn = g.warn;
+              const groupCancelRequested = g.items.some(
+                (it) => it.cancel?.status === "requested",
+              );
+              const priorityMeta = getOperationPriorityMeta({
+                warn,
+                reviewLevel: g.reviewLevel,
+                groupCancelRequested,
+              });
+              const customerName = g.anchor.customer?.name?.trim() || "";
+              const customerEmail = g.anchor.customer?.email?.trim() || "";
+              const docLabel = `${opsKindLabel(g.anchor.kind)} · ${shortenId(g.anchor.id)}`;
+              const scenarioLabel = flowLabelText(g.anchor);
+              const createdAtLabel = formatKST(g.anchor.createdAt ?? g.createdAt);
+              const elapsedHours = getElapsedHours(g.createdAt ?? g.anchor.createdAt);
+              const elapsedText = formatElapsedText(elapsedHours);
+              const slaLevel = resolveOperationsSlaLevel({
+                groupQueueBucket: g.groupQueueBucket,
+                createdAt: g.createdAt ?? g.anchor.createdAt,
+                hasCancel: groupCancelRequested,
+                hasPayment: hasPaymentCheckNeeded(g),
+                hasShipping: hasShippingMissing(g),
+                hasRental: hasRentalDue(g),
+              });
+              const displayedPriorityMeta =
+                slaLevel === "urgent" && priorityMeta.label !== "즉시 처리"
+                  ? {
+                      label: "긴급",
+                      description: "SLA 긴급 기준 초과",
+                      tone: "warning" as const,
+                    }
+                  : priorityMeta.label === "정상" && slaLevel === "watch"
+                    ? {
+                        label: "확인 필요",
+                        description: "SLA 확인 기준 초과",
+                        tone: "info" as const,
+                      }
+                    : priorityMeta;
+              const headline = statusHeadlineOf(g.anchor);
+              const workflowStatusLabel =
+                g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인";
+              const paymentStatusLabel =
+                g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel ?? "";
+              const isDuplicatePaymentStatus =
+                Boolean(paymentStatusLabel) &&
+                normalizeOperationStatusLabel(workflowStatusLabel) ===
+                  normalizeOperationStatusLabel(paymentStatusLabel);
+              const workflowStatusBadgeSpec =
+                g.anchor.kind === "order"
+                  ? getOrderStatusBadgeSpec(g.anchor.statusLabel ?? workflowStatusLabel)
+                  : g.anchor.kind === "rental"
+                    ? getRentalStatusBadgeSpec(g.anchor.statusLabel ?? workflowStatusLabel)
+                    : g.anchor.kind === "stringing_application"
+                      ? getApplicationStatusBadgeSpec(
+                          g.anchor.statusLabel ?? workflowStatusLabel,
+                        )
+                      : { variant: "neutral" as const };
+              const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
+              const primarySignal = visibleSignalSummary(g.signals, 1).visible[0];
+              const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
+              const exceptionLabel =
+                anchorCancelQuickSignal?.label ??
+                (g.anchor.needsStringingApplication ? "교체 신청서 미접수" : null) ??
+                (primarySignal ? toOperatorSentence(primarySignal.title) : null) ??
+                cancelBadge?.label ??
+                null;
+              const paymentVariant =
+                g.anchor.paymentStateKind === "paid"
+                  ? "success"
+                  : g.anchor.paymentStateKind === "bank_pending" ||
+                      g.anchor.paymentStateKind === "pg_pending" ||
+                      g.anchor.paymentStateKind === "pending"
+                    ? "warning"
+                    : g.anchor.paymentStateKind === "canceled" ||
+                        g.anchor.paymentStateKind === "refunded" ||
+                        g.anchor.paymentStateKind === "failed"
+                      ? "danger"
+                      : "info";
+
+              return (
+                <AdminListRow
+                  key={g.key}
+                  columnsClassName={OPERATIONS_LIST_COLUMNS}
+                  ariaLabel={`${headline} ${customerName || docLabel}`}
+                  className={displayDensity === "compact" ? "min-h-16" : undefined}
+                >
+                  <AdminListCell>
+                    <div className="flex min-w-0 flex-col items-start gap-1">
+                      {displayedPriorityMeta.label !== "정상" ? (
+                        <Badge
                           className={cn(
-                            tdClasses,
-                            "sticky right-0 z-10 border-l border-border/60 bg-background px-2 py-4",
+                            badgeBase,
+                            badgeSizeSm,
+                            badgeToneClass(displayedPriorityMeta.tone),
                           )}
                         >
-                          <Skeleton className="ml-auto h-8 w-20" />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <Table className="min-w-[1010px] table-fixed">
-                  <TableHeader>
-                    <TableRow className={adminSurface.tableRow}>
-                      <TableHead className={cn(thClasses, "w-[150px]")}>주의 / 경과</TableHead>
-                      <TableHead className={cn(thClasses, "w-[270px]")}>업무</TableHead>
-                      <TableHead className={cn(thClasses, "w-[240px]")}>고객 / 문서</TableHead>
-                      <TableHead className={cn(thClasses, "w-[220px]")}>상태 / 금액</TableHead>
-                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[120px]")}>
-                        조치
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {quickViewFilteredGroups.map((g, idx) => {
-                      const isGroup = g.items.length > 1;
-                      const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
-                      const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
-                      const groupGuide = inferNextActionForOperationGroup(g.items);
-                      const warn = g.warn;
-                      const groupCancelRequested = g.items.some(
-                        (it) => it.cancel?.status === "requested",
-                      );
-                      const priorityMeta = getOperationPriorityMeta({
-                        warn,
-                        reviewLevel: g.reviewLevel,
-                        groupCancelRequested,
-                      });
-                      const nextActionText = groupNextActionText({
-                        guide: groupGuide,
-                        anchor: g.anchor,
-                        cancelRequested: groupCancelRequested,
-                        reviewLevel: g.reviewLevel,
-                      });
-                      const customerName = g.anchor.customer?.name?.trim() || "";
-                      const customerEmail = g.anchor.customer?.email?.trim() || "";
-                      const docLabel = `${opsKindLabel(g.anchor.kind)} · ${shortenId(g.anchor.id)}`;
-                      const scenarioLabel = flowLabelText(g.anchor);
-                      const createdAtLabel = formatKST(g.anchor.createdAt ?? g.createdAt);
-                      const elapsedHours = getElapsedHours(g.createdAt ?? g.anchor.createdAt);
-                      const elapsedText = formatElapsedText(elapsedHours);
-                      const slaLevel = resolveOperationsSlaLevel({
-                        groupQueueBucket: g.groupQueueBucket,
-                        createdAt: g.createdAt ?? g.anchor.createdAt,
-                        hasCancel: groupCancelRequested,
-                        hasPayment: hasPaymentCheckNeeded(g),
-                        hasShipping: hasShippingMissing(g),
-                        hasRental: hasRentalDue(g),
-                      });
-                      const displayedPriorityMeta =
-                        slaLevel === "urgent" && priorityMeta.label !== "즉시 처리"
-                          ? {
-                              label: "긴급",
-                              description: "SLA 긴급 기준 초과",
-                              tone: "warning" as const,
-                            }
-                          : priorityMeta.label === "정상" && slaLevel === "watch"
-                            ? {
-                                label: "확인 필요",
-                                description: "SLA 확인 기준 초과",
-                                tone: "info" as const,
-                              }
-                            : priorityMeta;
-                      const headline = statusHeadlineOf(g.anchor);
-                      const workflowStatusLabel =
-                        g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인";
-                      const paymentStatusLabel =
-                        g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel ?? "";
-                      const isDuplicatePaymentStatus =
-                        Boolean(paymentStatusLabel) &&
-                        normalizeOperationStatusLabel(workflowStatusLabel) ===
-                          normalizeOperationStatusLabel(paymentStatusLabel);
-                      const workflowStatusBadgeSpec =
-                        g.anchor.kind === "order"
-                          ? getOrderStatusBadgeSpec(g.anchor.statusLabel ?? workflowStatusLabel)
-                          : g.anchor.kind === "rental"
-                            ? getRentalStatusBadgeSpec(g.anchor.statusLabel ?? workflowStatusLabel)
-                            : g.anchor.kind === "stringing_application"
-                              ? getApplicationStatusBadgeSpec(
-                                  g.anchor.statusLabel ?? workflowStatusLabel,
-                                )
-                              : { variant: "neutral" as const };
+                          {displayedPriorityMeta.label}
+                        </Badge>
+                      ) : null}
+                      {elapsedText ? (
+                        <span
+                          className={
+                            slaLevel === "normal"
+                              ? adminDataTable.secondaryText
+                              : adminDataTable.attentionText
+                          }
+                          title="접수 시점 기준 경과 시간입니다."
+                        >
+                          {elapsedText}
+                        </span>
+                      ) : null}
+                      {displayDensity === "default" ? (
+                        <span className={adminDataTable.secondaryLine}>{createdAtLabel}</span>
+                      ) : null}
+                    </div>
+                  </AdminListCell>
 
-                      const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
+                  <AdminListCell>
+                    <AdminListPrimary
+                      title={
+                        <Link
+                          href={g.anchor.href}
+                          className="rounded-sm font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {headline}
+                        </Link>
+                      }
+                      meta={opsKindLabel(g.anchor.kind)}
+                      supporting={
+                        displayDensity === "default"
+                          ? `${scenarioLabel}${isGroup ? ` · 연결 ${g.items.length}건` : ""}`
+                          : undefined
+                      }
+                    />
+                  </AdminListCell>
 
-                      const rowDensityClass = displayDensity === "compact" ? "py-1.5" : "py-2.5";
-                      const primarySignal = visibleSignalSummary(g.signals, 1).visible[0];
-                      const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
-                      const exceptionLabel =
-                        anchorCancelQuickSignal?.label ??
-                        (g.anchor.needsStringingApplication ? "교체 신청서 미접수" : null) ??
-                        (primarySignal ? toOperatorSentence(primarySignal.title) : null) ??
-                        cancelBadge?.label ??
-                        null;
-                      const rowBaseToneClass = idx % 2 === 0 ? "bg-background" : "bg-muted/[0.12]";
-                      const warnEmphasisClass = warn
-                        ? "border-l-2 border-l-warning/60 bg-warning/[0.08]"
-                        : "border-l-2 border-l-transparent";
-                      const stickyActionCellClass = cn(
-                        "sticky right-0 z-10 border-l border-border/60",
-                        rowBaseToneClass,
-                        "group-hover:bg-muted/40",
-                      );
+                  <AdminListCell>
+                    <AdminListPrimary
+                      title={customerName || "-"}
+                      meta={<span className="font-mono">{docLabel}</span>}
+                      supporting={
+                        <AdminReferencePopover
+                          title="업무 참조 정보"
+                          trigger={
+                            <button type="button" className={adminDataTable.referenceTrigger}>
+                              연락처·연결 문서 보기
+                            </button>
+                          }
+                          items={[
+                            {
+                              label: "문서 ID",
+                              value: g.anchor.id,
+                              copyValue: g.anchor.id,
+                            },
+                            {
+                              label: "이메일",
+                              value: customerEmail || null,
+                              copyValue: customerEmail || undefined,
+                            },
+                            ...(children.map((item, itemIndex) => ({
+                              label: `연결 문서${children.length > 1 ? ` ${itemIndex + 1}` : ""}`,
+                              value: item.id,
+                              href: item.href,
+                              copyValue: item.id,
+                            })) ?? []),
+                            {
+                              label: "결제",
+                              value:
+                                g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel ?? null,
+                            },
+                            { label: "금액", value: won(g.anchor.amount) },
+                          ]}
+                        />
+                      }
+                    />
+                  </AdminListCell>
 
-                      return (
-                        <Fragment key={g.key}>
-                          <TableRow
-                            className={cn(
-                              "group transition-colors hover:bg-muted/40",
-                              rowBaseToneClass,
-                              warnEmphasisClass,
-                            )}
-                          >
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className={adminDataTable.cellStack}>
-                                {displayedPriorityMeta.label !== "정상" ? (
-                                  <Badge
-                                    className={cn(
-                                      badgeBase,
-                                      badgeSizeSm,
-                                      badgeToneClass(displayedPriorityMeta.tone),
-                                    )}
-                                  >
-                                    {displayedPriorityMeta.label}
-                                  </Badge>
-                                ) : null}
-                                {elapsedText ? (
-                                  <span
-                                    className={cn(
-                                      "block",
-                                      slaLevel === "normal"
-                                        ? adminDataTable.secondaryText
-                                        : adminDataTable.attentionText,
-                                    )}
-                                    title="접수 시점 기준 경과 시간입니다."
-                                  >
-                                    {elapsedText}
-                                  </span>
-                                ) : null}
-                                {displayDensity === "default" ? (
-                                  <span className={adminDataTable.secondaryLine}>{createdAtLabel}</span>
-                                ) : null}
-                              </div>
-                            </TableCell>
-
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="min-w-0 space-y-1">
-                                <p className={cn("line-clamp-2", adminDataTable.primaryText)}>
-                                  {headline}
-                                </p>
-                                {displayDensity === "default" ? (
-                                  <p
-                                    className={adminDataTable.secondaryLine}
-                                    title={`${opsKindLabel(g.anchor.kind)} · ${scenarioLabel}`}
-                                  >
-                                    {opsKindLabel(g.anchor.kind)} · {scenarioLabel}
-                                    {isGroup ? ` · 연결 ${g.items.length}건` : ""}
-                                  </p>
-                                ) : null}
-                              </div>
-                            </TableCell>
-
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className={adminDataTable.cellStack}>
-                                <span className={cn("block truncate", adminDataTable.primaryText)}>
-                                  {customerName || "-"}
-                                </span>
-                                <span className={cn(adminDataTable.secondaryLine, "font-mono")}>
-                                  {docLabel}
-                                </span>
-                                <AdminReferencePopover
-                                  title="업무 참조 정보"
-                                  trigger={
-                                    <button type="button" className={adminDataTable.referenceTrigger}>
-                                      참조 정보
-                                    </button>
-                                  }
-                                  items={[
-                                    {
-                                      label: "문서 ID",
-                                      value: g.anchor.id,
-                                      copyValue: g.anchor.id,
-                                    },
-                                    {
-                                      label: "이메일",
-                                      value: customerEmail || null,
-                                      copyValue: customerEmail || undefined,
-                                    },
-                                    ...(children.map((item, itemIndex) => ({
-                                      label: `연결 문서${children.length > 1 ? ` ${itemIndex + 1}` : ""}`,
-                                      value: item.id,
-                                      href: item.href,
-                                      copyValue: item.id,
-                                    })) ?? []),
-                                    {
-                                      label: "결제",
-                                      value: g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel ?? null,
-                                    },
-                                    { label: "금액", value: won(g.anchor.amount) },
-                                  ]}
-                                />
-                              </div>
-                            </TableCell>
-
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className={adminDataTable.cellStack}>
-                                {!isDuplicatePaymentStatus ? (
-                                  <Badge
-                                    variant={workflowStatusBadgeSpec.variant}
-                                    className={cn(badgeBase, badgeSizeSm)}
-                                  >
-                                    {workflowStatusLabel}
-                                  </Badge>
-                                ) : null}
-                                {paymentStatusLabel ? (
-                                  <Badge
-                                    variant={
-                                      g.anchor.paymentStateKind === "paid"
-                                        ? "success"
-                                        : g.anchor.paymentStateKind === "bank_pending" ||
-                                            g.anchor.paymentStateKind === "pg_pending" ||
-                                            g.anchor.paymentStateKind === "pending"
-                                          ? "warning"
-                                          : g.anchor.paymentStateKind === "canceled" ||
-                                              g.anchor.paymentStateKind === "refunded" ||
-                                              g.anchor.paymentStateKind === "failed"
-                                            ? "danger"
-                                            : "info"
-                                    }
-                                  >
-                                    {paymentStatusLabel}
-                                  </Badge>
-                                ) : null}
-                                <span className={adminTypography.money}>{won(g.anchor.amount)}</span>
-                                {exceptionLabel ? (
-                                  <p
-                                    className={adminDataTable.attentionText}
-                                    title={primarySignal ? toOperatorSentence(primarySignal.description) : undefined}
-                                  >
-                                    {exceptionLabel}
-                                  </p>
-                                ) : null}
-                              </div>
-                            </TableCell>
-
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                rowDensityClass,
-                                "px-2 text-right",
-                                stickyActionCellClass,
-                              )}
-                            >
-                              <div className="flex items-center justify-end gap-1">
-                                <Button
-                                  asChild
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 whitespace-nowrap px-2 text-ui-label font-medium text-foreground/80 hover:bg-muted/50 hover:text-foreground focus-visible:ring-2"
-                                  title={nextActionText}
-                                >
-                                  <Link href={g.anchor.href}>상세 확인</Link>
-                                </Button>
-                                {g.anchor.canSyncNicePayment ? (
-                                  <AdminRowActionMenu ariaLabel={`${docLabel} 부가 작업 메뉴 열기`}>
-                                    <DropdownMenuItem
-                                      className="whitespace-nowrap"
-                                      title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
-                                      disabled={syncingNiceOrderId === g.anchor.id}
-                                      onClick={() => {
-                                        void handleNicePaymentSync(g.anchor.id);
-                                      }}
-                                    >
-                                      <CreditCard className="mr-2 h-4 w-4" />
-                                      {syncingNiceOrderId === g.anchor.id
-                                        ? "확인 중..."
-                                        : "PG 상태 확인"}
-                                    </DropdownMenuItem>
-                                  </AdminRowActionMenu>
-                                ) : null}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        </Fragment>
-                      );
-                    })}
-
-                    {shouldShowEmptyState && (
-                      <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={5} className="py-10 text-center">
-                          <div className="flex flex-col items-center gap-2">
-                            <Search className="h-8 w-8 text-muted-foreground/50" />
-                            <p className={adminTypography.body}>
-                              {activeQuickView !== "all"
-                                ? "선택한 빠른 보기에 해당하는 운영 업무가 없습니다."
-                                : onlyWarn
-                                  ? "주의(실제 오류) 조건에 해당하는 결과가 없습니다."
-                                  : "결과가 없습니다."}
-                            </p>
-                            {activeQuickView !== "all" && (
-                              <p className={adminTypography.metaMuted}>
-                                다른 빠른 보기를 선택하거나 전체 보기로 돌아가세요.
-                              </p>
-                            )}
-                            {activeQuickView !== "all" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => applyQuickView("all")}
+                  <AdminListCell>
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <AdminStatusGroup
+                        primary={
+                          <>
+                            {!isDuplicatePaymentStatus ? (
+                              <Badge
+                                variant={workflowStatusBadgeSpec.variant}
+                                className={cn(badgeBase, badgeSizeSm)}
                               >
-                                전체 보기
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </>
-          )}
+                                {workflowStatusLabel}
+                              </Badge>
+                            ) : null}
+                            {paymentStatusLabel ? (
+                              <Badge
+                                variant={paymentVariant}
+                                className={cn(badgeBase, badgeSizeSm)}
+                              >
+                                {paymentStatusLabel}
+                              </Badge>
+                            ) : null}
+                          </>
+                        }
+                        alert={exceptionLabel}
+                        alertTone={
+                          groupCancelRequested || anchorCancelQuickSignal ? "danger" : "attention"
+                        }
+                      />
+                      <AdminMoneyBlock
+                        amount={won(g.anchor.amount)}
+                        className="items-start text-left"
+                      />
+                    </div>
+                  </AdminListCell>
 
-          {/* 페이지네이션 */}
-          {totalPages && totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border px-4 py-3">
-              <p className="text-xs text-muted-foreground">
-                {page} / {totalPages} 페이지 (총 {(totalGroups ?? 0).toLocaleString("ko-KR")}그룹)
-              </p>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-3 bg-transparent"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                >
-                  이전
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-3 bg-transparent"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                >
-                  다음
-                </Button>
+                  <AdminListCell align="end" className="px-2">
+                    <AdminRowActions>
+                      {g.anchor.canSyncNicePayment ? (
+                        <AdminRowActionMenu ariaLabel={`${docLabel} 부가 작업 메뉴 열기`}>
+                          <DropdownMenuItem
+                            className="whitespace-nowrap"
+                            title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
+                            disabled={syncingNiceOrderId === g.anchor.id}
+                            onClick={() => {
+                              void handleNicePaymentSync(g.anchor.id);
+                            }}
+                          >
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            {syncingNiceOrderId === g.anchor.id
+                              ? "확인 중..."
+                              : "PG 상태 확인"}
+                          </DropdownMenuItem>
+                        </AdminRowActionMenu>
+                      ) : null}
+                    </AdminRowActions>
+                  </AdminListCell>
+                </AdminListRow>
+              );
+            })
+          ) : shouldShowEmptyState ? (
+            <AdminListRow columnsClassName={OPERATIONS_LIST_COLUMNS} ariaLabel="운영업무 없음">
+              <AdminListCell className="col-span-5 py-8 text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <Search className="h-8 w-8 text-muted-foreground/50" />
+                  <p className={adminTypography.body}>
+                    {activeQuickView !== "all"
+                      ? "선택한 빠른 보기에 해당하는 운영 업무가 없습니다."
+                      : onlyWarn
+                        ? "주의(실제 오류) 조건에 해당하는 결과가 없습니다."
+                        : "결과가 없습니다."}
+                  </p>
+                  {activeQuickView !== "all" ? (
+                    <>
+                      <p className={adminTypography.metaMuted}>
+                        다른 빠른 보기를 선택하거나 전체 보기로 돌아가세요.
+                      </p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyQuickView("all")}
+                      >
+                        전체 보기
+                      </Button>
+                    </>
+                  ) : null}
+                </div>
+              </AdminListCell>
+            </AdminListRow>
+          ) : null}
+        </AdminListBody>
+
+        {totalPages && totalPages > 1 ? (
+          <div role="rowgroup" className="border-t border-border">
+            <div role="row">
+              <div
+                role="cell"
+                aria-colspan={5}
+                className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
+              >
+                <p className="text-xs text-muted-foreground">
+                  {page} / {totalPages} 페이지 (총 {(totalGroups ?? 0).toLocaleString("ko-KR")}그룹)
+                </p>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 bg-transparent px-3"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    이전
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 bg-transparent px-3"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    다음
+                  </Button>
+                </div>
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        ) : null}
+      </AdminListTable>
     </AdminPageShell>
   );
 }

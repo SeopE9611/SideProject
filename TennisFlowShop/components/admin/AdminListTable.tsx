@@ -14,6 +14,7 @@ type AdminListTableProps = {
   contentClassName?: string;
   columnsClassName?: string;
   ariaLabel?: string;
+  headerActions?: ReactNode;
 };
 
 /** 관리자 목록의 결과 메타와 CSS Grid list-table 표면을 한 규격으로 묶습니다. */
@@ -27,6 +28,7 @@ export function AdminListTable({
   contentClassName,
   columnsClassName,
   ariaLabel = title,
+  headerActions,
 }: AdminListTableProps) {
   return (
     <section
@@ -44,9 +46,12 @@ export function AdminListTable({
               <p className="mt-1 text-ui-label text-muted-foreground">{description}</p>
             ) : null}
           </div>
-          <p className="shrink-0 text-ui-label font-medium tabular-nums text-muted-foreground">
-            {resultLabel}
-          </p>
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+            <p className="shrink-0 text-ui-label font-medium tabular-nums text-muted-foreground">
+              {resultLabel}
+            </p>
+            {headerActions}
+          </div>
         </div>
       </header>
       <div
@@ -200,9 +205,7 @@ export function AdminStatusGroup({
       {alert ? (
         <div
           className={
-            alertTone === "danger"
-              ? adminDataTable.dangerText
-              : adminDataTable.attentionText
+            alertTone === "danger" ? adminDataTable.dangerText : adminDataTable.attentionText
           }
         >
           {alert}

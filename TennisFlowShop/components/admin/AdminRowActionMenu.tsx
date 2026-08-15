@@ -1,8 +1,8 @@
 "use client";
 
-import { Children, Fragment, isValidElement, type ReactNode } from "react";
-import type * as React from "react";
 import { MoreHorizontal } from "lucide-react";
+import type * as React from "react";
+import { Children, Fragment, isValidElement, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +49,7 @@ export default function AdminRowActionMenu({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-8 w-8 rounded-md text-muted-foreground hover:bg-muted/50 hover:text-foreground focus-visible:ring-2"
+          className="h-7 w-7 rounded-sm bg-transparent p-0 text-muted-foreground/70 shadow-none hover:bg-muted/40 hover:text-foreground focus-visible:ring-2"
           aria-label={ariaLabel}
         >
           <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />

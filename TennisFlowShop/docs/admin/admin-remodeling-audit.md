@@ -180,20 +180,20 @@
 `[id]/_components/*.tsx`를 확인하고, 라우트가 외부 공용 클라이언트를 렌더하는 경우 그 실제 파일까지
 추적한 결과다. 조사만 한 화면은 완료로 간주하지 않는다.
 
-| 분류 | 라우트 | 실제 렌더 파일과 공통 구조 | 상태 |
-| --- | --- | --- | --- |
-| 완료 | `/admin/orders/[id]` | `app/features/orders/components/OrderDetailClient.tsx`; Shell·detail Header·section nav 사용 | 완료 |
-| 완료 | `/admin/applications/stringing/[id]` | `app/features/stringing-applications/components/StringingApplicationDetailClient.tsx`; 관리자 분기에 Shell·detail Header·section nav 사용 | 완료 |
-| 완료 | `/admin/rentals/[id]` | `_components/AdminRentalDetailClient.tsx`; Shell·detail Header·section nav 사용 | 완료 |
-| 완료 | `/admin/users/[id]` | `app/admin/users/_components/UserDetailClient.tsx`; Shell·detail Header·section nav 사용 | 완료 |
-| 완료 | `/admin/packages/[id]` | `PackageDetailClient.tsx`; Shell·detail Header·section nav 사용 | 완료 |
-| 완료 | `/admin/offline/customers/[id]` | `_components/OfflineCustomerDetailClient.tsx`; Step 3-C에서 Shell·detail Header·section nav 적용 | 완료 |
-| 완료 | `/admin/academy/classes/[id]` | `_components/AcademyClassDetailClient.tsx`; Step 3-D에서 Shell·detail Header·section nav 적용 | 완료 |
-| 완료 | `/admin/academy/applications/[id]` | `_components/AcademyApplicationDetailClient.tsx`; Step 3-D에서 Shell·detail Header·section nav 적용 | 완료 |
-| 완료 | `/admin/boards/[id]` | 서버 `page.tsx`; Step 3-E에서 Shell·detail Header·section nav 적용 | 완료 |
-| 별도 도구 | `/admin/reviews/[id]` | `page.tsx`는 `/admin/reviews`로 redirect하며 `ReviewDetailClient.tsx`를 렌더하지 않음 | 별도 검토 |
-| 등록·수정 폼 | `/admin/products/[id]/edit`, `/admin/rackets/[id]/edit`, `/admin/academy/classes/[id]/edit`, `/admin/boards/[id]/edit` | 각 edit 클라이언트 또는 공용 폼을 렌더 | Step 4 후보 |
-| 등록·수정 폼 | `/admin/orders/[id]/shipping-update`, `/admin/applications/stringing/[id]/shipping-update` | 각 `ShippingFormClient.tsx` 또는 배송 폼을 렌더 | 별도 폼 후보 |
+| 분류         | 라우트                                                                                                                 | 실제 렌더 파일과 공통 구조                                                                                                                | 상태         |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 완료         | `/admin/orders/[id]`                                                                                                   | `app/features/orders/components/OrderDetailClient.tsx`; Shell·detail Header·section nav 사용                                              | 완료         |
+| 완료         | `/admin/applications/stringing/[id]`                                                                                   | `app/features/stringing-applications/components/StringingApplicationDetailClient.tsx`; 관리자 분기에 Shell·detail Header·section nav 사용 | 완료         |
+| 완료         | `/admin/rentals/[id]`                                                                                                  | `_components/AdminRentalDetailClient.tsx`; Shell·detail Header·section nav 사용                                                           | 완료         |
+| 완료         | `/admin/users/[id]`                                                                                                    | `app/admin/users/_components/UserDetailClient.tsx`; Shell·detail Header·section nav 사용                                                  | 완료         |
+| 완료         | `/admin/packages/[id]`                                                                                                 | `PackageDetailClient.tsx`; Shell·detail Header·section nav 사용                                                                           | 완료         |
+| 완료         | `/admin/offline/customers/[id]`                                                                                        | `_components/OfflineCustomerDetailClient.tsx`; Step 3-C에서 Shell·detail Header·section nav 적용                                          | 완료         |
+| 완료         | `/admin/academy/classes/[id]`                                                                                          | `_components/AcademyClassDetailClient.tsx`; Step 3-D에서 Shell·detail Header·section nav 적용                                             | 완료         |
+| 완료         | `/admin/academy/applications/[id]`                                                                                     | `_components/AcademyApplicationDetailClient.tsx`; Step 3-D에서 Shell·detail Header·section nav 적용                                       | 완료         |
+| 완료         | `/admin/boards/[id]`                                                                                                   | 서버 `page.tsx`; Step 3-E에서 Shell·detail Header·section nav 적용                                                                        | 완료         |
+| 별도 도구    | `/admin/reviews/[id]`                                                                                                  | `page.tsx`는 `/admin/reviews`로 redirect하며 `ReviewDetailClient.tsx`를 렌더하지 않음                                                     | 별도 검토    |
+| 등록·수정 폼 | `/admin/products/[id]/edit`, `/admin/rackets/[id]/edit`, `/admin/academy/classes/[id]/edit`, `/admin/boards/[id]/edit` | 각 edit 클라이언트 또는 공용 폼을 렌더                                                                                                    | Step 4 후보  |
+| 등록·수정 폼 | `/admin/orders/[id]/shipping-update`, `/admin/applications/stringing/[id]/shipping-update`                             | 각 `ShippingFormClient.tsx` 또는 배송 폼을 렌더                                                                                           | 별도 폼 후보 |
 
 `ReviewDetailClient.tsx`는 실제 파일은 남아 있지만 현재 `[id]` 라우트에서는 사용하지 않으므로 상세
 리모델링 완료 화면으로 세지 않는다. 이번 조사에서 새로운 상세 라우트는 추정하거나 추가하지 않았다.
@@ -352,3 +352,20 @@
   이 단계의 완료 범위가 아니다.
 
 다음 단계는 `Admin Table V2 Phase 2: 운영업무·패키지 관리에 검증된 V2 정보 슬롯 적용`이다.
+
+## Admin Table V2 Phase 1.5 — 운영업무 이식 및 행 작업 마감
+
+- 운영업무 legacy Table·sticky action·세로 divider 구조를 AdminListTable V2로 교체했다.
+- 주문·대여·운영업무의 별도 상세 확인 버튼을 제거했다.
+- 주문·대여는 고객명, 운영업무는 업무 제목을 상세 링크로 사용한다.
+- 작업 열은 실제 부가 작업이 있을 때만 더보기 메뉴를 표시한다.
+- 더보기 trigger는 접근 가능한 무테 ghost button으로 경량화했다.
+- 대여 workflow/payment 동일 Badge 중복을 제거했다.
+- 대여 보증금 상태를 보관 중·환불 필요·환불 완료로 구분했다.
+- 주문 기본 행에서 F1~F5 내부 flow code를 제거했다.
+- 운영·주문·대여·패키지 navigation count 집계 로직은 변경하지 않았다.
+- API·SWR·mutation·정렬·pagination은 변경하지 않았다.
+
+다음 단계:
+
+`Admin Table V2 Phase 2 — 패키지 관리 및 나머지 핵심 목록 전파`

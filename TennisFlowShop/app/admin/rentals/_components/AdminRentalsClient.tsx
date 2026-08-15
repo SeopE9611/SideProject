@@ -1,6 +1,7 @@
 "use client";
 
-import AdminPageShell from "@/components/admin/AdminPageShell";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import {
   AdminListBody,
   AdminListCell,
@@ -12,13 +13,12 @@ import {
   AdminRowActions,
   AdminStatusGroup,
 } from "@/components/admin/AdminListTable";
-import { adminDataTable } from "@/components/admin/AdminDataTable";
-import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -31,15 +31,7 @@ import {
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  Eye,
-  Package,
-  Search,
-  Truck,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Eye, Package, Search, Truck } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -57,16 +49,16 @@ import {
 } from "@/components/ui/select";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import {
-  getCommonApplicationStatusLabel,
-  getCommonRentalStatusLabel,
-} from "@/lib/status-labels/base";
-import {
   adminMutator,
   ensureAdminMutationSucceeded,
   getAdminErrorMessage,
 } from "@/lib/admin/adminFetcher";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import {
+  getCommonApplicationStatusLabel,
+  getCommonRentalStatusLabel,
+} from "@/lib/status-labels/base";
 import type {
   AdminRentalListItemDto,
   AdminRentalPaymentFilter,
@@ -83,7 +75,15 @@ type RentalRow = AdminRentalListItemDto & {
 };
 
 const RENTAL_LIST_COLUMNS =
-  "grid-cols-[minmax(220px,1.1fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_130px_120px]";
+  "grid-cols-[minmax(220px,1.1fr)_minmax(210px,1fr)_minmax(230px,1.05fr)_130px_52px]";
+
+function normalizeRentalStatusLabel(value?: string | null) {
+  return String(value ?? "")
+    .replace(/\s+/g, "")
+    .replace(/[·/_-]/g, "")
+    .trim()
+    .toLowerCase();
+}
 
 const PAY_FILTERS: AdminRentalPaymentFilter[] = ["all", "unpaid", "paid"];
 const SHIP_FILTERS: AdminRentalShippingFilter[] = [
@@ -786,7 +786,9 @@ export default function AdminRentalsClient() {
       <AdminListTable
         title="대여 목록"
         viewLabel={status ? getRentalStatusDisplayLabel(status) : "전체 대여"}
-        resultLabel={hasResolvedData && !hasDataError && data ? `총 ${data.total}건` : "불러오는 중…"}
+        resultLabel={
+          hasResolvedData && !hasDataError && data ? `총 ${data.total}건` : "불러오는 중…"
+        }
         description="고객, 대여 라켓, 반납 일정, 결제와 보증금 상태를 한 행에서 확인할 수 있습니다."
         columnsClassName={RENTAL_LIST_COLUMNS}
         ariaLabel="대여 관리 목록"
@@ -860,8 +862,8 @@ export default function AdminRentalsClient() {
               )}
             </button>
           </div>
-          <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
-            조치
+          <div role="columnheader" className="min-w-0 px-2 py-2.5 text-right">
+            작업
           </div>
         </AdminListColumnHeader>
 
@@ -933,6 +935,19 @@ export default function AdminRentalsClient() {
                 (derivePaymentStatus(r) === "paid" ? "결제완료" : "결제대기");
               const paymentSpec = getPaymentStatusBadgeSpec(paymentLabel);
 
+              const rentalWorkflowLabel = getRentalStatusDisplayLabel(r.status);
+
+              const isRentalPaymentEquivalent =
+                Boolean(paymentLabel) &&
+                normalizeRentalStatusLabel(rentalWorkflowLabel) ===
+                  normalizeRentalStatusLabel(paymentLabel);
+
+              const depositStatusLabel = r.depositRefundedAt
+                ? "환불 완료"
+                : isReturned
+                  ? "환불 필요"
+                  : "보관 중";
+
               return (
                 <AdminListRow
                   key={rid || `row-${idx}`}
@@ -941,7 +956,14 @@ export default function AdminRentalsClient() {
                 >
                   <AdminListCell>
                     <AdminListPrimary
-                      title={r.customer?.name || "고객명 없음"}
+                      title={
+                        <Link
+                          href={`/admin/rentals/${rid}`}
+                          className="rounded-sm font-semibold text-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {r.customer?.name || "고객명 없음"}
+                        </Link>
+                      }
                       meta={
                         <>
                           <span className="font-mono">ID {shortenId(rid)}</span>
@@ -952,13 +974,11 @@ export default function AdminRentalsClient() {
                       }
                       supporting={
                         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                          <Badge
-                            variant={svc.variant}
-                            className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-                          >
-                            {svc.label}
-                          </Badge>
-                          <span>{link?.label ?? "신청서 연결 없음"} · {flow.flow === 7 ? "통합" : "단독"}</span>
+                          <span>{svc.label}</span>
+                          <span>
+                            {link?.label ?? "신청서 연결 없음"} ·{" "}
+                            {flow.flow === 7 ? "통합" : "단독"}
+                          </span>
                           <AdminReferencePopover
                             title="대여 참조 정보"
                             trigger={
@@ -1015,12 +1035,15 @@ export default function AdminRentalsClient() {
                     <AdminStatusGroup
                       primary={
                         <>
-                          <Badge
-                            variant={rentalStatusSpec.variant}
-                            className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
-                          >
-                            {getRentalStatusDisplayLabel(r.status)}
-                          </Badge>
+                          {!isRentalPaymentEquivalent ? (
+                            <Badge
+                              variant={rentalStatusSpec.variant}
+                              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
+                            >
+                              {rentalWorkflowLabel}
+                            </Badge>
+                          ) : null}
+
                           <Badge
                             variant={paymentSpec.variant}
                             className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap")}
@@ -1032,22 +1055,18 @@ export default function AdminRentalsClient() {
                       secondary={
                         <>
                           {shippingLabel}
-                          {applicationStatusLabel
-                            ? ` · 교체서비스 ${applicationStatusLabel}`
-                            : ""}
+                          {applicationStatusLabel ? ` · 교체서비스 ${applicationStatusLabel}` : ""}
                         </>
                       }
                       alert={exceptionLabel}
-                      alertTone={
-                        r.cancelRequest?.status === "requested" ? "danger" : "attention"
-                      }
+                      alertTone={r.cancelRequest?.status === "requested" ? "danger" : "attention"}
                     />
                   </AdminListCell>
 
                   <AdminListCell align="end">
                     <AdminMoneyBlock
                       amount={won(r.amount.total)}
-                      meta={`보증금 ${won(r.amount.deposit)} · ${r.depositRefundedAt ? "환불 완료" : "미환불"}`}
+                      meta={`보증금 ${won(r.amount.deposit)} · ${depositStatusLabel}`}
                       detailAction={
                         <AdminReferencePopover
                           title="결제·보증금 구성"
@@ -1081,29 +1100,22 @@ export default function AdminRentalsClient() {
                     />
                   </AdminListCell>
 
-                  <AdminListCell align="end">
+                  <AdminListCell align="end" className="px-2">
                     <AdminRowActions>
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 whitespace-nowrap px-2 text-ui-label font-medium text-foreground/80 hover:bg-muted/50 hover:text-foreground focus-visible:ring-2"
-                      >
-                        <Link href={`/admin/rentals/${rid}`}>상세 확인</Link>
-                      </Button>
                       {hasRentalMenuActions ? (
-                        <AdminRowActionMenu ariaLabel={`${r.customer?.name || r.id} 대여 관리 메뉴`}>
+                        <AdminRowActionMenu
+                          ariaLabel={`${r.customer?.name || r.id} 대여 관리 메뉴`}
+                        >
                           {r.stringingApplicationId ? (
-                            <>
-                              <DropdownMenuItem asChild>
-                                <Link
-                                  href={`/admin/applications/stringing/${encodeURIComponent(String(r.stringingApplicationId))}`}
-                                >
-                                  <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                            </>
+                            <DropdownMenuItem asChild>
+                              <Link
+                                href={`/admin/applications/stringing/${encodeURIComponent(
+                                  String(r.stringingApplicationId),
+                                )}`}
+                              >
+                                <Eye className="mr-2 h-4 w-4" /> 연결 신청서 보기
+                              </Link>
+                            </DropdownMenuItem>
                           ) : null}
                           {r.status === "paid" || r.status === "out" ? (
                             <DropdownMenuItem
@@ -1164,38 +1176,38 @@ export default function AdminRentalsClient() {
                 aria-colspan={5}
                 className="flex flex-wrap items-center justify-center gap-1 px-4 py-3"
               >
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-              >
-                이전
-              </Button>
-              {getPaginationItems(page, totalPages).map((it, idx) =>
-                typeof it === "number" ? (
-                  <Button
-                    key={`page-${it}`}
-                    size="sm"
-                    variant={it === page ? "default" : "outline"}
-                    onClick={() => setPage(it)}
-                  >
-                    {it}
-                  </Button>
-                ) : (
-                  <span key={`dots-${idx}`} className="px-2 text-muted-foreground">
-                    …
-                  </span>
-                ),
-              )}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPage((p) => Math.min(totalPages ?? 1, p + 1))}
-                disabled={!totalPages || page >= totalPages}
-              >
-                다음
-              </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
+                  이전
+                </Button>
+                {getPaginationItems(page, totalPages).map((it, idx) =>
+                  typeof it === "number" ? (
+                    <Button
+                      key={`page-${it}`}
+                      size="sm"
+                      variant={it === page ? "default" : "outline"}
+                      onClick={() => setPage(it)}
+                    >
+                      {it}
+                    </Button>
+                  ) : (
+                    <span key={`dots-${idx}`} className="px-2 text-muted-foreground">
+                      …
+                    </span>
+                  ),
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.min(totalPages ?? 1, p + 1))}
+                  disabled={!totalPages || page >= totalPages}
+                >
+                  다음
+                </Button>
               </div>
             </div>
           </div>
