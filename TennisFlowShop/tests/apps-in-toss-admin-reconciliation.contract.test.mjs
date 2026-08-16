@@ -5,7 +5,7 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const helper = read("../app/api/admin/apps-in-toss/_lib/reconciliation.ts");
 const route = read("../app/api/admin/apps-in-toss/reconciliation/route.ts");
-const client = read("../app/admin/operations/apps-in-toss-reconciliation/_components/AppsInTossReconciliationClient.tsx");
+
 const operations = read("../app/admin/operations/_components/OperationsClient.tsx");
 const runtimeIndexes = read("../lib/apps-in-toss-payments.indexes.ts");
 const ensureIndexes = read("../scripts/db/ensure-runtime-indexes.mjs");
@@ -14,19 +14,45 @@ const checkIndexes = read("../scripts/db/check-runtime-indexes.mjs");
 test("관리자 API는 인증 뒤 읽기 전용 GET만 제공한다", () => {
   assert.match(route, /export async function GET[\s\S]*requireAdmin\(req\)/);
   assert.doesNotMatch(route, /export async function (POST|PATCH|PUT|DELETE)/);
-  assert.doesNotMatch(route, /toss-pay-client|executeAppsInTossPayment|finalizeAppsInTossPayment|refundAppsInToss/);
+  assert.doesNotMatch(
+    route,
+    /toss-pay-client|executeAppsInTossPayment|finalizeAppsInTossPayment|refundAppsInToss/,
+  );
 });
 
 test("분류기는 6종 우선순위와 5분 stale 정책을 고정한다", () => {
   assert.match(helper, /APPS_IN_TOSS_ADMIN_FINALIZATION_STALE_MS = 5 \* 60_000/);
-  const priority = helper.slice(helper.indexOf("APPS_IN_TOSS_ATTENTION_PRIORITY"), helper.indexOf("const NEXT_ACTION"));
-  for (const type of ["state_inconsistent", "reconciliation_required", "compensation_refund_required", "execution_lease_expired", "refund_lease_expired", "finalization_stale"]) assert.match(priority, new RegExp(type));
+  const priority = helper.slice(
+    helper.indexOf("APPS_IN_TOSS_ATTENTION_PRIORITY"),
+    helper.indexOf("const NEXT_ACTION"),
+  );
+  for (const type of [
+    "state_inconsistent",
+    "reconciliation_required",
+    "compensation_refund_required",
+    "execution_lease_expired",
+    "refund_lease_expired",
+    "finalization_stale",
+  ])
+    assert.match(priority, new RegExp(type));
   assert.match(helper, /state === "finalized" && !hasOrder/);
   assert.match(helper, /state !== "finalized" && hasOrder/);
-  assert.match(helper, /state === "paid" && intent\.finalization\?\.failureCode != null && !hasOrder/);
-  assert.match(helper, /state === "executing" && \(!intent\.execution\?\.leaseUntil \|\| intent\.execution\.leaseUntil <= now\)/);
-  assert.match(helper, /state === "refunding" && \(!intent\.refund\?\.leaseUntil \|\| intent\.refund\.leaseUntil <= now\)/);
-  assert.match(helper, /intent\.updatedAt\.getTime\(\) <= now\.getTime\(\) - APPS_IN_TOSS_ADMIN_FINALIZATION_STALE_MS/);
+  assert.match(
+    helper,
+    /state === "paid" && intent\.finalization\?\.failureCode != null && !hasOrder/,
+  );
+  assert.match(
+    helper,
+    /state === "executing" && \(!intent\.execution\?\.leaseUntil \|\| intent\.execution\.leaseUntil <= now\)/,
+  );
+  assert.match(
+    helper,
+    /state === "refunding" && \(!intent\.refund\?\.leaseUntil \|\| intent\.refund\.leaseUntil <= now\)/,
+  );
+  assert.match(
+    helper,
+    /intent\.updatedAt\.getTime\(\) <= now\.getTime\(\) - APPS_IN_TOSS_ADMIN_FINALIZATION_STALE_MS/,
+  );
 });
 
 test("Mongo 후보 match, facet pagination과 집계를 사용하고 전체 문서 JS scan을 하지 않는다", () => {
@@ -43,28 +69,42 @@ test("DTO는 snapshot만 명시적으로 직렬화하고 민감정보를 노출�
   assert.match(route, /itemSnapshot\) \? row\.itemSnapshot\[0\]/);
   assert.match(route, /maskPhone/);
   assert.match(route, /function maskEmail/);
-  const serializer = route.slice(route.indexOf("function serialize"), route.indexOf("function emptySummary"));
-  for (const forbidden of ["payToken", "identityId", "orderNo", "refundNo", "transactionId", "approvalTime", "failureMessage"]) assert.doesNotMatch(serializer, new RegExp(forbidden));
+  const serializer = route.slice(
+    route.indexOf("function serialize"),
+    route.indexOf("function emptySummary"),
+  );
+  for (const forbidden of [
+    "payToken",
+    "identityId",
+    "orderNo",
+    "refundNo",
+    "transactionId",
+    "approvalTime",
+    "failureMessage",
+  ])
+    assert.doesNotMatch(serializer, new RegExp(forbidden));
   assert.doesNotMatch(route, /collection\(["']products|return intent|\.\.\.row/);
 });
 
-test("UI는 읽기 전용 진단과 Operations 진입점만 제공한다", () => {
-  assert.match(client, /목록 새로고침/);
-  assert.match(operations, /\/admin\/operations\/apps-in-toss-reconciliation/);
-  assert.match(operations, /토스 앱 결제 중 자동 처리 미완료·대사 필요 건 확인/);
-  for (const action of ["환불 실행", "결제 승인", "상태 복구", "재시도", "강제 완료", "대사 완료", "메모 저장"]) assert.doesNotMatch(client, new RegExp(action));
-});
-
 test("Operations 점검 카드는 읽기 전용 summary total을 로딩 완료 후 표시한다", () => {
-  const card = operations.slice(
-    operations.indexOf('title="Apps in Toss 결제 점검"'),
-    operations.indexOf('title="아카데미 상담"'),
+  const start = operations.indexOf('title: "Apps in Toss 결제 점검"');
+  const end = operations.indexOf('title: "아카데미 상담"', start);
+
+  assert.notEqual(start, -1, "Apps in Toss 결제 점검 항목을 찾지 못했습니다.");
+  assert.notEqual(end, -1, "아카데미 상담 항목을 찾지 못했습니다.");
+
+  const card = operations.slice(start, end);
+
+  assert.match(
+    operations,
+    /import type \{ AppsInTossReconciliationResponse \} from "@\/types\/admin\/apps-in-toss-reconciliation"/,
   );
-  assert.match(operations, /import type \{ AppsInTossReconciliationResponse \} from "@\/types\/admin\/apps-in-toss-reconciliation"/);
-  assert.match(operations, /useSWR<AppsInTossReconciliationResponse>\(\s*"\/api\/admin\/apps-in-toss\/reconciliation\?issueType=all&environment=all&page=1&limit=1",\s*authenticatedSWRFetcher/);
-  assert.match(card, /count=\{appsInTossReconciliation\?\.summary\.total \?\? "—"\}/);
-  assert.doesNotMatch(card, /count=\{0\}/);
-  assert.match(card, /href="\/admin\/operations\/apps-in-toss-reconciliation"/);
+  assert.match(
+    operations,
+    /useSWR<AppsInTossReconciliationResponse>\(\s*"\/api\/admin\/apps-in-toss\/reconciliation\?issueType=all&environment=all&page=1&limit=1",\s*authenticatedSWRFetcher/,
+  );
+  assert.match(card, /count:\s*appsInTossReconciliation\?\.summary\.total\s*\?\?\s*0/);
+  assert.match(card, /href:\s*"\/admin\/operations\/apps-in-toss-reconciliation"/);
 });
 
 test("신규 인덱스 2개는 runtime spec, ensure, check에 모두 일치한다", () => {

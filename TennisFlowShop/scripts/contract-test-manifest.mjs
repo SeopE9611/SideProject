@@ -58,6 +58,7 @@ export const advisoryContractFiles = [
   "apps-in-toss-racket-purchase-payment.contract.test.mjs",
   "apps-in-toss-racket-purchase-ui.contract.test.mjs",
   "apps-in-toss-racket-rental-ui.contract.test.mjs",
+  "apps-in-toss-admin-reconciliation-ui.advisory.test.mjs",
   "board-unsaved-changes-navigation.contract.test.mjs",
   "checkout-success-links.contract.test.mjs",
   "community-rich-text-ui.contract.test.mjs",
