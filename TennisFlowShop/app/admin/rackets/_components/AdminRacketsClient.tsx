@@ -1,15 +1,25 @@
 "use client";
 
-import { adminDataTable } from "@/components/admin/AdminDataTable";
-import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminMoneyBlock,
+  AdminRowActions,
+  AdminStatusGroup,
+} from "@/components/admin/AdminListTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
+import { AdminSemanticBadge as SemanticBadge } from "@/components/admin/AdminSemanticBadge";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { RacketBadge } from "@/components/badges/RacketBadge";
-import { AdminSemanticBadge as SemanticBadge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,36 +29,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { getRacketAvailabilityState } from "@/lib/badge-style";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { getRacketAvailabilityState } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   CheckCircle,
   ClipboardList,
-  Edit,
-  Eye,
   Package,
   Plus,
   Search,
   XCircle,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 
-function RacketAvailabilityCell({ item }: { item: Item }) {
+function RacketAvailabilityContent({ item }: { item: Item }) {
   const { data } = useSWR<{ ok: boolean; available: number }>(
     `/api/admin/rentals/active-count/${item.id}`,
     authenticatedSWRFetcher,
@@ -58,12 +59,12 @@ function RacketAvailabilityCell({ item }: { item: Item }) {
       revalidateOnReconnect: false,
     },
   );
+
   const qty = Math.max(0, Number(item.quantity ?? 1));
   const ready = data !== undefined;
-  const avail = ready
-    ? Math.min(qty, Math.max(0, Number(data?.available ?? 0)))
-    : 0;
+  const avail = ready ? Math.min(qty, Math.max(0, Number(data?.available ?? 0))) : 0;
   const rentedCount = ready ? Math.max(0, qty - avail) : 0;
+
   const availability = getRacketAvailabilityState({
     ready,
     quantity: qty,
@@ -73,6 +74,7 @@ function RacketAvailabilityCell({ item }: { item: Item }) {
     status: item.status,
     isVisible: item.isVisible,
   });
+
   const stockDisplay = (() => {
     switch (availability) {
       case "loading":
@@ -92,21 +94,23 @@ function RacketAvailabilityCell({ item }: { item: Item }) {
         return qty > 1 ? `재고 ${avail}/${qty}` : "재고 있음";
     }
   })();
+
+  const isHidden =
+    item.isVisible === false || item.status === "inactive" || item.status === "비노출";
+
   return (
-    <TableCell className={adminDataTable.cellCenter}>
-      <div className={cn(adminDataTable.cellStack, "flex flex-col items-center")}>
+    <AdminStatusGroup
+      primary={
         <RacketBadge
           kind="availability"
           state={availability}
           size="sm"
           className={adminTypography.badgeLabel}
         />
-        <span className={adminDataTable.secondaryText}>{stockDisplay}</span>
-        {item.isVisible === false || item.status === "inactive" || item.status === "비노출" ? (
-          <span className={adminDataTable.attentionText}>스토어 숨김</span>
-        ) : null}
-      </div>
-    </TableCell>
+      }
+      secondary={stockDisplay}
+      alert={isHidden ? "스토어 숨김" : undefined}
+    />
   );
 }
 
@@ -143,6 +147,9 @@ function ConditionBadge({ condition }: { condition: string }) {
     />
   );
 }
+
+const RACKET_LIST_COLUMNS =
+  "grid-cols-[minmax(280px,1.3fr)_minmax(210px,0.95fr)_140px_minmax(220px,1fr)_116px]";
 
 export default function AdminRacketsClient() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -290,14 +297,6 @@ export default function AdminRacketsClient() {
     if (kpiStatus !== "ready") return "-";
     return value;
   };
-
-  const listDescription = useMemo(() => {
-    if (isLoading && !data) return "라켓 목록을 불러오는 중입니다.";
-    if (hasDataError) return "라켓 목록을 불러오는 중 문제가 발생했습니다.";
-    if (!hasResolvedData) return "라켓 목록을 준비 중입니다.";
-    if (filteredItems.length === 0) return "조건에 맞는 라켓이 없습니다.";
-    return `총 ${filteredItems.length}개의 라켓이 검색되었습니다.`;
-  }, [isLoading, data, hasDataError, hasResolvedData, filteredItems.length]);
 
   return (
     <AdminPageShell variant="wide" className="space-y-6">
@@ -454,7 +453,13 @@ export default function AdminRacketsClient() {
         }
         actions={
           <>
-            <Button type="button" variant="outline" size="sm" className="h-9" onClick={resetFilters}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={resetFilters}
+            >
               필터 초기화
             </Button>
             <Button asChild size="sm" className="h-9">
@@ -480,9 +485,9 @@ export default function AdminRacketsClient() {
               </SemanticBadge>
             )}
             <span className={cn("tabular-nums", adminTypography.metaMuted)}>
-            {hasResolvedData
-              ? `검색된 라켓: ${filteredItems.length.toLocaleString("ko-KR")}개`
-              : "라켓 목록을 불러오는 중입니다."}
+              {hasResolvedData
+                ? `검색된 라켓: ${filteredItems.length.toLocaleString("ko-KR")}개`
+                : "라켓 목록을 불러오는 중입니다."}
             </span>
           </>
         }
@@ -540,147 +545,185 @@ export default function AdminRacketsClient() {
           </div>
         </div>
       </AdminFilterBar>
-      <Card className={cn(adminSurface.tableCard, "flex min-h-0 flex-1 flex-col")}>
-        <CardHeader className="shrink-0 border-b border-border bg-muted/30 pb-4">
-          <CardTitle className={adminTypography.sectionTitle}>라켓 목록</CardTitle>
-          <CardDescription className="text-muted-foreground">{listDescription}</CardDescription>
-        </CardHeader>
-
-        <CardContent className="flex min-h-0 flex-1 flex-col p-6">
-          <div className="flex-1">
-            {isLoading ? (
-              <div className={cn(adminSurface.tableCard, "overflow-auto")}>
-                <div className="space-y-4 p-8">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-16 rounded bg-muted animate-pulse" />
-                  ))}
-                </div>
-              </div>
-            ) : commonErrorMessage ? (
-              <div className="overflow-auto rounded-lg border border-destructive">
-                <div className="p-8 text-center">
-                  <p className="text-destructive">{commonErrorMessage}</p>
-                </div>
-              </div>
-            ) : !filteredItems.length ? (
-              <div className="flex flex-col items-center gap-2">
-                <Search className="h-8 w-8 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">
-                  {hasActiveTableFilter
-                    ? "현재 조건에 맞는 라켓이 없습니다."
-                    : "등록된 라켓이 없습니다."}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-auto rounded-lg border border-border">
-                <Table className="min-w-[720px] table-fixed">
-                  <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
-                    <TableRow className={adminDataTable.row}>
-                      <TableHead className={cn(adminDataTable.head, "w-[300px]")}>라켓 정보</TableHead>
-                      <TableHead className={cn(adminDataTable.headRight, "w-[120px]")}>가격</TableHead>
-                      <TableHead className={cn(adminDataTable.headCenter, "w-[90px]")}>등급</TableHead>
-                      <TableHead className={cn(adminDataTable.headCenter, "w-[130px]")}>이용 / 재고</TableHead>
-                      <TableHead className={cn(adminDataTable.stickyActionHead, "w-[150px]")}>관리</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredItems.map((item) => (
-                      <TableRow
-                        key={item.id}
-                        className={adminDataTable.row}
-                      >
-                        <TableCell className={adminDataTable.cellLeft}>
-                          <div className="flex min-w-0 items-center gap-3">
-                            {item.images?.[0] && (
-                              <Image
-                                src={item.images[0] || "/placeholder.svg"}
-                                alt={item.model}
-                                width={48}
-                                height={48}
-                                sizes="48px"
-                                className="h-12 w-12 rounded-lg object-cover"
-                              />
-                            )}
-                            <div className="min-w-0">
-                              <div className="line-clamp-2 break-keep font-semibold text-foreground">
-                                {racketBrandLabel(item.brand)}
-                              </div>
-                              <div
-                                className={cn("line-clamp-2 break-keep", adminTypography.tableSecondary)}
-                                title={item.model}
-                              >
-                                {item.model}
-                              </div>
-                              {item.marketing?.isNew ||
-                              item.marketing?.isFeatured ||
-                              (item.marketing?.isSale &&
-                                Number(item.marketing.salePrice) > 0 &&
-                                Number(item.marketing.salePrice) < Number(item.price)) ? (
-                                <div className={cn("mt-1", adminDataTable.secondaryLine)}>
-                                  {[
-                                    item.marketing?.isNew ? "신상품" : null,
-                                    item.marketing?.isFeatured ? "추천" : null,
-                                    item.marketing?.isSale &&
-                                    Number(item.marketing.salePrice) > 0 &&
-                                    Number(item.marketing.salePrice) < Number(item.price)
-                                      ? `할인 ${Math.round(
-                                          ((Number(item.price) - Number(item.marketing.salePrice)) /
-                                            Number(item.price)) *
-                                            100,
-                                        )}%`
-                                      : null,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" · ")}
-                                </div>
-                              ) : null}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className={cn(adminDataTable.moneyCell, "whitespace-nowrap")}>
-                          <span className="font-semibold text-foreground">
-                            {item.price?.toLocaleString()}원
-                          </span>
-                        </TableCell>
-                        <TableCell className={adminDataTable.cellCenter}>
-                          <ConditionBadge condition={item.condition} />
-                        </TableCell>
-                        <RacketAvailabilityCell item={item} />
-                        <TableCell
-                          className={cn(adminDataTable.stickyActionCell, "w-[150px]")}
-                        >
-                          <div className="flex items-center justify-end gap-1">
-                            <Button asChild size="sm" variant="outline">
-                              <Link href={`/admin/rackets/${item.id}/edit`}>
-                                <Edit className="mr-1.5 h-3.5 w-3.5" />
-                                수정
-                              </Link>
-                            </Button>
-                            <AdminRowActionMenu
-                              ariaLabel={`${item.model || "라켓"} 작업 메뉴 열기`}
-                            >
-                                <DropdownMenuItem asChild className="whitespace-nowrap">
-                                  <Link href={`/rackets/${item.id}`} className="flex items-center">
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    {item.isVisible === false ||
-                                    item.status === "inactive" ||
-                                    item.status === "비노출"
-                                      ? "관리자 미리보기"
-                                      : "상세 보기"}
-                                  </Link>
-                                </DropdownMenuItem>
-                            </AdminRowActionMenu>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+      <AdminListTable
+        title="라켓 목록"
+        viewLabel={currentViewLabel}
+        resultLabel={
+          hasDataError
+            ? "불러오기 실패"
+            : hasResolvedData
+              ? `총 ${filteredItems.length.toLocaleString("ko-KR")}개`
+              : "불러오는 중…"
+        }
+        description="라켓 기본 정보, 등급과 노출 속성, 가격, 판매·대여 상태와 관리 작업을 한 행에서 확인합니다."
+        columnsClassName={RACKET_LIST_COLUMNS}
+        ariaLabel="라켓 관리 목록"
+      >
+        <AdminListColumnHeader columnsClassName={RACKET_LIST_COLUMNS}>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            라켓
           </div>
-        </CardContent>
-      </Card>
+
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            등급 / 노출
+          </div>
+
+          <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
+            가격
+          </div>
+
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            판매·대여 / 재고
+          </div>
+
+          <div role="columnheader" className="min-w-0 px-2 py-2.5 text-right">
+            작업
+          </div>
+        </AdminListColumnHeader>
+
+        <AdminListBody>
+          {hasDataError ? (
+            <AdminListRow columnsClassName={RACKET_LIST_COLUMNS} ariaLabel="라켓 목록 오류">
+              <AdminListCell className="col-span-5 py-10 text-center text-destructive">
+                {commonErrorMessage ?? "라켓 목록을 불러오지 못했습니다."}
+              </AdminListCell>
+            </AdminListRow>
+          ) : isLoading ? (
+            Array.from({ length: 6 }).map((_, rowIdx) => (
+              <AdminListRow
+                key={`admin-rackets-loading-row-${rowIdx}`}
+                columnsClassName={RACKET_LIST_COLUMNS}
+                ariaLabel="라켓 목록 불러오는 중"
+              >
+                <AdminListCell>
+                  <Skeleton className="h-14 w-full" />
+                </AdminListCell>
+
+                <AdminListCell>
+                  <Skeleton className="h-14 w-full" />
+                </AdminListCell>
+
+                <AdminListCell align="end">
+                  <Skeleton className="h-7 w-24" />
+                </AdminListCell>
+
+                <AdminListCell>
+                  <Skeleton className="h-14 w-full" />
+                </AdminListCell>
+
+                <AdminListCell align="end" className="px-2">
+                  <Skeleton className="h-7 w-24" />
+                </AdminListCell>
+              </AdminListRow>
+            ))
+          ) : !filteredItems.length ? (
+            <AdminListRow columnsClassName={RACKET_LIST_COLUMNS} ariaLabel="라켓 목록 없음">
+              <AdminListCell className="col-span-5 py-16 text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <Search className="h-8 w-8 text-muted-foreground/50" />
+                  <p className={adminTypography.body}>
+                    {hasActiveTableFilter
+                      ? "현재 조건에 맞는 라켓이 없습니다."
+                      : "등록된 라켓이 없습니다."}
+                  </p>
+                </div>
+              </AdminListCell>
+            </AdminListRow>
+          ) : (
+            filteredItems.map((item) => {
+              const regularPrice = Math.max(0, Number(item.price ?? 0));
+              const salePrice = Math.max(0, Number(item.marketing?.salePrice ?? 0));
+              const isFeatured = item.marketing?.isFeatured === true;
+              const isNew = item.marketing?.isNew === true;
+
+              const hasValidSale =
+                item.marketing?.isSale === true && salePrice > 0 && salePrice < regularPrice;
+
+              const hasExposureLabel = isFeatured || isNew || hasValidSale;
+
+              const isHidden =
+                item.isVisible === false || item.status === "inactive" || item.status === "비노출";
+
+              const thumbnail = item.images?.find(
+                (image) => typeof image === "string" && image.trim().length > 0,
+              );
+
+              return (
+                <AdminListRow
+                  key={item.id}
+                  columnsClassName={RACKET_LIST_COLUMNS}
+                  ariaLabel={`${racketBrandLabel(item.brand)} ${item.model} 라켓`}
+                >
+                  <AdminListCell>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md border border-border bg-muted/30">
+                        <Image
+                          src={thumbnail ?? "/placeholder.svg"}
+                          alt={thumbnail ? `${item.model} 라켓 이미지` : "라켓 이미지 없음"}
+                          fill
+                          sizes="44px"
+                          className="object-cover"
+                        />
+                      </div>
+
+                      <AdminListPrimary title={racketBrandLabel(item.brand)} meta={item.model} />
+                    </div>
+                  </AdminListCell>
+
+                  <AdminListCell>
+                    <div className="min-w-0 space-y-1.5">
+                      <ConditionBadge condition={item.condition} />
+
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        {isFeatured ? <SemanticBadge tone="brand">추천</SemanticBadge> : null}
+
+                        {isNew ? <SemanticBadge tone="info">신상품</SemanticBadge> : null}
+
+                        {hasValidSale ? <SemanticBadge tone="danger">할인</SemanticBadge> : null}
+
+                        {!hasExposureLabel ? (
+                          <span className={adminTypography.caption}>기본 노출</span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </AdminListCell>
+
+                  <AdminListCell align="end">
+                    <AdminMoneyBlock
+                      amount={`${(hasValidSale ? salePrice : regularPrice).toLocaleString(
+                        "ko-KR",
+                      )}원`}
+                      meta={
+                        hasValidSale ? `정가 ${regularPrice.toLocaleString("ko-KR")}원` : undefined
+                      }
+                    />
+                  </AdminListCell>
+
+                  <AdminListCell>
+                    <RacketAvailabilityContent item={item} />
+                  </AdminListCell>
+
+                  <AdminListCell align="end" className="px-2">
+                    <AdminRowActions>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/admin/rackets/${item.id}/edit`}>수정</Link>
+                      </Button>
+
+                      <AdminRowActionMenu ariaLabel={`${item.model || "라켓"} 작업 메뉴 열기`}>
+                        <DropdownMenuItem asChild className="whitespace-nowrap">
+                          <Link href={`/rackets/${item.id}`}>
+                            {isHidden ? "관리자 미리보기" : "상세 보기"}
+                          </Link>
+                        </DropdownMenuItem>
+                      </AdminRowActionMenu>
+                    </AdminRowActions>
+                  </AdminListCell>
+                </AdminListRow>
+              );
+            })
+          )}
+        </AdminListBody>
+      </AdminListTable>
     </AdminPageShell>
   );
 }
