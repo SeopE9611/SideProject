@@ -1,38 +1,49 @@
 "use client";
 
-import type React from "react";
-
 import { useDebouncedValue } from "@/app/admin/packages/_hooks/useDebouncedValue";
 import {
   DEFAULT_PACKAGE_LIST_FILTERS,
   badgeSizeCls,
-  getAdminPackagePaymentLabel,
-  getAdminPackageUsageLabel,
+  getAdminPackageActivationBadgeSpec,
   getAdminPackageActivationLabel,
   getAdminPackageAttentionReasonLabel,
+  getAdminPackagePaymentLabel,
   getAdminPackageUsageBadgeSpec,
-  getAdminPackageActivationBadgeSpec,
-  getAdminPackageAttentionBadgeSpec,
-  type PackageListItem,
-  type PackageType,
-  type PackagesResponse,
-  type PackageUsageFilter,
-  type PackagePaymentFilter,
+  getAdminPackageUsageLabel,
   type PackageActivationFilter,
   type PackageAttentionFilter,
+  type PackageListItem,
+  type PackagePaymentFilter,
+  type PackageSortValue,
+  type PackageType,
+  type PackageUsageFilter,
+  type PackagesResponse,
   type ServiceType,
   type SortKey,
-  type PackageSortValue,
 } from "@/app/admin/packages/_lib/packagesPageConfig";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import AdminPageShell from "@/components/admin/AdminPageShell";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminMoneyBlock,
+  AdminRowActions,
+  AdminStatusGroup,
+} from "@/components/admin/AdminListTable";
+
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
-import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -42,14 +53,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
@@ -74,11 +77,10 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import useSWR from "swr";
-
 const PAYMENT_CHECK_PRESET = "payment-check" as const;
+const PACKAGE_LIST_COLUMNS =
+  "grid-cols-[minmax(240px,1.15fr)_minmax(300px,1.35fr)_minmax(240px,1fr)_130px_52px]";
 type PackagePresetFilter = typeof PAYMENT_CHECK_PRESET | null;
-
-
 
 export default function PackageOrdersClient() {
   const router = useRouter();
@@ -436,8 +438,6 @@ export default function PackageOrdersClient() {
     setPage(Math.min(totalPages, Math.max(1, p)));
   };
 
-
-
   // 날짜 포맷터
   const formatDate = (v?: string | number | Date | null) => {
     const d = toDateSafe(v);
@@ -609,8 +609,6 @@ export default function PackageOrdersClient() {
       ? "결제/활성화 확인"
       : "사용자 지정 조건";
 
-  const tdClasses = cn(adminDataTable.cellTop, "leading-tight");
-
   const sortOptions: Array<{ value: PackageSortValue; label: string }> = [
     { value: "default", label: "기본 정렬" },
     { value: "customer", label: "고객" },
@@ -625,8 +623,6 @@ export default function PackageOrdersClient() {
     { value: "attention", label: "운영 확인" },
     { value: "price", label: "금액" },
   ];
-
-
 
   return (
     <AdminPageShell variant="wide" className="py-6">
@@ -748,7 +744,9 @@ export default function PackageOrdersClient() {
               type="button"
               size="sm"
               variant={
-                usageFilter === "available" && paymentFilter === "paid" && attentionFilter === "clear"
+                usageFilter === "available" &&
+                paymentFilter === "paid" &&
+                attentionFilter === "clear"
                   ? "default"
                   : "outline"
               }
@@ -790,7 +788,13 @@ export default function PackageOrdersClient() {
         }
         actions={
           <>
-            <Button type="button" variant="outline" size="sm" className="h-9" onClick={resetFilters}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={resetFilters}
+            >
               필터 초기화
             </Button>
             <Button asChild variant="outline" size="sm" className="h-9">
@@ -987,302 +991,373 @@ export default function PackageOrdersClient() {
         </div>
       </AdminFilterBar>
 
-      {/* 패키지 목록 테이블 */}
-      <Card className={adminSurface.tableCard}>
-        <CardHeader>
-          <div className="flex min-w-0 gap-2 flex-row items-center justify-between">
-            <CardTitle>패키지 목록</CardTitle>
-            <p className="text-sm text-muted-foreground" aria-live="polite">
-              총 {hasResolvedTotal && totalCount !== null ? totalCount : "-"}
-              개의 패키지
-            </p>
+      {/* 패키지 목록 */}
+      <AdminListTable
+        title="패키지 목록"
+        viewLabel={currentViewLabel}
+        resultLabel={
+          hasResolvedTotal && totalCount !== null
+            ? `총 ${totalCount.toLocaleString("ko-KR")}건`
+            : "불러오는 중…"
+        }
+        description="고객, 이용 횟수와 기간, 결제·활성화 상태, 금액과 상세 이동을 한 행에서 확인합니다."
+        columnsClassName={PACKAGE_LIST_COLUMNS}
+        ariaLabel="패키지 관리 목록"
+      >
+        <AdminListColumnHeader columnsClassName={PACKAGE_LIST_COLUMNS}>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            패키지 / 고객
           </div>
-        </CardHeader>
-        <CardContent className="relative px-4">
-          <div className="relative max-h-[70vh] min-w-0 overflow-x-auto overflow-y-auto rounded-lg border border-border">
-            <Table
-              className="min-w-[1040px] table-fixed"
-              aria-busy={isValidating && !shouldShowRows}
-            >
-              <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
-                <TableRow>
-                  <TableHead className={cn(adminDataTable.head, "w-[250px]")}>패키지/고객</TableHead>
-                  <TableHead className={cn(adminDataTable.headCenter, "w-[150px]")}>이용 현황</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[170px]")}>기간</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[150px]")}>결제/활성화</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[130px]")}>운영 확인</TableHead>
-                  <TableHead className={cn(adminDataTable.headRight, "w-[110px]")}>금액</TableHead>
-                  <TableHead
-                    className={cn(adminDataTable.stickyActionHead, "top-0 w-[96px]")}
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            이용 / 기간
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            상태 / 운영 확인
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
+            금액
+          </div>
+          <div role="columnheader" className="min-w-0 px-2 py-2.5 text-right">
+            작업
+          </div>
+        </AdminListColumnHeader>
+
+        <AdminListBody>
+          {!hasDataError && isValidating && !shouldShowRows
+            ? Array.from({ length: 6 }).map((_, rowIdx) => (
+                <AdminListRow
+                  key={`admin-packages-loading-row-${rowIdx}`}
+                  columnsClassName={PACKAGE_LIST_COLUMNS}
+                  ariaLabel="패키지 목록 불러오는 중"
+                >
+                  <AdminListCell>
+                    <Skeleton className="h-14 w-full" />
+                  </AdminListCell>
+                  <AdminListCell>
+                    <Skeleton className="h-14 w-full" />
+                  </AdminListCell>
+                  <AdminListCell>
+                    <Skeleton className="h-14 w-full" />
+                  </AdminListCell>
+                  <AdminListCell align="end">
+                    <Skeleton className="h-7 w-24" />
+                  </AdminListCell>
+                  <AdminListCell align="end" className="px-2">
+                    <Skeleton className="h-7 w-7" />
+                  </AdminListCell>
+                </AdminListRow>
+              ))
+            : null}
+
+          {shouldShowRows
+            ? packages!.map((pkg) => {
+                const hasSessionCounts =
+                  typeof pkg.usedSessions === "number" &&
+                  Number.isFinite(pkg.usedSessions) &&
+                  typeof pkg.remainingSessions === "number" &&
+                  Number.isFinite(pkg.remainingSessions);
+                const progressPercentage =
+                  typeof pkg.progressPercent === "number" && Number.isFinite(pkg.progressPercent)
+                    ? Math.round(pkg.progressPercent)
+                    : null;
+                const usageLabel = getAdminPackageUsageLabel(pkg.usageState);
+                const paymentLabel = getAdminPackagePaymentLabel(pkg.paymentState);
+                const activationLabel = getAdminPackageActivationLabel(pkg.activationState);
+                const reasonLabels = pkg.attentionReasons.map(getAdminPackageAttentionReasonLabel);
+                const rawName = pkg.customer?.name ?? "이름없음";
+                const isGuest = /\(비회원\)\s*$/.test(rawName);
+                const displayName = rawName.replace(/\s*\(비회원\)\s*$/, "");
+                const { date: purchaseDate, time: purchaseTime } = formatDateSplit(
+                  pkg.purchaseDate,
+                );
+                const expiryStatusLabel = !pkg.hasIssuedPass
+                  ? null
+                  : !pkg.expiryDate
+                    ? "만료일 확인 필요"
+                    : pkg.usageState === "expired"
+                      ? "만료됨"
+                      : pkg.isExpirySoon && typeof pkg.daysUntilExpiry === "number"
+                        ? `${pkg.daysUntilExpiry}일 남음`
+                        : null;
+                const paymentBadge = getPaymentStatusBadgeSpec(paymentLabel);
+
+                return (
+                  <AdminListRow
+                    key={pkg.id}
+                    columnsClassName={PACKAGE_LIST_COLUMNS}
+                    ariaLabel={`${displayName} ${pkg.packageType} 패키지`}
                   >
-                    조치
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
+                    <AdminListCell>
+                      <AdminListPrimary
+                        title={
+                          <span>
+                            {displayName}
+                            {isGuest ? (
+                              <span className={cn(adminTypography.caption, "ml-1")}>(비회원)</span>
+                            ) : null}
+                          </span>
+                        }
+                        meta={
+                          <>
+                            <span>
+                              {pkg.packageType}
+                              {pkg.serviceType ? ` · ${pkg.serviceType}` : ""}
+                            </span>
+                            <span className="font-mono">
+                              ID {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
+                            </span>
+                          </>
+                        }
+                        supporting={
+                          <AdminReferencePopover
+                            title={`${displayName} 연락처·패키지 참조`}
+                            trigger={
+                              <button type="button" className={adminDataTable.referenceTrigger}>
+                                연락처·패키지 참조 보기
+                              </button>
+                            }
+                            items={[
+                              {
+                                label: "패키지 ID",
+                                value: pkg.id,
+                                copyValue: pkg.id,
+                              },
+                              {
+                                label: "이메일",
+                                value: pkg.customer?.email,
+                                copyValue: pkg.customer?.email || undefined,
+                              },
+                              {
+                                label: "전화번호",
+                                value: pkg.customer?.phone,
+                                copyValue: pkg.customer?.phone || undefined,
+                              },
+                              { label: "패키지", value: pkg.packageType },
+                              { label: "서비스", value: pkg.serviceType },
+                            ]}
+                          />
+                        }
+                      />
+                    </AdminListCell>
 
-              <TableBody>
-                {!hasDataError && isValidating && !shouldShowRows && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="py-4">
-                      <div className="space-y-2">
-                        {Array.from({ length: 6 }).map((_, rowIdx) => (
-                          <div
-                            key={`admin-packages-loading-row-${rowIdx}`}
-                            className="grid grid-cols-7 gap-2"
-                          >
-                            {Array.from({ length: 7 }).map((__, colIdx) => (
-                              <Skeleton
-                                key={`admin-packages-loading-cell-${rowIdx}-${colIdx}`}
-                                className="h-7 w-full"
-                              />
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-
-                {/** 빈 상태 */}
-                {shouldShowEmptyState && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="py-12">
-                      <div className="flex flex-col items-center gap-3 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <Search className="h-8 w-8 text-muted-foreground/50" />
-                          <p className="text-sm text-muted-foreground">
-                            불러올 패키지 목록이 없습니다.
+                    <AdminListCell>
+                      <div className="min-w-0 space-y-2">
+                        <div className="space-y-1">
+                          <p className={adminTypography.tablePrimary}>
+                            {!pkg.hasIssuedPass || !hasSessionCounts
+                              ? "-"
+                              : `${pkg.remainingSessions}회 / ${
+                                  pkg.usedSessions! + pkg.remainingSessions!
+                                }회`}
                           </p>
-                        </div>
-
-                        <div className="mt-2 flex items-center gap-2">
-                          {/* 필터 초기화 (URL 쿼리도 정리) */}
-                          {hasAnyFilter && (
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                resetFilters(); // state 초기화
-                                router.replace(pathname); // URL 쿼리 제거
-                              }}
-                            >
-                              필터 초기화
-                            </Button>
+                          {!pkg.hasIssuedPass ? (
+                            <p className={adminTypography.caption}>패스 미발급</p>
+                          ) : !hasSessionCounts || progressPercentage === null ? (
+                            <p className={adminTypography.caption}>횟수 정보 확인 필요</p>
+                          ) : (
+                            <div className="flex min-w-0 items-center gap-2">
+                              <div
+                                className="h-1.5 w-24 shrink-0 rounded-full bg-muted"
+                                role="progressbar"
+                                aria-label="사용 진행률"
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                aria-valuenow={progressPercentage}
+                              >
+                                <div
+                                  className="h-1.5 rounded-full bg-primary"
+                                  style={{ width: `${progressPercentage}%` }}
+                                />
+                              </div>
+                              <span
+                                className={cn(
+                                  adminTypography.meta,
+                                  "whitespace-nowrap tabular-nums",
+                                )}
+                              >
+                                사용 진행 {progressPercentage}%
+                              </span>
+                            </div>
                           )}
                         </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
 
-                {/** 정상 렌더 */}
-                {shouldShowRows && (
-                  <>
-                    {packages!.map((pkg) => {
-                      const hasSessionCounts =
-                        typeof pkg.usedSessions === "number" &&
-                        Number.isFinite(pkg.usedSessions) &&
-                        typeof pkg.remainingSessions === "number" &&
-                        Number.isFinite(pkg.remainingSessions);
-                      const progressPercentage =
-                        typeof pkg.progressPercent === "number" &&
-                        Number.isFinite(pkg.progressPercent)
-                          ? Math.round(pkg.progressPercent)
-                          : null;
-                      const usageLabel = getAdminPackageUsageLabel(pkg.usageState);
-                      const paymentLabel = getAdminPackagePaymentLabel(pkg.paymentState);
-                      const activationLabel = getAdminPackageActivationLabel(pkg.activationState);
-                      const reasonLabels = pkg.attentionReasons.map(
-                        getAdminPackageAttentionReasonLabel,
-                      );
-                      const rawName = pkg.customer?.name ?? "이름없음";
-                      const isGuest = /\(비회원\)\s*$/.test(rawName);
-                      const displayName = rawName.replace(/\s*\(비회원\)\s*$/, "");
-
-                      return (
-                        // 라이트/다크 줄 배경 토큰 통일
-                        <TableRow
-                          key={pkg.id}
-                          className={adminDataTable.row}
-                        >
-                          <TableCell className={tdClasses}>
-                            <div className={adminDataTable.cellStack}>
-                              <p className={adminDataTable.primaryLine}>
-                                {displayName}
-                                {isGuest ? (
-                                  <span className={cn(adminTypography.caption, "ml-1")}>(비회원)</span>
-                                ) : null}
-                              </p>
-                              <p className={adminDataTable.categoryText}>
-                                {pkg.packageType}
-                                {pkg.serviceType ? ` · ${pkg.serviceType}` : ""}
-                              </p>
-                              <span className={cn(adminDataTable.secondaryLine, "font-mono")}>
-                                {pkg.id.slice(0, 6)}…{pkg.id.slice(-4)}
-                              </span>
-                              <AdminReferencePopover
-                                title={`${displayName} 패키지 참조`}
-                                trigger={
-                                  <button type="button" className={adminDataTable.referenceTrigger}>
-                                    참조 정보
-                                  </button>
+                        <div className="space-y-1">
+                          <p className={adminTypography.meta}>
+                            구매 {purchaseDate}
+                            {purchaseTime ? ` ${purchaseTime}` : ""} · 만료{" "}
+                            {!pkg.hasIssuedPass || !pkg.expiryDate
+                              ? "-"
+                              : formatDateCompact(pkg.expiryDate)}
+                          </p>
+                          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                            <Badge
+                              {...getAdminPackageUsageBadgeSpec(pkg.usageState)}
+                              className={cn("whitespace-nowrap font-medium", badgeSizeCls)}
+                              aria-label={`이용권 상태 ${usageLabel}`}
+                            >
+                              {usageLabel}
+                            </Badge>
+                            {expiryStatusLabel ? (
+                              <span
+                                className={
+                                  pkg.usageState === "expired" || pkg.isExpirySoon
+                                    ? adminDataTable.attentionText
+                                    : adminDataTable.secondaryText
                                 }
-                                items={[
-                                  { label: "패키지 ID", value: pkg.id, copyValue: pkg.id },
-                                  {
-                                    label: "이메일",
-                                    value: pkg.customer?.email,
-                                    copyValue: pkg.customer?.email || undefined,
-                                  },
-                                  { label: "패키지", value: pkg.packageType },
-                                  { label: "서비스", value: pkg.serviceType },
-                                ]}
-                              />
-                            </div>
-                          </TableCell>
+                              >
+                                {expiryStatusLabel}
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    </AdminListCell>
 
-                          <TableCell className={cn(tdClasses, "text-center")}>
-                            <p className="text-sm font-bold tabular-nums">
-                              {!pkg.hasIssuedPass || !hasSessionCounts ? "-" : `${pkg.remainingSessions}회 / ${pkg.usedSessions! + pkg.remainingSessions!}회`}
-                            </p>
-                            {!pkg.hasIssuedPass ? (
-                              <p className={adminTypography.caption}>패스 미발급</p>
-                            ) : !hasSessionCounts || progressPercentage === null ? (
-                              <p className={adminTypography.caption}>횟수 정보 확인 필요</p>
-                            ) : (
-                              <div className="mt-2 flex flex-col items-center gap-1">
-                                <div className="h-1.5 w-24 rounded-full bg-muted" role="progressbar" aria-label="진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercentage}>
-                                  <div className="h-1.5 rounded-full bg-primary" style={{ width: `${progressPercentage}%` }} />
-                                </div>
-                                <span className={cn(adminTypography.meta, "tabular-nums")}>{progressPercentage}%</span>
-                              </div>
-                            )}
-                          </TableCell>
+                    <AdminListCell>
+                      <AdminStatusGroup
+                        primary={
+                          <>
+                            <Badge
+                              variant={paymentBadge.variant}
+                              className={cn("whitespace-nowrap font-medium", badgeSizeCls)}
+                              aria-label={`결제 상태 ${paymentLabel}`}
+                            >
+                              {paymentLabel}
+                            </Badge>
+                            <Badge
+                              {...getAdminPackageActivationBadgeSpec(pkg.activationState)}
+                              className={cn("whitespace-nowrap font-medium", badgeSizeCls)}
+                              aria-label={`활성화 상태 ${activationLabel}`}
+                            >
+                              {activationLabel}
+                            </Badge>
+                          </>
+                        }
+                        secondary={pkg.requiresAttention ? undefined : "운영 확인 이상 없음"}
+                        alert={
+                          pkg.requiresAttention ? reasonLabels[0] || "사유 확인 필요" : undefined
+                        }
+                      />
+                    </AdminListCell>
 
-                          <TableCell className={tdClasses}>
-                            {(() => {
-                              const { date, time } = formatDateSplit(pkg.purchaseDate);
-                              return <div className="space-y-1">
-                                <p className={adminTypography.meta}>구매 {date} {time}</p>
-                                <p className={adminTypography.meta}>만료 {!pkg.hasIssuedPass || !pkg.expiryDate ? "-" : formatDateCompact(pkg.expiryDate)}</p>
-                                <p className={adminTypography.caption}>{!pkg.hasIssuedPass ? "미발급" : !pkg.expiryDate ? "만료일 확인 필요" : pkg.usageState === "expired" ? "만료됨" : pkg.isExpirySoon && typeof pkg.daysUntilExpiry === "number" ? `${pkg.daysUntilExpiry}일 남음` : ""}</p>
-                                <Badge {...getAdminPackageUsageBadgeSpec(pkg.usageState)} className={cn("whitespace-nowrap font-medium", badgeSizeCls)} aria-label={`이용권 상태 ${usageLabel}`}>{usageLabel}</Badge>
-                              </div>;
-                            })()}
-                          </TableCell>
+                    <AdminListCell align="end">
+                      <AdminMoneyBlock
+                        amount={pkg.price === null ? "-" : formatCurrency(pkg.price)}
+                      />
+                    </AdminListCell>
 
-                          <TableCell className={tdClasses}>
-                            <div className="flex flex-col items-start gap-2">
-                              {(() => {
-                                const pay = getPaymentStatusBadgeSpec(paymentLabel);
-                                return <Badge variant={pay.variant} className={cn("whitespace-nowrap font-medium", badgeSizeCls)} aria-label={`결제 상태 ${paymentLabel}`}>{paymentLabel}</Badge>;
-                              })()}
-                              <Badge {...getAdminPackageActivationBadgeSpec(pkg.activationState)} className={cn("whitespace-nowrap font-medium", badgeSizeCls)} aria-label={`활성화 상태 ${activationLabel}`}>{activationLabel}</Badge>
-                            </div>
-                          </TableCell>
+                    <AdminListCell align="end" className="px-2">
+                      <AdminRowActions>
+                        <AdminRowActionMenu ariaLabel={`${displayName} 패키지 관리 메뉴`}>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/packages/${pkg.id}`}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              상세보기
+                            </Link>
+                          </DropdownMenuItem>
+                        </AdminRowActionMenu>
+                      </AdminRowActions>
+                    </AdminListCell>
+                  </AdminListRow>
+                );
+              })
+            : null}
 
-                          <TableCell className={tdClasses}>
-                            {pkg.requiresAttention ? (
-                              <div className={adminDataTable.cellStack}>
-                                <Badge
-                                  {...getAdminPackageAttentionBadgeSpec(true)}
-                                  className={cn("w-fit whitespace-nowrap font-medium", badgeSizeCls)}
-                                  aria-label={`운영 확인 필요: ${reasonLabels.length ? reasonLabels.join(", ") : "운영 확인 사유 미확인"}`}
-                                >
-                                  확인 필요
-                                </Badge>
-                                <p className={adminDataTable.attentionText}>
-                                  {reasonLabels[0] || "사유 확인 필요"}
-                                </p>
-                              </div>
-                            ) : (
-                              <span className={adminDataTable.secondaryText}>이상 없음</span>
-                            )}
-                          </TableCell>
+          {shouldShowEmptyState ? (
+            <AdminListRow columnsClassName={PACKAGE_LIST_COLUMNS} ariaLabel="패키지 목록 없음">
+              <AdminListCell className="col-span-5 py-12 text-center">
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Search className="h-8 w-8 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">불러올 패키지 목록이 없습니다.</p>
+                  </div>
 
-                          <TableCell className={cn(tdClasses, "text-right")}>
-                            <span className="whitespace-nowrap text-sm font-semibold tabular-nums">
-                              {pkg.price === null ? "-" : formatCurrency(pkg.price)}
-                            </span>
-                          </TableCell>
+                  {hasAnyFilter ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        resetFilters();
+                        router.replace(pathname);
+                      }}
+                    >
+                      필터 초기화
+                    </Button>
+                  ) : null}
+                </div>
+              </AdminListCell>
+            </AdminListRow>
+          ) : null}
+        </AdminListBody>
 
-                          <TableCell className={cn(adminDataTable.stickyActionCell, "w-[96px]")}>
-                            <Button asChild variant="ghost" size="sm" className="h-8 whitespace-nowrap">
-                              <Link href={`/admin/packages/${pkg.id}`} aria-label={`${pkg.customer?.name || pkg.id} 패키지 상세 보기`}>
-                                <Eye className="mr-2 h-4 w-4" />상세
-                              </Link>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </>
+        <div role="rowgroup" className="border-t border-border">
+          <div role="row">
+            <div
+              role="cell"
+              aria-colspan={5}
+              className="flex flex-wrap items-center justify-center gap-1 px-4 py-3"
+            >
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 bg-transparent"
+                onClick={() => goToPage(1)}
+                disabled={!totalPages || page <= 1}
+                aria-label="첫 페이지"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 bg-transparent"
+                onClick={() => goToPage(page - 1)}
+                disabled={!totalPages || page <= 1}
+                aria-label="이전"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {shouldRenderPaginationNumbers &&
+                pageItems.map((it, idx) =>
+                  typeof it === "number" ? (
+                    <Button
+                      key={idx}
+                      variant={it === page ? "default" : "outline"}
+                      className="h-9 min-w-9 px-3"
+                      aria-current={it === page ? "page" : undefined}
+                      onClick={() => goToPage(it)}
+                    >
+                      {it}
+                    </Button>
+                  ) : (
+                    <span key={idx} className="select-none px-2 text-muted-foreground">
+                      …
+                    </span>
+                  ),
                 )}
-              </TableBody>
-            </Table>
-          </div>
-            {/* pagination */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-1 pb-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 bg-transparent"
-                  onClick={() => goToPage(1)}
-                  disabled={!totalPages || page <= 1}
-                  aria-label="첫 페이지"
-                >
-                  <ChevronsLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 bg-transparent"
-                  onClick={() => goToPage(page - 1)}
-                  disabled={!totalPages || page <= 1}
-                  aria-label="이전"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                {shouldRenderPaginationNumbers &&
-                  pageItems.map((it, idx) =>
-                    typeof it === "number" ? (
-                      <Button
-                        key={idx}
-                        variant={it === page ? "default" : "outline"}
-                        className="h-9 min-w-9 px-3"
-                        aria-current={it === page ? "page" : undefined}
-                        onClick={() => goToPage(it)}
-                      >
-                        {it}
-                      </Button>
-                    ) : (
-                      <span key={idx} className="px-2 text-muted-foreground select-none">
-                        …
-                      </span>
-                    ),
-                  )}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 bg-transparent"
-                  onClick={() => goToPage(page + 1)}
-                  disabled={!totalPages || page >= totalPages}
-                  aria-label="다음"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-9 w-9 bg-transparent"
-                  onClick={() => goToPage(totalPages ?? page)}
-                  disabled={!totalPages || page >= totalPages}
-                  aria-label="끝 페이지"
-                >
-                  <ChevronsRight className="h-4 w-4" />
-                </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 bg-transparent"
+                onClick={() => goToPage(page + 1)}
+                disabled={!totalPages || page >= totalPages}
+                aria-label="다음"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 bg-transparent"
+                onClick={() => goToPage(totalPages ?? page)}
+                disabled={!totalPages || page >= totalPages}
+                aria-label="끝 페이지"
+              >
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
             </div>
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      </AdminListTable>
     </AdminPageShell>
   );
 }
