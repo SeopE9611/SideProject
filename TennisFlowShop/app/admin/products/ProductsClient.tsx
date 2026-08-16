@@ -2,6 +2,9 @@
 
 import {
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CheckCircle,
   CheckCircle2,
   Package,
@@ -22,16 +25,25 @@ import useSWR from "swr";
 import BrandFilter from "@/app/admin/products/product-filters/BrandFilter";
 import MaterialFilter from "@/app/admin/products/product-filters/MaterialFilter";
 import StockStatusFilter from "@/app/admin/products/product-filters/StockStatusFilter";
-import { adminDataTable } from "@/components/admin/AdminDataTable";
-import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
-import { AdminSortableTableHead } from "@/components/admin/AdminSortableTableHead";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminMoneyBlock,
+  AdminRowActions,
+  AdminStatusGroup,
+} from "@/components/admin/AdminListTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,14 +54,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
@@ -73,7 +77,14 @@ type Product = {
   price: number;
   images?: string[];
   isVisible?: boolean;
-  inventory?: { stock: number; lowStock?: number };
+  inventory?: {
+    stock: number;
+    lowStock?: number;
+    isFeatured?: boolean;
+    isNew?: boolean;
+    isSale?: boolean;
+    salePrice?: number;
+  };
   computedStatus?: StatusKey;
 };
 
@@ -81,7 +92,10 @@ const STATUS_KEYS = ["active", "low_stock", "out_of_stock"] as const;
 type StatusKey = (typeof STATUS_KEYS)[number];
 
 // 상태 매핑(아이콘+색)
-const STATUS_UI: Record<StatusKey, { label: string; tone: BadgeSemanticTone; Icon: React.ElementType }> = {
+const STATUS_UI: Record<
+  StatusKey,
+  { label: string; tone: BadgeSemanticTone; Icon: React.ElementType }
+> = {
   active: {
     label: "판매중",
     tone: "success",
@@ -114,6 +128,9 @@ const MATERIAL_OPTIONS = STRING_MATERIALS.map(({ value, label }) => ({
 const brandLabel = stringBrandLabel;
 const materialLabel = stringMaterialLabel;
 
+const PRODUCT_LIST_COLUMNS =
+  "grid-cols-[minmax(280px,1.35fr)_minmax(210px,1fr)_130px_minmax(180px,0.85fr)_116px]";
+
 // 입력 디바운스
 function useDebounce<T>(value: T, delay = 250): T {
   const [debounced, setDebounced] = useState(value);
@@ -140,7 +157,6 @@ export default function ProductsClient() {
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
   const [pendingDeleteProductId, setPendingDeleteProductId] = useState<string | null>(null);
-  const ROW_PX = 56; // 한 행 높이를 56px = h-14 로 고정
 
   // 허용되는 정렬 필드(서버 allowMap과 일치시켜야 함)
   type SortField = "name" | "brand" | "gauge" | "material" | "price" | "stock" | "createdAt";
@@ -340,9 +356,6 @@ export default function ProductsClient() {
 
   return (
     <AdminPageShell variant="wide" className="space-y-4">
-      {commonErrorMessage && (
-        <div className="text-center text-destructive">{commonErrorMessage}</div>
-      )}
       <AdminPageHeader
         variant="compact"
         title="상품 관리"
@@ -414,68 +427,68 @@ export default function ProductsClient() {
         quickFilters={
           <>
             <span className={cn("mr-1 font-semibold", adminTypography.metaMuted)}>빠른 보기</span>
-          <Button
-            type="button"
-            size="sm"
-            variant={!hasActiveTableFilter ? "default" : "outline"}
-            onClick={resetFilters}
-          >
-            전체
-          </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={!hasActiveTableFilter ? "default" : "outline"}
+              onClick={resetFilters}
+            >
+              전체
+            </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            variant={currentViewLabel === "판매 중" ? "default" : "outline"}
-            onClick={() => applyQuickView({ status: "active" })}
-          >
-            판매 중
-          </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "판매 중" ? "default" : "outline"}
+              onClick={() => applyQuickView({ status: "active" })}
+            >
+              판매 중
+            </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            variant={currentViewLabel === "재고 부족" ? "default" : "outline"}
-            onClick={() => applyQuickView({ status: "low_stock" })}
-          >
-            재고 부족
-          </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "재고 부족" ? "default" : "outline"}
+              onClick={() => applyQuickView({ status: "low_stock" })}
+            >
+              재고 부족
+            </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            variant={currentViewLabel === "품절" ? "default" : "outline"}
-            onClick={() => applyQuickView({ status: "out_of_stock" })}
-          >
-            품절
-          </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "품절" ? "default" : "outline"}
+              onClick={() => applyQuickView({ status: "out_of_stock" })}
+            >
+              품절
+            </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            variant={currentViewLabel === "추천 상품" ? "default" : "outline"}
-            onClick={() => applyQuickView({ exposure: "featured" })}
-          >
-            추천 상품
-          </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "추천 상품" ? "default" : "outline"}
+              onClick={() => applyQuickView({ exposure: "featured" })}
+            >
+              추천 상품
+            </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            variant={currentViewLabel === "신상품" ? "default" : "outline"}
-            onClick={() => applyQuickView({ exposure: "new" })}
-          >
-            신상품
-          </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "신상품" ? "default" : "outline"}
+              onClick={() => applyQuickView({ exposure: "new" })}
+            >
+              신상품
+            </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            variant={currentViewLabel === "할인 상품" ? "default" : "outline"}
-            onClick={() => applyQuickView({ exposure: "sale" })}
-          >
-            할인 상품
-          </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "할인 상품" ? "default" : "outline"}
+              onClick={() => applyQuickView({ exposure: "sale" })}
+            >
+              할인 상품
+            </Button>
           </>
         }
         actions={
@@ -496,7 +509,10 @@ export default function ProductsClient() {
             <>
               <span className="font-medium text-foreground/80">적용 중</span>
               {activeFilterLabels.map((label) => (
-                <span key={label} className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
+                <span
+                  key={label}
+                  className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1"
+                >
                   {label}
                 </span>
               ))}
@@ -528,11 +544,21 @@ export default function ProductsClient() {
                 </Button>
               )}
             </div>
-            <BrandFilter value={brandFilter} onChange={handleBrandFilterChange} options={BRAND_OPTIONS.map((o) => o.id)} />
-            <MaterialFilter value={materialFilter} onChange={handleMaterialFilterChange} options={MATERIAL_OPTIONS.map((o) => o.id)} />
+            <BrandFilter
+              value={brandFilter}
+              onChange={handleBrandFilterChange}
+              options={BRAND_OPTIONS.map((o) => o.id)}
+            />
+            <MaterialFilter
+              value={materialFilter}
+              onChange={handleMaterialFilterChange}
+              options={MATERIAL_OPTIONS.map((o) => o.id)}
+            />
             <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
             <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
-              <SelectTrigger className={cn("h-9 w-full min-w-0", adminTypography.body)}><SelectValue placeholder="노출 유형 전체" /></SelectTrigger>
+              <SelectTrigger className={cn("h-9 w-full min-w-0", adminTypography.body)}>
+                <SelectValue placeholder="노출 유형 전체" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">노출 유형 전체</SelectItem>
                 <SelectItem value="featured">추천 상품</SelectItem>
@@ -547,228 +573,293 @@ export default function ProductsClient() {
         </div>
       </AdminFilterBar>
 
-      <Card className={cn(adminSurface.tableCard, "flex min-h-0 flex-1 flex-col")}>
-        <CardHeader className="shrink-0 border-b border-border bg-muted/30 px-4 py-3">
-          <div className="flex flex-row items-center justify-between space-y-0">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <CardTitle className="text-ui-body font-semibold text-foreground">
-                  스트링 상품 목록
-                </CardTitle>
-                <span className="text-ui-label text-muted-foreground">{currentViewLabel}</span>
-                {activeFilterLabels.length > 0 ? (
-                  <span className="truncate text-ui-label text-muted-foreground">
-                    필터: {activeFilterLabels.join(" / ")}
-                  </span>
-                ) : null}
-              </div>
-              {hasDataError ? (
-                <CardDescription className="text-destructive">
-                  상품 목록을 불러오지 못했습니다.
-                </CardDescription>
-              ) : null}
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              {sort ? (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setSort(null)}>
-                  정렬 해제
-                </Button>
-              ) : null}
-            </div>
+      <AdminListTable
+        title="스트링 상품 목록"
+        viewLabel={currentViewLabel}
+        resultLabel={
+          hasDataError
+            ? "불러오기 실패"
+            : hasResolvedData
+              ? `총 ${total.toLocaleString("ko-KR")}개`
+              : "불러오는 중…"
+        }
+        description="상품 기본 정보, 분류와 노출 속성, 가격, 판매·재고 상태와 관리 작업을 한 행에서 확인합니다."
+        columnsClassName={PRODUCT_LIST_COLUMNS}
+        ariaLabel="스트링 상품 관리 목록"
+        headerActions={
+          sort ? (
+            <Button type="button" variant="ghost" size="sm" onClick={() => setSort(null)}>
+              정렬 해제
+            </Button>
+          ) : null
+        }
+      >
+        <AdminListColumnHeader columnsClassName={PRODUCT_LIST_COLUMNS}>
+          <div
+            role="columnheader"
+            aria-sort={
+              sort?.field === "name" ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5"
+          >
+            <button
+              type="button"
+              aria-label="상품명 정렬"
+              onClick={() => handleSort("name")}
+              className={cn(
+                "inline-flex min-h-8 items-center gap-1 rounded-sm text-left transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sort?.field === "name" && "text-primary",
+              )}
+            >
+              상품
+              {sort?.field === "name" ? (
+                sort.dir === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
+              ) : (
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
           </div>
-        </CardHeader>
 
-        <CardContent className="flex min-h-0 flex-1 flex-col space-y-3 p-4">
-          {/* 테이블 */}
-          <div className="flex-1">
-            <div className="overflow-auto rounded-lg border border-border">
-              <Table className="min-w-[720px] table-fixed">
-                <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
-                  <TableRow className={adminDataTable.row}>
-                    <AdminSortableTableHead
-                      label="스트링 상품"
-                      active={sort?.field === "name"}
-                      direction={sort?.dir ?? "asc"}
-                      align="left"
-                      onSort={() => handleSort("name")}
-                      className={cn(adminDataTable.head, "w-[44%]")}
-                    />
-                    <AdminSortableTableHead
-                      label="가격"
-                      active={sort?.field === "price"}
-                      direction={sort?.dir ?? "asc"}
-                      align="right"
-                      onSort={() => handleSort("price")}
-                      className={cn(adminDataTable.headRight, "w-[16%]")}
-                    />
-                    <AdminSortableTableHead
-                      label="판매 / 재고"
-                      active={sort?.field === "stock"}
-                      direction={sort?.dir ?? "asc"}
-                      align="center"
-                      onSort={() => handleSort("stock")}
-                      className={cn(adminDataTable.headCenter, "w-[20%]")}
-                    />
-                    <TableHead className={cn(adminDataTable.stickyActionHead, "w-[20%]")}>관리</TableHead>
-                  </TableRow>
-                </TableHeader>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            분류 / 옵션
+          </div>
 
-                <TableBody>
-                  {isListLoadingState ? (
-                    <TableRow className="border-0">
-                      <TableCell colSpan={4} className="py-4">
-                        <div className="space-y-2">
-                          {Array.from({ length: 6 }).map((_, rowIdx) => (
-                            <div
-                              key={`admin-products-loading-row-${rowIdx}`}
-                              className="grid grid-cols-4 gap-2"
-                            >
-                              {Array.from({ length: 4 }).map((__, colIdx) => (
-                                <Skeleton
-                                  key={`admin-products-loading-cell-${rowIdx}-${colIdx}`}
-                                  className="h-7 w-full"
-                                />
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : isActualEmptyState ? (
-                    <TableRow className="border-0">
-                      <TableCell colSpan={4} className="py-16 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <Search className="h-8 w-8 text-muted-foreground/50" />
-                          <p className={adminTypography.body}>등록된 상품이 없습니다.</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    items.map((s) => {
-                      const statusKey: StatusKey = (s.computedStatus ?? "active") as StatusKey;
-                      const S = STATUS_UI[statusKey];
-                      const isHidden = s.isVisible === false;
-                      const thumbnail = s.images?.find(
-                        (image) => typeof image === "string" && image.trim().length > 0,
-                      );
-                      return (
-                        <TableRow
-                          key={s._id}
-                          className={adminDataTable.row}
+          <div
+            role="columnheader"
+            aria-sort={
+              sort?.field === "price" ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5 text-right"
+          >
+            <button
+              type="button"
+              aria-label="가격 정렬"
+              onClick={() => handleSort("price")}
+              className={cn(
+                "ml-auto inline-flex min-h-8 items-center justify-end gap-1 rounded-sm text-right transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sort?.field === "price" && "text-primary",
+              )}
+            >
+              가격
+              {sort?.field === "price" ? (
+                sort.dir === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
+              ) : (
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+
+          <div
+            role="columnheader"
+            aria-sort={
+              sort?.field === "stock" ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5"
+          >
+            <button
+              type="button"
+              aria-label="재고 정렬"
+              onClick={() => handleSort("stock")}
+              className={cn(
+                "inline-flex min-h-8 items-center gap-1 rounded-sm text-left transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sort?.field === "stock" && "text-primary",
+              )}
+            >
+              판매 / 재고
+              {sort?.field === "stock" ? (
+                sort.dir === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
+              ) : (
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+
+          <div role="columnheader" className="min-w-0 px-2 py-2.5 text-right">
+            작업
+          </div>
+        </AdminListColumnHeader>
+
+        <AdminListBody>
+          {hasDataError ? (
+            <AdminListRow columnsClassName={PRODUCT_LIST_COLUMNS} ariaLabel="상품 목록 오류">
+              <AdminListCell className="col-span-5 py-10 text-center text-destructive">
+                {commonErrorMessage ?? "상품 목록을 불러오지 못했습니다."}
+              </AdminListCell>
+            </AdminListRow>
+          ) : isListLoadingState ? (
+            Array.from({ length: 6 }).map((_, rowIdx) => (
+              <AdminListRow
+                key={`admin-products-loading-row-${rowIdx}`}
+                columnsClassName={PRODUCT_LIST_COLUMNS}
+                ariaLabel="상품 목록 불러오는 중"
+              >
+                <AdminListCell>
+                  <Skeleton className="h-14 w-full" />
+                </AdminListCell>
+                <AdminListCell>
+                  <Skeleton className="h-14 w-full" />
+                </AdminListCell>
+                <AdminListCell align="end">
+                  <Skeleton className="h-7 w-24" />
+                </AdminListCell>
+                <AdminListCell>
+                  <Skeleton className="h-14 w-full" />
+                </AdminListCell>
+                <AdminListCell align="end" className="px-2">
+                  <Skeleton className="h-7 w-24" />
+                </AdminListCell>
+              </AdminListRow>
+            ))
+          ) : isActualEmptyState ? (
+            <AdminListRow columnsClassName={PRODUCT_LIST_COLUMNS} ariaLabel="상품 목록 없음">
+              <AdminListCell className="col-span-5 py-16 text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <Search className="h-8 w-8 text-muted-foreground/50" />
+                  <p className={adminTypography.body}>등록된 상품이 없습니다.</p>
+                </div>
+              </AdminListCell>
+            </AdminListRow>
+          ) : (
+            items.map((s) => {
+              const statusKey: StatusKey = (s.computedStatus ?? "active") as StatusKey;
+              const S = STATUS_UI[statusKey];
+              const isHidden = s.isVisible === false;
+              const thumbnail = s.images?.find(
+                (image) => typeof image === "string" && image.trim().length > 0,
+              );
+              const stock = Math.max(0, Number(s.inventory?.stock ?? 0));
+              const regularPrice = Math.max(0, Number(s.price ?? 0));
+              const salePrice = Math.max(0, Number(s.inventory?.salePrice ?? 0));
+              const isFeatured = s.inventory?.isFeatured === true;
+              const isNew = s.inventory?.isNew === true;
+              const hasValidSale =
+                s.inventory?.isSale === true && salePrice > 0 && salePrice < regularPrice;
+              const hasExposureLabel = isFeatured || isNew || hasValidSale;
+
+              return (
+                <AdminListRow
+                  key={s._id}
+                  columnsClassName={PRODUCT_LIST_COLUMNS}
+                  ariaLabel={`${s.name} 상품`}
+                >
+                  <AdminListCell>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md border border-border bg-muted/30">
+                        <Image
+                          src={thumbnail ?? "/placeholder.svg"}
+                          alt={thumbnail ? `${s.name} 상품 이미지` : "상품 이미지 없음"}
+                          fill
+                          sizes="44px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <AdminListPrimary
+                        title={s.name}
+                        meta={<span className="font-mono">SKU {s.sku || "-"}</span>}
+                      />
+                    </div>
+                  </AdminListCell>
+
+                  <AdminListCell>
+                    <div className="min-w-0 space-y-1.5">
+                      <p className={adminTypography.tablePrimary}>
+                        {brandLabel(s.brand)} · {materialLabel(s.material)}
+                      </p>
+                      <p className={adminTypography.tableSecondary}>게이지 {s.gauge || "-"}</p>
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        {isFeatured ? <Badge tone="brand">추천</Badge> : null}
+                        {isNew ? <Badge tone="info">신상품</Badge> : null}
+                        {hasValidSale ? <Badge tone="danger">할인</Badge> : null}
+                        {!hasExposureLabel ? (
+                          <span className={adminTypography.caption}>기본 노출</span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </AdminListCell>
+
+                  <AdminListCell align="end">
+                    <AdminMoneyBlock
+                      amount={`${(hasValidSale ? salePrice : regularPrice).toLocaleString("ko-KR")}원`}
+                      meta={
+                        hasValidSale ? `정가 ${regularPrice.toLocaleString("ko-KR")}원` : undefined
+                      }
+                    />
+                  </AdminListCell>
+
+                  <AdminListCell>
+                    <AdminStatusGroup
+                      primary={
+                        <Badge
+                          variant={badgeToneVariant(S.tone)}
+                          className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap"
                         >
-                          <TableCell className={adminDataTable.cellLeft}>
-                            <div className="flex min-w-0 items-center gap-3">
-                              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md border border-border bg-muted/30">
-                                <Image
-                                  src={thumbnail ?? "/placeholder.svg"}
-                                  alt={thumbnail ? `${s.name} 상품 이미지` : "상품 이미지 없음"}
-                                  fill
-                                  sizes="44px"
-                                  className="object-cover"
-                                />
-                              </div>
-                              <div className={adminDataTable.cellStack}>
-                                <Link
-                                  href={`/products/${s._id}`}
-                                  className={cn(adminDataTable.primaryLine, "block hover:text-primary")}
-                                  title={s.name}
-                                >
-                                  {s.name}
-                                </Link>
-                                <div className={adminDataTable.categoryText}>
-                                  {brandLabel(s.brand)} · {s.gauge} · {materialLabel(s.material)}
-                                </div>
-                                <div className={adminDataTable.secondaryLine} title={s.sku}>
-                                  SKU {s.sku}
-                                </div>
-                              </div>
-                            </div>
-                          </TableCell>
+                          <S.Icon className="h-3.5 w-3.5" />
+                          {S.label}
+                        </Badge>
+                      }
+                      secondary={`재고 ${stock.toLocaleString("ko-KR")}개`}
+                      alert={isHidden ? "스토어 숨김" : undefined}
+                    />
+                  </AdminListCell>
 
-                          <TableCell
-                            className={cn(
-                              adminDataTable.moneyCell,
-                              "whitespace-nowrap font-medium text-foreground",
-                            )}
+                  <AdminListCell align="end" className="px-2">
+                    <AdminRowActions>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
+                      </Button>
+                      <AdminRowActionMenu
+                        ariaLabel={`${s.name} 상품 작업 메뉴 열기`}
+                        destructiveActions={
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => setPendingDeleteProductId(s._id)}
                           >
-                            {s.price?.toLocaleString?.() ?? s.price}원
-                          </TableCell>
+                            삭제
+                          </DropdownMenuItem>
+                        }
+                      >
+                        <DropdownMenuItem asChild>
+                          <Link href={`/products/${s._id}`}>
+                            {isHidden ? "관리자 미리보기" : "상세 보기"}
+                          </Link>
+                        </DropdownMenuItem>
+                      </AdminRowActionMenu>
+                    </AdminRowActions>
+                  </AdminListCell>
+                </AdminListRow>
+              );
+            })
+          )}
+        </AdminListBody>
 
-                          <TableCell className={adminDataTable.cellCenter}>
-                            <div className={cn(adminDataTable.cellStack, "flex flex-col items-center")}>
-                              <Badge
-                                variant={badgeToneVariant(S.tone)}
-                                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap"
-                              >
-                                <S.Icon className="h-3.5 w-3.5" />
-                                {S.label}
-                              </Badge>
-                              <span className={adminDataTable.secondaryText}>
-                                재고 {Math.max(0, Number(s.inventory?.stock ?? 0)).toLocaleString("ko-KR")}
-                              </span>
-                              {isHidden ? (
-                                <span className={adminDataTable.attentionText}>스토어 숨김</span>
-                              ) : null}
-                            </div>
-                          </TableCell>
-
-                          <TableCell
-                            className={cn(
-                              adminDataTable.stickyActionCell,
-                               "w-[20%]",
-                             )}
-                          >
-                            <div className="flex items-center justify-end gap-1">
-                              <Button asChild size="sm" variant="outline">
-                                <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
-                              </Button>
-                              <AdminRowActionMenu
-                                ariaLabel={`${s.name} 상품 작업 메뉴 열기`}
-                                destructiveActions={
-                                  <DropdownMenuItem
-                                    className="text-destructive"
-                                    onClick={() => setPendingDeleteProductId(s._id)}
-                                  >
-                                    삭제
-                                  </DropdownMenuItem>
-                                }
-                              >
-                                <DropdownMenuItem asChild>
-                                  <Link href={`/products/${s._id}`}>
-                                    {isHidden ? "관리자 미리보기" : "상세 보기"}
-                                  </Link>
-                                </DropdownMenuItem>
-                              </AdminRowActionMenu>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-
-                  {/* 마지막 페이지 보정용 필러 행(로딩/빈상태 제외) */}
-                  {hasResolvedData &&
-                    !hasDataError &&
-                    !(isLoading || isValidating) &&
-                    !hasActiveTableFilter &&
-                    items.length > 0 &&
-                    Array.from({
-                      length: Math.max(0, PAGE_SIZE - items.length),
-                    }).map((_, i) => (
-                      <TableRow key={`filler-${i}`} className="pointer-events-none">
-                        <TableCell colSpan={4} className="p-0">
-                          <div className="h-14" />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-
-          {/* 페이지네이션 */}
-          <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
-            <div className="flex items-center gap-2">
+        <div role="rowgroup" className="border-t border-border">
+          <div role="row">
+            <div
+              role="cell"
+              aria-colspan={5}
+              className="flex flex-wrap items-center justify-end gap-3 px-4 py-3"
+            >
               <span className={adminTypography.metaMuted}>
                 {currentPage ?? "-"} / {totalPages ?? "-"}
               </span>
@@ -794,8 +885,8 @@ export default function ProductsClient() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </AdminListTable>
       <AdminConfirmDialog
         open={pendingDeleteProductId !== null}
         onOpenChange={(open) => {
