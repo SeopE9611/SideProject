@@ -1135,7 +1135,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               <section id="stringing-service" className="scroll-mt-24 space-y-4">
                 <MypageDetailCard
                   title="연결된 교체서비스"
-                  description="진행 상태와 핵심 일정을 요약했습니다."
+                  description="진행 상태와 핵심 일정을 확인하세요."
                   icon={<Truck className="h-5 w-5" aria-hidden="true" />}
                   contentClassName="space-y-4"
                   variant="feature"
@@ -1400,6 +1400,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             <MypageDetailCard
               variant="feature"
               title="결제 요약"
+              description="최종 결제 내역을 확인하세요."
               icon={<CreditCard className="h-5 w-5" aria-hidden="true" />}
             >
               <div className="space-y-3">
