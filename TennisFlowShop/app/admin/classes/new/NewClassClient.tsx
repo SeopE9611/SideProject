@@ -149,7 +149,7 @@ export default function NewClassClient() {
         </div>
 
         {/* 클래스 등록 폼 */}
-        <Card className="border-border/40 bg-card/60 backdrop-blur">
+        <Card className="border-border/40 bg-card">
           <form onSubmit={handleSubmit}>
             <CardHeader>
               <CardTitle className="text-2xl">클래스 등록</CardTitle>

@@ -1,14 +1,14 @@
 "use client";
 
-import useSWR from "swr";
-import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
-import { CreditCard, Play, Truck, RotateCcw, XCircle, Undo2, Clock } from "lucide-react";
-import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { Clock, CreditCard, Play, RotateCcw, Truck, Undo2, XCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 
 type HistoryItem = {
   _id: string;
@@ -232,7 +232,7 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
   const totalPages = hasResolvedData ? Math.max(1, Math.ceil(data.total / data.pageSize)) : null;
 
   return (
-    <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-muted/30">
+    <Card className="mt-8 overflow-hidden border border-border/60 bg-card shadow-none">
       <CardHeader className="bg-muted/30 border-b pb-3">
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-foreground" />

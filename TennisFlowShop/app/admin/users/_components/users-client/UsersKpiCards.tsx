@@ -40,7 +40,7 @@ export function UsersKpiCards({ status, values, activeKey, onSelect }: UsersKpiC
           onClick={() => onSelect?.(item.key)}
           disabled={!onSelect || status !== "ready"}
           className={cn(
-            "rounded-xl border-0 bg-card/80 p-5 text-left shadow-lg backdrop-blur-sm transition-colors",
+            "rounded-xl border-0 bg-card p-5 text-left shadow-lg transition-colors",
             onSelect && status === "ready" && "hover:bg-muted/60",
             activeKey === item.key && "ring-2 ring-primary/30",
           )}

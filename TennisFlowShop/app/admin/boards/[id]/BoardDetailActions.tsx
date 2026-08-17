@@ -72,7 +72,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
       <Button
         variant="outline"
         asChild
-        className="bg-card backdrop-blur-sm border-border hover:bg-primary/10 dark:border-border dark:hover:bg-primary/20"
+        className="bg-card border-border hover:bg-primary/10 dark:border-border dark:hover:bg-primary/20"
       >
         <Link href={`/admin/boards/${postId}/edit`}>
           <Pencil className="mr-2 h-4 w-4" />

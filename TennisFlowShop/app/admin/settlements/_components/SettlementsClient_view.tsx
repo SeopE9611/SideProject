@@ -4,19 +4,17 @@
 
 import KpiCard from "@/app/admin/settlements/_components/KpiCard";
 import { makeCsvFilename } from "@/app/admin/settlements/_lib/settlementExport";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
-import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
-import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
@@ -679,7 +677,7 @@ export default function SettlementsClient() {
         <div className="px-6 flex gap-1 min-w-max">
           <button
             onClick={() => setTab("snapshot")}
-            className={`px-6 py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${tab === "snapshot" ? "text-primary" : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"}`}
+            className={`px-6 py-4 text-sm font-semibold transition-colors relative whitespace-nowrap ${tab === "snapshot" ? "text-primary" : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"}`}
           >
             스냅샷 관리
             {tab === "snapshot" && (
@@ -697,7 +695,7 @@ export default function SettlementsClient() {
               }
             }}
             disabled={doing.live}
-            className={`px-6 py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${tab === "live" ? "text-primary" : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"}`}
+            className={`px-6 py-4 text-sm font-semibold transition-colors relative whitespace-nowrap ${tab === "live" ? "text-primary" : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"}`}
           >
             실시간 조회
             {tab === "live" && (
@@ -726,7 +724,7 @@ export default function SettlementsClient() {
                     maxLength={6}
                     inputMode="numeric"
                     placeholder="202510"
-                    className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card transition-all"
+                    className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card transition-[border-color,box-shadow]"
                   />
                 </div>
 
@@ -747,7 +745,7 @@ export default function SettlementsClient() {
                       }
                     }}
                     disabled={doing.create}
-                    className="px-4 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="px-4 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {doing.create ? (
                       <>
@@ -764,7 +762,7 @@ export default function SettlementsClient() {
 
                   <button
                     onClick={downloadCSV}
-                    className="px-4 py-3 rounded-xl border-2 border-border bg-card hover:bg-muted dark:hover:bg-card transition-all text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow"
+                    className="px-4 py-3 rounded-xl border-2 border-border bg-card hover:bg-muted dark:hover:bg-card transition-[background-color,box-shadow] text-sm font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow"
                   >
                     <FileDown className="w-4 h-4" />
                     CSV 다운로드
@@ -776,7 +774,7 @@ export default function SettlementsClient() {
                       await validateAll(fresh ?? []);
                     }}
                     disabled={bulkChecking || !data?.length}
-                    className="px-4 py-3 rounded-xl border-2 border-border bg-card hover:bg-muted dark:hover:bg-card transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow"
+                    className="px-4 py-3 rounded-xl border-2 border-border bg-card hover:bg-muted dark:hover:bg-card transition-[background-color,box-shadow] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow"
                   >
                     {bulkChecking ? (
                       <>
@@ -799,7 +797,7 @@ export default function SettlementsClient() {
                       })
                     }
                     disabled={deleting || selectedSnapshots.size === 0}
-                    className="px-4 py-3 rounded-xl border-2 border-destructive/40 bg-card hover:bg-destructive/10 dark:hover:bg-destructive/15 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow text-destructive"
+                    className="px-4 py-3 rounded-xl border-2 border-destructive/40 bg-card hover:bg-destructive/10 dark:hover:bg-destructive/15 transition-[background-color,box-shadow] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow text-destructive"
                   >
                     {deleting ? (
                       <>
@@ -809,8 +807,7 @@ export default function SettlementsClient() {
                     ) : (
                       <>
                         <Trash2 className="w-4 h-4" />
-                        <span className="inline">선택 삭제</span> (
-                        {selectedSnapshots.size})
+                        <span className="inline">선택 삭제</span> ({selectedSnapshots.size})
                       </>
                     )}
                   </button>
@@ -903,7 +900,7 @@ export default function SettlementsClient() {
 
                           <div className="flex items-center justify-center gap-2">
                             <button
-                              className="font-semibold text-primary hover:text-foreground hover:underline underline-offset-4 transition-all"
+                              className="font-semibold text-primary hover:text-foreground hover:underline underline-offset-4 transition-colors"
                               onClick={() => {
                                 const { from, to } = monthEdges(String(row.yyyymm));
                                 router.push(`/admin/orders?from=${from}&to=${to}`);
@@ -928,9 +925,18 @@ export default function SettlementsClient() {
                                 </button>
                               }
                               items={[
-                                { label: "결제", value: `${(row.totals?.paid || 0).toLocaleString()}원` },
-                                { label: "환불", value: `${(row.totals?.refund || 0).toLocaleString()}원` },
-                                { label: "순매출", value: `${(row.totals?.net || 0).toLocaleString()}원` },
+                                {
+                                  label: "결제",
+                                  value: `${(row.totals?.paid || 0).toLocaleString()}원`,
+                                },
+                                {
+                                  label: "환불",
+                                  value: `${(row.totals?.refund || 0).toLocaleString()}원`,
+                                },
+                                {
+                                  label: "순매출",
+                                  value: `${(row.totals?.net || 0).toLocaleString()}원`,
+                                },
                               ]}
                             />
                           </div>
@@ -952,7 +958,10 @@ export default function SettlementsClient() {
                               }
                               items={[
                                 { label: "주문", value: `${row.breakdown?.orders || 0}건` },
-                                { label: "교체서비스", value: `${row.breakdown?.applications || 0}건` },
+                                {
+                                  label: "교체서비스",
+                                  value: `${row.breakdown?.applications || 0}건`,
+                                },
                                 { label: "대여", value: `${row.breakdown?.rentals ?? 0}건` },
                                 { label: "패키지", value: `${row.breakdown?.packages || 0}건` },
                               ]}
@@ -1025,7 +1034,12 @@ export default function SettlementsClient() {
                                 title={`${row.yyyymm} 검증 결과`}
                                 description="저장된 스냅샷과 현재 집계를 비교합니다."
                                 trigger={
-                                  <Button type="button" variant="link" size="sm" className="h-7 px-1">
+                                  <Button
+                                    type="button"
+                                    variant="link"
+                                    size="sm"
+                                    className="h-7 px-1"
+                                  >
                                     차이 보기
                                   </Button>
                                 }
@@ -1045,7 +1059,12 @@ export default function SettlementsClient() {
                                 }
                               >
                                 <div className="overflow-hidden rounded-lg border border-border">
-                                  <div className={cn("grid grid-cols-[120px_1fr_1fr] gap-3 bg-muted/50 px-4 py-3", adminTypography.tableHeader)}>
+                                  <div
+                                    className={cn(
+                                      "grid grid-cols-[120px_1fr_1fr] gap-3 bg-muted/50 px-4 py-3",
+                                      adminTypography.tableHeader,
+                                    )}
+                                  >
                                     <span>항목</span>
                                     <span className="text-right">스냅샷</span>
                                     <span className="text-right">현재 집계</span>
@@ -1127,17 +1146,17 @@ export default function SettlementsClient() {
                                 </DropdownMenuItem>
                               }
                             >
-                                  <DropdownMenuItem
-                                    disabled={doing.rebuild === row.yyyymm}
-                                    onSelect={() => void rebuildSnapshotRow(row)}
-                                  >
-                                    {doing.rebuild === row.yyyymm ? (
-                                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    ) : (
-                                      <RefreshCw className="w-4 h-4 mr-2" />
-                                    )}
-                                    갱신
-                                  </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={doing.rebuild === row.yyyymm}
+                                onSelect={() => void rebuildSnapshotRow(row)}
+                              >
+                                {doing.rebuild === row.yyyymm ? (
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                  <RefreshCw className="w-4 h-4 mr-2" />
+                                )}
+                                갱신
+                              </DropdownMenuItem>
                             </AdminRowActionMenu>
                           </div>
                         </div>
@@ -1166,7 +1185,7 @@ export default function SettlementsClient() {
                       type="date"
                       value={from}
                       onChange={(e) => setFrom(e.target.value)}
-                      className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card transition-all"
+                      className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent bg-card transition-[border-color,box-shadow]"
                     />
                   </div>
                   <div>
@@ -1177,7 +1196,7 @@ export default function SettlementsClient() {
                       type="date"
                       value={to}
                       onChange={(e) => setTo(e.target.value)}
-                      className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-ring focus:border-transparent bg-card transition-all"
+                      className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-ring focus:border-transparent bg-card transition-[border-color,box-shadow]"
                     />
                   </div>
                   {invalidRange && (
@@ -1189,7 +1208,7 @@ export default function SettlementsClient() {
 
                 <div className="grid grid-cols-5 gap-2">
                   <button
-                    className="px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
+                    className="px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-[background-color,box-shadow] shadow-sm hover:shadow"
                     onClick={() => {
                       const fromStr = firstDayOfMonth_KST();
                       const toStr = fmtYMD_KST();
@@ -1201,7 +1220,7 @@ export default function SettlementsClient() {
                     이번 달
                   </button>
                   <button
-                    className="px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
+                    className="px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-[background-color,box-shadow] shadow-sm hover:shadow"
                     onClick={() => {
                       const r = prevMonthRange_KST();
                       setFrom(r.from);
@@ -1212,7 +1231,7 @@ export default function SettlementsClient() {
                     지난 달
                   </button>
                   <button
-                    className="px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
+                    className="px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-[background-color,box-shadow] shadow-sm hover:shadow"
                     onClick={() => {
                       const end = new Date();
                       const start = new Date(end.getTime() - 6 * 24 * 60 * 60 * 1000);
@@ -1226,7 +1245,7 @@ export default function SettlementsClient() {
 
                   <button
                     onClick={fetchLive}
-                    className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 col-span-1"
+                    className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 col-span-1"
                     disabled={doing.live || invalidRange}
                   >
                     {doing.live ? (
@@ -1281,14 +1300,19 @@ export default function SettlementsClient() {
                       URL.revokeObjectURL(url);
                     }}
                     disabled={!live || invalidRange}
-                    className="px-4 py-2.5 rounded-xl border-2 border-border bg-card hover:bg-muted dark:hover:bg-card transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow col-span-1"
+                    className="px-4 py-2.5 rounded-xl border-2 border-border bg-card hover:bg-muted dark:hover:bg-card transition-[background-color,box-shadow] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow col-span-1"
                   >
                     <FileDown className="w-4 h-4" />
                     CSV
                   </button>
                 </div>
 
-                <div className={cn("flex items-center gap-2 bg-muted rounded-lg px-3 py-2 w-fit", adminTypography.caption)}>
+                <div
+                  className={cn(
+                    "flex items-center gap-2 bg-muted rounded-lg px-3 py-2 w-fit",
+                    adminTypography.caption,
+                  )}
+                >
                   <Calendar className="w-3.5 h-3.5" />
                   <span className="font-medium">KST 기준 합산</span>
                 </div>

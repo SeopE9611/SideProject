@@ -1050,7 +1050,7 @@ export default function NewStringPage() {
           </div>
           <>
             {/* Step Progress */}
-            <div className={cn(adminSurface.cardMuted, "px-6 py-4 backdrop-blur-sm")}>
+            <div className={cn(adminSurface.cardMuted, "px-6 py-4")}>
               <StepProgress
                 steps={STEPS}
                 currentStep={currentStep.id}

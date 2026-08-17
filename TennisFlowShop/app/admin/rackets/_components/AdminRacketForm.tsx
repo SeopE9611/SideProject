@@ -1003,7 +1003,7 @@ export default function AdminRacketForm({
           </div>
         </div>
         <div className="block">
-          <aside className={cn("sticky top-20 p-4 backdrop-blur-sm", adminSurface.card)}>
+          <aside className={cn("sticky top-20 p-4", adminSurface.card)}>
             <div className="mb-3 flex items-center justify-between gap-2">
               <div>
                 <p className={adminTypography.caption}>라켓 미리보기</p>

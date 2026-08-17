@@ -91,7 +91,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </span>
         </p>
       </div>
-      <div className="border-b border-border/60 bg-background/90 px-3 py-1.5 backdrop-blur supports-[backdrop-filter]:bg-background/80 2xl:px-6 2xl:py-2">
+      <div className="border-b border-border/60 bg-background px-3 py-1.5 2xl:px-6 2xl:py-2">
         <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-3">
           <Link
             href="/admin/dashboard"

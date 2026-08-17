@@ -16,10 +16,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import AdminPageShell from "@/components/admin/AdminPageShell";
 import {
   AdminListBody,
   AdminListCell,
@@ -31,12 +30,13 @@ import {
   AdminRowActions,
   AdminStatusGroup,
 } from "@/components/admin/AdminListTable";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import { Section, SectionHeader } from "@/components/admin/Section";
-import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -230,8 +230,8 @@ function statusHeadlineOf(item: OpItem) {
     )
       return "결제 완료 주문";
     if (
-      ["결제대기", "결제 대기", "입금대기", "입금 대기", "미입금", "결제 확인 대기"].some(
-        (label) => lowerStatus.includes(label),
+      ["결제대기", "결제 대기", "입금대기", "입금 대기", "미입금", "결제 확인 대기"].some((label) =>
+        lowerStatus.includes(label),
       )
     )
       return "결제 확인 필요 주문";
@@ -765,16 +765,17 @@ export default function OperationsClient() {
         dedupingInterval: 60_000,
       },
     );
-  const { data: appsInTossReconciliation, isLoading: isAppsInTossLoading } = useSWR<AppsInTossReconciliationResponse>(
-    "/api/admin/apps-in-toss/reconciliation?issueType=all&environment=all&page=1&limit=1",
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: false,
-      dedupingInterval: 60_000,
-    },
-  );
+  const { data: appsInTossReconciliation, isLoading: isAppsInTossLoading } =
+    useSWR<AppsInTossReconciliationResponse>(
+      "/api/admin/apps-in-toss/reconciliation?issueType=all&environment=all&page=1&limit=1",
+      authenticatedSWRFetcher,
+      {
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+        shouldRetryOnError: false,
+        dedupingInterval: 60_000,
+      },
+    );
   const totalGroups = data?.pagination?.totalGroups;
   const pageSize = data?.pagination?.pageSize ?? effectivePageSize;
   const totalPages =
@@ -1189,9 +1190,15 @@ export default function OperationsClient() {
             aside={
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <span className={adminTypography.bodyStrong}>
-                  처리 필요 총 {dailySummaryValue(representativeTotalCount ?? representativeTodayCount)}
+                  처리 필요 총{" "}
+                  {dailySummaryValue(representativeTotalCount ?? representativeTodayCount)}
                 </span>
-                <Button type="button" size="sm" variant="outline" onClick={() => applyQuickView("today")}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => applyQuickView("today")}
+                >
                   오늘 업무 보기
                 </Button>
               </div>
@@ -1309,7 +1316,9 @@ export default function OperationsClient() {
                         className="flex min-w-0 flex-wrap items-center gap-2 rounded-md border border-border/60 bg-background/50 px-3 py-2"
                       >
                         <div className="min-w-[min(100%,18rem)] flex-1">
-                          <p className={cn("break-words", adminTypography.panelTitle)}>{task.title}</p>
+                          <p className={cn("break-words", adminTypography.panelTitle)}>
+                            {task.title}
+                          </p>
                           <p className={cn("break-words", adminTypography.metaMuted)}>
                             {task.description}
                           </p>
@@ -1343,10 +1352,22 @@ export default function OperationsClient() {
                 처리 순서
               </h2>
               <ol className={cn("mt-2 space-y-1.5", adminTypography.metaMuted)}>
-                <li><span className="font-semibold text-foreground">1. 주의 업무</span> — 취소 요청과 결제 확인을 먼저 처리합니다.</li>
-                <li><span className="font-semibold text-foreground">2. 패키지</span> — 패키지 결제 확인은 패키지 목록에서 분리 확인합니다.</li>
-                <li><span className="font-semibold text-foreground">3. 배송·교체</span> — 배송/반송 미등록과 교체 작업 단계를 확인합니다.</li>
-                <li><span className="font-semibold text-foreground">4. 마감 업무</span> — 대여 반납, 오프라인 보정, 상담 대기를 마감합니다.</li>
+                <li>
+                  <span className="font-semibold text-foreground">1. 주의 업무</span> — 취소 요청과
+                  결제 확인을 먼저 처리합니다.
+                </li>
+                <li>
+                  <span className="font-semibold text-foreground">2. 패키지</span> — 패키지 결제
+                  확인은 패키지 목록에서 분리 확인합니다.
+                </li>
+                <li>
+                  <span className="font-semibold text-foreground">3. 배송·교체</span> — 배송/반송
+                  미등록과 교체 작업 단계를 확인합니다.
+                </li>
+                <li>
+                  <span className="font-semibold text-foreground">4. 마감 업무</span> — 대여 반납,
+                  오프라인 보정, 상담 대기를 마감합니다.
+                </li>
               </ol>
             </section>
 
@@ -1361,17 +1382,30 @@ export default function OperationsClient() {
                 <div className="flex flex-wrap justify-between gap-2 py-2">
                   <dt className={adminTypography.bodyStrong}>오늘 상태 변경 참고</dt>
                   <dd className="min-w-0 text-right">
-                    <span className={adminTypography.kpiValue}>{dailySummaryValue(dailySummary?.completedToday.total)}</span>
+                    <span className={adminTypography.kpiValue}>
+                      {dailySummaryValue(dailySummary?.completedToday.total)}
+                    </span>
                     <p className={adminTypography.metaMuted}>
                       {dailySummary
                         ? [
                             dailySummaryInlineValue("주문", dailySummary.completedToday.orders),
-                            dailySummaryInlineValue("교체", dailySummary.completedToday.stringingApplications),
+                            dailySummaryInlineValue(
+                              "교체",
+                              dailySummary.completedToday.stringingApplications,
+                            ),
                             dailySummaryInlineValue("대여", dailySummary.completedToday.rentals),
-                            dailySummaryInlineValue("오프라인", dailySummary.completedToday.offline),
-                            dailySummaryInlineValue("아카데미", dailySummary.completedToday.academyApplications),
+                            dailySummaryInlineValue(
+                              "오프라인",
+                              dailySummary.completedToday.offline,
+                            ),
+                            dailySummaryInlineValue(
+                              "아카데미",
+                              dailySummary.completedToday.academyApplications,
+                            ),
                           ].join(" · ")
-                        : dailySummaryError ? "요약을 불러오지 못했습니다." : "불러오는 중..."}
+                        : dailySummaryError
+                          ? "요약을 불러오지 못했습니다."
+                          : "불러오는 중..."}
                     </p>
                   </dd>
                 </div>
@@ -1379,7 +1413,10 @@ export default function OperationsClient() {
                   <dt className={adminTypography.bodyStrong}>남은 대표 업무</dt>
                   <dd className="min-w-0 text-right">
                     <span className={adminTypography.kpiValue}>
-                      {dailySummaryValue(dailySummary?.operationGroupCounts?.totalRepresentativeTasks ?? representativeTotalCount)}
+                      {dailySummaryValue(
+                        dailySummary?.operationGroupCounts?.totalRepresentativeTasks ??
+                          representativeTotalCount,
+                      )}
                     </span>
                     <p className={adminTypography.metaMuted}>
                       {dailySummary
@@ -1390,7 +1427,9 @@ export default function OperationsClient() {
                             dailySummaryInlineValue("교체", dailySummary.remaining.stringingWork),
                             dailySummaryInlineValue("반납", dailySummary.remaining.rentalDue),
                           ].join(" · ")
-                        : dailySummaryError ? "요약을 불러오지 못했습니다." : "불러오는 중..."}
+                        : dailySummaryError
+                          ? "요약을 불러오지 못했습니다."
+                          : "불러오는 중..."}
                     </p>
                   </dd>
                 </div>
@@ -1398,23 +1437,48 @@ export default function OperationsClient() {
                   <dt className={adminTypography.bodyStrong}>확인 항목</dt>
                   <dd className="text-right">
                     <span className={adminTypography.kpiValue}>
-                      {dailySummaryValue(dailySummary?.remaining.packagePaymentCheck ?? taskCounts?.packagePaymentCheck)}
+                      {dailySummaryValue(
+                        dailySummary?.remaining.packagePaymentCheck ??
+                          taskCounts?.packagePaymentCheck,
+                      )}
                     </span>
-                    <p className={adminTypography.metaMuted}>패키지 처리 대상은 전체 대표 업무 합계에 포함됩니다.</p>
+                    <p className={adminTypography.metaMuted}>
+                      패키지 처리 대상은 전체 대표 업무 합계에 포함됩니다.
+                    </p>
                   </dd>
                 </div>
                 <div className="flex flex-wrap justify-between gap-2 py-2">
                   <dt className={adminTypography.bodyStrong}>마감 전 확인</dt>
                   <dd className="min-w-0 text-right">
                     <p className={adminTypography.bodyStrong}>
-                      긴급 {dailySummaryValue(dailySummary?.attention.urgentRemaining)} / 확인 {dailySummaryValue(dailySummary?.attention.watchRemaining)}
+                      긴급 {dailySummaryValue(dailySummary?.attention.urgentRemaining)} / 확인{" "}
+                      {dailySummaryValue(dailySummary?.attention.watchRemaining)}
                     </p>
-                    <p className={cn(dailySummaryError ? "text-warning" : "text-muted-foreground", adminTypography.meta)}>
+                    <p
+                      className={cn(
+                        dailySummaryError ? "text-warning" : "text-muted-foreground",
+                        adminTypography.meta,
+                      )}
+                    >
                       {dailySummaryStatusMessage}
                     </p>
                     <div className="mt-2 flex flex-wrap justify-end gap-2">
-                      <Button type="button" size="sm" variant="outline" onClick={() => applyQuickView("cancelRequests")}>긴급 업무 보기</Button>
-                      <Button type="button" size="sm" variant="ghost" onClick={() => applyQuickView("all")}>남은 업무 보기</Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyQuickView("cancelRequests")}
+                      >
+                        긴급 업무 보기
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => applyQuickView("all")}
+                      >
+                        남은 업무 보기
+                      </Button>
                     </div>
                   </dd>
                 </div>
@@ -1514,13 +1578,13 @@ export default function OperationsClient() {
       {/* 필터 및 검색 카드 */}
       <div
         className={cn(
-          "top-3 z-30 mb-2 transition-all duration-200",
+          "top-3 z-30 mb-2 transition-shadow duration-200",
           isFilterScrolled && "shadow-sm",
         )}
       >
         <Card
           className={cn(
-            "rounded-xl border-border px-3 py-2 shadow-sm transition-all duration-200",
+            "rounded-xl border-border px-3 py-2 shadow-sm transition-colors duration-200",
             onlyWarn
               ? "bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30"
               : "bg-card",
@@ -1669,12 +1733,7 @@ export default function OperationsClient() {
                     <SelectItem value="8">패키지 구매</SelectItem>
                   </SelectContent>
                 </Select>
-                <p
-                  className={cn(
-                    "w-full md:col-span-2 xl:col-span-5",
-                    adminTypography.metaMuted,
-                  )}
-                >
+                <p className={cn("w-full md:col-span-2 xl:col-span-5", adminTypography.metaMuted)}>
                   레거시 유형은 기존 데이터 확인용이며 신규 접수 흐름은 현재 운영하지 않습니다.
                 </p>
 
@@ -1773,7 +1832,9 @@ export default function OperationsClient() {
       {/* 업무 목록 */}
       <AdminListTable
         title="업무 목록"
-        viewLabel={activePresetKey ? PRESET_CONFIG[activePresetKey].label : activeQuickViewMeta.label}
+        viewLabel={
+          activePresetKey ? PRESET_CONFIG[activePresetKey].label : activeQuickViewMeta.label
+        }
         resultLabel={
           typeof totalGroups === "number"
             ? `총 ${totalGroups.toLocaleString("ko-KR")}건 · ${totalPages ? `${page}/${totalPages}페이지` : "페이지 계산 중"}`
@@ -1860,9 +1921,7 @@ export default function OperationsClient() {
               const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
               const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
               const warn = g.warn;
-              const groupCancelRequested = g.items.some(
-                (it) => it.cancel?.status === "requested",
-              );
+              const groupCancelRequested = g.items.some((it) => it.cancel?.status === "requested");
               const priorityMeta = getOperationPriorityMeta({
                 warn,
                 reviewLevel: g.reviewLevel,
@@ -1912,9 +1971,7 @@ export default function OperationsClient() {
                   : g.anchor.kind === "rental"
                     ? getRentalStatusBadgeSpec(g.anchor.statusLabel ?? workflowStatusLabel)
                     : g.anchor.kind === "stringing_application"
-                      ? getApplicationStatusBadgeSpec(
-                          g.anchor.statusLabel ?? workflowStatusLabel,
-                        )
+                      ? getApplicationStatusBadgeSpec(g.anchor.statusLabel ?? workflowStatusLabel)
                       : { variant: "neutral" as const };
               const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
               const primarySignal = visibleSignalSummary(g.signals, 1).visible[0];
@@ -2026,8 +2083,7 @@ export default function OperationsClient() {
                             })) ?? []),
                             {
                               label: "결제",
-                              value:
-                                g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel ?? null,
+                              value: g.anchor.paymentDisplayLabel ?? g.anchor.paymentLabel ?? null,
                             },
                             { label: "금액", value: won(g.anchor.amount) },
                           ]}
@@ -2084,9 +2140,7 @@ export default function OperationsClient() {
                             }}
                           >
                             <CreditCard className="mr-2 h-4 w-4" />
-                            {syncingNiceOrderId === g.anchor.id
-                              ? "확인 중..."
-                              : "PG 상태 확인"}
+                            {syncingNiceOrderId === g.anchor.id ? "확인 중..." : "PG 상태 확인"}
                           </DropdownMenuItem>
                         </AdminRowActionMenu>
                       ) : null}

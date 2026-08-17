@@ -1206,7 +1206,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
           ) : (
             <>
               {/* Step Progress */}
-              <div className={cn(adminSurface.cardMuted, "p-6 backdrop-blur-sm")}>
+              <div className={cn(adminSurface.cardMuted, "p-6")}>
                 <StepProgress
                   steps={STEPS}
                   currentStep={currentStep.id}

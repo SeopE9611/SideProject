@@ -856,7 +856,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               {data.hasIssuedPass && hasSessionCounts && progressPercentage !== null && (
                 <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
                   <div
-                    className="h-2 rounded-full bg-primary transition-all"
+                    className="h-2 rounded-full bg-primary transition-[width]"
                     style={{ width: `${progressPercentage}%` }}
                   />
                 </div>

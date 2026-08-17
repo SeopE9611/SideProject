@@ -5,9 +5,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
 
-import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -534,12 +534,7 @@ export default function AdminReviewListClient() {
         className="sticky top-20 z-20 -mt-2 mb-2 supports-[backdrop-filter]:bg-card/95"
         actions={
           <>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setCompact((v) => !v)}
-            >
+            <Button type="button" size="sm" variant="outline" onClick={() => setCompact((v) => !v)}>
               {compact ? "기본 보기" : "컴팩트 보기"}
             </Button>
             <DropdownMenu>
@@ -578,7 +573,8 @@ export default function AdminReviewListClient() {
             ) : null}
             {context !== "all" ? (
               <span className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1">
-                후기 유형: {context === "product"
+                후기 유형:{" "}
+                {context === "product"
                   ? "상품"
                   : context === "product_stringing"
                     ? "상품·교체서비스"
@@ -811,16 +807,16 @@ export default function AdminReviewListClient() {
                       {r.content}
                     </p>
                     {r.content && r.content.length > 80 ? (
-                      <span className={adminDataTable.secondaryText}>전체 내용은 상세에서 확인</span>
+                      <span className={adminDataTable.secondaryText}>
+                        전체 내용은 상세에서 확인
+                      </span>
                     ) : null}
                   </div>
 
                   {/* 평점 / 도움돼요 */}
                   <div className={`min-w-0 ${dim} text-center`}>
                     <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-                      <span className={adminTypography.numeric}>
-                        {r.rating}/5
-                      </span>
+                      <span className={adminTypography.numeric}>{r.rating}/5</span>
                       <span
                         className={cn(
                           "inline-flex items-center gap-1",
@@ -854,9 +850,7 @@ export default function AdminReviewListClient() {
                     className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Badge
-                      variant={r.moderationStatus === "visible" ? "success" : "neutral"}
-                    >
+                    <Badge variant={r.moderationStatus === "visible" ? "success" : "neutral"}>
                       {r.moderationStatus === "visible" ? "관리자 공개" : "관리자 숨김"}
                     </Badge>
                     <div className="h-6 flex items-center">
@@ -885,14 +879,14 @@ export default function AdminReviewListClient() {
                       <AdminRowActionMenu
                         ariaLabel={`${r.userName || r._id} 후기 관리 메뉴`}
                         destructiveActions={
-                        <DropdownMenuItem
-                          onPointerDown={(e) => e.stopPropagation()}
-                          className="cursor-pointer whitespace-nowrap text-destructive focus:text-destructive"
-                          onSelect={() => setPendingDeleteReviewId(r._id)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          <span>삭제</span>
-                        </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onPointerDown={(e) => e.stopPropagation()}
+                            className="cursor-pointer whitespace-nowrap text-destructive focus:text-destructive"
+                            onSelect={() => setPendingDeleteReviewId(r._id)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>삭제</span>
+                          </DropdownMenuItem>
                         }
                       />
                     </div>
@@ -905,7 +899,7 @@ export default function AdminReviewListClient() {
 
         {/* 선택 액션 바 */}
         <div
-          className={`transition-all duration-200 ${selected.length ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1 pointer-events-none"}`}
+          className={`transition-[opacity,transform] duration-200 ${selected.length ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1 pointer-events-none"}`}
         >
           <div className="w-full border-t border-border bg-primary/10 dark:bg-primary/20 px-4 py-2 flex items-center justify-between rounded-b-lg text-foreground">
             <span className="inline-flex items-center gap-2">
@@ -973,7 +967,7 @@ export default function AdminReviewListClient() {
 
       {/* 상세 모달 */}
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
-        <DialogContent className="border border-border/70 bg-card shadow-2xl sm:max-w-2xl">
+        <DialogContent className="border border-border/70 bg-card sm:max-w-2xl">
           <DialogHeader className="space-y-2 border-b border-border/60 pb-4">
             <DialogTitle className={adminTypography.sectionTitle}>후기 상세</DialogTitle>
             {detail && (

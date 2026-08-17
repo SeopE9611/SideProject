@@ -1079,7 +1079,7 @@ export default function OfflineAdminClient() {
                         {onlineItems.map((u: any) => (
                           <div
                             key={u.id}
-                            className="group flex min-w-0 items-center justify-between gap-3 rounded-lg border border-border/60 p-3 transition-all hover:border-primary/40 hover:bg-primary/5"
+                            className="group flex min-w-0 items-center justify-between gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/40 hover:bg-primary/5"
                           >
                             <div className="flex min-w-0 items-center gap-3">
                               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -1133,7 +1133,7 @@ export default function OfflineAdminClient() {
                         {offlineItems.map((c: any) => (
                           <div
                             key={c.id}
-                            className="group flex min-w-0 items-center justify-between gap-3 rounded-lg border border-border/60 p-3 transition-all hover:border-primary/40 hover:bg-primary/5"
+                            className="group flex min-w-0 items-center justify-between gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/40 hover:bg-primary/5"
                           >
                             <div className="flex min-w-0 items-center gap-3">
                               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
