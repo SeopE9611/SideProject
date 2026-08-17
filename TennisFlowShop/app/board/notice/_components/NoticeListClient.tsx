@@ -366,13 +366,6 @@ export default function NoticeListClient({
                   : "고정 공지부터 최신 안내까지 한눈에 확인하세요."}
               </p>
             </div>
-            <div className="rounded-control border border-border bg-card px-4 py-3 text-ui-body-sm shadow-soft">
-              총{" "}
-              <strong className="font-ui-bold text-ui-section-title text-brand-highlight-ink">
-                {total ?? initialTotal ?? 0}
-              </strong>
-              건
-            </div>
           </div>
         </PublicSurface>
 
