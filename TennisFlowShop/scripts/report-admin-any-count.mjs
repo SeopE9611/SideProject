@@ -3,6 +3,10 @@ const TARGETS = ["app/admin", "app/api/admin", "components/admin", "lib/admin.gu
 const CRITICAL_KEYWORDS =
   /(payment|settlement|정산|status|상태|refund|cancel|취소|shipping|배송|deposit|operations?)/i;
 
+function normalizePath(value) {
+  return String(value).replaceAll("\\", "/");
+}
+
 function classify(file, lineText = "") {
   const isApi = file.startsWith("app/api/admin/");
   const isCriticalPath =
@@ -41,7 +45,7 @@ function collectAnyMatches() {
     if (row.type !== "match") continue;
 
     matches.push({
-      file: row.data.path.text,
+      file: normalizePath(row.data.path.text),
       line: row.data.line_number,
       text: row.data.lines.text.trim(),
     });
