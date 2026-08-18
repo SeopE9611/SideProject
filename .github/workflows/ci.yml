@@ -8,12 +8,12 @@ name: CI
 on:
   pull_request:
     paths:
-      - 'TennisFlowShop/**'
-      - '.github/workflows/ci.yml'
-      - '.github/CI_INCIDENT_RESPONSE.md'
+      - "TennisFlowShop/**"
+      - ".github/workflows/ci.yml"
+      - ".github/CI_INCIDENT_RESPONSE.md"
   workflow_dispatch:
   push:
-    branches: ['main', 'master']
+    branches: ["main", "master"]
 
 permissions:
   contents: read
@@ -177,6 +177,14 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install ripgrep
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends -y ripgrep
+          fi
+          rg --version
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
