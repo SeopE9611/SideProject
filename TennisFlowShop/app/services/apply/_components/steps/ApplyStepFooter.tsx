@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
+import React from "react";
 
 type Props = {
   currentStep: number;
@@ -40,7 +40,7 @@ export default function ApplyStepFooter({
         onClick={onNext}
         disabled={!isStepValid(currentStep)}
         variant="highlight"
-        className="min-h-11 px-6 py-3 transition-all duration-200 disabled:opacity-50"
+        className="min-h-11 px-6 py-3 disabled:opacity-50"
       >
         다음
         <ArrowRight className="ml-2 h-4 w-4" />
@@ -53,7 +53,7 @@ export default function ApplyStepFooter({
         disabled={isSubmitting || isOrderSlotBlocked}
         onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
         variant="highlight"
-        className="min-h-11 px-6 py-3 transition-all duration-200 disabled:opacity-50"
+        className="min-h-11 px-6 py-3 disabled:opacity-50"
       >
         {isSubmitting ? (
           <>

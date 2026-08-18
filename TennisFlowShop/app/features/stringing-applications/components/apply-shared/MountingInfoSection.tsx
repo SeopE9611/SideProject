@@ -415,13 +415,6 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
       />
 
       <div className="space-y-6">
-        {/* <div className="space-y-2">
-          <Label htmlFor="racketType" className="text-ui-body-sm font-medium">
-            라켓 종류 <span className="text-destructive">*</span>
-          </Label>
-          <Input id="racketType" name="racketType" value={formData.racketType} onChange={handleInputChange} placeholder="예: 윌슨 프로 스태프 97" className="focus:ring-2 focus:ring-ring transition-all duration-200" />
-        </div> */}
-
         <div className="space-y-4">
           {!canEditStandaloneWorkLines && (
             <div>
@@ -1283,7 +1276,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 value={formData.preferredDate}
                 onChange={handleInputChange}
                 min={new Date().toISOString().split("T")[0]}
-                className="focus:ring-2 focus:ring-ring transition-all duration-200"
+                className="focus:ring-2 focus:ring-ring transition-[border-color,box-shadow] duration-200"
               />
               {formData.preferredDate &&
                 formData.preferredTime &&

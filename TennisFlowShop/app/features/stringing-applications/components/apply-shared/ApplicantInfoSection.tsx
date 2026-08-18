@@ -185,7 +185,7 @@ export default function ApplicantInfoSection({
               onChange={handleInputChange}
               onBlur={() => markTouched("name")}
               readOnly={!!(orderId || isMember)}
-              className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+              className={`transition-[background-color,color,border-color,box-shadow] duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
               placeholder="이름을 입력해주세요"
             />
             {errorText("name") ? <p className={errCls}>{errorText("name")}</p> : null}
@@ -203,7 +203,7 @@ export default function ApplicantInfoSection({
               onChange={handleInputChange}
               onBlur={() => markTouched("email")}
               readOnly={!!(orderId || isMember)}
-              className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+              className={`transition-[background-color,color,border-color,box-shadow] duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
               placeholder="이메일을 입력해주세요"
             />
             {errorText("email") ? <p className={errCls}>{errorText("email")}</p> : null}
@@ -227,7 +227,7 @@ export default function ApplicantInfoSection({
               }}
               onBlur={() => markTouched("phone")}
               readOnly={!!(orderId || isMember)}
-              className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+              className={`transition-[background-color,color,border-color,box-shadow] duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
               placeholder="01012345678"
             />
             {errorText("phone") ? <p className={errCls}>{errorText("phone")}</p> : null}
@@ -416,7 +416,7 @@ export default function ApplicantInfoSection({
                     value={formData.shippingPostcode}
                     onBlur={() => markTouched("shippingPostcode")}
                     readOnly={postcodeAddressReadOnly}
-                    className={`w-full bp-md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                    className={`w-full bp-md:w-[180px] transition-[background-color,color,border-color,box-shadow] duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
                     placeholder=""
                   />
                   {canOpenPostcodeSearch && (
@@ -446,7 +446,7 @@ export default function ApplicantInfoSection({
                   value={formData.shippingAddress}
                   onBlur={() => markTouched("shippingAddress")}
                   readOnly={postcodeAddressReadOnly}
-                  className={`transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                  className={`transition-[background-color,color,border-color,box-shadow] duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
                   placeholder=""
                 />
                 {errorText("shippingAddress") ? (
@@ -464,7 +464,7 @@ export default function ApplicantInfoSection({
                   value={formData.shippingAddressDetail}
                   onChange={handleInputChange}
                   readOnly={lockAddressFields}
-                  className={`transition-all duration-200 ${lockAddressFields ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
+                  className={`transition-[background-color,color,border-color,box-shadow] duration-200 ${lockAddressFields ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
                   placeholder="상세 주소를 입력해주세요"
                 />
               </div>

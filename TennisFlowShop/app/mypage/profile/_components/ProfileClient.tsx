@@ -1,42 +1,41 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Camera,
-  Save,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Shield,
-  Bell,
-  AlertTriangle,
-} from "lucide-react";
+import TennisProfileForm from "@/app/mypage/profile/_components/TennisProfileForm";
+import WithdrawalReasonSelect from "@/app/mypage/profile/_components/WithdrawalReasonSelect";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface } from "@/components/public";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { IdentityBadge } from "@/components/ui/identity-badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
-import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
-import WithdrawalReasonSelect from "@/app/mypage/profile/_components/WithdrawalReasonSelect";
-import { useRouter } from "next/navigation";
-import { MdSportsTennis } from "react-icons/md";
-import TennisProfileForm from "@/app/mypage/profile/_components/TennisProfileForm";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
-import { IdentityBadge } from "@/components/ui/identity-badge";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
+import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
+import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Bell,
+  Camera,
+  Mail,
+  MapPin,
+  Phone,
+  Save,
+  Shield,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { MdSportsTennis } from "react-icons/md";
 
 // 제출 직전 최종 유효성 가드
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -406,9 +405,7 @@ export default function ProfileClient({ user }: Props) {
                       <User className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <div>
-                      <CardTitle className="font-ui-bold text-ui-section-title">
-                        기본정보
-                      </CardTitle>
+                      <CardTitle className="font-ui-bold text-ui-section-title">기본정보</CardTitle>
                       <CardDescription>개인정보를 수정할 수 있습니다.</CardDescription>
                     </div>
                   </div>
@@ -875,7 +872,7 @@ export default function ProfileClient({ user }: Props) {
                           variant="destructive"
                           type="button"
                           onClick={() => setShowWithdrawalForm(true)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow-md transition-all duration-200"
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm hover:shadow-md"
                         >
                           <AlertTriangle className="mr-2 h-4 w-4" aria-hidden="true" />
                           회원 탈퇴
