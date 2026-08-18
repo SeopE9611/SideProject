@@ -1839,7 +1839,12 @@ export async function handleAdminOperationsGet(
     const needsCancelFinalization = needsOrderCancelFinalization({
       status: statusLabel,
       paymentStatus: paymentLabel,
-      paymentInfo: paymentInfo as any,
+      paymentInfo: paymentInfo
+        ? {
+            status: getString(paymentInfo.status),
+            niceSync: niceSync ? { pgStatus: getString(niceSync.pgStatus) } : null,
+          }
+        : null,
     });
     const canSyncNicePayment =
       paymentProvider === "nicepay" &&
@@ -2446,9 +2451,8 @@ export async function handleAdminOperationsGet(
       standaloneStringingRepresentativeRows,
     rentalRepresentativeRows: allGroups.filter((group) => group.anchorKind === "rental").length,
     standaloneStringingRepresentativeRows,
-    packageRepresentativeRows: allGroups.filter(
-      (group) => group.anchorKind === "package_purchase",
-    ).length,
+    packageRepresentativeRows: allGroups.filter((group) => group.anchorKind === "package_purchase")
+      .length,
     totalRepresentativeTasks: allGroups.length,
     // 현재 목록 화면에서는 실제 오늘 생성/변경 기준이 아니라 남은 대표 업무 큐 기준입니다.
     todayRepresentativeTasks: allGroups.length,
