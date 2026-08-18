@@ -8,7 +8,7 @@ const compat = new FlatCompat();
 const eslintConfig = [
   js.configs.recommended,
   {
-    ignores: [".next/**", "node_modules/**"],
+    ignores: [".next/**", "node_modules/**", ".agents/**"],
   },
   ...compat.config({
     extends: ["next/core-web-vitals", "next/typescript"],

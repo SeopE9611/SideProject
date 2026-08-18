@@ -1,12 +1,7 @@
-import { execSync } from "node:child_process";
-
+import { spawnSync } from "node:child_process";
 const TARGETS = ["app/admin", "app/api/admin", "components/admin", "lib/admin.guard.ts"];
 const CRITICAL_KEYWORDS =
   /(payment|settlement|정산|status|상태|refund|cancel|취소|shipping|배송|deposit|operations?)/i;
-
-function run(command) {
-  return execSync(command, { encoding: "utf8" }).trim();
-}
 
 function classify(file, lineText = "") {
   const isApi = file.startsWith("app/api/admin/");
@@ -18,23 +13,41 @@ function classify(file, lineText = "") {
 }
 
 function collectAnyMatches() {
-  try {
-    const out = run(`rg -n --json "\\bany\\b" ${TARGETS.join(" ")}`);
-    const lines = out.split("\n").filter(Boolean);
-    const matches = [];
-    for (const line of lines) {
-      const row = JSON.parse(line);
-      if (row.type !== "match") continue;
-      matches.push({
-        file: row.data.path.text,
-        line: row.data.line_number,
-        text: row.data.lines.text.trim(),
-      });
-    }
-    return matches;
-  } catch {
-    return [];
+  const result = spawnSync("rg", ["-n", "--json", "\\bany\\b", ...TARGETS], { encoding: "utf8" });
+
+  if (result.error) {
+    const message =
+      result.error.code === "ENOENT"
+        ? "ripgrep(rg)을 찾을 수 없습니다. rg를 설치하고 PATH를 다시 확인하세요."
+        : result.error.message;
+
+    throw new Error(`[admin-any-report] ${message}`);
   }
+
+  // ripgrep 종료 코드 1은 검색 결과가 없다는 정상 상태입니다.
+  if (result.status === 1) return [];
+
+  if (result.status !== 0) {
+    const stderr = String(result.stderr ?? "").trim();
+
+    throw new Error(`[admin-any-report] rg 실행 실패 (exit=${result.status}): ${stderr}`);
+  }
+
+  const lines = result.stdout.split("\n").filter(Boolean);
+  const matches = [];
+
+  for (const line of lines) {
+    const row = JSON.parse(line);
+    if (row.type !== "match") continue;
+
+    matches.push({
+      file: row.data.path.text,
+      line: row.data.line_number,
+      text: row.data.lines.text.trim(),
+    });
+  }
+
+  return matches;
 }
 
 const matches = collectAnyMatches();
