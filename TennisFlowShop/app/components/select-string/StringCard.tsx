@@ -1,7 +1,7 @@
 "use client";
 
-import { CatalogPrice } from "@/components/commerce/CatalogPrice";
 import { CommerceBadge } from "@/components/badges/CommerceBadge";
+import { CatalogPrice } from "@/components/commerce/CatalogPrice";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 import { Check, ChevronRight, Eye, Package } from "lucide-react";
 import Image from "next/image";
 
-import Link from "next/link";
 import {
   getColorLabel,
   getGaugeLabel,
@@ -29,6 +28,7 @@ import {
   normalizeGaugeRows,
   normalizeVariantRows,
 } from "@/lib/products/string-stock";
+import Link from "next/link";
 
 export {
   getColorLabel,
@@ -151,7 +151,7 @@ export function StringCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200",
+        "group relative overflow-hidden rounded-2xl border bg-card shadow-sm transition-[background-color,border-color,box-shadow,opacity] duration-200",
         viewMode === "list"
           ? "flex flex-col bp-md:grid bp-md:grid-cols-[210px_minmax(0,1fr)_200px]"
           : "flex h-full flex-col",
@@ -272,7 +272,7 @@ export function StringCard({
                       }
                     }}
                     className={cn(
-                      "relative h-11 w-11 shrink-0 overflow-hidden rounded-md border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-md:h-10 bp-md:w-10",
+                      "relative h-11 w-11 shrink-0 overflow-hidden rounded-md border-2 transition-[border-color,box-shadow,opacity] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-md:h-10 bp-md:w-10",
                       isColorSelected
                         ? "border-primary ring-2 ring-primary/30"
                         : "border-border hover:border-primary/50",
@@ -382,7 +382,9 @@ export function StringCard({
             onClick={(event) => event.stopPropagation()}
           >
             <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className="whitespace-nowrap">상세 보기 <span className="sr-only">(새 창에서 열림)</span></span>
+            <span className="whitespace-nowrap">
+              상세 보기 <span className="sr-only">(새 창에서 열림)</span>
+            </span>
           </Link>
         </Button>
       </div>

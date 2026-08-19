@@ -1,7 +1,7 @@
 import type { RecommendQuestion } from "@/app/products/recommend/_types";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
-import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 
 type StringRecommendQuestionProps = {
   question: RecommendQuestion;
@@ -49,10 +49,10 @@ export default function StringRecommendQuestion({
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
               className={cn(
-                "group relative min-h-24 w-full rounded-control border p-4 pr-12 text-left transition-[border-color,background-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:p-5 sm:pr-12",
+                "group relative min-h-24 w-full rounded-control border p-4 pr-12 text-left transition-[border-color,background-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none sm:p-5 sm:pr-12",
                 selected
                   ? "border-brand-highlight bg-brand-highlight-muted text-foreground shadow-soft"
-                  : "border-border bg-background text-foreground hover:-translate-y-0.5 hover:border-brand-highlight/45 hover:bg-brand-highlight-muted/50 hover:shadow-soft",
+                  : "border-border bg-background text-foreground hover:border-brand-highlight/45 hover:bg-brand-highlight-muted/50 hover:shadow-soft",
               )}
             >
               <span

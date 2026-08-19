@@ -167,7 +167,7 @@ export default function SupportFaqSearch() {
         <div className="mt-5 min-w-0">
           <div
             className={cn(
-              "relative min-w-0 transition-all duration-200",
+              "relative min-w-0 transition-shadow duration-200",
               isFocused && "rounded-control ring-2 ring-ring ring-offset-2 ring-offset-background",
             )}
           >
@@ -206,7 +206,7 @@ export default function SupportFaqSearch() {
                 type="button"
                 onClick={() => setSelectedCategory(category)}
                 className={cn(
-                  "min-h-11 rounded-full border px-4 py-2 text-ui-body-sm bp-sm:min-h-10 font-medium break-keep transition-all",
+                  "min-h-11 rounded-full border px-4 py-2 text-ui-body-sm bp-sm:min-h-10 font-medium break-keep transition-colors duration-200",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isActive
                     ? "border-brand-highlight/45 bg-brand-highlight-muted text-brand-highlight-foreground dark:text-brand-highlight"

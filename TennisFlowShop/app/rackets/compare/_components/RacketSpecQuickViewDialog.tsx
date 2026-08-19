@@ -1,24 +1,24 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo } from "react";
-import type { ReactNode } from "react";
 import {
+  Activity,
+  Circle,
   ExternalLink,
+  Grid3X3,
   Info,
   Maximize2,
-  Circle,
-  Weight,
   Ruler,
-  Activity,
-  Grid3X3,
-  Tag,
   Scale,
+  Tag,
+  Weight,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { useMemo } from "react";
 
-import { Button } from "@/components/ui/button";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -27,9 +27,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
 import { racketConditionLabel } from "@/lib/racket-condition";
+import { cn } from "@/lib/utils";
 
 import type { CompareRacketItem } from "@/app/store/racketCompareStore";
 
@@ -133,7 +133,7 @@ function SpecRow({
         <div
           className={cn(
             "flex h-7 w-7 shrink-0 items-center justify-center rounded-md bp-sm:h-8 bp-sm:w-8",
-            "bg-muted/60 transition-all duration-200",
+            "bg-muted/60 transition-colors duration-200",
             "group-hover:bg-secondary",
           )}
         >
@@ -300,7 +300,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                   "group relative h-[180px] w-[180px] overflow-hidden bp-sm:h-[200px] bp-sm:w-[200px] bp-md:h-[240px] bp-md:w-[240px]",
                   "rounded-xl bg-muted/50",
                   "ring-1 ring-muted-foreground/10",
-                  "transition-all duration-300",
+                  "transition-shadow duration-200",
                   "hover:ring-primary/30 hover:shadow-lg",
                   !racket.image && "flex items-center justify-center",
                 )}
@@ -374,7 +374,6 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                     className={cn(
                       "inline-flex items-center justify-center gap-2",
                       "border-muted-foreground/20 bg-transparent",
-                      "transition-all duration-200",
                       "hover:bg-secondary",
                       "bp-sm:flex-1",
                     )}
@@ -392,7 +391,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                     wrap="responsive"
                     className={cn(
                       "inline-flex items-center justify-center gap-2",
-                      "shadow-sm transition-all duration-200",
+                      "shadow-sm",
                       "hover:shadow-md",
                       "bp-sm:flex-1",
                     )}

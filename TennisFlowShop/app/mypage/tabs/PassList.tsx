@@ -1,11 +1,11 @@
 "use client";
 
+import PassListSkeleton from "@/app/mypage/tabs/PassListSkeleton";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import AsyncState from "@/components/system/AsyncState";
-import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { Card, CardContent } from "@/components/ui/card";
-import PassListSkeleton from "@/app/mypage/tabs/PassListSkeleton";
 import { badgeStyleSpec, getPaymentStatusBadgeSpec } from "@/lib/badge-style";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { Clock, Ticket } from "lucide-react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
@@ -288,7 +288,7 @@ export default function PassList() {
                         {remainPct !== null ? (
                           <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-background">
                             <div
-                              className="h-full rounded-full bg-brand-highlight transition-all"
+                              className="h-full rounded-full bg-brand-highlight transition-[width] duration-200"
                               style={{ width: `${remainPct}%` }}
                             />
                           </div>
