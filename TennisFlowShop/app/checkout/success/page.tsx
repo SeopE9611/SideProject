@@ -764,9 +764,7 @@ export default async function CheckoutSuccessPage({
                       >
                         <Link href="/support">고객센터 문의하기</Link>
                       </Button>
-                      {withStringService &&
-                      hasSubmittedApplication &&
-                      stringingApplicationHref ? (
+                      {withStringService && hasSubmittedApplication && stringingApplicationHref ? (
                         <Button
                           variant="highlight_soft"
                           size="lg"
@@ -999,9 +997,12 @@ export default async function CheckoutSuccessPage({
                             </div>
                           </div>
                           <div className="mt-4 border-l-2 border-border bg-muted/30 px-3 py-2">
-                            <p className="text-ui-body-sm font-ui-medium text-foreground">
-                              ⏰ 입금 기한: {new Date(order.createdAt).toLocaleDateString("ko-KR")}{" "}
-                              23:59까지
+                            <p className="flex items-center gap-1.5 text-ui-body-sm font-ui-medium text-foreground">
+                              <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
+                              <span>
+                                입금 기한: {new Date(order.createdAt).toLocaleDateString("ko-KR")}{" "}
+                                23:59까지
+                              </span>
                             </p>
                           </div>
                         </>
@@ -1413,10 +1414,22 @@ export default async function CheckoutSuccessPage({
                       다시 시도
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg" className="w-full bp-sm:w-auto" wrap="responsive">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="w-full bp-sm:w-auto"
+                    wrap="responsive"
+                  >
                     <Link href="/mypage?tab=orders">마이페이지의 주문 내역 이동</Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg" className="w-full bp-sm:w-auto" wrap="responsive">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="w-full bp-sm:w-auto"
+                    wrap="responsive"
+                  >
                     <Link href="/">홈으로</Link>
                   </Button>
                 </>

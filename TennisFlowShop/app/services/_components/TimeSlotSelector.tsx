@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
-import { parse, isToday, isAfter } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isAfter, isToday, parse } from "date-fns";
+import { Lock } from "lucide-react";
+import { useMemo } from "react";
 
 interface TimeSlotSelectorProps {
   selected: string;
@@ -152,8 +153,9 @@ export default function TimeSlotSelector({
         )}
       </div>
 
-      <p className="mt-0.5 text-ui-micro text-muted-foreground">
-        🔒 비활성 시간은 종료/예약됨/연속 불가 사유로 선택할 수 없습니다.
+      <p className="mt-0.5 flex items-start gap-1.5 text-ui-micro text-muted-foreground">
+        <Lock className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        <span>비활성 시간은 종료/예약됨/연속 불가 사유로 선택할 수 없습니다.</span>
       </p>
     </div>
   );

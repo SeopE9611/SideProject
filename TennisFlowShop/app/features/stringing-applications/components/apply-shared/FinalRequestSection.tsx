@@ -1,13 +1,12 @@
 "use client";
 
-import type React from "react";
 import { Shield } from "lucide-react";
 
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 
 export type FinalRequestSectionProps = {
   formData: any;
@@ -53,7 +52,7 @@ export default function FinalRequestSection({
           <div className="flex items-start gap-3">
             <Shield className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
             <div className="min-w-0 text-ui-body-sm">
-              <p className="mb-1 font-medium text-warning">📢 안내사항</p>
+              <p className="mb-1 font-medium text-warning">안내사항</p>
               <p className="break-keep leading-relaxed text-foreground">
                 신청자/배송 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로
                 작성됩니다. 회원정보를 수정하셨더라도{" "}
@@ -76,7 +75,7 @@ export default function FinalRequestSection({
           <div className="flex items-start gap-3">
             <Shield className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div className="min-w-0 text-ui-body-sm">
-              <p className="mb-1 font-medium text-foreground">📢 안내사항</p>
+              <p className="mb-1 font-medium text-foreground">안내사항</p>
               <p className="break-keep leading-relaxed text-foreground">
                 배송/연락처 정보는 상단에서 입력한{" "}
                 <span className="font-semibold">현재 checkout 정보</span> 기준으로 함께 접수됩니다.
