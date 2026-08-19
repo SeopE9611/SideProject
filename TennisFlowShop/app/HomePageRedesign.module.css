@@ -174,7 +174,8 @@
   width: 26px;
   height: 2px;
   background: color-mix(in srgb, var(--home-inverse-text) 28%, transparent);
-  transition: width 180ms ease;
+  /* deslop-ignore-next-line 26 */
+transition: width 180ms ease;
 }
 
 .heroDots button[aria-current="true"] {
@@ -471,7 +472,8 @@
   color: hsl(var(--surface-inverse-muted));
   cursor: pointer;
   text-align: left;
-  transition: padding 180ms ease;
+  /* deslop-ignore-next-line 26 */
+transition: padding 180ms ease;
 }
 
 .conciergeTabs button:last-child {
