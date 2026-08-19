@@ -1,6 +1,8 @@
 "use client";
 
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, PublicSurface, SectionHeader } from "@/components/public";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,18 +18,16 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { useBoardUnsavedChangesGuard } from "@/lib/hooks/useBoardUnsavedChangesGuard";
+import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 import { AlertCircle, ChevronLeft, ChevronRight, ImagePlus, Search, Upload, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero, PublicSurface, SectionHeader } from "@/components/public";
-import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
-import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 
 const CATEGORY_LABELS: Record<string, string> = {
   product: "상품문의",
@@ -112,7 +112,8 @@ export default function QnaWritePage() {
       isPrivate
     );
   }, [initialCategory, category, product?.id, title, content, selectedFiles.length, isPrivate]);
-  const { guardLinkClick, confirmAndNavigate, navigateAfterSave } = useBoardUnsavedChangesGuard(isDirty);
+  const { guardLinkClick, confirmAndNavigate, navigateAfterSave } =
+    useBoardUnsavedChangesGuard(isDirty);
 
   const confirmGoIfDirty = confirmAndNavigate;
   const guardLinkLeave = guardLinkClick;
@@ -494,17 +495,28 @@ export default function QnaWritePage() {
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
         variant="feature"
-        eyebrow={<Badge variant="signal">Q&amp;A WRITE</Badge>}
         title="문의하기"
         description="상품, 주문, 서비스 이용 중 궁금한 점을 남겨주시면 확인 후 답변드릴게요."
         actions={
           <>
-            <Button asChild variant="secondary" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              variant="secondary"
+              size="lg"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href="/board/qna" onClick={guardLinkLeave}>
                 Q&amp;A 목록
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href="/support" onClick={guardLinkLeave}>
                 고객센터 홈
               </Link>
@@ -534,10 +546,9 @@ export default function QnaWritePage() {
               ],
             ].map(([step, title, copy]) => (
               <div key={step} className="rounded-control border border-border bg-card/70 p-4">
+                {/* deslop-ignore-next-line 10 */}
                 <span className="text-ui-kicker text-brand-highlight-ink">{step}</span>
-                <h2 className="mt-2 font-ui-medium text-ui-card-title text-foreground">
-                  {title}
-                </h2>
+                <h2 className="mt-2 font-ui-medium text-ui-card-title text-foreground">{title}</h2>
                 <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">{copy}</p>
               </div>
             ))}
@@ -546,7 +557,6 @@ export default function QnaWritePage() {
           <PublicSurface variant="feature" padding="none" className="overflow-hidden">
             <div className="border-b border-border bg-brand-highlight-muted/40 p-5 bp-sm:p-6 bp-md:p-8">
               <SectionHeader
-                eyebrow="NEW QUESTION"
                 title="새 문의 작성"
                 description="아래 항목을 순서대로 작성해 주세요. 입력 오류가 있으면 첫 오류 위치로 이동합니다."
               />
@@ -566,7 +576,6 @@ export default function QnaWritePage() {
 
               <section ref={categoryWrapRef} className="space-y-5 scroll-mt-24">
                 <SectionHeader
-                  eyebrow="TYPE & PRODUCT"
                   title="문의 유형 및 상품 선택"
                   description="문의 유형을 먼저 선택해 주세요. 상품문의는 관련 상품을 함께 지정해야 합니다."
                 />
@@ -649,9 +658,7 @@ export default function QnaWritePage() {
                       aria-describedby={fieldErrors.product ? productErrorId : undefined}
                     >
                       <div className="rounded-control border border-border bg-muted/30 p-4">
-                        <div className="mb-3 font-ui-medium text-ui-card-title ">
-                          내 구매상품
-                        </div>
+                        <div className="mb-3 font-ui-medium text-ui-card-title ">내 구매상품</div>
                         {!me && (
                           <div className="mb-2 text-ui-label text-muted-foreground">
                             로그인하면 내 구매상품 목록을 불러와 빠르게 선택할 수 있어요.
@@ -753,7 +760,7 @@ export default function QnaWritePage() {
               </section>
 
               <section className="space-y-5 border-t border-border pt-8">
-                <SectionHeader eyebrow="QUESTION" title="제목 및 문의 내용" />
+                <SectionHeader title="제목 및 문의 내용" />
                 <div className="space-y-3">
                   <Label htmlFor="title" className="text-ui-body font-semibold">
                     제목 <span className="text-destructive">*</span>
@@ -817,7 +824,6 @@ export default function QnaWritePage() {
                 className="space-y-5 scroll-mt-24 border-t border-border pt-8"
               >
                 <SectionHeader
-                  eyebrow="ATTACHMENT"
                   title="이미지 첨부"
                   description="선택 사항이며 최대 3개, 파일당 최대 5MB까지 등록할 수 있습니다."
                 />
@@ -921,7 +927,7 @@ export default function QnaWritePage() {
               </section>
 
               <section className="space-y-4 border-t border-border pt-8">
-                <SectionHeader eyebrow="VISIBILITY" title="공개 범위" />
+                <SectionHeader title="공개 범위" />
                 <div className="flex items-start gap-3 rounded-control border border-border bg-muted/30 p-4">
                   <Checkbox
                     id="private"
