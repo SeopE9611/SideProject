@@ -1,11 +1,11 @@
 "use client";
 
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { RichTextEditor } from "@/components/editor/RichTextEditor";
 import { richTextToValidationText } from "@/components/editor/rich-text-utils";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,6 +34,7 @@ import {
   Tags,
   Upload,
   X,
+  ZoomIn,
 } from "lucide-react";
 import NextImage from "next/image";
 import Link from "next/link";
@@ -227,7 +228,8 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
   ]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
-  const { guardLinkClick, confirmAndNavigate, navigateAfterSave } = useBoardUnsavedChangesGuard(isDirty);
+  const { guardLinkClick, confirmAndNavigate, navigateAfterSave } =
+    useBoardUnsavedChangesGuard(isDirty);
 
   const guardLeave = guardLinkClick;
 
@@ -593,9 +595,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
         );
 
         navigateAfterSave(() => {
-
           router.replace(`${detailBaseHref}/${goId}`);
-
         });
         router.refresh();
         return;
@@ -1031,16 +1031,10 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                               {isImage && url && (
                                 <div className="pointer-events-none absolute bottom-1.5 right-1.5">
                                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]">
-                                    <svg
-                                      viewBox="0 0 24 24"
+                                    <ZoomIn
                                       className="h-3.5 w-3.5 text-foreground"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                    >
-                                      <path d="M21 21l-4.35-4.35" />
-                                      <circle cx="11" cy="11" r="8" />
-                                    </svg>
+                                      aria-hidden="true"
+                                    />
                                   </div>
                                 </div>
                               )}

@@ -2,14 +2,23 @@
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Eye, MessageSquare, Plus, Star, Pin, Megaphone } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  ImageIcon,
+  Megaphone,
+  MessageSquare,
+  Paperclip,
+  Pin,
+  Plus,
+  Star,
+} from "lucide-react";
 import useSWR from "swr";
 
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface, SectionHeader } from "@/components/public";
 import AsyncState from "@/components/system/AsyncState";
 import { Skeleton } from "@/components/ui/skeleton";
-import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
 import {
   badgeBaseOutlined,
   badgeSizeSm,
@@ -18,6 +27,7 @@ import {
   getQnaCategoryBadgeSpec,
   getReviewTypeBadgeSpec,
 } from "@/lib/badge-style";
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
 import Link from "next/link";
 // 공용 스켈레톤
 function FiveLineSkeleton() {
@@ -232,17 +242,7 @@ function NoticeCard({
                                 : "이미지 첨부"
                             }
                           >
-                            <svg
-                              viewBox="0 0 24 24"
-                              className="h-3.5 w-3.5"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <rect x="3" y="3" width="18" height="14" rx="2" />
-                              <path d="M3 13l4-4 5 5 3-3 6 6" />
-                              <circle cx="8.5" cy="7.5" r="1.5" />
-                            </svg>
+                            <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
                           </Badge>
                         )}
                         {notice.hasFile && (
@@ -255,15 +255,7 @@ function NoticeCard({
                                 : "파일 첨부"
                             }
                           >
-                            <svg
-                              viewBox="0 0 24 24"
-                              className="h-3.5 w-3.5"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.88 17.05a2 2 0 01-2.83-2.83l8.48-8.48" />
-                            </svg>
+                            <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
                           </Badge>
                         )}
                       </div>

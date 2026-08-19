@@ -85,6 +85,7 @@ export default function RacketCareLandingHero({ primaryHref, primaryLabel }: Pro
                     viewBox="0 0 120 120"
                     aria-hidden="true"
                   >
+                    {/* deslop-ignore-next-line 24 */}
                     <circle
                       className="text-muted"
                       cx="60"
@@ -94,6 +95,7 @@ export default function RacketCareLandingHero({ primaryHref, primaryLabel }: Pro
                       stroke="currentColor"
                       strokeWidth="10"
                     />
+                    {/* deslop-ignore-next-line 24 */}
                     <circle
                       cx="60"
                       cy="60"
