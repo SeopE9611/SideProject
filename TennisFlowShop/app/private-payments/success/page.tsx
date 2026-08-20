@@ -22,7 +22,6 @@ export default async function PrivatePaymentSuccessPage({
       <main className="min-h-screen bg-background pb-10">
         <PublicPageHero
           variant="feature"
-          eyebrow="개인결제"
           title="결제 결과를 확인해 주세요"
           description="개인결제 승인 내역을 안전하게 확인할 수 있습니다."
         />
@@ -44,7 +43,6 @@ export default async function PrivatePaymentSuccessPage({
       <main className="min-h-screen bg-background pb-10">
         <PublicPageHero
           variant="feature"
-          eyebrow="개인결제"
           title="결제 결과를 확인해 주세요"
           description="개인결제 승인 내역을 안전하게 확인할 수 있습니다."
         />
@@ -80,7 +78,6 @@ export default async function PrivatePaymentSuccessPage({
     <main className="min-h-screen bg-background pb-10">
       <PublicPageHero
         variant="feature"
-        eyebrow="개인결제"
         title={resultTitle}
         description={resultDescription}
       />

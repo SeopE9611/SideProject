@@ -540,7 +540,6 @@ export default function SupportPage() {
       <PublicPageHero
         align="center"
         variant="feature"
-        eyebrow="고객센터"
         title="필요한 도움을 빠르게 찾아보세요"
         description={
           <p className="break-keep leading-relaxed">

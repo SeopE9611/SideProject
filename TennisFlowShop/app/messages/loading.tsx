@@ -7,7 +7,6 @@ export default function Loading() {
     <div className="min-h-full bg-background" aria-busy="true" aria-live="polite">
       <PublicPageHero
         variant="feature"
-        eyebrow="쪽지"
         title="쪽지함"
         description="알림보다 자세한 1:1 안내와 답장을 확인하세요"
       />

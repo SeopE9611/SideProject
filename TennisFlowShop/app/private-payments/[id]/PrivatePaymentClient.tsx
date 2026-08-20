@@ -30,7 +30,6 @@ function PaymentShell({ children }: { children: React.ReactNode }) {
     <main className="min-h-screen bg-background pb-10">
       <PublicPageHero
         variant="feature"
-        eyebrow="개인결제"
         title="안내받은 결제 정보를 확인해 주세요"
         description="결제 내용과 구매자 정보를 확인한 뒤 안전하게 결제를 진행할 수 있습니다."
       />
