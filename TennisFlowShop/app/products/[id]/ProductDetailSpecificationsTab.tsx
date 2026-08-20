@@ -1,5 +1,3 @@
-import { Settings } from "lucide-react";
-
 type ProductDetailSpecificationsTabProps = {
   displaySpec: Record<string, any>;
   selectedColorLabel?: string;
@@ -33,14 +31,9 @@ export default function ProductDetailSpecificationsTab({
 
   return (
     <div className="space-y-4 bp-sm:space-y-6">
-      <div className="mb-4 flex min-w-0 items-center gap-3 bp-sm:mb-6">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground bp-sm:h-12 bp-sm:w-12">
-          <Settings className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" />
-        </div>
-        <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
-          상세 스펙
-        </h3>
-      </div>
+      <h3 className="mb-4 break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:mb-6 bp-sm:text-ui-page-title">
+        상세 스펙
+      </h3>
 
       {displaySpecEntries.length > 0 && (
         <div className="-mx-4 divide-y divide-border/60 border-y border-border/60 px-4 bp-sm:-mx-6 bp-sm:px-6 bp-md:mx-0 bp-md:grid bp-md:grid-cols-2 bp-md:gap-4 bp-md:divide-y-0 bp-md:border-y-0 bp-md:px-0">
@@ -64,14 +57,9 @@ export default function ProductDetailSpecificationsTab({
       )}
       {isHybridMaterial && hybridSpec && (
         <section className="mt-4 space-y-3 bp-sm:mt-6 bp-sm:space-y-4">
-          <div className="flex items-center gap-2 bp-sm:gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground bp-sm:h-10 bp-sm:w-10">
-              <Settings className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-            </div>
-            <h4 className="text-ui-card-title-lg font-ui-bold text-foreground bp-sm:text-ui-section-title">
-              하이브리드 구성
-            </h4>
-          </div>
+          <h4 className="text-ui-card-title-lg font-ui-bold text-foreground bp-sm:text-ui-section-title">
+            하이브리드 구성
+          </h4>
 
           <div className="-mx-4 divide-y divide-border/60 border-y border-border/60 px-4 bp-sm:-mx-6 bp-sm:px-6 bp-md:mx-0 bp-md:grid bp-md:grid-cols-2 bp-md:gap-4 bp-md:divide-y-0 bp-md:border-y-0 bp-md:px-0">
             <div className="py-3 bp-md:rounded-xl bp-md:border bp-md:border-border bp-md:bg-muted/30 bp-md:p-4">

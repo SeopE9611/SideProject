@@ -203,9 +203,6 @@ export default function OrderLookupResultsPage() {
 
           <Card className="border-0 bg-transparent shadow-none mb-6 md:mb-8">
             <CardHeader className="text-center pb-6 md:pb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-full mb-4 mx-auto border border-border/60">
-                <ShoppingBag className="w-6 h-6 text-foreground" />
-              </div>
               <CardTitle className="text-ui-card-title-lg font-semibold text-foreground">
                 <span className="text-primary">주문</span> 내역
               </CardTitle>

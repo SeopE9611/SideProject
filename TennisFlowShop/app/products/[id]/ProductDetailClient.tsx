@@ -1436,14 +1436,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
             >
               <TabsContent value="description" className="p-4 bp-sm:p-6 bp-md:p-8">
                 <div>
-                  <div className="mb-4 flex min-w-0 items-center gap-3 bp-sm:mb-6">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground bp-sm:h-12 bp-sm:w-12">
-                      <FileText className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" />
-                    </div>
-                    <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
-                      상품 설명
-                    </h3>
-                  </div>
+                  <h3 className="mb-4 break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:mb-6 bp-sm:text-ui-page-title">
+                    상품 설명
+                  </h3>
                   <div className="-mx-4 border-y border-border/60 px-4 py-4 bp-sm:-mx-6 bp-sm:px-6 bp-sm:py-5 bp-md:mx-0 bp-md:rounded-xl bp-md:border bp-md:bg-muted/30 bp-md:p-6">
                     <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
                       {product.description || "상품 설명이 아직 등록되지 않았습니다."}
