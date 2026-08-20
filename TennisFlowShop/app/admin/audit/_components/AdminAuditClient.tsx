@@ -8,20 +8,21 @@ import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Search, ListFilter, ClipboardList } from "lucide-react";
-import AdminPageSection from "@/components/admin/AdminPageSection";
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminRowActions,
+} from "@/components/admin/AdminListTable";
+import { Search } from "lucide-react";
 import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
-import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
-import { cn } from "@/lib/utils";
+import { adminTypography } from "@/components/admin/admin-typography";
 
 type AuditItem = {
   id: string;
@@ -46,6 +47,8 @@ type AuditListResponse = {
 };
 
 const PAGE_SIZE = 20;
+const AUDIT_LIST_COLUMNS =
+  "grid-cols-[minmax(360px,1.4fr)_minmax(320px,1.15fr)_190px_116px]";
 type AuditQueryState = { page: number; q: string; type: string };
 const AUDIT_QUERY_DEFAULTS: AuditQueryState = { page: 1, q: "", type: "" };
 const parseAuditQueryState = (params: URLSearchParams, defaults: AuditQueryState) => ({
@@ -88,6 +91,15 @@ const QUICK_TYPE_FILTERS = [
   { label: "메모 삭제", value: "note.delete" },
 ] as const;
 
+function getAuditTypeFilterLabel(value: string) {
+  if (!value) return "전체 유형";
+
+  const quickFilter = QUICK_TYPE_FILTERS.find((filter) => filter.value === value);
+  if (quickFilter) return quickFilter.label;
+
+  return AUDIT_TYPE_LABELS[value] || value;
+}
+
 function formatDateTime(value?: string | null) {
   if (!value) return "-";
   const date = new Date(value);
@@ -128,6 +140,19 @@ export default function AdminAuditClient() {
   const [draftQ, setDraftQ] = useState(state.q);
   const [draftType, setDraftType] = useState(state.type);
 
+  const appliedQuery = state.q.trim();
+  const appliedType = state.type.trim();
+  const currentTypeLabel = getAuditTypeFilterLabel(appliedType);
+
+  const currentViewLabel = appliedQuery
+    ? "검색 결과"
+    : appliedType
+      ? currentTypeLabel
+      : "전체 로그";
+
+  const isInitialLoading = !data && !error;
+  const hasAppliedFilters = Boolean(appliedQuery || appliedType);
+
   const applyFilters = () => patchState({ q: draftQ, type: draftType });
   const applyQuickTypeFilter = (nextType: string) => {
     setDraftType(nextType);
@@ -141,21 +166,53 @@ export default function AdminAuditClient() {
 
   return (
     <div className="space-y-4">
-      <AdminPageSection
-        title="검색/필터"
-        description="메시지, 실행자, 작업 유형으로 감사 로그를 좁혀봅니다."
-        icon={ListFilter}
-        className={adminSurface.filterCard}
-        contentClassName="space-y-3"
+      <AdminFilterBar
+        actions={
+          <Button type="button" variant="outline" size="sm" onClick={resetFilters}>
+            초기화
+          </Button>
+        }
+        quickFilters={
+          <>
+            {QUICK_TYPE_FILTERS.map((filter) => (
+              <Button
+                key={filter.label}
+                type="button"
+                size="sm"
+                variant={state.type === filter.value ? "default" : "ghost"}
+                onClick={() => applyQuickTypeFilter(filter.value)}
+              >
+                {filter.label}
+              </Button>
+            ))}
+          </>
+        }
+        activeFilters={
+          <>
+            <span className="font-medium text-foreground/80">
+              작업 유형: {currentTypeLabel}
+            </span>
+            {appliedQuery ? <span>검색어: {appliedQuery}</span> : null}
+            <span className="tabular-nums">
+              조회 결과: {data ? `${data.total.toLocaleString("ko-KR")}건` : "-"}
+            </span>
+          </>
+        }
       >
-        <div className="grid gap-3 grid-cols-[minmax(0,1fr)_280px_auto_auto]">
+        <form
+          className="grid grid-cols-[minmax(0,1fr)_280px_auto] items-end gap-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            applyFilters();
+          }}
+        >
           <div className="space-y-2">
             <Label htmlFor="audit-filter-query">메시지 또는 실행자</Label>
             <Input
               id="audit-filter-query"
               placeholder="메시지 또는 실행자 검색"
               value={draftQ}
-              onChange={(e) => setDraftQ(e.target.value)}
+              onChange={(event) => setDraftQ(event.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -164,110 +221,135 @@ export default function AdminAuditClient() {
               id="audit-filter-type"
               placeholder="users.update"
               value={draftType}
-              onChange={(e) => setDraftType(e.target.value)}
+              onChange={(event) => setDraftType(event.target.value)}
             />
           </div>
-          <Button onClick={applyFilters} className="self-end gap-2">
+          <Button type="submit" className="gap-2">
             <Search className="h-4 w-4" />
             검색
           </Button>
-          <Button variant="outline" onClick={resetFilters} className="self-end">
-            초기화
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {QUICK_TYPE_FILTERS.map((filter) => (
-            <Button
-              key={filter.label}
-              type="button"
-              size="sm"
-              variant={state.type === filter.value ? "default" : "ghost"}
-              onClick={() => applyQuickTypeFilter(filter.value)}
-            >
-              {filter.label}
-            </Button>
-          ))}
-        </div>
-      </AdminPageSection>
+        </form>
+      </AdminFilterBar>
 
-      {error && (
-        <div className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-destructive`}>
-          감사 로그를 불러오지 못했습니다.
-        </div>
-      )}
+      <AdminListTable
+        title="감사 로그 목록"
+        viewLabel={currentViewLabel}
+        resultLabel={
+          error
+            ? "불러오기 실패"
+            : data
+              ? `총 ${data.total.toLocaleString("ko-KR")}건`
+              : "불러오는 중…"
+        }
+        description="관리자 작업, 실행자와 대상, 발생 일시 및 변경 상세를 한 행에서 확인합니다."
+        columnsClassName={AUDIT_LIST_COLUMNS}
+        ariaLabel="관리자 감사 로그 목록"
+      >
+        <AdminListColumnHeader columnsClassName={AUDIT_LIST_COLUMNS}>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            작업
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            실행자 / 대상
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
+            일시
+          </div>
+          <div role="columnheader" className="min-w-0 px-2 py-2.5 text-right">
+            상세
+          </div>
+        </AdminListColumnHeader>
 
-      {!error && !data && (
-        <div
-          className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-muted-foreground`}
-        >
-          불러오는 중...
-        </div>
-      )}
-
-      {!!data && data.items.length === 0 && (
-        <div
-          className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-muted-foreground`}
-        >
-          조회 결과가 없습니다.
-        </div>
-      )}
-
-      {!!data && data.items.length > 0 && (
-        <AdminPageSection
-          title="감사 로그 목록"
-          description={`총 ${data.total.toLocaleString("ko-KR")}건 · ${data.page}/${data.totalPages} 페이지`}
-          icon={ClipboardList}
-          contentClassName="p-0"
-        >
-          <Table className="min-w-[900px] table-fixed">
-            <TableHeader className={adminSurface.tableHeader}>
-              <TableRow className={adminDataTable.row}>
-                <TableHead className={cn(adminDataTable.head, "w-[34%]")}>작업</TableHead>
-                <TableHead className={cn(adminDataTable.head, "w-[20%]")}>실행자</TableHead>
-                <TableHead className={cn(adminDataTable.head, "w-[16%]")}>대상</TableHead>
-                <TableHead className={cn(adminDataTable.headRight, "w-[18%]")}>일시</TableHead>
-                <TableHead className={cn(adminDataTable.headRight, "w-[12%]")}>상세</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.items.map((item) => {
+        <AdminListBody>
+          {error ? (
+            <AdminListRow columnsClassName={AUDIT_LIST_COLUMNS} ariaLabel="감사 로그 목록 오류">
+              <AdminListCell className="col-span-4 py-10 text-center text-destructive">
+                감사 로그를 불러오지 못했습니다.
+              </AdminListCell>
+            </AdminListRow>
+          ) : isInitialLoading ? (
+            Array.from({ length: 6 }).map((_, rowIndex) => (
+              <AdminListRow
+                key={`audit-loading-${rowIndex}`}
+                columnsClassName={AUDIT_LIST_COLUMNS}
+                ariaLabel="감사 로그 불러오는 중"
+              >
+                <AdminListCell>
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </AdminListCell>
+                <AdminListCell>
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                </AdminListCell>
+                <AdminListCell align="end">
+                  <Skeleton className="h-4 w-36" />
+                </AdminListCell>
+                <AdminListCell align="end" className="px-2">
+                  <Skeleton className="h-8 w-20" />
+                </AdminListCell>
+              </AdminListRow>
+            ))
+          ) : !data?.items.length ? (
+            <AdminListRow columnsClassName={AUDIT_LIST_COLUMNS} ariaLabel="감사 로그 없음">
+              <AdminListCell className="col-span-4 py-16 text-center">
+                {hasAppliedFilters
+                  ? "현재 조건에 맞는 감사 로그가 없습니다."
+                  : "기록된 감사 로그가 없습니다."}
+              </AdminListCell>
+            </AdminListRow>
+          ) : (
+            data.items.map((item) => {
                 const actionName = AUDIT_TYPE_LABELS[item.type] || item.message?.trim() || item.type;
+                const message = item.message?.trim();
+                const supportingMessage =
+                  message && message !== actionName ? message : undefined;
 
                 return (
-                  <TableRow key={item.id} className={adminDataTable.compactRow}>
-                    <TableCell className={adminDataTable.cellCompact}>
-                      <div className={adminDataTable.cellStack}>
-                        <div className={adminDataTable.primaryLine}>{actionName}</div>
-                        <div className={adminDataTable.secondaryLine}>{item.type}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className={adminDataTable.cellCompact}>
-                      <span title={item.actorTitle} className={adminDataTable.primaryLine}>
-                        {item.actor}
-                      </span>
-                    </TableCell>
-                    <TableCell className={adminDataTable.cellCompact}>
-                      <span className={adminDataTable.secondaryLine} title={item.targetId ?? undefined}>
-                        {item.targetId
-                          ? `${item.targetId.slice(0, 8)}${item.targetId.length > 8 ? "…" : ""}`
-                          : "없음"}
-                      </span>
-                    </TableCell>
-                    <TableCell className={cn(adminDataTable.dateCell, "py-2.5")}>
-                      <time dateTime={item.createdAt ?? undefined}>
+                  <AdminListRow key={item.id} columnsClassName={AUDIT_LIST_COLUMNS}>
+                    <AdminListCell>
+                      <AdminListPrimary
+                        title={actionName}
+                        meta={<span>{item.type}</span>}
+                        supporting={supportingMessage}
+                      />
+                    </AdminListCell>
+                    <AdminListCell>
+                      <AdminListPrimary
+                        title={<span title={item.actorTitle}>{item.actor}</span>}
+                        meta={
+                          <span title={item.targetId ?? undefined}>
+                            대상 {item.targetId || "없음"}
+                          </span>
+                        }
+                      />
+                    </AdminListCell>
+                    <AdminListCell align="end">
+                      <time
+                        dateTime={item.createdAt ?? undefined}
+                        className="whitespace-nowrap tabular-nums"
+                      >
                         {formatDateTime(item.createdAt)}
                       </time>
-                    </TableCell>
-                    <TableCell className={cn(adminDataTable.cellCompact, "text-right")}>
-                    <AdminRowDetailsSheet
-                      title={actionName}
-                      description={`${item.actor} · ${formatDateTime(item.createdAt)}`}
-                      trigger={
-                        <Button type="button" size="sm" variant="outline" className="h-8">
-                          {item.diffSummary?.length ? `변경 ${item.diffSummary.length}건` : "보기"}
-                        </Button>
-                      }
-                    >
+                    </AdminListCell>
+                    <AdminListCell align="end" className="px-2">
+                      <AdminRowActions>
+                        <AdminRowDetailsSheet
+                          title={actionName}
+                          description={`${item.actor} · ${formatDateTime(item.createdAt)}`}
+                          trigger={
+                            <Button type="button" size="sm" variant="outline">
+                              {item.diffSummary?.length
+                                ? `변경 ${item.diffSummary.length}건`
+                                : "보기"}
+                            </Button>
+                          }
+                        >
                       <dl className="divide-y divide-border rounded-lg border border-border">
                         {[
                           ["감사 ID", item.id],
@@ -299,37 +381,50 @@ export default function AdminAuditClient() {
                           </ul>
                         </div>
                       ) : null}
-                    </AdminRowDetailsSheet>
-                    </TableCell>
-                  </TableRow>
+                        </AdminRowDetailsSheet>
+                      </AdminRowActions>
+                    </AdminListCell>
+                  </AdminListRow>
                 );
-              })}
-            </TableBody>
-          </Table>
+              })
+          )}
+        </AdminListBody>
 
-          <div className={`flex items-center justify-between border-t border-border px-4 py-3 ${adminTypography.meta}`}>
-            <div className="text-muted-foreground">
-              총 {data.total}건 · {data.page}/{data.totalPages} 페이지
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                disabled={state.page <= 1 || isValidating}
-                onClick={() => setPage(state.page - 1)}
-              >
-                이전
-              </Button>
-              <Button
-                variant="outline"
-                disabled={state.page >= data.totalPages || isValidating}
-                onClick={() => setPage(state.page + 1)}
-              >
-                다음
-              </Button>
+        <div role="rowgroup" className="border-t border-border">
+          <div role="row">
+            <div
+              role="cell"
+              aria-colspan={4}
+              className="flex items-center justify-between gap-3 px-4 py-3"
+            >
+              <span className={adminTypography.metaMuted}>
+                총 {data?.total.toLocaleString("ko-KR") ?? 0}건 · {" "}
+                {data?.page ?? state.page}/{data?.totalPages ?? 1}페이지
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!data || state.page <= 1 || isValidating}
+                  onClick={() => setPage(state.page - 1)}
+                >
+                  이전
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!data || state.page >= data.totalPages || isValidating}
+                  onClick={() => setPage(state.page + 1)}
+                >
+                  다음
+                </Button>
+              </div>
             </div>
           </div>
-        </AdminPageSection>
-      )}
+        </div>
+      </AdminListTable>
     </div>
   );
 }
