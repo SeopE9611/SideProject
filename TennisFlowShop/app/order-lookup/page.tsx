@@ -211,11 +211,7 @@ export default function OrderLookupPage() {
         align="center"
         title="비회원 주문 조회"
         description="주문번호를 몰라도 주문 시 입력한 이름, 이메일, 연락처로 주문/신청 상태와 다음 해야 할 일을 확인할 수 있어요."
-      >
-        <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card shadow-sm">
-          <Search className="h-7 w-7" />
-        </div>
-      </PublicPageHero>
+      />
 
       <SiteContainer className="py-8 md:py-12">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">

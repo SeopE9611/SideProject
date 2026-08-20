@@ -1,7 +1,7 @@
 "use client";
 import AsyncState from "@/components/system/AsyncState";
 import type { HomePreviewNotice } from "@/lib/home/home-preview";
-import { ChevronRight, Megaphone } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -32,10 +32,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
     <div className="flex min-h-[168px] flex-col overflow-hidden rounded-panel border border-border bg-card">
       {/* Card Header */}
       <div className="flex items-center justify-between border-b border-border/70 bg-card px-5 bp-sm:px-6 py-4 bp-sm:py-5">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-control border border-border/70 bg-brand-highlight-muted text-foreground">
-            <Megaphone aria-hidden="true" className="h-4 w-4" />
-          </div>
+        <div className="flex items-center">
           <h3 className="text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
             공지사항
           </h3>

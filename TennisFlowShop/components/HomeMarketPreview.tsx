@@ -1,7 +1,7 @@
 "use client";
 import AsyncState from "@/components/system/AsyncState";
 import type { HomePreviewMarketPost } from "@/lib/home/home-preview";
-import { ChevronRight, Tags } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -31,10 +31,7 @@ export default function HomeMarketPreview({ initialItems }: HomeMarketPreviewPro
     <div className="flex h-full flex-col rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       {/* Card Header */}
       <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 bp-sm:px-6 py-4 bp-sm:py-5">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
-            <Tags className="h-4 w-4" />
-          </div>
+        <div className="flex items-center">
           <h2 className="text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">
             중고 거래 최신글
           </h2>

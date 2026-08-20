@@ -32,10 +32,7 @@ export default function ProductDetailQnaTab({
   return (
     <div className="space-y-4 bp-sm:space-y-6">
       <div className="flex min-w-0 flex-col gap-3 bp-md:flex-row bp-md:items-start bp-md:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/30 text-primary bp-sm:h-12 bp-sm:w-12">
-            <MessageSquare className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" aria-hidden="true" />
-          </div>
+        <div className="flex min-w-0 items-center">
           <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
             {title}
           </h3>
