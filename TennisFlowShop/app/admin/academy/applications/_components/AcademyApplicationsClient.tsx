@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import useSWR from "swr";
-import { ArrowLeft, BookOpen, Eye, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Search, Trash2 } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
@@ -12,8 +12,11 @@ import {
   AdminListBody,
   AdminListCell,
   AdminListColumnHeader,
+  AdminListPrimary,
   AdminListRow,
   AdminListTable,
+  AdminRowActions,
+  AdminStatusGroup,
 } from "@/components/admin/AdminListTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
@@ -23,6 +26,7 @@ import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBad
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,7 +62,7 @@ import {
 
 const LIMIT = 20;
 const APPLICATION_LIST_COLUMNS =
-  "grid-cols-[112px_minmax(170px,1fr)_minmax(190px,1.2fr)_128px_minmax(150px,0.9fr)_112px_160px]";
+  "grid-cols-[minmax(300px,1.15fr)_minmax(320px,1.22fr)_minmax(200px,0.78fr)_130px_116px]";
 
 type AcademyApplicationListItem = {
   _id: string;
@@ -202,6 +206,11 @@ export default function AcademyApplicationsClient() {
     confirmed: 0,
     cancelled: 0,
   };
+  const currentViewLabel = keyword
+    ? "검색 결과"
+    : status === "all"
+      ? "전체 신청"
+      : getAcademyApplicationStatusLabel(status);
 
   async function handleDelete(item: AcademyApplicationListItem) {
     setDeletingId(item._id);
@@ -334,166 +343,209 @@ export default function AcademyApplicationsClient() {
       </AdminFilterBar>
 
       <AdminListTable
-            title="신청 목록"
-            viewLabel={status === "all" ? "전체 상태" : getAcademyApplicationStatusLabel(status)}
-            resultLabel={
-              error
-                ? "불러오기 실패"
-                : data
-                  ? `총 ${data.pagination.total.toLocaleString("ko-KR")}건`
-                  : "불러오는 중…"
-            }
-            description="신청자, 선택 클래스, 희망 수업·일정, 처리 상태와 관리 작업을 한 행에서 확인합니다."
-            columnsClassName={APPLICATION_LIST_COLUMNS}
-            ariaLabel="아카데미 신청 관리 목록"
-          >
-            <AdminListColumnHeader columnsClassName={APPLICATION_LIST_COLUMNS}>
-                  <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">접수일</div>
-                  <div role="columnheader" className="min-w-0 px-4 py-2.5">신청자</div>
-                  <div role="columnheader" className="min-w-0 px-4 py-2.5">선택 클래스</div>
-                  <div role="columnheader" className="min-w-0 px-4 py-2.5">희망 정보</div>
-                  <div role="columnheader" className="min-w-0 px-4 py-2.5">선호 일정</div>
-                  <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">상태</div>
-                  <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">관리</div>
-            </AdminListColumnHeader>
-            <AdminListBody>
-                {error ? (
-                  <AdminListRow columnsClassName={APPLICATION_LIST_COLUMNS} ariaLabel="목록 오류">
-                    <AdminListCell className="col-span-7 py-10 text-center text-destructive">
-                      신청 목록을 불러오지 못했습니다.
-                    </AdminListCell>
-                  </AdminListRow>
-                ) : isLoading ? (
-                  <AdminListRow columnsClassName={APPLICATION_LIST_COLUMNS}>
-                    <AdminListCell className="col-span-7 py-10 text-center text-muted-foreground">
-                      신청 목록을 불러오는 중입니다.
-                    </AdminListCell>
-                  </AdminListRow>
-                ) : null}
-                {!isLoading && data?.items.length === 0 ? (
-                  <AdminListRow columnsClassName={APPLICATION_LIST_COLUMNS}>
-                    <AdminListCell className="col-span-7 py-10 text-center text-muted-foreground">
-                      아직 접수된 레슨 신청이 없습니다.
-                    </AdminListCell>
-                  </AdminListRow>
-                ) : null}
-                {data?.items.map((item) => {
-                  const createdAt = formatAdminDateTimeParts(item.createdAt);
-
-                  return (
-                    <AdminListRow key={item._id} columnsClassName={APPLICATION_LIST_COLUMNS}>
-                      <AdminListCell align="end">
-                        <div className="font-medium text-foreground">{createdAt.date}</div>
-                        <div className="text-muted-foreground">{createdAt.time}</div>
-                      </AdminListCell>
-                      <AdminListCell>
-                        <div
-                          className={cn(
-                            "line-clamp-2 max-w-[180px] break-keep",
-                            adminDataTable.primaryText,
-                          )}
-                          title={item.applicantName || "-"}
-                        >
-                          {item.applicantName || "-"}
-                        </div>
-                        <div
-                          className={cn("max-w-[180px] truncate", adminDataTable.secondaryText)}
-                          title={item.email || "이메일 미입력"}
-                        >
-                          {item.email || "이메일 미입력"}
-                        </div>
-                        <div className={cn("whitespace-nowrap", adminDataTable.secondaryText)}>
-                          {item.phone || "연락처 미입력"}
-                        </div>
-                      </AdminListCell>
-                      <AdminListCell>
-                        <SelectedClassCell classSnapshot={item.classSnapshot} />
-                      </AdminListCell>
-                      <AdminListCell>
-                        <div>{getAcademyLessonTypeLabel(item.desiredLessonType)}</div>
-                        <div className={adminDataTable.secondaryText}>
-                          {getAcademyCurrentLevelLabel(item.currentLevel)}
-                        </div>
-                      </AdminListCell>
-                      <AdminListCell>
-                        <div
-                          className="max-w-[160px] truncate"
-                          title={item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
-                        >
-                          {item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
-                        </div>
-                        <div
-                          className={cn("max-w-[160px] truncate", adminDataTable.secondaryText)}
-                          title={item.preferredTimeText || "희망 시간 미입력"}
-                        >
-                          {item.preferredTimeText || "희망 시간 미입력"}
-                        </div>
-                      </AdminListCell>
-                      <AdminListCell>
-                        <AcademyStatusBadge status={item.status} />
-                      </AdminListCell>
-                      <AdminListCell align="end" className="px-2">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => goToDetail(item._id)}
-                            aria-label={`${item.applicantName || "신청자"} 신청 상세 보기`}
-                          >
-                            <Eye className="mr-1 h-4 w-4" />
-                            상세 보기
-                          </Button>
-                          {item.status === "cancelled" ? (
-                            <AdminRowActionMenu
-                              ariaLabel={`${item.applicantName || "신청"} 관리 메뉴`}
-                              destructiveActions={
-                              <DropdownMenuItem
-                                className="whitespace-nowrap text-destructive focus:text-destructive"
-                                disabled={deletingId === item._id}
-                                onSelect={(event) => {
-                                  event.preventDefault();
-                                  setPendingDelete(item);
-                                }}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {deletingId === item._id ? "삭제 중..." : "삭제"}
-                              </DropdownMenuItem>
-                              }
-                            />
-                          ) : null}
-                        </div>
-                      </AdminListCell>
-                    </AdminListRow>
-                  );
-                })}
-            </AdminListBody>
-      </AdminListTable>
-
-          <div className="flex gap-3 text-sm text-muted-foreground flex-row items-center justify-between">
-            <span>
-              {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1} 페이지 · 총{" "}
-              {data?.pagination.total ?? 0}건
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!data?.pagination.hasPrevPage}
-                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+        title="신청 목록"
+        viewLabel={currentViewLabel}
+        resultLabel={
+          error
+            ? "불러오기 실패"
+            : data
+              ? `총 ${data.pagination.total.toLocaleString("ko-KR")}건`
+              : "불러오는 중…"
+        }
+        description="신청자 연락처와 접수일, 선택 클래스와 희망 수업, 선호 일정, 상태 및 관리 작업을 한 행에서 확인합니다."
+        columnsClassName={APPLICATION_LIST_COLUMNS}
+        ariaLabel="아카데미 신청 관리 목록"
+      >
+        <AdminListColumnHeader columnsClassName={APPLICATION_LIST_COLUMNS}>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            신청자 / 접수
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            클래스 / 희망 수업
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            선호 일정
+          </div>
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            상태
+          </div>
+          <div role="columnheader" className="min-w-0 px-2 py-2.5 text-right">
+            작업
+          </div>
+        </AdminListColumnHeader>
+        <AdminListBody>
+          {error ? (
+            <AdminListRow columnsClassName={APPLICATION_LIST_COLUMNS} ariaLabel="신청 목록 오류">
+              <AdminListCell className="col-span-5 py-10 text-center text-destructive">
+                신청 목록을 불러오지 못했습니다.
+              </AdminListCell>
+            </AdminListRow>
+          ) : isLoading ? (
+            Array.from({ length: 6 }).map((_, rowIndex) => (
+              <AdminListRow
+                key={`academy-application-loading-${rowIndex}`}
+                columnsClassName={APPLICATION_LIST_COLUMNS}
+                ariaLabel="신청 목록 불러오는 중"
               >
-                이전
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!data?.pagination.hasNextPage}
-                onClick={() => setPage((prev) => prev + 1)}
-              >
-                다음
-              </Button>
+                <AdminListCell>
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-2/3" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                </AdminListCell>
+                <AdminListCell>
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-4/5" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
+                </AdminListCell>
+                <AdminListCell>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </AdminListCell>
+                <AdminListCell>
+                  <Skeleton className="h-5 w-16" />
+                </AdminListCell>
+                <AdminListCell align="end" className="px-2">
+                  <Skeleton className="h-8 w-20" />
+                </AdminListCell>
+              </AdminListRow>
+            ))
+          ) : !data?.items.length ? (
+            <AdminListRow columnsClassName={APPLICATION_LIST_COLUMNS} ariaLabel="신청 목록 없음">
+              <AdminListCell className="col-span-5 py-16 text-center">
+                {keyword || status !== "all"
+                  ? "현재 조건에 맞는 아카데미 신청이 없습니다."
+                  : "아직 접수된 레슨 신청이 없습니다."}
+              </AdminListCell>
+            </AdminListRow>
+          ) : (
+            data.items.map((item) => {
+              const createdAt = formatAdminDateTimeParts(item.createdAt);
+
+              return (
+                <AdminListRow key={item._id} columnsClassName={APPLICATION_LIST_COLUMNS}>
+                  <AdminListCell>
+                    <AdminListPrimary
+                      title={item.applicantName || "-"}
+                      meta={
+                        <>
+                          <span>{item.email || "이메일 미입력"}</span>
+                          <span>{item.phone || "연락처 미입력"}</span>
+                        </>
+                      }
+                      supporting={
+                        <span>
+                          접수 {createdAt.date}
+                          {createdAt.time ? ` ${createdAt.time}` : ""}
+                        </span>
+                      }
+                    />
+                  </AdminListCell>
+                  <AdminListCell>
+                    <div className="min-w-0 space-y-2">
+                      <SelectedClassCell classSnapshot={item.classSnapshot} />
+                      <div className={adminDataTable.secondaryText}>
+                        희망 수업: {getAcademyLessonTypeLabel(item.desiredLessonType)}
+                      </div>
+                      <div className={adminDataTable.secondaryText}>
+                        현재 레벨: {getAcademyCurrentLevelLabel(item.currentLevel)}
+                      </div>
+                    </div>
+                  </AdminListCell>
+                  <AdminListCell>
+                    <div
+                      className="line-clamp-2 break-words"
+                      title={item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
+                    >
+                      {item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
+                    </div>
+                    <div
+                      className={cn("truncate", adminDataTable.secondaryText)}
+                      title={item.preferredTimeText || "희망 시간 미입력"}
+                    >
+                      {item.preferredTimeText || "희망 시간 미입력"}
+                    </div>
+                  </AdminListCell>
+                  <AdminListCell>
+                    <AdminStatusGroup primary={<AcademyStatusBadge status={item.status} />} />
+                  </AdminListCell>
+                  <AdminListCell align="end" className="px-2">
+                    <AdminRowActions>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => goToDetail(item._id)}
+                        aria-label={`${item.applicantName || "신청자"} 신청 상세 보기`}
+                      >
+                        상세 보기
+                      </Button>
+                      {item.status === "cancelled" ? (
+                        <AdminRowActionMenu
+                          ariaLabel={`${item.applicantName || "신청"} 관리 메뉴`}
+                          destructiveActions={
+                            <DropdownMenuItem
+                              className="whitespace-nowrap text-destructive focus:text-destructive"
+                              disabled={deletingId === item._id}
+                              onSelect={(event) => {
+                                event.preventDefault();
+                                setPendingDelete(item);
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {deletingId === item._id ? "삭제 중..." : "삭제"}
+                            </DropdownMenuItem>
+                          }
+                        />
+                      ) : null}
+                    </AdminRowActions>
+                  </AdminListCell>
+                </AdminListRow>
+              );
+            })
+          )}
+        </AdminListBody>
+        <div role="rowgroup" className="border-t border-border">
+          <div role="row">
+            <div
+              role="cell"
+              aria-colspan={5}
+              className="flex items-center justify-between gap-3 px-4 py-3"
+            >
+              <span className={adminTypography.metaMuted}>
+                {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1}페이지
+                {" · "}
+                총 {data?.pagination.total.toLocaleString("ko-KR") ?? 0}건
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!data?.pagination.hasPrevPage}
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                >
+                  이전
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!data?.pagination.hasNextPage}
+                  onClick={() => setPage((prev) => prev + 1)}
+                >
+                  다음
+                </Button>
+              </div>
             </div>
           </div>
+        </div>
+      </AdminListTable>
+
       <AlertDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => {
