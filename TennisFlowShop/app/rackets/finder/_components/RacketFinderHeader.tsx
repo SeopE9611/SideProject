@@ -9,9 +9,6 @@ export default function RacketFinderHeader({
 }: RacketFinderHeaderProps) {
   return (
     <section className="min-w-0 space-y-2">
-      <p className="text-ui-label font-semibold uppercase tracking-wider text-primary">
-        RACKET FINDER
-      </p>
       <h1 className="break-keep text-ui-page-title font-semibold tracking-normal text-foreground">
         {title}
       </h1>

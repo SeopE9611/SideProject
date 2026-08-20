@@ -6,7 +6,6 @@ export default function Loading() {
     <main className="min-h-screen bg-background pb-10" aria-busy="true" aria-live="polite">
       <PublicPageHero
         variant="feature"
-        eyebrow="자가발송 운송장"
         title="라켓 발송 정보를 불러오는 중입니다"
         description="잠시만 기다려 주세요."
       />

@@ -454,7 +454,7 @@ export default function PackageCheckoutClient({
   return (
     <div className="min-h-full bg-background">
       <CheckoutPageHeader
-        eyebrow="PACKAGE CHECKOUT"
+        eyebrow={null}
         title="패키지 주문/결제"
         description="결제 전 패키지 횟수, 유효기간, 총 결제 금액을 먼저 확인해 주세요."
         icon={<Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />}
