@@ -783,13 +783,6 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     setPageJump("");
   };
 
-  const boardEyebrow =
-    config.boardType === "market"
-      ? "Dokkaebi Market"
-      : config.boardType === "gear"
-        ? "Dokkaebi Gear Review"
-        : "Dokkaebi Community";
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       {composeOpen && composeTo ? (
@@ -805,12 +798,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
       ) : null}
       <PublicPageHero
         variant="feature"
-        eyebrow={
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="brand">{boardEyebrow}</Badge>
-            <span>게시판 › {config.boardTitle}</span>
-          </div>
-        }
+        eyebrow={<span>게시판 › {config.boardTitle}</span>}
         title={config.boardTitle}
         description={config.boardDescription}
         actions={

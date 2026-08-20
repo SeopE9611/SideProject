@@ -659,7 +659,6 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
         title="대여 상세"
         description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요."
         variant="feature"
-        eyebrow={<Badge variant="signal">RENTAL SERVICE</Badge>}
         icon={<Briefcase aria-hidden="true" className="h-6 w-6 text-brand-highlight-ink" />}
         status={getStatusIcon(data.status)}
         statusTitle={

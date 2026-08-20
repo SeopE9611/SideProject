@@ -11,9 +11,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
-import { packagesBadgeVariant } from "@/lib/badge-style";
 import { ArrowRight, Clock, Gift, MessageSquare, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -130,7 +128,6 @@ export default function StringPackagesPageClient({
         <SiteContainer>
           <div className="grid gap-6 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] bp-lg:items-center">
             <div className="max-w-3xl space-y-4">
-              <Badge variant="signal">스트링 교체 패키지</Badge>
               <div className="space-y-3">
                 <h1 className="text-balance text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:text-ui-page-title-lg">
                   교체 횟수에 맞춰, 필요한 만큼 미리 준비하세요.
@@ -181,7 +178,6 @@ export default function StringPackagesPageClient({
           <SectionHeader
             align="left"
             className="mb-6 bp-md:mb-8"
-            eyebrow={<Badge variant={packagesBadgeVariant("selection")}>패키지 선택</Badge>}
             title="횟수와 총액을 한 번에 비교하세요"
             description="이용 횟수, 회당 금액, 절감액과 유효기간만 빠르게 확인할 수 있도록 정리했습니다."
           />
@@ -230,7 +226,6 @@ export default function StringPackagesPageClient({
           <PublicSurface variant="inverse" padding="lg">
             <div className="grid gap-6 bp-lg:grid-cols-[0.8fr_1.2fr] bp-lg:items-start">
               <div className="space-y-3">
-                <Badge variant="secondary">패키지 이용 가치</Badge>
                 <h2 className="text-ui-section-title-lg font-semibold text-surface-inverse-foreground">
                   결제 후에도 교체 과정까지 이어지는 관리
                 </h2>
@@ -265,7 +260,6 @@ export default function StringPackagesPageClient({
           <SectionHeader
             align="center"
             className="mb-8 bp-md:mb-10"
-            eyebrow={<Badge variant={packagesBadgeVariant("faq")}>자주 묻는 질문</Badge>}
             title="패키지 이용 안내"
             description="구매 전 자주 확인하는 내용을 간결하게 정리했습니다."
           />

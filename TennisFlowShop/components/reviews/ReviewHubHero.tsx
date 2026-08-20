@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Camera, ShieldCheck } from "lucide-react";
@@ -15,10 +14,7 @@ export default function ReviewHubHero() {
     <Card variant="feature" className="overflow-hidden rounded-hero">
       <CardContent className="grid gap-7 p-5 bp-sm:p-8 bp-lg:grid-cols-[1.08fr_0.92fr] bp-lg:items-center bp-lg:p-10">
         <div className="min-w-0">
-          <Badge variant="signal" className="w-fit">
-            VERIFIED REVIEW
-          </Badge>
-          <h1 className="mt-5 break-keep font-ui-bold text-ui-section-title bp-lg:text-[3.25rem] bp-lg:leading-[1.05]">
+          <h1 className="break-keep font-ui-bold text-ui-section-title bp-lg:text-[3.25rem] bp-lg:leading-[1.05]">
             실제 플레이에서 나온 후기
           </h1>
           <p className="mt-4 max-w-2xl break-keep text-ui-body text-muted-foreground">

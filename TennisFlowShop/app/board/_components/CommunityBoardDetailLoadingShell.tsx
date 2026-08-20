@@ -1,7 +1,6 @@
 import { MessageSquare, PackageSearch } from "lucide-react";
 
 import SiteContainer from "@/components/layout/SiteContainer";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -23,7 +22,6 @@ export default function CommunityBoardDetailLoadingShell({ boardLabel, isMarket 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 flex-1 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="brand">게시판</Badge>
                 <span className="text-ui-label text-muted-foreground">{boardLabel} › 글 상세</span>
               </div>
               <Skeleton className="h-8 w-4/5 max-w-2xl" />

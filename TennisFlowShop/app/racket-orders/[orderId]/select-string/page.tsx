@@ -6,7 +6,6 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { hasGuestOrderCookieAccess } from "@/lib/auth/guest-resource-access.server";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 
 import type { Metadata } from "next";
@@ -91,9 +90,6 @@ export default async function SelectStringPage({ params }: PageProps) {
     <SiteContainer variant="wide" className="space-y-5 py-6 bp-md:py-8">
       <div className="space-y-4">
         <div className="max-w-3xl space-y-2">
-          <Badge variant="secondary" className="rounded-full">
-            라켓 주문 스트링 선택
-          </Badge>
           <h1 className="break-keep text-ui-page-title font-ui-bold bp-md:text-ui-page-title-lg">
             주문 라켓에 장착할 스트링을 선택하세요
           </h1>

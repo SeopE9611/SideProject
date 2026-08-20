@@ -631,7 +631,6 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
     <div className="mx-auto w-full max-w-5xl space-y-4 bp-sm:space-y-5">
       <MypageDetailHero
         variant="feature"
-        eyebrow={<Badge variant="signal">ACADEMY CLASS</Badge>}
         title="아카데미 신청 상세"
         description="신청 상태와 상담 정보를 확인하세요."
         icon={<GraduationCap className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
