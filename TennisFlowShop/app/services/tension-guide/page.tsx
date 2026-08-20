@@ -492,7 +492,6 @@ export default function TensionGuidePage() {
 
           <TabsContent value="calculator" className="mt-8 space-y-6">
             <SectionHeader
-              eyebrow="Calculator"
               title="조건을 입력하고 추천 장력을 확인하세요"
               description="입력과 결과를 한 화면에서 비교하며 스트링 기준점, 보정값, 범위 제한 과정을 함께 확인할 수 있습니다."
             />
@@ -726,7 +725,6 @@ export default function TensionGuidePage() {
             </PublicSurface>
             <PublicSurface className="space-y-4">
               <SectionHeader
-                eyebrow="Environment"
                 title="환경에 따른 조정"
                 description="기온 변화는 스트링 탄성과 타구감에 영향을 주므로 같은 장력도 다르게 느껴질 수 있습니다."
               />{" "}
@@ -757,7 +755,6 @@ export default function TensionGuidePage() {
 
           <TabsContent value="levels" className="mt-8 space-y-6">
             <SectionHeader
-              eyebrow="Level Guide"
               title="수준별 남녀 추천 장력 비교"
               description="모든 범위는 42~56LB 공통 축 위에서 비교됩니다."
             />
@@ -869,7 +866,6 @@ export default function TensionGuidePage() {
 
           <TabsContent value="strings" className="mt-8 space-y-6">
             <SectionHeader
-              eyebrow="String Type"
               title="스트링 타입별 특성과 조정 팁"
               description="상단에서 선택한 스트링 타입은 계산기 추천값에도 그대로 반영됩니다."
             />
@@ -944,7 +940,6 @@ export default function TensionGuidePage() {
 
           <TabsContent value="tips" className="mt-8 space-y-6">
             <SectionHeader
-              eyebrow="Expert Tips"
               title="텐션 관리와 자주 묻는 질문"
               description="장력의 높고 낮음이 만드는 차이와 교체 판단 기준을 한 번에 확인하세요."
             />
@@ -1062,7 +1057,7 @@ export default function TensionGuidePage() {
               </div>
             </PublicSurface>
             <PublicSurface>
-              <SectionHeader eyebrow="FAQ" title="자주 묻는 질문" />
+              <SectionHeader title="자주 묻는 질문" />
               <Accordion type="single" className="mt-2">
                 <AccordionItem value="main-cross">
                   <AccordionTrigger value="main-cross" className="gap-3 text-foreground">

@@ -181,7 +181,6 @@ export default function OrderLookupResultsPage() {
     <div className="min-h-full bg-background">
       <PublicPageHero
         align="center"
-        eyebrow="조회 결과"
         title="주문 조회 결과"
         description={`${displayName}님의 주문 내역 ${orders?.length || 0}건을 확인했어요. 주문 상태와 다음 행동을 카드에서 확인해주세요.`}
       >

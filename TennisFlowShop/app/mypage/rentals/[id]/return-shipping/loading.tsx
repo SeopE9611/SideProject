@@ -5,7 +5,6 @@ export default function Loading() {
     <main className="min-h-screen bg-background pb-10" aria-busy="true" aria-live="polite">
       <PublicPageHero
         variant="feature"
-        eyebrow="대여 반납"
         title="반납 운송장을 불러오는 중입니다"
         description="잠시만 기다려 주세요."
       />

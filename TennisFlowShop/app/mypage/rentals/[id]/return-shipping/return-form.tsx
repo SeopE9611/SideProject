@@ -108,7 +108,6 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
     <main className="min-h-screen bg-background pb-10">
       <PublicPageHero
         variant="feature"
-        eyebrow="대여 반납"
         title={hasExisting ? "반납 운송장을 수정해 주세요" : "반납 운송장을 등록해 주세요"}
         description="대여 상품을 반납하기 위해 택배사와 운송장 번호를 등록하는 화면입니다."
       />
@@ -126,7 +125,6 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
         </PublicSurface>
         <SummaryCard
           variant="feature"
-          eyebrow="반납 발송 정보"
           title={`반납 운송장 ${hasExisting ? "수정" : "등록"}`}
           description="택배사와 운송장 번호를 확인한 뒤 저장해 주세요."
           action={
