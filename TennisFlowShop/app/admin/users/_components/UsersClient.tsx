@@ -14,17 +14,25 @@ import {
   roleColors,
   shortAddress,
   splitDateTime,
-  td,
-  th,
   type UserStatusKey,
 } from "@/app/admin/users/_lib/usersClientUtils";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminRowActions,
+  AdminStatusGroup,
+} from "@/components/admin/AdminListTable";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminTypography } from "@/components/admin/admin-typography";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,14 +63,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
@@ -89,7 +89,7 @@ import {
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface BulkActionResponse {
   message?: string;
@@ -112,18 +112,6 @@ interface SystemActionPreviewResponse {
   requestHash?: string;
   confirmationToken?: string;
   reconfirmText?: string;
-}
-
-interface UsersListCounters {
-  active?: number;
-  deleted?: number;
-  admins?: number;
-  suspended?: number;
-  total?: number;
-}
-
-interface UsersListPayload {
-  counters?: UsersListCounters;
 }
 
 const asPreviewCandidates = (value: unknown): UserCleanupPreviewCandidateDto[] =>
@@ -186,6 +174,9 @@ const USER_LIST_PAGE_RESET_KEYS: (keyof UserListQueryState)[] = [
   "signupFilter",
   "sort",
 ];
+
+const USER_LIST_COLUMNS =
+  "grid-cols-[40px_minmax(260px,1.3fr)_minmax(250px,1.15fr)_minmax(190px,0.85fr)_minmax(170px,0.75fr)_116px]";
 
 function parseUserListQueryState(
   params: URLSearchParams,
@@ -322,7 +313,7 @@ export default function UsersClient() {
   const pageItems = shouldShowResolvedPagination ? buildPageItems(page, totalPages) : [];
 
   const kpiValues = useMemo(() => {
-    const counters = (data as UsersListPayload | undefined)?.counters;
+    const counters = data?.counters;
 
     return {
       active: counters?.active ?? safeRows.filter((u) => !u.isDeleted && !u.isSuspended).length,
@@ -443,7 +434,6 @@ export default function UsersClient() {
   // 선택
   const isAllSelected = safeRows.length > 0 && selectedUsers.length === safeRows.length;
   const isPartiallySelected = selectedUsers.length > 0 && selectedUsers.length < safeRows.length;
-  const allCheckboxRef = useRef<HTMLButtonElement>(null);
 
   // 삭제된 회원이 하나라도 선택
   const hasDeletedSelected = useMemo(() => selectedRows.some((u) => u.isDeleted), [selectedRows]);
@@ -451,12 +441,6 @@ export default function UsersClient() {
     () => selectedRows.filter((u) => !u.isDeleted && u.appsInTossLinked).length,
     [selectedRows],
   );
-
-  useEffect(() => {
-    if (!allCheckboxRef.current) return;
-    const input = allCheckboxRef.current.querySelector("input[type='checkbox']");
-    if (input instanceof HTMLInputElement) input.indeterminate = isPartiallySelected;
-  }, [isPartiallySelected]);
 
   const handleSelectAll = () => setSelectedUsers(isAllSelected ? [] : safeRows.map((u) => u.id));
   const handleSelectUser = (id: string) =>
@@ -1119,353 +1103,185 @@ export default function UsersClient() {
       </BulkActionsSection>
 
       <TableSection>
-        <div className={cn(adminSurface.tableCard, "mx-auto")}>
-          <div className="flex items-center justify-between px-5 pt-4">
-            <h2 className="text-lg font-semibold text-foreground">회원 목록</h2>
-            <p className="text-sm text-muted-foreground">
-              총 {hasResolvedTotal ? total : "-"}명의 회원
-            </p>
-          </div>
-
-          <div className="relative overflow-x-auto pb-3 px-4">
-            <div className="relative min-w-0 overflow-hidden rounded-lg border border-border">
-              <Table
-                className="min-w-[1020px] table-fixed [&_th]:text-center [&_td]:text-center"
-                aria-busy={shouldShowLoadingRows}
-              >
-                {/* 열 폭 고정: 체크 / 회원 / 권한 / 연락처 / 활동 / 상태 / 작업 */}
-                <colgroup>
-                  <col style={{ width: "40px" }} />
-                  <col style={{ width: "250px" }} />
-                  <col style={{ width: "80px" }} />
-                  <col style={{ width: "250px" }} />
-                  <col style={{ width: "160px" }} />
-                  <col style={{ width: "80px" }} />
-                  <col style={{ width: "160px" }} />
-                </colgroup>
-                <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
-                  <TableRow>
-                    <TableHead className={cn(th, "w-[40px] px-0")}>
-                      <Checkbox
-                        ref={allCheckboxRef}
-                        checked={isAllSelected}
-                        onCheckedChange={() => handleSelectAll()}
-                        aria-label="전체 선택"
-                        className="mx-auto"
-                      />
-                    </TableHead>
-                    <TableHead className={cn(adminDataTable.head, "w-[250px]")}>회원</TableHead>
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[80px]")}>
-                      권한
-                    </TableHead>
-                    <TableHead className={cn(adminDataTable.head, "w-[250px]")}>연락처 / 주소</TableHead>
-                    <TableHead className={cn(adminDataTable.headRight, "w-[160px]")}>
-                      활동
-                    </TableHead>
-                    <TableHead className={cn(adminDataTable.headCenter, "w-[80px] px-0")}>
-                      상태
-                    </TableHead>
-                    <TableHead className={cn(adminDataTable.stickyActionHead, "w-[160px]")}>
-                      작업
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {/* 로딩 스켈레톤 */}
-                  {shouldShowLoadingRows &&
-                    Array.from({ length: 8 }).map((_, i) => (
-                      <TableRow key={`sk-${i}`} className="border-b last:border-0">
-                        <TableCell className={td}>
-                          <div className="h-4 w-4 mx-auto rounded bg-muted" />
-                        </TableCell>
-                        <TableCell className={td}>
-                          <div className="h-3.5 w-40 mx-auto rounded bg-muted" />
-                          <div className="h-3 w-28 mx-auto mt-1 rounded bg-muted" />
-                        </TableCell>
-                        <TableCell className={td}>
-                          <div className="h-4 w-10 mx-auto rounded-full bg-muted" />
-                        </TableCell>
-                        <TableCell className={td}>
-                          <div className="h-3.5 w-48 mx-auto rounded bg-muted" />
-                        </TableCell>
-                        <TableCell className={td}>
-                          <div className="h-3.5 w-28 mx-auto rounded bg-muted" />
-                        </TableCell>
-                        <TableCell className={td}>
-                          <div className="h-4 w-10 mx-auto rounded-full bg-muted" />
-                        </TableCell>
-                        <TableCell className={td}>
-                          <div className="h-5 w-5 mx-auto rounded bg-muted" />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-
-                  {/* 조회 실패 */}
-                  {shouldShowErrorRow && (
-                    <TableRow>
-                      <TableCell colSpan={7} className={cn(td, "py-6 text-destructive")}>
-                        회원 목록을 불러오지 못했습니다.{" "}
-                        {errorMessage || "잠시 후 다시 시도해 주세요."}
-                      </TableCell>
-                    </TableRow>
-                  )}
-
-                  {/* 실제 빈 데이터 */}
-                  {shouldShowEmptyRow && (
-                    <TableRow>
-                      <TableCell colSpan={7} className={cn(td, "py-8 text-muted-foreground")}>
-                        조회된 회원이 없습니다.
-                      </TableCell>
-                    </TableRow>
-                  )}
-
-                  {/* 데이터 */}
-                  {shouldShowDataRows &&
-                    safeRows.map((u) => {
-                      const statusKey: UserStatusKey = u.isDeleted
-                        ? "deleted"
-                        : u.isSuspended
-                          ? "suspended"
-                          : "active";
-                      const joined = splitDateTime(u.createdAt);
-                      const last = splitDateTime(u.lastLoginAt);
-
-                      return (
-                        <TableRow
-                          key={u.id}
-                          className="hover:bg-primary/5 transition-colors even:bg-muted/40"
-                        >
-                          {/* 선택 */}
-                          <TableCell className={cn(td, "w-[40px] px-0")}>
-                            <Checkbox
-                              checked={selectedUsers.includes(u.id)}
-                              onCheckedChange={() => handleSelectUser(u.id)}
-                              aria-label={`${u.name || "사용자"} 선택`}
-                              className="mx-auto"
-                            />
-                          </TableCell>
-
-                          {/* 회원: 이름 + 로그인 경로 */}
-                          <TableCell className={cn(td, "w-[250px] text-left")}>
-                            <div className="flex max-w-[230px] min-w-0 flex-col items-start overflow-hidden text-left">
-                              <span
-                                className="line-clamp-2 max-w-full break-words font-medium"
-                                title={u.name || "(이름없음)"}
-                              >
-                                {u.name || "(이름없음)"}
-                              </span>
-                              <span className={adminDataTable.secondaryLine}>
-                                {[
-                                  u.socialProviders?.includes("kakao") ? "카카오" : null,
-                                  u.socialProviders?.includes("naver") ? "네이버" : null,
-                                  u.appsInTossLinked ? "Apps in Toss" : null,
-                                ]
-                                  .filter(Boolean)
-                                  .join(" · ") || "이메일 계정"}
-                              </span>
-                              <AdminReferencePopover
-                                title={`${u.name || "회원"} 계정 참조`}
-                                trigger={
-                                  <button type="button" className={adminDataTable.referenceTrigger}>
-                                    계정 정보
-                                  </button>
-                                }
-                                items={[
-                                  { label: "회원 ID", value: u.id, copyValue: u.id },
-                                  {
-                                    label: "이메일",
-                                    value: u.email,
-                                    copyValue: u.email || undefined,
-                                  },
-                                  {
-                                    label: "전화",
-                                    value: formatKoreanPhone(u.phone || "") || u.phone,
-                                    copyValue: u.phone || undefined,
-                                  },
-                                ]}
-                              />
-                            </div>
-                          </TableCell>
-
-                          {/* 권한 */}
-                          <TableCell className={cn(td, "w-[80px] whitespace-nowrap")}>
-                            <Badge
-                              className={cn(
-                                badgeSm,
-                                roleColors[u.role],
-                                "shrink-0 whitespace-nowrap",
-                              )}
-                            >
-                              {getUserRoleLabel(u.role)}
-                            </Badge>
-                          </TableCell>
-
-                          {/* 연락처/주소: 목록은 요약, 전체 값은 참조 팝오버 */}
-                          <TableCell
-                            className={cn(td, "w-[250px] text-left")}
-                            title={fullAddress(u.postalCode, u.address, u.addressDetail)}
-                          >
-                            <div className={adminDataTable.cellStack}>
-                              <span className={adminDataTable.primaryLine}>
-                                {u.phone ? formatKoreanPhone(u.phone) || u.phone : "전화 미등록"}
-                              </span>
-                              <span className={adminDataTable.secondaryLine}>
-                                {shortAddress(u.address) || "주소 미등록"}
-                              </span>
-                              <AdminReferencePopover
-                                title={`${u.name || "회원"} 연락처`}
-                                trigger={
-                                  <button type="button" className={adminDataTable.referenceTrigger}>
-                                    전체 연락처
-                                  </button>
-                                }
-                                items={[
-                                  {
-                                    label: "이메일",
-                                    value: u.email,
-                                    copyValue: u.email || undefined,
-                                  },
-                                  {
-                                    label: "전화",
-                                    value: formatKoreanPhone(u.phone || "") || u.phone,
-                                    href: u.phone ? `tel:${u.phone}` : undefined,
-                                    copyValue: u.phone || undefined,
-                                  },
-                                  {
-                                    label: "주소",
-                                    value: fullAddress(u.postalCode, u.address, u.addressDetail),
-                                  },
-                                ]}
-                              />
-                            </div>
-                          </TableCell>
-
-                          {/* 활동(가입/로그인) 한 칼럼 */}
-                          <TableCell className={cn(td, "w-[160px] whitespace-nowrap text-right")}>
-                            <div className="flex flex-col items-end whitespace-nowrap leading-tight tabular-nums">
-                              <span className="text-xs">로그인 {last.time ? `${last.date} ${last.time}` : "-"}</span>
-                              <span className="text-xs text-foreground/75">
-                                가입 {joined.date}
-                              </span>
-                            </div>
-                          </TableCell>
-
-                          {/* 상태 */}
-                          <TableCell className={cn(td, "w-[80px] whitespace-nowrap px-0")}>
-                            <div className="flex justify-center">
-                              <Badge
-                                className={cn(
-                                  badgeSm,
-                                  STATUS[statusKey],
-                                  "shrink-0 whitespace-nowrap",
-                                )}
-                              >
-                                {statusKey === "active"
-                                  ? "활성"
-                                  : statusKey === "suspended"
-                                    ? "비활성"
-                                    : "삭제됨"}
-                              </Badge>
-                            </div>
-                          </TableCell>
-
-                          {/* 작업 */}
-                          <TableCell className={cn(td, adminDataTable.stickyActionCell, "w-[160px]")}>
-                            <div className="flex items-center justify-end gap-1">
-                              <Button asChild size="sm" variant="outline">
-                                <Link href={`/admin/users/${u.id}`}>상세</Link>
-                              </Button>
-                              <AdminRowActionMenu
-                                ariaLabel={`${u.name || u.email || "회원"} 작업 메뉴 열기`}
-                              >
-                                <DropdownMenuItem
-                                  className="whitespace-nowrap"
-                                  onSelect={(e) => {
-                                    e.preventDefault();
-                                    openPointsDialog(u.id, u.name);
-                                  }}
-                                >
-                                  포인트 내역/조정
-                                </DropdownMenuItem>
-                              </AdminRowActionMenu>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
+        <AdminListTable
+          title="회원 목록"
+          viewLabel={currentViewLabel}
+          resultLabel={
+            hasDataError
+              ? "불러오기 실패"
+              : typeof total === "number"
+                ? `총 ${total.toLocaleString("ko-KR")}명`
+                : "불러오는 중…"
+          }
+          description="회원 계정, 연락처, 활동과 포인트, 권한·상태 및 관리 작업을 한 행에서 확인합니다."
+          columnsClassName={USER_LIST_COLUMNS}
+          ariaLabel="회원 관리 목록"
+        >
+          <AdminListColumnHeader columnsClassName={USER_LIST_COLUMNS}>
+            <div role="columnheader" className="min-w-0 px-0 py-2.5 text-center">
+              <Checkbox
+                checked={isAllSelected ? true : isPartiallySelected ? "indeterminate" : false}
+                onCheckedChange={() => handleSelectAll()}
+                aria-label="현재 페이지 회원 전체 선택"
+                className="mx-auto"
+              />
             </div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5">회원 / 계정</div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5">연락처 / 주소</div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">활동 / 포인트</div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5">권한 / 상태</div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">작업</div>
+          </AdminListColumnHeader>
 
-            {/* 페이지네이션 */}
-            <div className="relative mt-3 h-10">
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => goToPage(1)}
-                  disabled={!shouldShowResolvedPagination || page <= 1}
-                  aria-label="첫 페이지"
-                >
-                  <ChevronsLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => goToPage(page - 1)}
-                  disabled={!shouldShowResolvedPagination || page <= 1}
-                  aria-label="이전"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
+          <AdminListBody>
+            {shouldShowLoadingRows &&
+              Array.from({ length: 8 }).map((_, i) => (
+                <AdminListRow key={`sk-${i}`} columnsClassName={USER_LIST_COLUMNS}>
+                  <AdminListCell align="center" className="px-0"><Skeleton className="h-4 w-4" /></AdminListCell>
+                  <AdminListCell><Skeleton className="h-4 w-40" /><Skeleton className="mt-2 h-3 w-28" /></AdminListCell>
+                  <AdminListCell><Skeleton className="h-4 w-44" /><Skeleton className="mt-2 h-3 w-36" /></AdminListCell>
+                  <AdminListCell align="end"><Skeleton className="h-4 w-32" /><Skeleton className="mt-2 h-3 w-24" /></AdminListCell>
+                  <AdminListCell><Skeleton className="h-5 w-28" /></AdminListCell>
+                  <AdminListCell align="end"><Skeleton className="h-8 w-20" /></AdminListCell>
+                </AdminListRow>
+              ))}
+
+            {shouldShowErrorRow && (
+              <AdminListRow columnsClassName={USER_LIST_COLUMNS}>
+                <AdminListCell className="col-span-6 py-10 text-center text-destructive">
+                  회원 목록을 불러오지 못했습니다. {errorMessage || "잠시 후 다시 시도해 주세요."}
+                </AdminListCell>
+              </AdminListRow>
+            )}
+
+            {shouldShowEmptyRow && (
+              <AdminListRow columnsClassName={USER_LIST_COLUMNS}>
+                <AdminListCell className="col-span-6 py-16 text-center">
+                  {hasCustomFilters ? "현재 조건에 맞는 회원이 없습니다." : "등록된 회원이 없습니다."}
+                </AdminListCell>
+              </AdminListRow>
+            )}
+
+            {shouldShowDataRows &&
+              safeRows.map((u) => {
+                const statusKey: UserStatusKey = u.isDeleted
+                  ? "deleted"
+                  : u.isSuspended
+                    ? "suspended"
+                    : "active";
+                const joined = splitDateTime(u.createdAt);
+                const last = splitDateTime(u.lastLoginAt);
+                const signupMethods = [
+                  u.socialProviders?.includes("kakao") ? "카카오" : null,
+                  u.socialProviders?.includes("naver") ? "네이버" : null,
+                  u.appsInTossLinked ? "Apps in Toss" : null,
+                ].filter((value): value is string => Boolean(value));
+                const signupLabel = signupMethods.join(" · ") || "이메일 계정";
+
+                return (
+                  <AdminListRow key={u.id} columnsClassName={USER_LIST_COLUMNS}>
+                    <AdminListCell align="center" className="px-0">
+                      <Checkbox
+                        checked={selectedUsers.includes(u.id)}
+                        onCheckedChange={() => handleSelectUser(u.id)}
+                        aria-label={`${u.name || "사용자"} 선택`}
+                      />
+                    </AdminListCell>
+                    <AdminListCell>
+                      <AdminListPrimary
+                        title={u.name || "(이름없음)"}
+                        meta={<><span>{u.email}</span><span>{signupLabel}</span></>}
+                        supporting={
+                          <AdminReferencePopover
+                            title={`${u.name || "회원"} 계정 참조`}
+                            trigger={<button type="button" className={adminDataTable.referenceTrigger}>계정 참조 보기</button>}
+                            items={[
+                              { label: "회원 ID", value: u.id, copyValue: u.id },
+                              { label: "이메일", value: u.email, copyValue: u.email || undefined },
+                              { label: "가입 경로", value: signupLabel },
+                              { label: "Apps in Toss", value: u.appsInTossLinked ? "연결됨" : "미연결" },
+                            ]}
+                          />
+                        }
+                      />
+                    </AdminListCell>
+                    <AdminListCell>
+                      <div className={adminDataTable.cellStack}>
+                        <span className={adminDataTable.primaryLine}>{u.phone ? formatKoreanPhone(u.phone) || u.phone : "전화 미등록"}</span>
+                        <span className={adminDataTable.secondaryLine}>{shortAddress(u.address) || "주소 미등록"}</span>
+                        <AdminReferencePopover
+                          title={`${u.name || "회원"} 연락처`}
+                          trigger={<button type="button" className={adminDataTable.referenceTrigger}>전체 연락처 보기</button>}
+                          items={[
+                            { label: "이메일", value: u.email, copyValue: u.email || undefined },
+                            { label: "전화", value: formatKoreanPhone(u.phone || "") || u.phone, href: u.phone ? `tel:${u.phone}` : undefined, copyValue: u.phone || undefined },
+                            { label: "주소", value: fullAddress(u.postalCode, u.address, u.addressDetail) },
+                          ]}
+                        />
+                      </div>
+                    </AdminListCell>
+                    <AdminListCell align="end">
+                      <div className="flex flex-col items-end gap-1 whitespace-nowrap tabular-nums">
+                        <span className={adminTypography.tablePrimary}>로그인 {last.time ? `${last.date} ${last.time}` : "-"}</span>
+                        <span className={adminTypography.tableSecondary}>가입 {joined.date}</span>
+                        <span className={adminTypography.meta}>보유 {u.pointsBalance.toLocaleString("ko-KR")}P</span>
+                      </div>
+                    </AdminListCell>
+                    <AdminListCell>
+                      <AdminStatusGroup
+                        primary={
+                          <>
+                            <Badge className={cn(badgeSm, roleColors[u.role], "shrink-0 whitespace-nowrap")}>{getUserRoleLabel(u.role)}</Badge>
+                            <Badge className={cn(badgeSm, STATUS[statusKey], "shrink-0 whitespace-nowrap")}>
+                              {statusKey === "active" ? "활성" : statusKey === "suspended" ? "비활성" : "삭제됨"}
+                            </Badge>
+                          </>
+                        }
+                      />
+                    </AdminListCell>
+                    <AdminListCell align="end">
+                      <AdminRowActions>
+                        <Button asChild size="sm" variant="outline"><Link href={`/admin/users/${u.id}`}>상세</Link></Button>
+                        <AdminRowActionMenu ariaLabel={`${u.name || u.email || "회원"} 작업 메뉴 열기`}>
+                          <DropdownMenuItem
+                            className="whitespace-nowrap"
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              openPointsDialog(u.id, u.name);
+                            }}
+                          >
+                            포인트 내역/조정
+                          </DropdownMenuItem>
+                        </AdminRowActionMenu>
+                      </AdminRowActions>
+                    </AdminListCell>
+                  </AdminListRow>
+                );
+              })}
+          </AdminListBody>
+
+          <div role="rowgroup" className="border-t border-border">
+            <div role="row">
+              <div role="cell" aria-colspan={6} className="flex flex-wrap items-center justify-center gap-1 px-4 py-3">
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={!shouldShowResolvedPagination || page <= 1} aria-label="첫 페이지"><ChevronsLeft className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page - 1)} disabled={!shouldShowResolvedPagination || page <= 1} aria-label="이전"><ChevronLeft className="h-4 w-4" /></Button>
                 {!shouldShowResolvedPagination ? (
-                  <span className="px-2 text-muted-foreground select-none">-</span>
+                  <span className="select-none px-2 text-muted-foreground">-</span>
                 ) : (
                   pageItems.map((it, i) =>
                     typeof it === "number" ? (
-                      <Button
-                        key={i}
-                        variant={it === page ? "default" : "outline"}
-                        className="h-8 min-w-8 px-2"
-                        onClick={() => goToPage(it)}
-                        aria-current={it === page ? "page" : undefined}
-                      >
-                        {it}
-                      </Button>
+                      <Button key={i} variant={it === page ? "default" : "outline"} className="h-8 min-w-8 px-2" onClick={() => goToPage(it)} aria-current={it === page ? "page" : undefined}>{it}</Button>
                     ) : (
-                      <span key={i} className="px-2 text-muted-foreground select-none">
-                        …
-                      </span>
+                      <span key={i} className="select-none px-2 text-muted-foreground">…</span>
                     ),
                   )
                 )}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => goToPage(page + 1)}
-                  disabled={!shouldShowResolvedPagination || page >= totalPages}
-                  aria-label="다음"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => goToPage(totalPages)}
-                  disabled={!shouldShowResolvedPagination || page >= totalPages}
-                  aria-label="끝 페이지"
-                >
-                  <ChevronsRight className="h-4 w-4" />
-                </Button>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page + 1)} disabled={!shouldShowResolvedPagination || page >= totalPages} aria-label="다음"><ChevronRight className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={!shouldShowResolvedPagination || page >= totalPages} aria-label="끝 페이지"><ChevronsRight className="h-4 w-4" /></Button>
               </div>
             </div>
           </div>
-        </div>
+        </AdminListTable>
       </TableSection>
 
       <DialogsSection>

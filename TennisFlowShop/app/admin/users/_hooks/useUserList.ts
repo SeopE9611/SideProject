@@ -1,6 +1,7 @@
 "use client";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import type { AdminUsersListResponseDto } from "@/types/admin/users";
 import useSWR from "swr";
 
 export type UserListFilters = {
@@ -12,28 +13,6 @@ export type UserListFilters = {
   loginFilter: "all" | "nologin" | "recent30" | "recent90";
   signupFilter: "all" | "local" | "kakao" | "naver" | "apps_in_toss";
   sort: "created_desc" | "created_asc" | "name_asc" | "name_desc";
-};
-
-export type UserListItem = {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  addressDetail?: string;
-  postalCode?: string;
-  role: "user" | "admin" | "superadmin";
-  isDeleted: boolean;
-  createdAt?: string;
-  lastLoginAt?: string;
-  isSuspended?: boolean;
-  socialProviders?: Array<"kakao" | "naver">;
-  appsInTossLinked: boolean;
-};
-
-type UserListResponse = {
-  items?: UserListItem[];
-  total?: number;
 };
 
 export function useUserList(filters: UserListFilters) {
@@ -49,7 +28,7 @@ export function useUserList(filters: UserListFilters) {
   });
 
   const key = `/api/admin/users?${queryString}`;
-  const swr = useSWR<UserListResponse>(key, authenticatedSWRFetcher, {
+  const swr = useSWR<AdminUsersListResponseDto>(key, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
@@ -61,7 +40,9 @@ export function useUserList(filters: UserListFilters) {
 
   // 데이터가 확정된 경우에만 rows/total을 노출한다.
   const rows = hasResolvedData
-    ? ((Array.isArray(swr.data?.items) ? swr.data.items : []) as UserListItem[])
+    ? Array.isArray(swr.data?.items)
+      ? swr.data.items
+      : []
     : null;
   const totalValue = swr.data?.total;
   const total =
