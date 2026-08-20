@@ -928,7 +928,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             ? "주문 상품, 결제 상태, 교체서비스 진행 정보를 확인하세요."
             : "주문 상품, 결제 상태, 배송 정보를 확인하세요."
         }
-        eyebrow={<Badge variant="signal">ORDER DETAIL</Badge>}
         icon={<ShoppingCart className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
         status={
           <OrderStatusBadge

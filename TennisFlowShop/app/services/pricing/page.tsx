@@ -342,10 +342,7 @@ export default async function PricingPage() {
         <section className={hasOtherSummary ? "grid gap-4 bp-lg:grid-cols-2" : "grid gap-4"}>
           {hasOtherSummary && otherSummary ? (
             <PublicSurface className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">기타 소재</h2>
-                <Badge variant="secondary">보조 분류</Badge>
-              </div>
+              <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">기타 소재</h2>
               <div className="grid gap-3 bp-sm:grid-cols-3">
                 <div>
                   <p className="text-ui-label text-muted-foreground">등록 상품 수</p>

@@ -430,9 +430,6 @@ export default function ReviewWritePage() {
                 ← 후기 목록
               </Button>
               <div className="space-y-2">
-                <Badge variant="signal" className="w-fit">
-                  VERIFIED EXPERIENCE
-                </Badge>
                 <h1 className="break-keep font-ui-bold text-ui-section-title text-foreground">
                   확인된 경험을 후기로 남겨주세요
                 </h1>

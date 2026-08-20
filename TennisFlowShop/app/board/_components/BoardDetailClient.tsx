@@ -1426,7 +1426,6 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 flex-1 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="brand">게시판</Badge>
                 <span className="text-ui-label text-muted-foreground">
                   {config.boardTitle} › 글 상세
                 </span>
