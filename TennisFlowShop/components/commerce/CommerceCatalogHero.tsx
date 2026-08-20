@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import SiteContainer from "@/components/layout/SiteContainer";
+import { cn } from "@/lib/utils";
 
 export type CommerceCatalogGuideItem = {
   label: string;
@@ -8,7 +9,7 @@ export type CommerceCatalogGuideItem = {
 };
 
 type CommerceCatalogHeroProps = {
-  eyebrow: ReactNode;
+  eyebrow?: ReactNode;
   title: ReactNode;
   description: ReactNode;
   actions: ReactNode;
@@ -24,6 +25,11 @@ export function CommerceCatalogHero({
   guideTitle,
   guideItems,
 }: CommerceCatalogHeroProps) {
+  const hasEyebrow =
+    eyebrow !== null &&
+    eyebrow !== undefined &&
+    eyebrow !== false;
+
   return (
     <header className="bg-background pt-4 bp-sm:pt-6 bp-md:pt-8">
       <SiteContainer
@@ -32,10 +38,17 @@ export function CommerceCatalogHero({
       >
         <div className="grid min-w-0 gap-5 rounded-hero border border-border bg-card p-4 shadow-soft bp-sm:p-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-stretch lg:gap-8 lg:p-8">
           <div className="flex min-w-0 flex-col justify-center">
-            <p className="text-ui-label font-ui-medium uppercase tracking-[0.14em] text-brand-highlight-ink">
-              {eyebrow}
-            </p>
-            <h1 className="mt-3 break-keep text-balance font-brand-display text-[36px] leading-[1.05] tracking-normal text-foreground bp-sm:text-[44px] bp-md:text-[52px] lg:text-[56px] bp-lg:text-[64px]">
+            {hasEyebrow ? (
+              <p className="text-ui-label font-ui-medium uppercase tracking-[0.14em] text-brand-highlight-ink">
+                {eyebrow}
+              </p>
+            ) : null}
+            <h1
+              className={cn(
+                "break-keep text-balance font-brand-display text-[36px] leading-[1.05] tracking-normal text-foreground bp-sm:text-[44px] bp-md:text-[52px] lg:text-[56px] bp-lg:text-[64px]",
+                hasEyebrow && "mt-3",
+              )}
+            >
               {title}
             </h1>
             <div className="mt-4 max-w-2xl break-words text-pretty text-ui-body font-ui-regular leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
