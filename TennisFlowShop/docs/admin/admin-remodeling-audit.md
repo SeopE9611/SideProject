@@ -483,4 +483,59 @@ Phase 2-B는 카탈로그 성격이 같은 상품 관리와 라켓 관리를 대
 - 배포 화면에서 상품과 라켓 목록의 열 배치, 정보 밀도, 상태 표현, 가격 정렬과 작업 영역이
   의도한 catalog-list 구조로 표시되는 것을 확인했다.
 
-다음 단계는 `Admin Table V2 Phase 2-C — 회원 관리 목록 전환`이다.
+## Admin Table V2 Phase 2-C — 회원 관리 account-ledger 전환
+
+- 회원 관리의 기존 7열 semantic Table, `min-w-[1020px]`, 가로 스크롤 wrapper,
+  sticky 작업 열과 Table 전용 열 폭 정의를 제거했다.
+- 회원 목록을 선택, 회원·계정, 연락처·주소, 활동·포인트, 권한·상태, 작업의 고정
+  데스크톱 6열 `AdminListTable` 구조로 전환했다.
+- 회원 목록은 상품·라켓 catalog-list와 달리 행 선택과 일괄 작업 기능이 있으므로 선택
+  Checkbox를 독립된 첫 번째 열로 유지했다.
+- 회원·계정 영역에는 회원명, 이메일, 카카오·네이버·Apps in Toss 가입 경로와
+  `계정 참조 보기`를 배치했다.
+- 계정 참조 Popover에는 회원 ID, 이메일, 가입 경로와 Apps in Toss 연결 여부를 표시했다.
+- 회원명 자체에는 상세 링크를 적용하지 않고, 상세 이동은 작업 열의 명시적인 `상세`
+  버튼으로 유지했다.
+- 연락처·주소 영역에는 전화번호, 축약 주소와 `전체 연락처 보기`를 배치했다.
+- 연락처 Popover에는 이메일, 전화번호와 전체 주소를 표시하고 기존 전화 링크와 복사 기능을
+  유지했다.
+- 활동·포인트 영역에는 최근 로그인, 가입일과 보유 포인트를 우측 정렬해 함께 표시했다.
+- 보유 포인트는 회원 목록 API가 이미 반환하는 `pointsBalance`를 그대로 사용했으며 별도
+  조회나 재계산을 추가하지 않았다.
+- 권한과 계정 상태를 각각 독립된 열로 사용하던 구조를 하나의 권한·상태 영역으로 통합했다.
+- 권한·상태 영역에는 일반·관리자·최고 관리자 역할 Badge와 활성·비활성·삭제됨 상태 Badge를
+  최대 두 개까지 표시한다.
+- 목록에서 권한 변경, 행별 활성화·비활성화 또는 삭제 기능을 새로 추가하지 않았다.
+- 작업 영역에는 주요 작업인 `상세` 버튼을 직접 노출하고, `AdminRowActionMenu`에는
+  `포인트 내역/조정`만 유지했다.
+- 기존 포인트 Dialog 호출, 회원 상세 URL과 `preventDefault()` 처리는 변경하지 않았다.
+- 로딩 8행, 조회 오류와 빈 결과 상태를 새로운 6열 Grid 구조에 맞게 변경했다.
+- 필터가 적용된 빈 결과와 전체 데이터가 없는 상태의 안내 문구를 구분했다.
+- 기존 페이지네이션 계산과 첫 페이지·이전·페이지 번호·다음·끝 페이지 동작은 유지하고,
+  페이지네이션을 별도 외부 영역이 아닌 동일한 list surface 내부에 배치했다.
+- route loading skeleton의 열 수를 기존 7열에서 실제 목록과 동일한 6열로 변경했다.
+
+### 목록 응답 타입 정합성
+
+- `useUserList.ts`에 중복 선언돼 있던 `UserListItem`, `UserListResponse` 지역 타입을 제거했다.
+- 회원 목록 API의 공식 응답 계약인 `AdminUsersListResponseDto`를 SWR 제네릭으로 직접
+  사용하도록 변경했다.
+- 공식 DTO의 `items`를 별도 타입 단언 없이 사용하고, 조회 미확정·오류 상태에서는 기존처럼
+  `rows`를 `null`로 유지했다.
+- `UsersClient.tsx`의 `UsersListCounters`, `UsersListPayload` 지역 타입을 제거하고
+  `data?.counters`를 직접 사용하도록 변경했다.
+- API가 제공하는 `pointsBalance`, `counters`, `updatedAt`과 클라이언트 목록 타입의 불일치를
+  제거했다.
+- API URL, projection, DB query와 응답 데이터 계산은 변경하지 않았다.
+
+### 선택 Checkbox 수정
+
+- Radix Checkbox 내부에서 존재하지 않는 `input[type="checkbox"]`를 찾아 부분 선택 상태를
+  설정하던 `useRef`와 `useEffect` 기반 DOM 조작을 제거했다.
+- 현재 페이지의 일부 회원만 선택됐을 때 Checkbox의 공식
+  `checked="indeterminate"` 상태를 직접 전달하도록 변경했다.
+- 전체 선택 Checkbox의 접근성 문구를 `현재 페이지 회원 전체 선택`으로 명확하게 변경했다.
+- 공통 Checkbox 컴포넌트에 indeterminate 상태의 배경 스타일과 `Minus` 아이콘을 추가했다.
+- 최종 화면에서 선택된 회원 행은 체크 아이콘, 헤더 전체 선택 Checkbox는 가로선 아이콘으로
+  서로 다른 상태가 정상 표시되는 것을 확인했다.
+
