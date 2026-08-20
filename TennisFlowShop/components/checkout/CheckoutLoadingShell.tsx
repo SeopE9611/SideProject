@@ -26,11 +26,7 @@ function HeaderSkeleton() {
           <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-end bp-md:justify-between">
             <div className="flex min-w-0 items-start gap-3 bp-sm:gap-4">
               <div className="min-w-0">
-                <div className="text-ui-label font-ui-medium uppercase tracking-[0.18em]">
-                  <Skeleton className="h-3 w-28" />
-                </div>
-
-                <div className="mt-1 font-ui-bold leading-tight tracking-tight">
+                <div className="font-ui-bold leading-tight tracking-tight">
                   <Skeleton className="h-8 w-44" />
                 </div>
 

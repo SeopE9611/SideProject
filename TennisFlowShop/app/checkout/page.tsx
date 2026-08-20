@@ -1594,7 +1594,6 @@ export default function CheckoutPage() {
           onChangePointsToUse={setPointsToUse}
         />
         <CheckoutPageHeader
-          eyebrow="CHECKOUT"
           title="주문/결제"
           description={
             withStringService

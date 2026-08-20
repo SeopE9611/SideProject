@@ -732,7 +732,6 @@ export default function RentalsCheckoutClient({
   const renderCheckout = (rentalStringingAdapter?: RentalCheckoutStringingAdapter) => (
     <div className="min-h-full bg-background pb-[calc(96px+env(safe-area-inset-bottom))] bp-lg:pb-0">
       <CheckoutPageHeader
-        eyebrow="RENTAL CHECKOUT"
         title="대여 신청 정보 확인"
         description="대여 라켓, 선택한 스트링 옵션, 수령 정보와 예상 금액을 확인한 뒤 대여 신청을 완료하세요."
         icon={<CreditCard className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />}
