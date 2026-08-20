@@ -1,7 +1,6 @@
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageSquare, Plus, Search } from "lucide-react";
@@ -33,18 +32,29 @@ export default function QnaListLoadingShell() {
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
         variant="feature"
-        eyebrow={<Badge variant="signal">Q&amp;A</Badge>}
         title="고객센터 · Q&A"
         description="도깨비테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다."
         actions={
           <>
-            <Button asChild variant="highlight" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              variant="highlight"
+              size="lg"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href="/board/qna/write">
                 <Plus className="mr-2 h-4 w-4 shrink-0" />
                 문의하기
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href="/support">고객센터 홈</Link>
             </Button>
           </>

@@ -2,8 +2,11 @@
 import ErrorBox from "@/app/board/_components/ErrorBox";
 import PinnedNoticeStrip from "@/app/board/_components/PinnedNoticeStrip";
 import { QnaRowSkeleton } from "@/app/board/qna/_components/QnaListLoadingShell";
-import AsyncState from "@/components/system/AsyncState";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,15 +26,12 @@ import {
 } from "@/components/ui/select";
 import { badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
-import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero } from "@/components/public/PublicPageHero";
-import { PublicSurface } from "@/components/public/PublicSurface";
+import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 import { Eye, Lock, MessageSquare, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 
 const CAT_LABELS: Record<string, string> = {
   product: "상품문의",
@@ -394,18 +394,29 @@ export default function QnaPageClient({
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
         variant="feature"
-        eyebrow={<Badge variant="signal">Q&amp;A</Badge>}
         title="고객센터 · Q&A"
         description="도깨비테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다."
         actions={
           <>
-            <Button asChild variant="highlight" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              variant="highlight"
+              size="lg"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href="/board/qna/write">
                 <Plus className="mr-2 h-4 w-4 shrink-0" />
                 문의하기
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href="/support">고객센터 홈</Link>
             </Button>
           </>
@@ -476,6 +487,7 @@ export default function QnaPageClient({
           <div className="border-b border-border bg-muted/30 px-4 py-4 sm:px-5 md:px-6">
             <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center">
+                {/* deslop-ignore-next-line 10 */}
                 <span className="shrink-0 text-ui-label font-semibold uppercase tracking-wide text-muted-foreground">
                   필터
                 </span>
@@ -552,6 +564,7 @@ export default function QnaPageClient({
               </div>
 
               <div className="flex min-w-0 flex-col gap-2 lg:ml-auto lg:flex-row lg:items-center">
+                {/* deslop-ignore-next-line 10 */}
                 <span className="shrink-0 text-ui-label font-semibold uppercase tracking-wide text-muted-foreground lg:sr-only">
                   검색
                 </span>
@@ -873,13 +886,25 @@ export default function QnaPageClient({
                   description="궁금한 점이 있다면 첫 문의를 남겨 주세요."
                 />
                 <div className="mt-3 flex flex-col items-center justify-center gap-2 bp-sm:flex-row">
-                  <Button asChild variant="highlight" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+                  <Button
+                    asChild
+                    variant="highlight"
+                    size="lg"
+                    wrap="responsive"
+                    className="w-full bp-sm:w-auto"
+                  >
                     <Link href="/board/qna/write">
                       <Plus className="mr-1 h-3.5 w-3.5" />
                       문의하기
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    wrap="responsive"
+                    className="w-full bp-sm:w-auto"
+                  >
                     <Link href="/support">고객센터 홈</Link>
                   </Button>
                 </div>

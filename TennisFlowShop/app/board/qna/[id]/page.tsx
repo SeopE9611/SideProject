@@ -1,36 +1,36 @@
 "use client";
-import Link from "next/link";
-import {
-  ArrowUp,
-  MessageCircle,
-  Pencil,
-  Trash2,
-  Calendar,
-  Eye,
-  CheckCircle,
-  FileText,
-  ExternalLink,
-  MessageSquare,
-  Lock,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, PublicSurface } from "@/components/public";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import useSWR from "swr";
+import { badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
+import { communityFetch } from "@/lib/community/communityFetch.client";
 import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { badgeSizeSm, getQnaCategoryBadgeSpec, getAnswerStatusBadgeSpec } from "@/lib/badge-style";
-import type { BoardPost } from "@/lib/types/board";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
-import { communityFetch } from "@/lib/community/communityFetch.client";
-import SiteContainer from "@/components/layout/SiteContainer";
-import { PublicPageHero, PublicSurface } from "@/components/public";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import type { BoardPost } from "@/lib/types/board";
+import {
+  ArrowUp,
+  Calendar,
+  CheckCircle,
+  ExternalLink,
+  Eye,
+  FileText,
+  Lock,
+  MessageCircle,
+  MessageSquare,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import useSWR from "swr";
 import { QnaDetailContentSkeleton } from "../_components/QnaDetailLoadingShell";
 
 type QnaItem = BoardPost & { type: "qna" };
@@ -199,17 +199,28 @@ export default function QnaDetailPage() {
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
         variant="feature"
-        eyebrow={<Badge variant="signal">Q&amp;A</Badge>}
         title="고객센터 · Q&A"
         description="Q&A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다."
         actions={
           <>
-            <Button asChild variant="secondary" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              variant="secondary"
+              size="lg"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href={listHref} onClick={confirmLeave}>
                 Q&amp;A 목록
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" wrap="responsive" className="w-full bp-sm:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              wrap="responsive"
+              className="w-full bp-sm:w-auto"
+            >
               <Link href={supportHref} onClick={confirmLeave}>
                 고객센터 홈
               </Link>
@@ -233,7 +244,11 @@ export default function QnaDetailPage() {
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               {(error as FetchError | undefined)?.status === 401 && (
-                <Button asChild variant="highlight" className="min-h-11 w-full bp-sm:min-h-0 sm:w-auto">
+                <Button
+                  asChild
+                  variant="highlight"
+                  className="min-h-11 w-full bp-sm:min-h-0 sm:w-auto"
+                >
                   <Link
                     href={`/login?next=${encodeURIComponent(`/board/qna/${id}${detailQuery ? `?${detailQuery}` : ""}`)}`}
                   >

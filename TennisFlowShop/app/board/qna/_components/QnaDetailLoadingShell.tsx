@@ -1,7 +1,6 @@
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
-import { Skeleton } from "@/components/ui/skeleton";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface } from "@/components/public";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function QnaDetailContentSkeleton() {
   return (
@@ -88,7 +87,6 @@ export default function QnaDetailLoadingShell() {
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
         variant="feature"
-        eyebrow={<Badge variant="signal">Q&amp;A</Badge>}
         title="고객센터 · Q&A"
         description="Q&A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다."
         actions={
