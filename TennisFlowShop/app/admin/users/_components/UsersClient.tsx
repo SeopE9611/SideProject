@@ -17,6 +17,7 @@ import {
   type UserStatusKey,
 } from "@/app/admin/users/_lib/usersClientUtils";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import {
   AdminListBody,
   AdminListCell,
@@ -27,11 +28,11 @@ import {
   AdminRowActions,
   AdminStatusGroup,
 } from "@/components/admin/AdminListTable";
-import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
-import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { adminTypography } from "@/components/admin/admin-typography";
 import {
   AlertDialog,
@@ -44,7 +45,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -67,9 +67,9 @@ import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
+import { formatKoreanPhone } from "@/lib/phone";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { formatKoreanPhone } from "@/lib/phone";
 import type { UserCleanupPreviewCandidateDto } from "@/types/admin/users";
 import {
   AlertCircle,
@@ -1126,23 +1126,48 @@ export default function UsersClient() {
                 className="mx-auto"
               />
             </div>
-            <div role="columnheader" className="min-w-0 px-4 py-2.5">회원 / 계정</div>
-            <div role="columnheader" className="min-w-0 px-4 py-2.5">연락처 / 주소</div>
-            <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">활동 / 포인트</div>
-            <div role="columnheader" className="min-w-0 px-4 py-2.5">권한 / 상태</div>
-            <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">작업</div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5">
+              회원 / 계정
+            </div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5">
+              연락처 / 주소
+            </div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
+              활동 / 포인트
+            </div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5">
+              권한 / 상태
+            </div>
+            <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
+              작업
+            </div>
           </AdminListColumnHeader>
 
           <AdminListBody>
             {shouldShowLoadingRows &&
               Array.from({ length: 8 }).map((_, i) => (
                 <AdminListRow key={`sk-${i}`} columnsClassName={USER_LIST_COLUMNS}>
-                  <AdminListCell align="center" className="px-0"><Skeleton className="h-4 w-4" /></AdminListCell>
-                  <AdminListCell><Skeleton className="h-4 w-40" /><Skeleton className="mt-2 h-3 w-28" /></AdminListCell>
-                  <AdminListCell><Skeleton className="h-4 w-44" /><Skeleton className="mt-2 h-3 w-36" /></AdminListCell>
-                  <AdminListCell align="end"><Skeleton className="h-4 w-32" /><Skeleton className="mt-2 h-3 w-24" /></AdminListCell>
-                  <AdminListCell><Skeleton className="h-5 w-28" /></AdminListCell>
-                  <AdminListCell align="end"><Skeleton className="h-8 w-20" /></AdminListCell>
+                  <AdminListCell align="center" className="px-0">
+                    <Skeleton className="h-4 w-4" />
+                  </AdminListCell>
+                  <AdminListCell>
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="mt-2 h-3 w-28" />
+                  </AdminListCell>
+                  <AdminListCell>
+                    <Skeleton className="h-4 w-44" />
+                    <Skeleton className="mt-2 h-3 w-36" />
+                  </AdminListCell>
+                  <AdminListCell align="end">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="mt-2 h-3 w-24" />
+                  </AdminListCell>
+                  <AdminListCell>
+                    <Skeleton className="h-5 w-28" />
+                  </AdminListCell>
+                  <AdminListCell align="end">
+                    <Skeleton className="h-8 w-20" />
+                  </AdminListCell>
                 </AdminListRow>
               ))}
 
@@ -1157,7 +1182,9 @@ export default function UsersClient() {
             {shouldShowEmptyRow && (
               <AdminListRow columnsClassName={USER_LIST_COLUMNS}>
                 <AdminListCell className="col-span-6 py-16 text-center">
-                  {hasCustomFilters ? "현재 조건에 맞는 회원이 없습니다." : "등록된 회원이 없습니다."}
+                  {hasCustomFilters
+                    ? "현재 조건에 맞는 회원이 없습니다."
+                    : "등록된 회원이 없습니다."}
                 </AdminListCell>
               </AdminListRow>
             )}
@@ -1169,8 +1196,8 @@ export default function UsersClient() {
                   : u.isSuspended
                     ? "suspended"
                     : "active";
-                const joined = splitDateTime(u.createdAt);
-                const last = splitDateTime(u.lastLoginAt);
+                const joined = splitDateTime(u.createdAt ?? undefined);
+                const last = splitDateTime(u.lastLoginAt ?? undefined);
                 const signupMethods = [
                   u.socialProviders?.includes("kakao") ? "카카오" : null,
                   u.socialProviders?.includes("naver") ? "네이버" : null,
@@ -1190,16 +1217,28 @@ export default function UsersClient() {
                     <AdminListCell>
                       <AdminListPrimary
                         title={u.name || "(이름없음)"}
-                        meta={<><span>{u.email}</span><span>{signupLabel}</span></>}
+                        meta={
+                          <>
+                            <span>{u.email}</span>
+                            <span>{signupLabel}</span>
+                          </>
+                        }
                         supporting={
                           <AdminReferencePopover
                             title={`${u.name || "회원"} 계정 참조`}
-                            trigger={<button type="button" className={adminDataTable.referenceTrigger}>계정 참조 보기</button>}
+                            trigger={
+                              <button type="button" className={adminDataTable.referenceTrigger}>
+                                계정 참조 보기
+                              </button>
+                            }
                             items={[
                               { label: "회원 ID", value: u.id, copyValue: u.id },
                               { label: "이메일", value: u.email, copyValue: u.email || undefined },
                               { label: "가입 경로", value: signupLabel },
-                              { label: "Apps in Toss", value: u.appsInTossLinked ? "연결됨" : "미연결" },
+                              {
+                                label: "Apps in Toss",
+                                value: u.appsInTossLinked ? "연결됨" : "미연결",
+                              },
                             ]}
                           />
                         }
@@ -1207,33 +1246,71 @@ export default function UsersClient() {
                     </AdminListCell>
                     <AdminListCell>
                       <div className={adminDataTable.cellStack}>
-                        <span className={adminDataTable.primaryLine}>{u.phone ? formatKoreanPhone(u.phone) || u.phone : "전화 미등록"}</span>
-                        <span className={adminDataTable.secondaryLine}>{shortAddress(u.address) || "주소 미등록"}</span>
+                        <span className={adminDataTable.primaryLine}>
+                          {u.phone ? formatKoreanPhone(u.phone) || u.phone : "전화 미등록"}
+                        </span>
+                        <span className={adminDataTable.secondaryLine}>
+                          {shortAddress(u.address) || "주소 미등록"}
+                        </span>
                         <AdminReferencePopover
                           title={`${u.name || "회원"} 연락처`}
-                          trigger={<button type="button" className={adminDataTable.referenceTrigger}>전체 연락처 보기</button>}
+                          trigger={
+                            <button type="button" className={adminDataTable.referenceTrigger}>
+                              전체 연락처 보기
+                            </button>
+                          }
                           items={[
                             { label: "이메일", value: u.email, copyValue: u.email || undefined },
-                            { label: "전화", value: formatKoreanPhone(u.phone || "") || u.phone, href: u.phone ? `tel:${u.phone}` : undefined, copyValue: u.phone || undefined },
-                            { label: "주소", value: fullAddress(u.postalCode, u.address, u.addressDetail) },
+                            {
+                              label: "전화",
+                              value: formatKoreanPhone(u.phone || "") || u.phone,
+                              href: u.phone ? `tel:${u.phone}` : undefined,
+                              copyValue: u.phone || undefined,
+                            },
+                            {
+                              label: "주소",
+                              value: fullAddress(u.postalCode, u.address, u.addressDetail),
+                            },
                           ]}
                         />
                       </div>
                     </AdminListCell>
                     <AdminListCell align="end">
                       <div className="flex flex-col items-end gap-1 whitespace-nowrap tabular-nums">
-                        <span className={adminTypography.tablePrimary}>로그인 {last.time ? `${last.date} ${last.time}` : "-"}</span>
+                        <span className={adminTypography.tablePrimary}>
+                          로그인 {last.time ? `${last.date} ${last.time}` : "-"}
+                        </span>
                         <span className={adminTypography.tableSecondary}>가입 {joined.date}</span>
-                        <span className={adminTypography.meta}>보유 {u.pointsBalance.toLocaleString("ko-KR")}P</span>
+                        <span className={adminTypography.meta}>
+                          보유 {u.pointsBalance.toLocaleString("ko-KR")}P
+                        </span>
                       </div>
                     </AdminListCell>
                     <AdminListCell>
                       <AdminStatusGroup
                         primary={
                           <>
-                            <Badge className={cn(badgeSm, roleColors[u.role], "shrink-0 whitespace-nowrap")}>{getUserRoleLabel(u.role)}</Badge>
-                            <Badge className={cn(badgeSm, STATUS[statusKey], "shrink-0 whitespace-nowrap")}>
-                              {statusKey === "active" ? "활성" : statusKey === "suspended" ? "비활성" : "삭제됨"}
+                            <Badge
+                              className={cn(
+                                badgeSm,
+                                roleColors[u.role],
+                                "shrink-0 whitespace-nowrap",
+                              )}
+                            >
+                              {getUserRoleLabel(u.role)}
+                            </Badge>
+                            <Badge
+                              className={cn(
+                                badgeSm,
+                                STATUS[statusKey],
+                                "shrink-0 whitespace-nowrap",
+                              )}
+                            >
+                              {statusKey === "active"
+                                ? "활성"
+                                : statusKey === "suspended"
+                                  ? "비활성"
+                                  : "삭제됨"}
                             </Badge>
                           </>
                         }
@@ -1241,8 +1318,12 @@ export default function UsersClient() {
                     </AdminListCell>
                     <AdminListCell align="end">
                       <AdminRowActions>
-                        <Button asChild size="sm" variant="outline"><Link href={`/admin/users/${u.id}`}>상세</Link></Button>
-                        <AdminRowActionMenu ariaLabel={`${u.name || u.email || "회원"} 작업 메뉴 열기`}>
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/admin/users/${u.id}`}>상세</Link>
+                        </Button>
+                        <AdminRowActionMenu
+                          ariaLabel={`${u.name || u.email || "회원"} 작업 메뉴 열기`}
+                        >
                           <DropdownMenuItem
                             className="whitespace-nowrap"
                             onSelect={(e) => {
@@ -1262,22 +1343,72 @@ export default function UsersClient() {
 
           <div role="rowgroup" className="border-t border-border">
             <div role="row">
-              <div role="cell" aria-colspan={6} className="flex flex-wrap items-center justify-center gap-1 px-4 py-3">
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={!shouldShowResolvedPagination || page <= 1} aria-label="첫 페이지"><ChevronsLeft className="h-4 w-4" /></Button>
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page - 1)} disabled={!shouldShowResolvedPagination || page <= 1} aria-label="이전"><ChevronLeft className="h-4 w-4" /></Button>
+              <div
+                role="cell"
+                aria-colspan={6}
+                className="flex flex-wrap items-center justify-center gap-1 px-4 py-3"
+              >
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => goToPage(1)}
+                  disabled={!shouldShowResolvedPagination || page <= 1}
+                  aria-label="첫 페이지"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => goToPage(page - 1)}
+                  disabled={!shouldShowResolvedPagination || page <= 1}
+                  aria-label="이전"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
                 {!shouldShowResolvedPagination ? (
                   <span className="select-none px-2 text-muted-foreground">-</span>
                 ) : (
                   pageItems.map((it, i) =>
                     typeof it === "number" ? (
-                      <Button key={i} variant={it === page ? "default" : "outline"} className="h-8 min-w-8 px-2" onClick={() => goToPage(it)} aria-current={it === page ? "page" : undefined}>{it}</Button>
+                      <Button
+                        key={i}
+                        variant={it === page ? "default" : "outline"}
+                        className="h-8 min-w-8 px-2"
+                        onClick={() => goToPage(it)}
+                        aria-current={it === page ? "page" : undefined}
+                      >
+                        {it}
+                      </Button>
                     ) : (
-                      <span key={i} className="select-none px-2 text-muted-foreground">…</span>
+                      <span key={i} className="select-none px-2 text-muted-foreground">
+                        …
+                      </span>
                     ),
                   )
                 )}
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page + 1)} disabled={!shouldShowResolvedPagination || page >= totalPages} aria-label="다음"><ChevronRight className="h-4 w-4" /></Button>
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={!shouldShowResolvedPagination || page >= totalPages} aria-label="끝 페이지"><ChevronsRight className="h-4 w-4" /></Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => goToPage(page + 1)}
+                  disabled={!shouldShowResolvedPagination || page >= totalPages}
+                  aria-label="다음"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => goToPage(totalPages)}
+                  disabled={!shouldShowResolvedPagination || page >= totalPages}
+                  aria-label="끝 페이지"
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
