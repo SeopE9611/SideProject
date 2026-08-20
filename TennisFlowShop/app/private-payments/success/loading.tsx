@@ -5,7 +5,6 @@ export default function Loading() {
     <main className="min-h-screen bg-background pb-10" aria-busy="true" aria-live="polite">
       <PublicPageHero
         variant="feature"
-        eyebrow="개인결제"
         title="결제 결과를 확인하고 있습니다"
         description="잠시만 기다려 주세요."
       />

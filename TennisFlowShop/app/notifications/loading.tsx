@@ -7,7 +7,6 @@ export default function Loading() {
     <div className="min-h-full bg-background" aria-busy="true" aria-live="polite">
       <PublicPageHero
         variant="feature"
-        eyebrow="알림 센터"
         title="알림"
         description="알림 센터를 준비하고 있습니다."
       />

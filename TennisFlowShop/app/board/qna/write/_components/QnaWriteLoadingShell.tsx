@@ -1,4 +1,3 @@
-import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface, SectionHeader } from "@/components/public";
@@ -18,7 +17,6 @@ export function QnaWriteLoadingShell() {
     <main className="min-h-screen bg-background text-foreground" aria-busy>
       <PublicPageHero
         variant="feature"
-        eyebrow={<Badge variant="signal">Q&amp;A WRITE</Badge>}
         title="문의하기"
         description="상품, 주문, 서비스 이용 중 궁금한 점을 남겨주시면 확인 후 답변드릴게요."
         actions={
@@ -45,7 +43,6 @@ export function QnaWriteLoadingShell() {
           <PublicSurface variant="feature" padding="none" className="overflow-hidden">
             <div className="border-b border-border bg-brand-highlight-muted/40 p-5 bp-sm:p-6 bp-md:p-8">
               <SectionHeader
-                eyebrow="NEW QUESTION"
                 title="새 문의 작성"
                 description="작성 화면을 준비하고 있습니다."
               />

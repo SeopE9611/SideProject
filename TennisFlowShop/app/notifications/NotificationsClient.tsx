@@ -217,7 +217,6 @@ export default function NotificationsClient() {
     <div className="min-h-full bg-background">
       <PublicPageHero
         variant="feature"
-        eyebrow="알림 센터"
         title="알림"
         description={`주문, 쪽지, 서비스 진행 안내를 시간순으로 확인하세요 · 읽지 않은 알림 ${unreadCount.toLocaleString()}개`}
         actions={
