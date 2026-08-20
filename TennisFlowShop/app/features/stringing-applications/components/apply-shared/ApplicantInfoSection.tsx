@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { Box, CheckCircle2, MapPin, Shield, Store, User } from "lucide-react";
+import { Box, CheckCircle2, MapPin, Shield, Store } from "lucide-react";
 
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { Button } from "@/components/ui/button";
@@ -153,16 +153,11 @@ export default function ApplicantInfoSection({
 
   return (
     <div className="relative space-y-5">
-      <div className="flex items-start gap-3 border-b border-border pb-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
-          <User className="h-5 w-5 text-foreground" />
-        </div>
-        <div>
-          <h2 className="text-ui-section-title font-semibold text-foreground">신청자/수령 정보</h2>
-          <p className="mt-1 text-ui-body-sm text-muted-foreground">
-            먼저 라켓을 전달할 방식을 선택하고 필요한 연락처를 확인해주세요.
-          </p>
-        </div>
+      <div className="border-b border-border pb-4">
+        <h2 className="text-ui-section-title font-semibold text-foreground">신청자/수령 정보</h2>
+        <p className="mt-1 text-ui-body-sm text-muted-foreground">
+          먼저 라켓을 전달할 방식을 선택하고 필요한 연락처를 확인해주세요.
+        </p>
       </div>
 
       <PublicSurface variant="muted" padding="sm">

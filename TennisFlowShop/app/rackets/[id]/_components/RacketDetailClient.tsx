@@ -832,14 +832,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             >
               <TabsContent value="description" className="p-4 bp-sm:p-6 bp-md:p-8">
                 <div>
-                  <div className="mb-4 flex min-w-0 items-center gap-3 bp-sm:mb-6">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground bp-sm:h-12 bp-sm:w-12">
-                      <FileText className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" />
-                    </div>
-                    <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
-                      라켓 설명
-                    </h3>
-                  </div>
+                  <h3 className="mb-4 break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:mb-6 bp-sm:text-ui-page-title">
+                    라켓 설명
+                  </h3>
                   <div className="-mx-4 border-y border-border/60 px-4 py-4 bp-sm:-mx-6 bp-sm:px-6 bp-sm:py-5 bp-md:mx-0 bp-md:rounded-xl bp-md:border bp-md:bg-muted/30 bp-md:p-6">
                     <p className="break-words break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
                       {racketBrandLabel(racket.brand)} {racket.model} 중고 라켓입니다. 상태 등급은{" "}
@@ -853,14 +848,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
               <TabsContent value="specifications" className="p-4 bp-sm:p-6 bp-md:p-8">
                 <div className="space-y-4 bp-sm:space-y-6">
-                  <div className="mb-4 flex min-w-0 items-center gap-3 bp-sm:mb-6">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground bp-sm:h-12 bp-sm:w-12">
-                      <Settings className="h-4 w-4 bp-sm:h-6 bp-sm:w-6" />
-                    </div>
-                    <h3 className="break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:text-ui-page-title">
-                      상세 스펙
-                    </h3>
-                  </div>
+                  <h3 className="mb-4 break-keep text-ui-section-title font-ui-bold leading-tight text-foreground bp-sm:mb-6 bp-sm:text-ui-page-title">
+                    상세 스펙
+                  </h3>
 
                   <div className="-mx-4 divide-y divide-border/60 border-y border-border/60 px-4 bp-sm:-mx-6 bp-sm:px-6 bp-md:mx-0 bp-md:grid bp-md:grid-cols-2 bp-md:gap-4 bp-md:divide-y-0 bp-md:border-y-0 bp-md:px-0">
                     {racket.spec?.weight && (

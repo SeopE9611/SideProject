@@ -26,11 +26,8 @@ import { getGuestOrderNextActionText } from "@/app/order-lookup/_lib/guestOrderN
 import { getCustomerOrderPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 import {
   ArrowLeft,
-  Calendar,
   CheckCircle,
   Clock,
-  CreditCard,
-  MapPin,
   Package,
   Phone,
   Shield,
@@ -684,9 +681,6 @@ export default function OrderDetailPage() {
               <CardContent className="p-4 md:p-6">
                 {!hasStringingApplication ? (
                   <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 ring-1 ring-primary/20 flex items-center justify-center">
-                      <ShoppingBag className="w-6 h-6 text-foreground" />
-                    </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-foreground mb-2">교체서비스 신청 가능</h3>
                       <p className="border-l-2 border-primary/40 bg-primary/5 px-3 py-2 text-muted-foreground mb-4">
@@ -798,14 +792,7 @@ export default function OrderDetailPage() {
                 {/* 주문 정보 */}
                 <Card className="border-0 bg-card shadow-sm ring-1 ring-border/50">
                   <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
-                        <Calendar className="w-5 h-5 text-foreground" />
-                      </div>
-                      <CardTitle className="text-ui-card-title-lg font-semibold">
-                        주문 정보
-                      </CardTitle>
-                    </div>
+                    <CardTitle className="text-ui-card-title-lg font-semibold">주문 정보</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -860,14 +847,9 @@ export default function OrderDetailPage() {
                 {/* 배송 정보 */}
                 <Card className="border-0 bg-card shadow-sm ring-1 ring-border/50">
                   <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
-                        <MapPin className="w-5 h-5 text-foreground" />
-                      </div>
-                      <CardTitle className="text-ui-card-title-lg font-semibold">
-                        {shippingCardTitle}
-                      </CardTitle>
-                    </div>
+                    <CardTitle className="text-ui-card-title-lg font-semibold">
+                      {shippingCardTitle}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -951,14 +933,7 @@ export default function OrderDetailPage() {
                 {/* 주문 상품 */}
                 <Card className="border-0 bg-card shadow-sm ring-1 ring-border/50">
                   <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
-                        <ShoppingBag className="w-5 h-5 text-foreground" />
-                      </div>
-                      <CardTitle className="text-ui-card-title-lg font-semibold">
-                        주문 상품
-                      </CardTitle>
-                    </div>
+                    <CardTitle className="text-ui-card-title-lg font-semibold">주문 상품</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-3">
@@ -1008,14 +983,7 @@ export default function OrderDetailPage() {
               <div className="lg:col-span-1">
                 <Card className="sticky top-8 border-0 bg-card shadow-sm ring-1 ring-border/50">
                   <CardHeader className="rounded-t-xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
-                        <CreditCard className="w-5 h-5 text-foreground" />
-                      </div>
-                      <CardTitle className="text-ui-card-title-lg font-semibold">
-                        결제 정보
-                      </CardTitle>
-                    </div>
+                    <CardTitle className="text-ui-card-title-lg font-semibold">결제 정보</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-3">

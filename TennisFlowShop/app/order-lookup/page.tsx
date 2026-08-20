@@ -27,7 +27,6 @@ import {
   CheckCircle2,
   Clock,
   Mail,
-  Package,
   Phone,
   Search,
   Shield,
@@ -246,9 +245,6 @@ export default function OrderLookupPage() {
             {/* Main Card */}
             <Card className="border border-border bg-card shadow-sm">
               <CardHeader className="text-center pb-6 md:pb-8">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-full mb-4 mx-auto border border-border/60">
-                  <Package className="w-6 h-6 text-foreground" />
-                </div>
                 <CardTitle className="text-ui-card-title-lg font-semibold text-foreground">
                   주문 정보 입력
                 </CardTitle>
@@ -465,9 +461,6 @@ export default function OrderLookupPage() {
             {/* Features */}
             <div className="grid grid-cols-1 gap-4 md:mt-8">
               <div className="text-center p-4 md:p-6 bg-card rounded-xl border border-border shadow-sm">
-                <div className="inline-flex items-center justify-center w-12 h-12 border border-border bg-secondary text-foreground rounded-full mb-4">
-                  <Shield className="w-6 h-6 text-primary" />
-                </div>
                 <h3 className="font-semibold text-foreground mb-2">안전한 조회</h3>
                 <p className="text-ui-body-sm text-muted-foreground">
                   개인정보 보호를 위한 안전한 주문 조회 시스템
@@ -475,9 +468,6 @@ export default function OrderLookupPage() {
               </div>
 
               <div className="text-center p-4 md:p-6 bg-card rounded-xl border border-border shadow-sm">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-success/10 rounded-full mb-4 dark:bg-success/15">
-                  <Clock className="w-6 h-6 text-success" />
-                </div>
                 <h3 className="font-semibold text-foreground mb-2">실시간 조회</h3>
                 <p className="text-ui-body-sm text-muted-foreground">
                   최신 주문 상태를 실시간으로 확인 가능
@@ -485,9 +475,6 @@ export default function OrderLookupPage() {
               </div>
 
               <div className="text-center p-4 md:p-6 bg-card rounded-xl border border-border shadow-sm">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-muted rounded-full mb-4">
-                  <Package className="w-6 h-6 text-foreground" />
-                </div>
                 <h3 className="font-semibold text-foreground mb-2">상세 정보</h3>
                 <p className="text-ui-body-sm text-muted-foreground">
                   배송 추적부터 결제 정보까지 한눈에
