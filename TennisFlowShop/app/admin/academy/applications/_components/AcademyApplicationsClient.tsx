@@ -8,13 +8,20 @@ import { ArrowLeft, BookOpen, Eye, Search, Trash2 } from "lucide-react";
 
 import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListRow,
+  AdminListTable,
+} from "@/components/admin/AdminListTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
@@ -36,14 +43,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -58,6 +57,8 @@ import {
 } from "@/lib/types/academy";
 
 const LIMIT = 20;
+const APPLICATION_LIST_COLUMNS =
+  "grid-cols-[112px_minmax(170px,1fr)_minmax(190px,1.2fr)_128px_minmax(150px,0.9fr)_112px_160px]";
 
 type AcademyApplicationListItem = {
   _id: string;
@@ -332,61 +333,60 @@ export default function AcademyApplicationsClient() {
         </form>
       </AdminFilterBar>
 
-      <Card className={adminSurface.card}>
-        <CardHeader>
-          <CardTitle className="text-base">신청 목록</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {error ? (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
-              신청 목록을 불러오지 못했습니다.
-            </div>
-          ) : null}
-
-          <div className="overflow-x-auto rounded-lg border border-border">
-            <Table className="min-w-[1120px] table-fixed">
-              <TableHeader className={adminSurface.tableHeader}>
-                <TableRow>
-                  <TableHead className={cn(adminDataTable.headRight, "w-[120px]")}>접수일</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[200px]")}>신청자</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[220px]")}>선택 클래스</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[130px]")}>희망 정보</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[170px]")}>선호 일정</TableHead>
-                  <TableHead className={cn(adminDataTable.headCenter, "w-[110px]")}>상태</TableHead>
-                  <TableHead className={cn(adminDataTable.stickyActionHead, "w-[170px]")}>관리</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="h-28 text-center text-sm text-muted-foreground"
-                    >
+      <AdminListTable
+            title="신청 목록"
+            viewLabel={status === "all" ? "전체 상태" : getAcademyApplicationStatusLabel(status)}
+            resultLabel={
+              error
+                ? "불러오기 실패"
+                : data
+                  ? `총 ${data.pagination.total.toLocaleString("ko-KR")}건`
+                  : "불러오는 중…"
+            }
+            description="신청자, 선택 클래스, 희망 수업·일정, 처리 상태와 관리 작업을 한 행에서 확인합니다."
+            columnsClassName={APPLICATION_LIST_COLUMNS}
+            ariaLabel="아카데미 신청 관리 목록"
+          >
+            <AdminListColumnHeader columnsClassName={APPLICATION_LIST_COLUMNS}>
+                  <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">접수일</div>
+                  <div role="columnheader" className="min-w-0 px-4 py-2.5">신청자</div>
+                  <div role="columnheader" className="min-w-0 px-4 py-2.5">선택 클래스</div>
+                  <div role="columnheader" className="min-w-0 px-4 py-2.5">희망 정보</div>
+                  <div role="columnheader" className="min-w-0 px-4 py-2.5">선호 일정</div>
+                  <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">상태</div>
+                  <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">관리</div>
+            </AdminListColumnHeader>
+            <AdminListBody>
+                {error ? (
+                  <AdminListRow columnsClassName={APPLICATION_LIST_COLUMNS} ariaLabel="목록 오류">
+                    <AdminListCell className="col-span-7 py-10 text-center text-destructive">
+                      신청 목록을 불러오지 못했습니다.
+                    </AdminListCell>
+                  </AdminListRow>
+                ) : isLoading ? (
+                  <AdminListRow columnsClassName={APPLICATION_LIST_COLUMNS}>
+                    <AdminListCell className="col-span-7 py-10 text-center text-muted-foreground">
                       신청 목록을 불러오는 중입니다.
-                    </TableCell>
-                  </TableRow>
+                    </AdminListCell>
+                  </AdminListRow>
                 ) : null}
                 {!isLoading && data?.items.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="h-28 text-center text-sm text-muted-foreground"
-                    >
+                  <AdminListRow columnsClassName={APPLICATION_LIST_COLUMNS}>
+                    <AdminListCell className="col-span-7 py-10 text-center text-muted-foreground">
                       아직 접수된 레슨 신청이 없습니다.
-                    </TableCell>
-                  </TableRow>
+                    </AdminListCell>
+                  </AdminListRow>
                 ) : null}
                 {data?.items.map((item) => {
                   const createdAt = formatAdminDateTimeParts(item.createdAt);
 
                   return (
-                    <TableRow key={item._id} className={adminDataTable.row}>
-                      <TableCell className={adminDataTable.dateCell}>
+                    <AdminListRow key={item._id} columnsClassName={APPLICATION_LIST_COLUMNS}>
+                      <AdminListCell align="end">
                         <div className="font-medium text-foreground">{createdAt.date}</div>
                         <div className="text-muted-foreground">{createdAt.time}</div>
-                      </TableCell>
-                      <TableCell className={adminDataTable.cellTopLeft}>
+                      </AdminListCell>
+                      <AdminListCell>
                         <div
                           className={cn(
                             "line-clamp-2 max-w-[180px] break-keep",
@@ -405,17 +405,17 @@ export default function AcademyApplicationsClient() {
                         <div className={cn("whitespace-nowrap", adminDataTable.secondaryText)}>
                           {item.phone || "연락처 미입력"}
                         </div>
-                      </TableCell>
-                      <TableCell className={adminDataTable.cellTopLeft}>
+                      </AdminListCell>
+                      <AdminListCell>
                         <SelectedClassCell classSnapshot={item.classSnapshot} />
-                      </TableCell>
-                      <TableCell className={adminDataTable.cellTopLeft}>
+                      </AdminListCell>
+                      <AdminListCell>
                         <div>{getAcademyLessonTypeLabel(item.desiredLessonType)}</div>
                         <div className={adminDataTable.secondaryText}>
                           {getAcademyCurrentLevelLabel(item.currentLevel)}
                         </div>
-                      </TableCell>
-                      <TableCell className={adminDataTable.cellTopLeft}>
+                      </AdminListCell>
+                      <AdminListCell>
                         <div
                           className="max-w-[160px] truncate"
                           title={item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
@@ -428,11 +428,11 @@ export default function AcademyApplicationsClient() {
                         >
                           {item.preferredTimeText || "희망 시간 미입력"}
                         </div>
-                      </TableCell>
-                      <TableCell className={adminDataTable.cellCenter}>
+                      </AdminListCell>
+                      <AdminListCell>
                         <AcademyStatusBadge status={item.status} />
-                      </TableCell>
-                      <TableCell className={adminDataTable.stickyActionCell}>
+                      </AdminListCell>
+                      <AdminListCell align="end" className="px-2">
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             type="button"
@@ -463,13 +463,12 @@ export default function AcademyApplicationsClient() {
                             />
                           ) : null}
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </AdminListCell>
+                    </AdminListRow>
                   );
                 })}
-              </TableBody>
-            </Table>
-          </div>
+            </AdminListBody>
+      </AdminListTable>
 
           <div className="flex gap-3 text-sm text-muted-foreground flex-row items-center justify-between">
             <span>
@@ -495,8 +494,6 @@ export default function AcademyApplicationsClient() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
       <AlertDialog
         open={Boolean(pendingDelete)}
         onOpenChange={(open) => {
