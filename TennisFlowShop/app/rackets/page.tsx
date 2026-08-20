@@ -47,7 +47,7 @@ export default async function RacketsPage({
   return (
     <div className="min-h-full bg-background">
       <CommerceCatalogHero
-        eyebrow="라켓 셀렉션"
+        eyebrow={null}
         title="중고 라켓 구매·대여"
         description="검수된 중고 라켓을 구매·대여하고 스트링 교체까지 한 번에 신청하세요."
         actions={

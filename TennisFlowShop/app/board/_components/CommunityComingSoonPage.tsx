@@ -8,7 +8,6 @@ import { PublicSurface } from "@/components/public/PublicSurface";
 import { Button } from "@/components/ui/button";
 
 type CommunityComingSoonPageProps = {
-  eyebrow: string;
   title: string;
   description: string;
   noticeTitle: string;
@@ -18,7 +17,6 @@ type CommunityComingSoonPageProps = {
 };
 
 export function CommunityComingSoonPage({
-  eyebrow,
   title,
   description,
   noticeTitle,
@@ -30,9 +28,6 @@ export function CommunityComingSoonPage({
     <main className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="space-y-6 py-6 bp-sm:py-8 bp-md:py-10">
         <header className="max-w-3xl space-y-2">
-          <p className="text-ui-caption font-ui-medium uppercase tracking-[0.14em] text-primary sm:text-ui-label">
-            {eyebrow}
-          </p>
           <h1 className="break-keep text-ui-section-title font-ui-bold tracking-normal text-foreground sm:text-ui-section-title-lg">
             {title}
           </h1>

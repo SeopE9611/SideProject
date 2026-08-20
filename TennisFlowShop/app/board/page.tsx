@@ -403,7 +403,6 @@ function ReviewCard({
   return (
     <section className="space-y-5 bp-md:space-y-6">
       <SectionHeader
-        eyebrow="Latest Reviews"
         title="최신 리뷰"
         actions={
           <>
@@ -501,7 +500,6 @@ function CommunityIntroCard() {
   return (
     <section className="space-y-5 bp-md:space-y-6">
       <SectionHeader
-        eyebrow="Community Boards"
         title="커뮤니티 게시판"
         description="공지사항, Q&A, 구매·서비스 후기를 한 곳에서 둘러볼 수 있어요."
       />
@@ -543,7 +541,6 @@ export default function BoardPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PublicPageHero
-        eyebrow="Dokkaebi Tennis Community"
         title="커뮤니티"
         description="공지사항, Q&A, 리뷰를 한 곳에서 확인할 수 있습니다. 주문/서비스 문의는 고객센터를 이용해주세요."
         variant="feature"

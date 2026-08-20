@@ -17,7 +17,6 @@ export default function BrandBoardPage() {
 
   return (
     <CommunityComingSoonPage
-      eyebrow="커뮤니티 · 브랜드"
       title="브랜드별 게시판"
       description="브랜드별 라켓과 스트링 사용 후기를 한곳에서 살펴보고, 나에게 맞는 조합을 나눌 수 있도록 준비하고 있습니다."
       noticeTitle="브랜드별 사용 후기 기능을 준비 중입니다"

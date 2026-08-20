@@ -305,7 +305,6 @@ export default async function AcademyApplyPage({
   return (
     <main className="min-h-screen bg-background">
       <PublicPageHero
-        eyebrow="도깨비테니스 아카데미"
         title="아카데미 신청서"
         description="신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤 상담을 도와드립니다."
         variant="feature"
@@ -326,7 +325,6 @@ export default async function AcademyApplyPage({
           {/* Notice Card */}
           <SummaryCard
             variant="feature"
-            eyebrow="Step 1 · Before you apply"
             title="신청 전 안내사항"
             description="신청 전 아래 내용을 확인해 주세요."
             contentClassName="pt-0"

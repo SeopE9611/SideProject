@@ -336,7 +336,6 @@ export default async function AcademyPage() {
     <main className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
       <PublicPageHero
-        eyebrow="Dokebi Tennis Academy"
         title="도깨비테니스 아카데미"
         description={
           <p className="break-keep leading-relaxed">
@@ -388,7 +387,6 @@ export default async function AcademyPage() {
         {/* Lesson Programs Section */}
         <section className="space-y-6" aria-labelledby="lesson-fees-heading">
           <SectionHeader
-            eyebrow="Lesson Program"
             title={<span id="lesson-fees-heading">레슨 프로그램 & 기준 수강료</span>}
             description={
               <p className="break-keep leading-relaxed">
@@ -452,7 +450,6 @@ export default async function AcademyPage() {
         {/* Contact Section */}
         <section className="space-y-6" aria-labelledby="academy-contact-heading">
           <SectionHeader
-            eyebrow="Contact"
             title={<span id="academy-contact-heading">상담 문의</span>}
             description={
               <p className="break-keep leading-relaxed">
@@ -505,7 +502,6 @@ export default async function AcademyPage() {
         {/* Classes Section */}
         <section id="academy-classes" className="scroll-mt-[calc(var(--header-h)+1rem)] space-y-6">
           <SectionHeader
-            eyebrow="Classes"
             title="현재 모집 중인 클래스"
             description={
               <p className="break-keep leading-relaxed">
@@ -672,7 +668,6 @@ export default async function AcademyPage() {
         {/* FAQ Section */}
         <section className="space-y-6" aria-labelledby="academy-faq-heading">
           <SectionHeader
-            eyebrow="FAQ"
             title={<span id="academy-faq-heading">자주 묻는 질문</span>}
             description="레슨 문의 전 자주 확인하는 내용을 정리했습니다."
           />
