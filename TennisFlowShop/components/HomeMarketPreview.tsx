@@ -1,7 +1,7 @@
 "use client";
 import AsyncState from "@/components/system/AsyncState";
 import type { HomePreviewMarketPost } from "@/lib/home/home-preview";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Tags } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
 
