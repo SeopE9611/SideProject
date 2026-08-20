@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Camera, ShieldCheck } from "lucide-react";
 
 const trustItems = [
-  { label: "구매·이용 확인", icon: ShieldCheck },
-  { label: "대상별 1회 작성", icon: CheckCircle2 },
-  { label: "사진 최대 5장", icon: Camera },
+  "구매·이용 확인",
+  "대상별 1회 작성",
+  "사진 최대 5장",
 ];
 
 export default function ReviewHubHero() {
@@ -32,14 +31,11 @@ export default function ReviewHubHero() {
         <div className="grid gap-3">
           <p className="text-ui-kicker text-muted-foreground">VERIFIED PLAY LOG</p>
           <div className="grid gap-3 bp-sm:grid-cols-3 bp-lg:grid-cols-1">
-            {trustItems.map(({ label, icon: Icon }) => (
+            {trustItems.map((label) => (
               <div
                 key={label}
-                className="flex min-h-16 items-center gap-3 rounded-control border border-border bg-card p-4 shadow-sm"
+                className="flex min-h-16 items-center rounded-control border border-border bg-card p-4 shadow-sm"
               >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-highlight-muted text-brand-highlight-foreground dark:text-brand-highlight">
-                  <Icon className="h-4 w-4" />
-                </span>
                 <span className="break-keep text-ui-body-sm font-semibold text-foreground">
                   {label}
                 </span>
