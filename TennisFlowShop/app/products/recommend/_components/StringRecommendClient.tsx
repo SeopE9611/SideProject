@@ -232,13 +232,6 @@ export default function StringRecommendClient() {
     <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7">
       <PublicSurface variant="muted" padding="lg" className="rounded-2xl">
         <SectionHeader
-          eyebrow={
-            careContext ? (
-              <Badge variant="signal">RACKET CARE STRING MATCH</Badge>
-            ) : (
-              <Badge variant="secondary">STRING RECOMMENDATION</Badge>
-            )
-          }
           title={careContext ? "내 플레이에 맞는 스트링 추천" : "스트링 추천 도우미"}
           description={
             <div className="space-y-2 break-keep leading-relaxed">
@@ -279,7 +272,6 @@ export default function StringRecommendClient() {
         <CardContent className="p-3.5 sm:p-4 md:p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-ui-kicker text-muted-foreground">RECOMMENDATION PROGRESS</p>
               <p className="mt-1 break-keep text-ui-body-sm font-medium text-foreground">
                 {isComplete
                   ? "모든 조건을 선택했어요."

@@ -18,7 +18,6 @@ export default function HotBoardPage() {
 
   return (
     <CommunityComingSoonPage
-      eyebrow="커뮤니티 · 인기글"
       title="인기글 모아보기"
       description="조회수와 댓글, 공감 반응을 기준으로 커뮤니티에서 주목받는 게시글을 빠르게 둘러볼 수 있도록 준비하고 있습니다."
       noticeTitle="커뮤니티 인기글 기능을 준비 중입니다"

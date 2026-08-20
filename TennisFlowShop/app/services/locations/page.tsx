@@ -128,7 +128,6 @@ export default function LocationsPage() {
         <section className="py-8 bp-sm:py-10 bp-lg:py-12">
           <SiteContainer variant="wide" className="space-y-5 bp-sm:space-y-7">
             <SectionHeader
-              eyebrow="Visit Information"
               title="도깨비테니스 방문 안내"
               description="방문 전 위치, 교통, 연락처와 이용 가능한 서비스를 확인해 주세요."
             />

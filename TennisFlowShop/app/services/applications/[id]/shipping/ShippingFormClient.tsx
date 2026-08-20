@@ -129,7 +129,6 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
       <main className="min-h-screen bg-background pb-10">
         <PublicPageHero
           variant="feature"
-          eyebrow="자가발송 운송장"
           title="라켓 발송 정보를 확인해 주세요"
           description="매장으로 보내는 보유 라켓의 택배사와 송장번호를 등록합니다."
         />
@@ -184,7 +183,6 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
       <div className="min-h-screen bg-background pb-10">
         <PublicPageHero
           variant="feature"
-          eyebrow="자가발송 운송장"
           title="라켓 발송 정보를 확인해 주세요"
           description="매장으로 보내는 보유 라켓의 택배사와 송장번호를 등록합니다."
         />
@@ -217,7 +215,6 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
       <div className="min-h-screen bg-background pb-10">
         <PublicPageHero
           variant="feature"
-          eyebrow="자가발송 운송장"
           title="라켓 발송 정보를 확인해 주세요"
           description="매장으로 보내는 보유 라켓의 택배사와 송장번호를 등록합니다."
         />
@@ -408,7 +405,6 @@ function SelfShipForm({
     <div className="min-h-screen bg-background pb-10">
       <PublicPageHero
         variant="feature"
-        eyebrow="자가발송 운송장"
         title={
           isLoading
             ? "라켓 발송 운송장 등록"
@@ -445,7 +441,6 @@ function SelfShipForm({
 
           <SummaryCard
             variant="feature"
-            eyebrow="라켓 발송 정보"
             title="라켓 발송 운송장"
             description="택배사 선택 → 송장번호 입력 → 필요한 경우 발송일과 메모 입력 후 저장해 주세요."
             contentClassName="space-y-4 md:space-y-6"

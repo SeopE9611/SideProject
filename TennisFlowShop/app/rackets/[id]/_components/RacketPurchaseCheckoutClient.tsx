@@ -600,9 +600,6 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
           <aside className="min-w-0 bp-lg:sticky bp-lg:top-6">
             <section className="rounded-2xl border border-border bg-card p-5 shadow-sm bp-md:p-6">
               <div className="space-y-1">
-                <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
-                  Order summary
-                </p>
                 <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">구매 요약</h2>
               </div>
 
