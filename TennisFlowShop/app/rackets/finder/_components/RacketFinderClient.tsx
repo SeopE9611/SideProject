@@ -878,7 +878,7 @@ export default function RacketFinderClient() {
                 <Filter className="h-4 w-4 text-primary" aria-hidden="true" />
               </header>
               <div className="p-4">{filterControls}</div>
-              <footer className="sticky bottom-0 flex gap-2 border-t border-border bg-card/95 p-4 backdrop-blur">
+              <footer className="sticky bottom-0 flex gap-2 border-t border-border bg-card p-4">
                 <Button
                   type="button"
                   variant="outline"

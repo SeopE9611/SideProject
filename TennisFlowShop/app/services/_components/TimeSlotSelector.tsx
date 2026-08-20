@@ -143,7 +143,7 @@ export default function TimeSlotSelector({
 
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="rounded-2xl bg-card/60 dark:bg-card backdrop-blur-sm px-4 py-3 shadow-sm">
+            <div className="rounded-2xl bg-card px-4 py-3 shadow-sm">
               <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent" />
               <div className="mt-2 flex justify-center">
                 <Skeleton className="h-3 w-24" />

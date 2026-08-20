@@ -168,7 +168,7 @@ export default function MyPointsTab() {
                   {stats.recentTrend !== 0 && (
                     <Badge
                       variant="secondary"
-                      className="bg-card/20 backdrop-blur-sm text-foreground border-0 px-2 py-0.5 text-ui-label"
+                      className="bg-card text-foreground border-0 px-2 py-0.5 text-ui-label"
                     >
                       {stats.recentTrend > 0 ? (
                         <TrendingUp className="h-3 w-3 mr-1" />
