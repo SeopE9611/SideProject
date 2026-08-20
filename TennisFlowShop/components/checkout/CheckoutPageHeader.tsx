@@ -4,7 +4,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { cn } from "@/lib/utils";
 
 export type CheckoutPageHeaderProps = {
-  eyebrow: ReactNode;
+  eyebrow?: ReactNode;
   title: ReactNode;
   description?: ReactNode;
   icon?: ReactNode;
@@ -20,6 +20,11 @@ export default function CheckoutPageHeader({
   children,
   className,
 }: CheckoutPageHeaderProps) {
+  const hasEyebrow =
+    eyebrow !== null &&
+    eyebrow !== undefined &&
+    eyebrow !== false;
+
   return (
     <header className={cn("border-b border-border/80 bg-muted/30 text-foreground", className)}>
       <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
@@ -36,11 +41,18 @@ export default function CheckoutPageHeader({
               )}
 
               <div className="min-w-0">
-                <p className="text-ui-label font-ui-medium uppercase tracking-[0.18em] text-brand-highlight-ink">
-                  {eyebrow}
-                </p>
+                {hasEyebrow ? (
+                  <p className="text-ui-label font-ui-medium uppercase tracking-[0.18em] text-brand-highlight-ink">
+                    {eyebrow}
+                  </p>
+                ) : null}
 
-                <h1 className="mt-1 text-balance text-ui-page-title font-ui-bold leading-tight tracking-normal text-foreground bp-sm:text-ui-page-title-lg">
+                <h1
+                  className={cn(
+                    "text-balance text-ui-page-title font-ui-bold leading-tight tracking-normal text-foreground bp-sm:text-ui-page-title-lg",
+                    hasEyebrow && "mt-1",
+                  )}
+                >
                   {title}
                 </h1>
 

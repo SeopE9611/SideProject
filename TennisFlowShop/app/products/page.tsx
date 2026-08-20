@@ -33,7 +33,6 @@ export default async function ProductsPage({
   return (
     <div className="min-h-full bg-background">
       <CommerceCatalogHero
-        eyebrow={null}
         title="테니스 스트링"
         description="플레이 스타일에 맞는 스트링을 고르고, 교체서비스까지 이어서 신청하세요."
         actions={
