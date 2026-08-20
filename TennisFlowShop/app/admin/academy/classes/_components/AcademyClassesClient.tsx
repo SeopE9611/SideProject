@@ -6,8 +6,14 @@ import { useMemo, useState, type FormEvent } from "react";
 import useSWR from "swr";
 import { BookOpen, EyeOff, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
-import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListRow,
+  AdminListTable,
+} from "@/components/admin/AdminListTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
@@ -24,7 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenuItem,
@@ -36,14 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -58,6 +56,8 @@ import {
 import { cn } from "@/lib/utils";
 
 const LIMIT = 20;
+const CLASS_LIST_COLUMNS =
+  "grid-cols-[112px_minmax(180px,1.35fr)_104px_minmax(160px,1.1fr)_136px_128px_160px]";
 
 type ClassesResponse = {
   success: true;
@@ -385,55 +385,49 @@ export default function AcademyClassesClient() {
         </form>
       </AdminFilterBar>
 
-      <Card className={adminSurface.card}>
-        <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
-          <CardTitle className={adminTypography.sectionTitle}>클래스 목록</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-6">
-          {error ? (
-            <div
-              className={cn(
-                "rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-destructive",
-                adminTypography.body,
-              )}
-            >
-              클래스 목록을 불러오지 못했습니다.
-            </div>
-          ) : null}
-
-          <div className="overflow-x-auto rounded-lg border border-border">
-            <Table className="min-w-[1080px] table-fixed">
-              <TableHeader className={adminSurface.tableHeader}>
-                <TableRow>
-                  <TableHead className={cn(adminDataTable.headRight, "w-[112px]")}>등록일</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[240px]")}>클래스</TableHead>
-                  <TableHead className={cn(adminDataTable.headCenter, "w-[96px]")}>수업 정보</TableHead>
-                  <TableHead className={cn(adminDataTable.head, "w-[200px]")}>운영 정보</TableHead>
-                  <TableHead className={cn(adminDataTable.headRight, "w-[144px]")}>신청 현황</TableHead>
-                  <TableHead className={cn(adminDataTable.headCenter, "w-[128px]")}>가격/상태</TableHead>
-                  <TableHead className={cn(adminDataTable.stickyActionHead, "w-[160px]")}>관리</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className={cn("h-28 text-center", adminTypography.metaMuted)}
-                    >
+      <AdminListTable
+            title="클래스 목록"
+            viewLabel={status === "all" ? "전체 상태" : getAcademyClassStatusLabel(status)}
+            resultLabel={
+              error
+                ? "불러오기 실패"
+                : data
+                  ? `총 ${data.pagination.total.toLocaleString("ko-KR")}건`
+                  : "불러오는 중…"
+            }
+            description="클래스 기본 정보, 수업·운영 정보, 신청 현황, 가격·상태와 관리 작업을 한 행에서 확인합니다."
+            columnsClassName={CLASS_LIST_COLUMNS}
+            ariaLabel="아카데미 클래스 관리 목록"
+          >
+            <AdminListColumnHeader columnsClassName={CLASS_LIST_COLUMNS}>
+              <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">등록일</div>
+              <div role="columnheader" className="min-w-0 px-4 py-2.5">클래스</div>
+              <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">수업 정보</div>
+              <div role="columnheader" className="min-w-0 px-4 py-2.5">운영 정보</div>
+              <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">신청 현황</div>
+              <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">가격/상태</div>
+              <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">관리</div>
+            </AdminListColumnHeader>
+            <AdminListBody>
+                {error ? (
+                  <AdminListRow columnsClassName={CLASS_LIST_COLUMNS} ariaLabel="목록 오류">
+                    <AdminListCell className="col-span-7 py-10 text-center text-destructive">
+                      클래스 목록을 불러오지 못했습니다.
+                    </AdminListCell>
+                  </AdminListRow>
+                ) : isLoading ? (
+                  <AdminListRow columnsClassName={CLASS_LIST_COLUMNS}>
+                    <AdminListCell className="col-span-7 py-10 text-center">
                       클래스 목록을 불러오는 중입니다.
-                    </TableCell>
-                  </TableRow>
+                    </AdminListCell>
+                  </AdminListRow>
                 ) : null}
                 {!isLoading && data?.items.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className={cn("h-28 text-center", adminTypography.metaMuted)}
-                    >
+                  <AdminListRow columnsClassName={CLASS_LIST_COLUMNS}>
+                    <AdminListCell className="col-span-7 py-10 text-center">
                       등록된 아카데미 클래스가 없습니다.
-                    </TableCell>
-                  </TableRow>
+                    </AdminListCell>
+                  </AdminListRow>
                 ) : null}
                 {data?.items.map((item) => {
                   const classId = item._id;
@@ -447,12 +441,12 @@ export default function AcademyClassesClient() {
                   const isDeleteDisabled = blockingApplicationTotal > 0 || deletingId === classId;
 
                   return (
-                    <TableRow key={classId} className={adminDataTable.row}>
-                      <TableCell className={cn(adminDataTable.dateCell, "w-[112px]")}>
+                    <AdminListRow key={classId} columnsClassName={CLASS_LIST_COLUMNS}>
+                      <AdminListCell align="end">
                         <div className="whitespace-nowrap font-medium text-foreground">{createdAt.date}</div>
                         <div className="whitespace-nowrap text-muted-foreground">{createdAt.time}</div>
-                      </TableCell>
-                      <TableCell className={cn(adminDataTable.cellTopLeft, "w-[240px]")}>
+                      </AdminListCell>
+                      <AdminListCell>
                         <div
                           className={cn(
                             "line-clamp-2 max-w-[208px] break-words",
@@ -471,14 +465,14 @@ export default function AcademyClassesClient() {
                         >
                           {item.description || "설명 미입력"}
                         </div>
-                      </TableCell>
-                      <TableCell className={cn(adminDataTable.cellCenter, "w-[96px]")}>
+                      </AdminListCell>
+                      <AdminListCell>
                         <div>{getAcademyClassLessonTypeLabel(item.lessonType)}</div>
                         <div className={adminTypography.caption}>
                           {getAcademyClassLevelLabel(item.level)}
                         </div>
-                      </TableCell>
-                      <TableCell className={cn(adminDataTable.cellTopLeft, "w-[200px]")}>
+                      </AdminListCell>
+                      <AdminListCell>
                         <div
                           className="max-w-[168px] truncate"
                           title={item.instructorName || "강사 미입력"}
@@ -502,11 +496,11 @@ export default function AcademyClassesClient() {
                             {item.location}
                           </div>
                         ) : null}
-                      </TableCell>
-                      <TableCell className={cn(adminDataTable.cellNumber, "w-[144px]")}>
+                      </AdminListCell>
+                      <AdminListCell align="end">
                         <ApplicationStatsCell item={item} />
-                      </TableCell>
-                      <TableCell className={cn(adminDataTable.cellCenter, "w-[128px]")}>
+                      </AdminListCell>
+                      <AdminListCell align="end">
                         <div
                           className={cn(
                             "whitespace-nowrap tabular-nums",
@@ -518,10 +512,8 @@ export default function AcademyClassesClient() {
                         <div className="mt-1">
                           <AcademyClassStatusBadge status={item.status} />
                         </div>
-                      </TableCell>
-                      <TableCell
-                        className={cn(adminDataTable.stickyActionCell, "w-[160px]")}
-                      >
+                      </AdminListCell>
+                      <AdminListCell align="end" className="px-2">
                         <div className="flex items-center justify-end gap-1">
                           <Button type="button" variant="outline" size="sm" onClick={() => goToDetail(classId)}>
                             상세 보기
@@ -582,13 +574,12 @@ export default function AcademyClassesClient() {
                             </DropdownMenuItem>
                           </AdminRowActionMenu>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </AdminListCell>
+                    </AdminListRow>
                   );
                 })}
-              </TableBody>
-            </Table>
-          </div>
+            </AdminListBody>
+      </AdminListTable>
 
           <div
             className={cn(
@@ -621,8 +612,6 @@ export default function AcademyClassesClient() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
       <AlertDialog
         open={Boolean(pendingAction)}
         onOpenChange={(open) => {
