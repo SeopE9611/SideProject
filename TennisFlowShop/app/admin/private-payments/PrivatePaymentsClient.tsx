@@ -46,10 +46,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { adminFetcher } from "@/lib/admin/adminFetcher";
 import { formatKoreanDateTime } from "@/lib/korean-date";
+import { formatKoreanPhone, normalizePhoneDigits } from "@/lib/phone";
 import { getCommonPaymentStatusLabel } from "@/lib/status-labels/base";
 import { cn } from "@/lib/utils";
 import { ArrowDown, ArrowUp, ArrowUpDown, CreditCard } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Item = {
   id: string;
@@ -84,7 +85,15 @@ type Summary = {
   canceled: number;
   monthPaidAmount: number;
 };
-type ListResponse = { ok: boolean; items: Item[]; summary?: Summary };
+type ListResponse = {
+  ok: boolean;
+  items: Item[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  summary?: Summary;
+};
 type SaveResponse = { ok: boolean; message?: string };
 type Filters = {
   q: string;
@@ -103,6 +112,18 @@ const empty = {
   customerEmail: "",
   expiresAt: "",
 };
+type PrivatePaymentFormState = typeof empty;
+type PrivatePaymentFormField =
+  | "title"
+  | "amount"
+  | "description"
+  | "customerName"
+  | "customerPhone"
+  | "customerEmail"
+  | "expiresAt";
+type PrivatePaymentFormErrors = Partial<Record<PrivatePaymentFormField, string>>;
+type OfflineLinkField = "customerName" | "customerPhone" | "customerEmail" | "memo";
+type OfflineLinkFieldErrors = Partial<Record<OfflineLinkField, string>>;
 const emptyFilters: Filters = {
   q: "",
   paymentStatus: "",
@@ -120,6 +141,18 @@ const emptyOfflineLinkForm = {
   createRecord: true,
 };
 const defaultSummary: Summary = { total: 0, pending: 0, paid: 0, canceled: 0, monthPaidAmount: 0 };
+const PRIVATE_PAYMENT_PAGE_SIZE = 50;
+const KOREA_TIME_OFFSET_MS = 9 * 60 * 60 * 1000;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const AMOUNT_DIGITS_PATTERN = /^\d+$/;
+const PRIVATE_PAYMENT_LIMITS = {
+  title: 80,
+  description: 500,
+  customerName: 80,
+  customerPhoneDigits: 11,
+  customerEmail: 254,
+  offlineMemo: 500,
+} as const;
 const PRIVATE_PAYMENT_LIST_COLUMNS =
   "grid-cols-[40px_minmax(360px,1.35fr)_150px_minmax(230px,0.85fr)_minmax(240px,0.9fr)_116px]";
 
@@ -136,18 +169,91 @@ const getPrivatePaymentStatusLabel = (status?: string | null) => {
 
 const statusLabel = (status: string) => (status === "active" ? "활성" : "비활성");
 const money = (amount: number) => `${amount.toLocaleString("ko-KR")}원`;
-const toDateTimeLocal = (value?: string) => {
+const toKoreanDateTimeLocal = (value?: string) => {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  const offset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  return new Date(date.getTime() + KOREA_TIME_OFFSET_MS).toISOString().slice(0, 16);
 };
-const defaultExpiresAt = () => {
-  const date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const offset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+const koreanDateTimeLocalToIso = (value: string) => {
+  const normalized = value.trim();
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalized)) return null;
+  const date = new Date(`${normalized}:00+09:00`);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 };
+const defaultExpiresAt = () =>
+  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000 + KOREA_TIME_OFFSET_MS)
+    .toISOString()
+    .slice(0, 16);
+const currentKoreanDateTimeLocal = () =>
+  new Date(Date.now() + KOREA_TIME_OFFSET_MS).toISOString().slice(0, 16);
+const normalizeAmountDigits = (value: string) =>
+  value.replace(/[^\d]/g, "").replace(/^0+(?=\d)/, "");
+const formatAmountInput = (value: string) => {
+  const digits = normalizeAmountDigits(value);
+  if (!digits) return "";
+  const amount = Number(digits);
+  return Number.isSafeInteger(amount) ? amount.toLocaleString("ko-KR") : "";
+};
+const parseAmountInput = (value: string) => {
+  const digits = value.replace(/,/g, "");
+  if (!AMOUNT_DIGITS_PATTERN.test(digits)) return null;
+  const amount = Number(digits);
+  return Number.isSafeInteger(amount) ? amount : null;
+};
+function validatePrivatePaymentForm(form: PrivatePaymentFormState) {
+  const errors: PrivatePaymentFormErrors = {};
+  const title = form.title.trim();
+  const description = form.description.trim();
+  const customerName = form.customerName.trim();
+  const customerPhoneDigits = normalizePhoneDigits(form.customerPhone);
+  const customerEmail = form.customerEmail.trim().toLowerCase();
+  const amount = parseAmountInput(form.amount);
+  if (!title || title.length > PRIVATE_PAYMENT_LIMITS.title)
+    errors.title = "결제명은 1~80자로 입력해 주세요.";
+  if (amount === null || amount < 1000)
+    errors.amount = "금액은 1,000원 이상의 정수로 입력해 주세요.";
+  if (description.length > PRIVATE_PAYMENT_LIMITS.description)
+    errors.description = "설명은 500자 이하로 입력해 주세요.";
+  if (customerName.length > PRIVATE_PAYMENT_LIMITS.customerName)
+    errors.customerName = "고객명은 80자 이하로 입력해 주세요.";
+  if (customerPhoneDigits && (customerPhoneDigits.length < 9 || customerPhoneDigits.length > 11))
+    errors.customerPhone = "연락처는 숫자 9~11자리로 입력해 주세요.";
+  if (customerEmail && (customerEmail.length > PRIVATE_PAYMENT_LIMITS.customerEmail || !EMAIL_PATTERN.test(customerEmail)))
+    errors.customerEmail = "이메일 형식을 확인해 주세요.";
+  let expiresAt: string | null = null;
+  if (form.expiresAt) {
+    expiresAt = koreanDateTimeLocalToIso(form.expiresAt);
+    if (!expiresAt) errors.expiresAt = "만료일 형식을 확인해 주세요.";
+    else if (new Date(expiresAt).getTime() <= Date.now())
+      errors.expiresAt = "만료일은 현재 시각보다 이후로 설정해 주세요.";
+  }
+  return { errors, normalized: { title, amount, description, customerName,
+    customerPhone: customerPhoneDigits ? formatKoreanPhone(customerPhoneDigits) : "",
+    customerEmail, expiresAt: form.expiresAt ? expiresAt : "" } };
+}
+function validateOfflineLinkForm(form: typeof emptyOfflineLinkForm) {
+  const errors: OfflineLinkFieldErrors = {};
+  const customerName = form.customerName.trim();
+  const customerPhoneDigits = normalizePhoneDigits(form.customerPhone);
+  const customerEmail = form.customerEmail.trim().toLowerCase();
+  const memo = form.memo.trim();
+  if (!customerName || customerName.length > PRIVATE_PAYMENT_LIMITS.customerName)
+    errors.customerName = "고객명은 1~80자로 입력해 주세요.";
+  if (customerPhoneDigits && (customerPhoneDigits.length < 9 || customerPhoneDigits.length > 11))
+    errors.customerPhone = "연락처는 숫자 9~11자리로 입력해 주세요.";
+  if (customerEmail && (customerEmail.length > PRIVATE_PAYMENT_LIMITS.customerEmail || !EMAIL_PATTERN.test(customerEmail)))
+    errors.customerEmail = "이메일 형식을 확인해 주세요.";
+  if (!customerPhoneDigits && !customerEmail) {
+    errors.customerPhone = "연락처 또는 이메일 중 하나를 입력해 주세요.";
+    errors.customerEmail = "연락처 또는 이메일 중 하나를 입력해 주세요.";
+  }
+  if (memo.length > PRIVATE_PAYMENT_LIMITS.offlineMemo)
+    errors.memo = "작업 메모는 500자 이하로 입력해 주세요.";
+  return { errors, normalized: { ...form, customerName,
+    customerPhone: customerPhoneDigits ? formatKoreanPhone(customerPhoneDigits) : "",
+    customerEmail, memo } };
+}
 const isExpired = (item: Item, now: number) =>
   !!item.expiresAt && new Date(item.expiresAt).getTime() < now;
 
@@ -158,11 +264,17 @@ export default function PrivatePaymentsClient() {
   const [loadError, setLoadError] = useState("");
   const [form, setForm] = useState({ ...empty, expiresAt: defaultExpiresAt() });
   const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, page: 1, totalPages: 1 });
+  const [searchInput, setSearchInput] = useState("");
   const [sort, setSort] = useState("createdAt");
   const [dir, setDir] = useState<"asc" | "desc">("desc");
   const [selected, setSelected] = useState<string[]>([]);
   const [editing, setEditing] = useState<Item | null>(null);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [formErrors, setFormErrors] = useState<PrivatePaymentFormErrors>({});
   const [message, setMessage] = useState("");
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = useState<Item | null>(null);
@@ -176,26 +288,47 @@ export default function PrivatePaymentsClient() {
   const [offlineLinkForm, setOfflineLinkForm] = useState(emptyOfflineLinkForm);
   const [offlineLinking, setOfflineLinking] = useState(false);
   const [offlineLinkError, setOfflineLinkError] = useState("");
+  const [offlineLinkFieldErrors, setOfflineLinkFieldErrors] =
+    useState<OfflineLinkFieldErrors>({});
   const [now, setNow] = useState<number | null>(null);
+  const requestSequenceRef = useRef(0);
   const query = useMemo(() => {
-    const params = new URLSearchParams({ limit: "50", sort, dir });
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(PRIVATE_PAYMENT_PAGE_SIZE),
+      sort,
+      dir,
+    });
     Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
     return params.toString();
-  }, [filters, sort, dir]);
+  }, [filters, page, sort, dir]);
   const load = async () => {
+    const requestId = ++requestSequenceRef.current;
     setIsLoading(true);
     setLoadError("");
 
     try {
       const json = await adminFetcher<ListResponse>(`/api/admin/private-payments?${query}`);
+      if (requestId !== requestSequenceRef.current) return;
+      const totalPages = Math.max(1, Number(json.totalPages || 1));
+      if (page > totalPages) {
+        setPage(totalPages);
+        return;
+      }
       setItems(json.items || []);
       setSummary(json.summary || defaultSummary);
+      setPagination({
+        total: Number(json.total || 0),
+        page: Number(json.page || page),
+        totalPages,
+      });
       setSelected([]);
     } catch (error) {
+      if (requestId !== requestSequenceRef.current) return;
       setLoadError("목록을 불러오지 못했습니다.");
       throw error;
     } finally {
-      setIsLoading(false);
+      if (requestId === requestSequenceRef.current) setIsLoading(false);
     }
   };
   useEffect(() => {
@@ -204,34 +337,71 @@ export default function PrivatePaymentsClient() {
   useEffect(() => {
     setNow(Date.now());
   }, []);
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setPage(1);
+      setFilters((current) =>
+        current.q === searchInput ? current : { ...current, q: searchInput },
+      );
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [searchInput]);
   const save = async () => {
-    setMessage("");
-    const url = editing
-      ? `/api/admin/private-payments/${editing.id}`
-      : "/api/admin/private-payments";
-    const json = await adminFetcher<SaveResponse>(url, {
-      method: editing ? "PATCH" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        amount: Number(form.amount),
-        status: editing?.status || "active",
-      }),
-    });
-    if (!json.ok) throw new Error(json.message || "저장에 실패했습니다.");
-    setForm({ ...empty, expiresAt: defaultExpiresAt() });
-    setEditing(null);
-    setFormDialogOpen(false);
-    setMessage(
-      editing
-        ? "수정했습니다."
-        : "개인결제 링크를 생성했습니다. 링크 복사 메뉴로 고객에게 전달해 주세요.",
-    );
-    await load();
+    if (saving) return;
+    setFormError("");
+    setFormErrors({});
+    const validation = validatePrivatePaymentForm(form);
+    if (Object.keys(validation.errors).length > 0) {
+      setFormErrors(validation.errors);
+      return;
+    }
+    if (validation.normalized.amount === null) {
+      setFormErrors({ amount: "금액은 1,000원 이상의 정수로 입력해 주세요." });
+      return;
+    }
+    setSaving(true);
+    try {
+      const url = editing
+        ? `/api/admin/private-payments/${editing.id}`
+        : "/api/admin/private-payments";
+      const json = await adminFetcher<SaveResponse>(url, {
+        method: editing ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: validation.normalized.title,
+          amount: validation.normalized.amount,
+          description: validation.normalized.description,
+          customerName: validation.normalized.customerName,
+          customerPhone: validation.normalized.customerPhone,
+          customerEmail: validation.normalized.customerEmail,
+          expiresAt: validation.normalized.expiresAt,
+          status: editing?.status || "active",
+        }),
+      });
+      if (!json.ok) throw new Error(json.message || "저장에 실패했습니다.");
+      const wasEditing = Boolean(editing);
+      setForm({ ...empty, expiresAt: defaultExpiresAt() });
+      setEditing(null);
+      setFormDialogOpen(false);
+      setFormErrors({});
+      setFormError("");
+      setMessage(
+        wasEditing
+          ? "수정했습니다."
+          : "개인결제 링크를 생성했습니다. 링크 복사 메뉴로 고객에게 전달해 주세요.",
+      );
+      await load();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "저장에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
   };
   const openCreateDialog = () => {
     setEditing(null);
     setForm({ ...empty, expiresAt: defaultExpiresAt() });
+    setFormErrors({});
+    setFormError("");
     setMessage("");
     setFormDialogOpen(true);
   };
@@ -239,13 +409,15 @@ export default function PrivatePaymentsClient() {
     setEditing(item);
     setForm({
       title: item.title,
-      amount: String(item.amount),
+      amount: formatAmountInput(String(item.amount)),
       description: item.description || "",
       customerName: item.customerName || "",
       customerPhone: item.customerPhone || "",
       customerEmail: item.customerEmail || "",
-      expiresAt: toDateTimeLocal(item.expiresAt),
+      expiresAt: toKoreanDateTimeLocal(item.expiresAt),
     });
+    setFormErrors({});
+    setFormError("");
     setMessage("");
     setFormDialogOpen(true);
   };
@@ -321,10 +493,16 @@ export default function PrivatePaymentsClient() {
       createRecord: true,
     });
     setOfflineLinkError("");
+    setOfflineLinkFieldErrors({});
     setMessage("");
   };
   const linkOffline = async () => {
     if (!offlineLinkTarget) return;
+    const validation = validateOfflineLinkForm(offlineLinkForm);
+    if (Object.keys(validation.errors).length > 0) {
+      setOfflineLinkFieldErrors(validation.errors);
+      return;
+    }
     setOfflineLinking(true);
     setOfflineLinkError("");
     try {
@@ -333,7 +511,7 @@ export default function PrivatePaymentsClient() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(offlineLinkForm),
+          body: JSON.stringify(validation.normalized),
         },
       );
       if (!json.ok) throw new Error(json.message || "오프라인 연결에 실패했습니다.");
@@ -376,6 +554,7 @@ export default function PrivatePaymentsClient() {
     }
   };
   const toggleSort = (key: string) => {
+    setPage(1);
     if (sort === key) setDir(dir === "asc" ? "desc" : "asc");
     else {
       setSort(key);
@@ -393,17 +572,23 @@ export default function PrivatePaymentsClient() {
       filters.from ||
       filters.to,
   );
-  const currentViewLabel = filters.q
-    ? "검색 결과"
-    : filters.archived === "archived"
-      ? "보관함"
-      : filters.paymentStatus
-        ? getPrivatePaymentStatusLabel(filters.paymentStatus)
-        : filters.status
-          ? statusLabel(filters.status)
-          : "활성 목록";
+  const currentViewLabel = filters.q ? "검색 결과" : hasAppliedFilters ? "필터 결과" : "활성 목록";
+  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
+    setPage(1);
+    setFilters((current) => ({ ...current, [key]: value }));
+  };
   const resetFilters = () => {
+    setSearchInput("");
+    setPage(1);
     setFilters({ ...emptyFilters });
+  };
+  const updateFormField = <K extends PrivatePaymentFormField>(
+    key: K,
+    value: PrivatePaymentFormState[K],
+  ) => {
+    setForm((current) => ({ ...current, [key]: value }));
+    setFormErrors((current) => ({ ...current, [key]: undefined }));
+    setFormError("");
   };
   const hasArchivable = selectedItems.some(
     (item) => item.paymentStatus !== "결제대기" && !item.archivedAt,
@@ -499,7 +684,7 @@ export default function PrivatePaymentsClient() {
                   기간: {filters.from || "시작 제한 없음"} ~ {filters.to || "종료 제한 없음"}
                 </span>
               ) : null}
-              <span className="tabular-nums">현재 목록: {items.length}건</span>
+              <span className="tabular-nums">조회 결과: {pagination.total.toLocaleString("ko-KR")}건</span>
             </>
           }
         >
@@ -510,10 +695,8 @@ export default function PrivatePaymentsClient() {
                 id="private-payment-filter-q"
                 className="w-full min-w-0"
                 placeholder="결제명, 고객명, 연락처 검색"
-                value={filters.q}
-                onChange={(event) =>
-                  setFilters((current) => ({ ...current, q: event.target.value }))
-                }
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
               />
             </div>
             <div className="min-w-0 space-y-1.5">
@@ -522,9 +705,7 @@ export default function PrivatePaymentsClient() {
                 id="private-payment-filter-payment-status"
                 className="h-10 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
                 value={filters.paymentStatus}
-                onChange={(event) =>
-                  setFilters((current) => ({ ...current, paymentStatus: event.target.value }))
-                }
+                onChange={(event) => updateFilter("paymentStatus", event.target.value)}
               >
                 <option value="">전체</option>
                 <option>결제대기</option>
@@ -538,9 +719,7 @@ export default function PrivatePaymentsClient() {
                 id="private-payment-filter-status"
                 className="h-10 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
                 value={filters.status}
-                onChange={(event) =>
-                  setFilters((current) => ({ ...current, status: event.target.value }))
-                }
+                onChange={(event) => updateFilter("status", event.target.value)}
               >
                 <option value="">전체</option>
                 <option value="active">활성</option>
@@ -553,9 +732,7 @@ export default function PrivatePaymentsClient() {
                 id="private-payment-filter-archived"
                 className="h-10 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
                 value={filters.archived}
-                onChange={(event) =>
-                  setFilters((current) => ({ ...current, archived: event.target.value }))
-                }
+                onChange={(event) => updateFilter("archived", event.target.value)}
               >
                 <option value="active">보관 제외</option>
                 <option value="archived">보관함 보기</option>
@@ -569,9 +746,7 @@ export default function PrivatePaymentsClient() {
                 className="w-full min-w-0"
                 type="date"
                 value={filters.from}
-                onChange={(event) =>
-                  setFilters((current) => ({ ...current, from: event.target.value }))
-                }
+                onChange={(event) => updateFilter("from", event.target.value)}
               />
             </div>
             <div className="min-w-0 space-y-1.5">
@@ -581,9 +756,7 @@ export default function PrivatePaymentsClient() {
                 className="w-full min-w-0"
                 type="date"
                 value={filters.to}
-                onChange={(event) =>
-                  setFilters((current) => ({ ...current, to: event.target.value }))
-                }
+                onChange={(event) => updateFilter("to", event.target.value)}
               />
             </div>
           </div>
@@ -641,7 +814,7 @@ export default function PrivatePaymentsClient() {
               ? "불러오기 실패"
               : isLoading
                 ? "불러오는 중…"
-                : `현재 ${items.length.toLocaleString("ko-KR")}건`
+                : `총 ${pagination.total.toLocaleString("ko-KR")}건`
           }
           description="결제 정보와 고객, 금액, 결제·운영 상태, 만료 일정 및 관리 작업을 한 행에서 확인합니다."
           columnsClassName={PRIVATE_PAYMENT_LIST_COLUMNS}
@@ -794,10 +967,20 @@ export default function PrivatePaymentsClient() {
                       />
                     </AdminListCell>
                     <AdminListCell align="end">
-                      <AdminListPrimary
-                        title={item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}
-                        meta={<span>생성 {formatKoreanDateTime(item.createdAt)}</span>}
-                      />
+                      <div className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)] gap-x-2 gap-y-1 text-ui-label tabular-nums">
+                        <span className="text-left text-muted-foreground">만료</span>
+                        {item.expiresAt ? (
+                          <time dateTime={item.expiresAt} className="whitespace-nowrap text-right font-medium text-foreground">
+                            {formatKoreanDateTime(item.expiresAt)}
+                          </time>
+                        ) : (
+                          <span className="whitespace-nowrap text-right font-medium text-foreground">없음</span>
+                        )}
+                        <span className="text-left text-muted-foreground">생성</span>
+                        <time dateTime={item.createdAt} className="whitespace-nowrap text-right text-muted-foreground">
+                          {formatKoreanDateTime(item.createdAt)}
+                        </time>
+                      </div>
                     </AdminListCell>
                     <AdminListCell align="end" className="px-2">
                       <AdminRowActions>
@@ -861,15 +1044,38 @@ export default function PrivatePaymentsClient() {
               })
             )}
           </AdminListBody>
+          <div role="rowgroup" className="border-t border-border">
+            <div role="row">
+              <div role="cell" aria-colspan={6} className="flex items-center justify-between gap-3 px-4 py-3">
+                <span className={adminTypography.metaMuted}>
+                  총 {pagination.total.toLocaleString("ko-KR")}건 · {pagination.page}/{pagination.totalPages}페이지
+                </span>
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" size="sm" disabled={isLoading || page <= 1}
+                    onClick={() => setPage((current) => Math.max(1, current - 1))}>
+                    이전
+                  </Button>
+                  <Button type="button" variant="outline" size="sm"
+                    disabled={isLoading || page >= pagination.totalPages}
+                    onClick={() => setPage((current) => Math.min(pagination.totalPages, current + 1))}>
+                    다음
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </AdminListTable>
 
         <Dialog
           open={formDialogOpen}
           onOpenChange={(open) => {
+            if (!open && saving) return;
             setFormDialogOpen(open);
             if (!open) {
               setEditing(null);
               setForm({ ...empty, expiresAt: defaultExpiresAt() });
+              setFormErrors({});
+              setFormError("");
             }
           }}
         >
@@ -896,34 +1102,50 @@ export default function PrivatePaymentsClient() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label>결제명</Label>
+                    <Label htmlFor="private-payment-title">결제명</Label>
                     <Input
+                      id="private-payment-title"
                       placeholder="예: 김재민 1회 레슨권"
                       value={form.title}
-                      disabled={!canEdit}
-                      onChange={(e) => setForm({ ...form, title: e.target.value })}
+                      maxLength={80}
+                      required
+                      disabled={!canEdit || saving}
+                      aria-invalid={Boolean(formErrors.title)}
+                      aria-describedby={formErrors.title ? "private-payment-title-error" : undefined}
+                      onChange={(e) => updateFormField("title", e.target.value)}
                     />
+                    {formErrors.title ? <p id="private-payment-title-error" className="text-xs text-destructive">{formErrors.title}</p> : null}
                   </div>
                   <div className="space-y-1.5">
-                    <Label>결제금액</Label>
+                    <Label htmlFor="private-payment-amount">결제금액</Label>
                     <Input
-                      placeholder="예: 40000"
-                      type="number"
-                      min={1000}
+                      id="private-payment-amount"
+                      placeholder="예: 40,000"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="off"
                       value={form.amount}
-                      disabled={!canEdit}
-                      onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                      disabled={!canEdit || saving}
+                      aria-invalid={Boolean(formErrors.amount)}
+                      aria-describedby={formErrors.amount ? "private-payment-amount-error" : undefined}
+                      onChange={(e) => updateFormField("amount", formatAmountInput(e.target.value))}
                     />
+                    {formErrors.amount ? <p id="private-payment-amount-error" className="text-xs text-destructive">{formErrors.amount}</p> : null}
                   </div>
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <Label>설명</Label>
+                  <Label htmlFor="private-payment-description">설명</Label>
                   <Textarea
+                    id="private-payment-description"
                     placeholder="예: 레슨 1회권 결제"
                     value={form.description}
-                    disabled={!canEdit}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    maxLength={500}
+                    disabled={!canEdit || saving}
+                    aria-invalid={Boolean(formErrors.description)}
+                    aria-describedby={formErrors.description ? "private-payment-description-error" : undefined}
+                    onChange={(e) => updateFormField("description", e.target.value)}
                   />
+                  {formErrors.description ? <p id="private-payment-description-error" className="text-xs text-destructive">{formErrors.description}</p> : null}
                 </div>
               </section>
               <section className="space-y-3 rounded-xl border border-border/50 bg-muted/10 p-3.5">
@@ -935,31 +1157,56 @@ export default function PrivatePaymentsClient() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label>고객명 (선택)</Label>
+                    <Label htmlFor="private-payment-customer-name">고객명 (선택)</Label>
                     <Input
+                      id="private-payment-customer-name"
                       placeholder="예: 김재민 (선택)"
                       value={form.customerName}
-                      disabled={!canEdit}
-                      onChange={(e) => setForm({ ...form, customerName: e.target.value })}
+                      maxLength={80}
+                      autoComplete="name"
+                      disabled={!canEdit || saving}
+                      aria-invalid={Boolean(formErrors.customerName)}
+                      aria-describedby={formErrors.customerName ? "private-payment-customer-name-error" : undefined}
+                      onChange={(e) => updateFormField("customerName", e.target.value)}
                     />
+                    {formErrors.customerName ? <p id="private-payment-customer-name-error" className="text-xs text-destructive">{formErrors.customerName}</p> : null}
                   </div>
                   <div className="space-y-1.5">
-                    <Label>연락처 (선택)</Label>
+                    <Label htmlFor="private-payment-customer-phone">연락처 (선택)</Label>
                     <Input
-                      placeholder="예: 01012345678 (선택)"
+                      id="private-payment-customer-phone"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      maxLength={13}
+                      placeholder="예: 010-1234-5678 (선택)"
                       value={form.customerPhone}
-                      disabled={!canEdit}
-                      onChange={(e) => setForm({ ...form, customerPhone: e.target.value })}
+                      disabled={!canEdit || saving}
+                      aria-invalid={Boolean(formErrors.customerPhone)}
+                      aria-describedby={formErrors.customerPhone ? "private-payment-customer-phone-error" : undefined}
+                      onChange={(e) => {
+                        const digits = normalizePhoneDigits(e.target.value).slice(0, PRIVATE_PAYMENT_LIMITS.customerPhoneDigits);
+                        updateFormField("customerPhone", formatKoreanPhone(digits));
+                      }}
                     />
+                    {formErrors.customerPhone ? <p id="private-payment-customer-phone-error" className="text-xs text-destructive">{formErrors.customerPhone}</p> : null}
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
-                    <Label>이메일 (선택)</Label>
+                    <Label htmlFor="private-payment-customer-email">이메일 (선택)</Label>
                     <Input
+                      id="private-payment-customer-email"
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      maxLength={254}
                       placeholder="예: customer@example.com (선택)"
                       value={form.customerEmail}
-                      disabled={!canEdit}
-                      onChange={(e) => setForm({ ...form, customerEmail: e.target.value })}
+                      disabled={!canEdit || saving}
+                      aria-invalid={Boolean(formErrors.customerEmail)}
+                      aria-describedby={formErrors.customerEmail ? "private-payment-customer-email-error" : undefined}
+                      onChange={(e) => updateFormField("customerEmail", e.target.value)}
                     />
+                    {formErrors.customerEmail ? <p id="private-payment-customer-email-error" className="text-xs text-destructive">{formErrors.customerEmail}</p> : null}
                   </div>
                 </div>
               </section>
@@ -972,23 +1219,25 @@ export default function PrivatePaymentsClient() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label>만료일</Label>
+                    <Label htmlFor="private-payment-expires-at">만료일</Label>
                     <Input
+                      id="private-payment-expires-at"
                       type="datetime-local"
+                      min={currentKoreanDateTimeLocal()}
                       value={form.expiresAt}
-                      disabled={!canEdit || hasNoExpiration}
-                      onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+                      disabled={!canEdit || saving || hasNoExpiration}
+                      aria-invalid={Boolean(formErrors.expiresAt)}
+                      aria-describedby={formErrors.expiresAt ? "private-payment-expires-at-error" : undefined}
+                      onChange={(e) => updateFormField("expiresAt", e.target.value)}
                     />
+                    {formErrors.expiresAt ? <p id="private-payment-expires-at-error" className="text-xs text-destructive">{formErrors.expiresAt}</p> : null}
                   </div>
                   <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-background p-3 text-sm">
                     <Checkbox
                       checked={hasNoExpiration}
-                      disabled={!canEdit}
+                      disabled={!canEdit || saving}
                       onCheckedChange={(checked) =>
-                        setForm({
-                          ...form,
-                          expiresAt: checked ? "" : form.expiresAt || defaultExpiresAt(),
-                        })
+                        updateFormField("expiresAt", checked ? "" : form.expiresAt || defaultExpiresAt())
                       }
                     />
                     <span className="space-y-1">
@@ -1001,13 +1250,18 @@ export default function PrivatePaymentsClient() {
                 </div>
               </section>
             </div>
+            {formError ? (
+              <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {formError}
+              </p>
+            ) : null}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setFormDialogOpen(false)}>
+              <Button type="button" variant="outline" disabled={saving} onClick={() => setFormDialogOpen(false)}>
                 닫기
               </Button>
               {canEdit && (
-                <Button onClick={() => save().catch((e) => setMessage(e.message))}>
-                  {editing ? "수정 저장" : "생성"}
+                <Button type="button" disabled={saving} onClick={save}>
+                  {saving ? (editing ? "저장 중..." : "생성 중...") : editing ? "수정 저장" : "생성"}
                 </Button>
               )}
             </DialogFooter>
@@ -1019,6 +1273,7 @@ export default function PrivatePaymentsClient() {
           onOpenChange={(open) => {
             if (!open && !offlineLinking) {
               setOfflineLinkError("");
+              setOfflineLinkFieldErrors({});
               setOfflineLinkTarget(null);
             }
           }}
@@ -1036,51 +1291,78 @@ export default function PrivatePaymentsClient() {
                 <Label>고객명</Label>
                 <Input
                   value={offlineLinkForm.customerName}
+                  maxLength={80}
                   disabled={offlineLinking}
-                  onChange={(e) =>
-                    setOfflineLinkForm({ ...offlineLinkForm, customerName: e.target.value })
-                  }
+                  aria-invalid={Boolean(offlineLinkFieldErrors.customerName)}
+                  onChange={(e) => {
+                    setOfflineLinkForm({ ...offlineLinkForm, customerName: e.target.value });
+                    setOfflineLinkFieldErrors((current) => ({ ...current, customerName: undefined }));
+                  }}
                 />
+                {offlineLinkFieldErrors.customerName ? <p className="text-xs text-destructive">{offlineLinkFieldErrors.customerName}</p> : null}
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>연락처</Label>
                   <Input
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    maxLength={13}
                     placeholder="기존 오프라인 고객을 찾거나 신규 고객을 만들 때 사용됩니다."
                     value={offlineLinkForm.customerPhone}
                     disabled={offlineLinking}
-                    onChange={(e) =>
-                      setOfflineLinkForm({ ...offlineLinkForm, customerPhone: e.target.value })
-                    }
+                    aria-invalid={Boolean(offlineLinkFieldErrors.customerPhone)}
+                    onChange={(e) => {
+                      const digits = normalizePhoneDigits(e.target.value).slice(0, PRIVATE_PAYMENT_LIMITS.customerPhoneDigits);
+                      setOfflineLinkForm({ ...offlineLinkForm, customerPhone: formatKoreanPhone(digits) });
+                      setOfflineLinkFieldErrors((current) => ({ ...current, customerPhone: undefined }));
+                    }}
                   />
+                  {offlineLinkFieldErrors.customerPhone ? <p className="text-xs text-destructive">{offlineLinkFieldErrors.customerPhone}</p> : null}
                 </div>
                 <div className="space-y-1.5">
                   <Label>이메일 (선택)</Label>
                   <Input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    maxLength={254}
                     placeholder="선택 입력입니다. 입력하지 않아도 연결할 수 있습니다."
                     value={offlineLinkForm.customerEmail}
                     disabled={offlineLinking}
-                    onChange={(e) =>
-                      setOfflineLinkForm({ ...offlineLinkForm, customerEmail: e.target.value })
-                    }
+                    aria-invalid={Boolean(offlineLinkFieldErrors.customerEmail)}
+                    onChange={(e) => {
+                      setOfflineLinkForm({ ...offlineLinkForm, customerEmail: e.target.value });
+                      setOfflineLinkFieldErrors((current) => ({ ...current, customerEmail: undefined }));
+                    }}
                   />
+                  {offlineLinkFieldErrors.customerEmail ? <p className="text-xs text-destructive">{offlineLinkFieldErrors.customerEmail}</p> : null}
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label>작업 메모 (선택)</Label>
                 <Textarea
                   value={offlineLinkForm.memo}
+                  maxLength={500}
                   disabled={offlineLinking}
-                  onChange={(e) => setOfflineLinkForm({ ...offlineLinkForm, memo: e.target.value })}
+                  aria-invalid={Boolean(offlineLinkFieldErrors.memo)}
+                  onChange={(e) => {
+                    setOfflineLinkForm({ ...offlineLinkForm, memo: e.target.value });
+                    setOfflineLinkFieldErrors((current) => ({ ...current, memo: undefined }));
+                  }}
                 />
+                {offlineLinkFieldErrors.memo ? <p className="text-xs text-destructive">{offlineLinkFieldErrors.memo}</p> : null}
               </div>
               <label className="flex items-center gap-2 rounded-md border p-3 text-sm">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={offlineLinkForm.createRecord}
                   disabled={offlineLinking}
-                  onChange={(e) =>
-                    setOfflineLinkForm({ ...offlineLinkForm, createRecord: e.target.checked })
+                  onCheckedChange={(checked) =>
+                    setOfflineLinkForm((current) => ({
+                      ...current,
+                      createRecord: checked === true,
+                    }))
                   }
                 />
                 오프라인 작업 기록 생성
