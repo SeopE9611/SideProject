@@ -28,17 +28,14 @@ export default function ReviewHubHero() {
             </Button>
           </div>
         </div>
-        <div className="grid gap-3">
-          <p className="text-ui-kicker text-muted-foreground">VERIFIED PLAY LOG</p>
-          <div className="grid gap-3 bp-sm:grid-cols-3 bp-lg:grid-cols-1">
+        <div className="overflow-hidden rounded-control border border-border bg-card">
+          <div className="divide-y divide-border">
             {trustItems.map((label) => (
               <div
                 key={label}
-                className="flex min-h-16 items-center rounded-control border border-border bg-card p-4 shadow-sm"
+                className="px-4 py-3 text-ui-body-sm font-semibold text-foreground"
               >
-                <span className="break-keep text-ui-body-sm font-semibold text-foreground">
-                  {label}
-                </span>
+                {label}
               </div>
             ))}
           </div>
