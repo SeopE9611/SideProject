@@ -671,4 +671,222 @@ PR #2489에서 기존 Table primitive, 가로 스크롤과 sticky 작업 열을 
 - 관리자 페이지의 반응형·모바일 목록 기능은 복구하지 않았다.
 - 두 목록 모두 고정 데스크톱 5열 구조를 사용한다.
 
-다음 단계는 `Admin Table V2 Phase 2-D2 — 관리자 감사 로그 목록 전환`이다.
+Admin Table V2 Phase 2-D2 — 관리자 감사 로그 목록 전환
+
+Phase 2-D2에서는 관리자 감사 로그 화면에 남아 있던 AdminPageSection 기반 필터 Card와
+legacy semantic Table을 AdminFilterBar 및 AdminListTable 기반 구조로 전환했다.
+
+검색·필터 영역
+
+기존 AdminPageSection 기반 검색·필터 Card를 AdminFilterBar로 교체했다.
+
+메시지·실행자 검색, 작업 유형 코드 입력, 빠른 작업 유형 필터와 초기화 기능을 같은
+필터 surface 안에 배치했다.
+
+검색 버튼 클릭뿐 아니라 form 제출로도 기존 applyFilters()가 실행되도록 정리했다.
+
+빠른 작업 유형 필터는 기존 QUICK_TYPE_FILTERS 값을 그대로 사용한다.
+
+현재 적용된 작업 유형, 검색어와 조회 결과 건수를 active filter 영역에 표시한다.
+
+현재 보기와 빈 결과 판단은 입력 중인 draftQ, draftType이 아니라 실제 URL과 API
+조회에 적용된 state.q, state.type을 기준으로 계산한다.
+
+작업 유형 표시는 빠른 필터 label, AUDIT_TYPE_LABELS, 원본 type 순서로 결정한다.
+
+장식 목적의 Badge 또는 Pill은 새로 추가하지 않았다.
+
+감사 로그 목록
+
+기존 작업, 실행자, 대상, 일시, 상세의 5열 semantic Table을 다음 고정 데스크톱 4열
+AdminListTable 구조로 전환했다.
+
+작업
+
+실행자 / 대상
+
+일시
+
+상세
+
+semantic Table primitive, min-w-[900px]와 Table 전용 열 너비를 제거했다.
+
+작업 영역은 AdminListPrimary를 사용해 변환된 작업명, 실제 작업 유형 코드와
+중복되지 않는 원본 메시지를 함께 표시한다.
+
+작업명 자체에는 상세 링크를 추가하지 않았다.
+
+기존에 분리돼 있던 실행자와 대상 열을 하나의 실행자 / 대상 영역으로 통합했다.
+
+실행자 표시는 API가 반환하는 item.actor, item.actorTitle을 그대로 사용한다.
+
+대상은 item.targetId를 재계산하지 않고 동일한 셀의 metadata로 표시한다.
+
+실행자 ID와 전체 대상 정보는 기존 상세 Sheet에서 확인하도록 유지했다.
+
+일시는 기존 formatDateTime()과 원본 createdAt을 그대로 사용한다.
+
+상세 영역은 AdminRowActions 안에 기존 AdminRowDetailsSheet를 배치했다.
+
+상세 버튼은 변경 요약이 있으면 변경 N건, 없으면 보기로 표시한다.
+
+상세 Sheet
+
+상세 Sheet의 제목은 변환된 작업명을 사용한다.
+
+설명에는 실행자와 발생 일시를 표시한다.
+
+다음 상세 항목을 기존과 동일하게 유지했다.
+
+감사 ID
+
+작업 코드
+
+실행자 ID
+
+대상 ID
+
+요청 ID
+
+diffSummary가 존재하면 기존 변경 요약 목록을 그대로 표시한다.
+
+상세 Sheet의 위치, 열림 방식과 내부 데이터는 변경하지 않았다.
+
+목록 상태와 페이지네이션
+
+오류, 초기 로딩, 빈 결과와 실제 데이터가 동시에 표시되지 않도록
+error → initial loading → empty → data 순서의 단일 조건 분기로 정리했다.
+
+상태와 관계없이 하나의 AdminListTable surface를 유지한다.
+
+초기 로딩은 실제 4열 구조를 반영한 Skeleton 6행으로 표시한다.
+
+오류와 빈 결과 행은 실제 열 수와 동일한 col-span-4를 사용한다.
+
+검색어나 작업 유형 필터가 적용된 빈 결과는
+현재 조건에 맞는 감사 로그가 없습니다.로 표시한다.
+
+필터가 없는 전체 목록이 비어 있으면 기록된 감사 로그가 없습니다.로 표시한다.
+
+기존 페이지, 전체 페이지와 총 건수 계산을 유지한다.
+
+페이지네이션을 목록 외부에서 제거하고 AdminListBody 다음의 동일한
+AdminListTable surface 내부에 배치했다.
+
+페이지네이션의 접근성 열 수를 실제 구조와 동일한 aria-colspan={4}로 변경했다.
+
+이전·다음 버튼은 기존과 동일하게 페이지 경계와 isValidating 상태에서 비활성화된다.
+
+보존한 기능
+
+PAGE_SIZE=20
+
+useAdminListQueryState
+
+URL query 동기화
+
+page, q, type query parameter
+
+authenticatedSWRFetcher
+
+revalidateOnFocus: false
+
+revalidateOnReconnect: false
+
+메시지·실행자 검색
+
+작업 유형 코드 검색
+
+빠른 작업 유형 필터
+
+필터 초기화
+
+필터 변경 시 첫 페이지 초기화
+
+최신순 서버 정렬
+
+이전·다음 페이지 이동
+
+작업 유형 label 변환
+
+날짜 formatter
+
+실행자·대상 API 응답값
+
+상세 Sheet
+
+감사 ID, 작업 코드, 실행자 ID, 대상 ID와 요청 ID
+
+변경 요약
+
+변경하지 않은 범위
+
+/api/admin/audit
+
+API query와 응답 payload
+
+감사 로그 DB 조회와 최신순 정렬
+
+실행자·대상 정규화
+
+변경 요약 생성
+
+공통 AdminFilterBar.tsx
+
+공통 AdminListTable.tsx
+
+공통 AdminRowDetailsSheet.tsx
+
+새 정렬 기능
+
+행 선택과 일괄 작업
+
+모바일 카드 목록
+
+breakpoint별 열 변경
+
+sticky 작업 열
+
+가로 스크롤
+
+검증 결과
+
+변경 파일은
+app/admin/audit/_components/AdminAuditClient.tsx 한 파일로 제한했다.
+
+legacy semantic Table, AdminPageSection, adminSurface, ListFilter,
+ClipboardList, min-w-[900px]와 5열 colspan 표현을 제거했다.
+
+AdminFilterBar, 4열 AdminListTable, AdminListPrimary,
+AdminRowActions, Skeleton 6행, col-span-4와 aria-colspan={4}를 적용했다.
+
+URL query, API 요청, 빠른 필터, 초기화, 페이지네이션과 상세 Sheet 데이터를 유지했다.
+
+pnpm typecheck는 앱과 Cypress TypeScript 설정 모두 오류 없이 통과했다.
+
+git diff --check는 공백 오류 없이 통과했다.
+
+lint, build, 테스트, 개발 서버, Cypress와 Playwright는 실행하지 않았다.
+
+Phase 2-D2 최종 결과
+
+관리자 감사 로그가 다른 관리자 V2 목록과 동일한 필터 및 list-table 시각 언어를
+사용하게 됐다.
+
+작업명, 작업 코드와 원본 메시지를 첫 번째 열에서 계층적으로 확인할 수 있게 됐다.
+
+실행자와 대상을 하나의 업무 영역으로 묶어 목록 열 수를 5열에서 4열로 줄였다.
+
+상세 정보는 행 높이에 누적하지 않고 기존 오른쪽 Sheet에서 확인하도록 유지했다.
+
+배포 화면에서 4열 정렬, 작업명과 실행자·대상 정보, 일시, 상세 버튼이 인접 열을
+침범하지 않는 것을 확인했다.
+
+상세 Sheet가 정상적으로 열리고 감사 ID, 작업 코드, 실행자 ID, 대상 ID와 요청 ID가
+의도한 구조로 표시되는 것을 확인했다.
+
+관리자 페이지의 반응형·모바일 목록 기능은 복구하지 않았다.
+
+감사 로그는 고정 데스크톱 4열 구조를 사용한다.
+
+다음 단계는 Admin Table V2 Phase 2-D3 — 개인결제 관리 account-ledger 전환이다.
