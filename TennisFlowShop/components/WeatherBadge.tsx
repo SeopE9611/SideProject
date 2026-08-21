@@ -8,7 +8,7 @@ export function WeatherBadge() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg px-4 py-2 text-ui-body-sm text-muted-foreground">
+      <div className="flex items-center rounded-lg px-4 py-2 text-ui-body-sm text-muted-foreground">
         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
         오늘 테니스 치기 좋은지 확인 중이에요
       </div>
