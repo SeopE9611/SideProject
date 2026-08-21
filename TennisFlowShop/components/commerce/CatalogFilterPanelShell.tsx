@@ -36,7 +36,7 @@ export function CatalogFilterPanelShell({
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 [scrollbar-gutter:stable] bp-sm:p-5">
         {children}
       </div>
-      <footer className="sticky bottom-0 flex shrink-0 gap-2 border-t border-border bg-card/95 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur">
+      <footer className="sticky bottom-0 flex shrink-0 gap-2 border-t border-border bg-card p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <Button
           type="button"
           variant="outline"

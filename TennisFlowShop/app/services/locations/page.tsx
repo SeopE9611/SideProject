@@ -43,7 +43,7 @@ export default function LocationsPage() {
       <header className="border-b border-border bg-muted/30 py-7 bp-sm:py-9">
         <SiteContainer>
           <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center">
-            <div className="max-w-3xl space-y-4">
+            <div className="max-w-3xl space-y-2">
               <p className="text-ui-label font-medium uppercase tracking-[0.14em] text-primary">
                 OFFLINE STORE
               </p>
@@ -54,7 +54,7 @@ export default function LocationsPage() {
                 대방역 인근 도깨비테니스에서 스트링 장착, 장력 가이드, 스트링 추천과 라켓 상담을
                 받을 수 있습니다.
               </p>
-              <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
+              <div className="!mt-5 grid gap-2 bp-sm:flex bp-sm:flex-wrap">
                 <Button
                   variant="highlight"
                   size="lg"

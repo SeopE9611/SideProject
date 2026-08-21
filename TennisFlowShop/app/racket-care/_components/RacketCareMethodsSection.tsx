@@ -9,13 +9,11 @@ type Props = {
 
 const methods = [
   {
-    no: "01",
     title: "기존 정보에서 가져오기",
     copy: "테니스 프로필과 완료된 교체서비스 이력을 불러와 라켓과 최근 스트링 정보를 빠르게 등록합니다.",
     bullets: ["프로필 정보 활용", "완료된 교체 이력 활용", "필요한 정보만 추가 입력"],
   },
   {
-    no: "02",
     title: "직접 입력하기",
     copy: "라켓, 최근 스트링, 마지막 교체일과 플레이 빈도를 직접 입력해 관리 기준을 만듭니다.",
     bullets: ["라켓 별칭과 모델", "최근 스트링 정보", "마지막 교체일과 플레이 빈도"],
@@ -27,10 +25,7 @@ export default function RacketCareMethodsSection({ primaryHref, primaryLabel }: 
     <section className="space-y-6">
       <div className="grid gap-4 bp-lg:grid-cols-[0.35fr_0.75fr_0.55fr] bp-lg:items-end">
         <div>
-          <span className="grid h-10 w-10 place-items-center rounded-full bg-brand-highlight text-brand-highlight-foreground text-ui-label font-semibold">
-            00
-          </span>
-          <p className="mt-3 text-ui-kicker text-muted-foreground">EASY START</p>
+          <p className="text-ui-kicker text-muted-foreground">EASY START</p>
         </div>
         <h2 className="break-keep font-ui-bold text-ui-section-title bp-lg:text-[3rem] bp-lg:leading-[1.05]">
           내 기록에 맞는 방법으로
@@ -43,10 +38,9 @@ export default function RacketCareMethodsSection({ primaryHref, primaryLabel }: 
       </div>
       <div className="grid gap-4 bp-md:grid-cols-2">
         {methods.map((method) => (
-          <Card key={method.no} variant="feature" className="rounded-panel">
+          <Card key={method.title} variant="feature" className="rounded-panel">
             <CardContent className="p-5 bp-sm:p-6">
-              <p className="text-ui-label font-semibold text-brand-highlight-ink">{method.no}</p>
-              <h3 className="mt-4 text-ui-card-title-lg font-bold ">
+              <h3 className="text-ui-card-title-lg font-bold ">
                 {method.title}
               </h3>
               <p className="mt-3 break-keep text-ui-body-sm text-muted-foreground">{method.copy}</p>

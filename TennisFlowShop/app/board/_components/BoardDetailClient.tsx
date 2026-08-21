@@ -1659,7 +1659,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               {config.boardType === "market" && item.marketMeta && (
                 <div className="mb-6 space-y-4">
                   {/* ── 1. 거래 핵심 정보 ── */}
-                  <div className="overflow-hidden rounded-panel border border-border bg-card shadow-soft">
+                  <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
                     {/* 가격 헤더 영역 */}
                     <div className="border-b border-border bg-muted/40 px-5 py-4 md:px-6">
                       <p className="mb-1 text-ui-label font-medium text-muted-foreground">
@@ -1904,11 +1904,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 // free/market/gear 상세 GET은 읽기 경계에서 정제된 HTML만 반환합니다.
                 <RichTextContent
                   content={item.content}
-                  className="rounded-panel border border-border bg-card px-4 py-5 shadow-soft sm:px-6"
+                  className="rounded-xl border border-border bg-card px-4 py-5 shadow-soft sm:px-6"
                 />
               ) : (
                 // brand는 아직 일반 텍스트 정책이므로 raw fallback을 유지합니다.
-                <div className="rounded-panel border border-border bg-card px-4 py-5 text-ui-body-sm leading-relaxed text-foreground shadow-soft whitespace-pre-wrap sm:px-6">
+                <div className="rounded-xl border border-border bg-card px-4 py-5 text-ui-body-sm leading-relaxed text-foreground shadow-soft whitespace-pre-wrap sm:px-6">
                   {item.content}
                 </div>
               )}
