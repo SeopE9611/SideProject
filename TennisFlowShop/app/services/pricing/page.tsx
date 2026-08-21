@@ -132,7 +132,7 @@ export default async function PricingPage() {
       <header className="border-b border-border bg-muted/30 py-7 bp-sm:py-9">
         <SiteContainer>
           <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center">
-            <div className="max-w-3xl space-y-4">
+            <div className="max-w-3xl space-y-2">
               <p className="text-ui-label font-medium text-primary">장착 서비스 가격</p>
               <h1 className="text-balance font-ui-bold text-ui-page-title text-foreground bp-sm:text-ui-page-title-lg">
                 최종 비용은 선택한 신청 방식으로 결정됩니다.
@@ -140,7 +140,7 @@ export default async function PricingPage() {
               <p className="text-pretty text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
                 보유 스트링 장착, 스트링 상품 선택, 패키지 적용 방식에 따라 비용 구성이 달라집니다.
               </p>
-              <div className="grid gap-2 bp-sm:flex bp-sm:flex-wrap">
+              <div className="!mt-5 grid gap-2 bp-sm:flex bp-sm:flex-wrap">
                 <Button
                   variant="highlight"
                   size="lg"
@@ -341,7 +341,7 @@ export default async function PricingPage() {
 
         <section className={hasOtherSummary ? "grid gap-4 bp-lg:grid-cols-2" : "grid gap-4"}>
           {hasOtherSummary && otherSummary ? (
-            <PublicSurface className="space-y-4">
+            <PublicSurface className="space-y-5">
               <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">기타 소재</h2>
               <div className="grid gap-3 bp-sm:grid-cols-3">
                 <div>
@@ -392,7 +392,7 @@ export default async function PricingPage() {
             </PublicSurface>
           ) : null}
 
-          <PublicSurface className="space-y-4">
+          <PublicSurface className="space-y-5">
             <div className="space-y-2">
               <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">
                 하이브리드 조합
@@ -440,7 +440,7 @@ export default async function PricingPage() {
         </section>
 
         <section className="grid gap-4 bp-lg:grid-cols-2">
-          <PublicSurface className="space-y-4">
+          <PublicSurface className="space-y-5">
             <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">
               무료 지원 및 추가 안내
             </h2>
@@ -459,7 +459,7 @@ export default async function PricingPage() {
             </div>
           </PublicSurface>
 
-          <PublicSurface className="space-y-4">
+          <PublicSurface className="space-y-5">
             <h2 className="text-ui-card-title-lg font-ui-medium text-foreground">예약 안내</h2>
             <ul className="space-y-2 text-ui-body-sm leading-relaxed text-muted-foreground">
               <li>• 일반 소요 시간은 30~60분입니다.</li>
@@ -470,7 +470,7 @@ export default async function PricingPage() {
           </PublicSurface>
         </section>
 
-        <PublicSurface variant="inverse" className="space-y-4">
+        <PublicSurface variant="inverse" className="space-y-5">
           <h2 className="text-ui-card-title-lg font-ui-medium text-surface-inverse-foreground">
             결제 전 확인하세요
           </h2>

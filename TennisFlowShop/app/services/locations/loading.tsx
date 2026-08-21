@@ -8,7 +8,7 @@ export default function LocationsLoading() {
       <header className="border-b border-border bg-muted/30 py-7 bp-sm:py-9">
         <SiteContainer>
           <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center">
-            <div className="space-y-4">
+            <div className="space-y-2">
               <Skeleton className="h-4 w-32" />
               <Skeleton className="h-10 w-full max-w-2xl" />
               <Skeleton className="h-10 w-4/5 max-w-xl" />
@@ -16,7 +16,7 @@ export default function LocationsLoading() {
                 <Skeleton className="h-5 w-full max-w-2xl" />
                 <Skeleton className="h-5 w-3/4 max-w-xl" />
               </div>
-              <div className="grid gap-2 bp-sm:flex">
+              <div className="!mt-5 grid gap-2 bp-sm:flex">
                 <Skeleton className="h-11 w-full bp-sm:w-48" />
                 <Skeleton className="h-11 w-full bp-sm:w-32" />
               </div>
