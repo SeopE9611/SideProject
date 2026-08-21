@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export function SkeletonProductCard() {
   return (
     <div className="h-full overflow-hidden rounded-lg bg-card/90 dark:bg-card shadow relative">
-      <div className="h-56 w-full bg-muted rounded animate-pulse" />
+      <div className="h-56 w-full bg-muted animate-pulse" />
       <div className="p-4 space-y-2">
         <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
         <div className="h-3 w-1/2 bg-muted rounded animate-pulse" />

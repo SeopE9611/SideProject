@@ -53,7 +53,7 @@ export function CommerceDetailSkeleton({
           </div>
         </div>
         <div className="-mx-3 mt-8 overflow-hidden rounded-none border-x-0 border-y border-border bg-card shadow-none bp-sm:-mx-4 bp-md:mx-0 bp-md:mt-10 bp-md:rounded-panel bp-md:border-x bp-md:shadow-sm">
-          <Skeleton className="h-16 w-full rounded-t-panel" />
+          <Skeleton className="h-16 w-full" />
           <div className="p-4 bp-sm:p-6 bp-md:p-8">
             <Skeleton className="h-40 w-full rounded-xl" />
           </div>
