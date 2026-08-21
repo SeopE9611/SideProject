@@ -47,14 +47,14 @@ export default function CommunityBoardDetailLoadingShell({ boardLabel, isMarket 
           </CardHeader>
           <CardContent className="space-y-5 p-5 md:p-6">
             {isMarket ? (
-              <div className="grid gap-3 rounded-panel border border-border bg-card p-4 shadow-soft md:grid-cols-4">
+              <div className="grid gap-3 rounded-xl border border-border bg-card p-4 shadow-soft md:grid-cols-4">
                 <Skeleton className="h-16 md:col-span-1" />
                 <Skeleton className="h-16 md:col-span-1" />
                 <Skeleton className="h-16 md:col-span-1" />
                 <Skeleton className="h-16 md:col-span-1" />
               </div>
             ) : null}
-            <div className="rounded-panel border border-border bg-card p-4 shadow-soft md:p-6">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-soft md:p-6">
               <Skeleton className="mb-4 h-48 w-full" />
               <div className="space-y-3">
                 <Skeleton className="h-4 w-full" />
