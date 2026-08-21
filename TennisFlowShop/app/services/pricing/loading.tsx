@@ -7,11 +7,11 @@ export default function PricingLoading() {
       <header className="border-b border-border bg-muted/30 py-7 bp-sm:py-9">
         <SiteContainer>
           <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center">
-            <div className="space-y-4">
+            <div className="space-y-2">
               <Skeleton className="h-4 w-32" />
               <Skeleton className="h-10 w-full max-w-2xl" />
               <Skeleton className="h-5 w-full max-w-xl" />
-              <div className="grid gap-2 bp-sm:flex">
+              <div className="!mt-5 grid gap-2 bp-sm:flex">
                 <Skeleton className="h-11 w-full bp-sm:w-40" />
                 <Skeleton className="h-11 w-full bp-sm:w-40" />
               </div>
@@ -78,7 +78,7 @@ export default function PricingLoading() {
           {Array.from({ length: 2 }).map((_, index) => (
             <div
               key={index}
-              className="space-y-4 rounded-2xl border border-border bg-card p-5 bp-sm:p-6"
+              className="space-y-5 rounded-2xl border border-border bg-card p-5 bp-sm:p-6"
             >
               <Skeleton className="h-7 w-40" />
               <div className="grid gap-3 bp-sm:grid-cols-3">
@@ -95,7 +95,7 @@ export default function PricingLoading() {
           {Array.from({ length: 2 }).map((_, index) => (
             <div
               key={index}
-              className="space-y-4 rounded-2xl border border-border bg-card p-5 bp-sm:p-6"
+              className="space-y-5 rounded-2xl border border-border bg-card p-5 bp-sm:p-6"
             >
               <Skeleton className="h-7 w-48" />
               <div className="grid gap-3 bp-sm:grid-cols-2">

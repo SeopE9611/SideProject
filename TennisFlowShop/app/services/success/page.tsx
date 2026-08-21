@@ -977,7 +977,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                   <Separator className="my-6 bp-md:my-8" />
 
                   <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-6 bp-md:gap-8">
-                    <div className="space-y-4 bp-md:space-y-6">
+                    <div className="space-y-6">
                       <h3 className="text-ui-section-title font-ui-medium text-foreground flex items-center">
                         <User className="h-6 w-6 mr-3 text-primary" />
                         신청자 정보
@@ -1011,7 +1011,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </div>
                     </div>
 
-                    <div className="space-y-4 bp-md:space-y-6">
+                    <div className="space-y-6">
                       <h3 className="text-ui-section-title font-ui-medium text-foreground flex items-center">
                         <MapPin className="h-6 w-6 mr-3 text-foreground" />
                         {shippingSectionTitle}
@@ -1042,7 +1042,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
                   <Separator className="my-6 bp-md:my-8" />
 
-                  <div className="space-y-4 bp-md:space-y-6">
+                  <div className="space-y-6">
                     <h3 className="text-ui-section-title font-ui-medium text-foreground flex items-center">
                       <Racquet className="h-6 w-6 mr-3 text-primary" />
                       작업 요청사항

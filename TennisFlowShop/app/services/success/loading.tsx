@@ -127,14 +127,14 @@ export default function StringServiceSuccessLoading() {
               </div>
 
               <div className="grid grid-cols-1 gap-6 bp-md:gap-8 bp-lg:grid-cols-2">
-                <div className="space-y-4 bp-md:space-y-6">
+                <div className="space-y-6">
                   <div className="flex items-center">
                     <Skeleton className="mr-3 h-6 w-6 rounded-full" />
                     <Skeleton className="h-6 w-28" />
                   </div>
                   <CompactRows count={3} />
                 </div>
-                <div className="space-y-4 bp-md:space-y-6">
+                <div className="space-y-6">
                   <div className="flex items-center">
                     <Skeleton className="mr-3 h-6 w-6 rounded-full" />
                     <Skeleton className="h-6 w-32" />
@@ -143,7 +143,7 @@ export default function StringServiceSuccessLoading() {
                 </div>
               </div>
 
-              <div className="space-y-4 bp-md:space-y-6">
+              <div className="space-y-6">
                 <div className="flex items-center">
                   <Skeleton className="mr-3 h-6 w-6 rounded-full" />
                   <Skeleton className="h-6 w-32" />

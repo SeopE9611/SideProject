@@ -9,7 +9,7 @@ export default function TensionGuideLoading() {
         <SiteContainer className="grid gap-8 py-10 bp-lg:grid-cols-[minmax(0,1fr)_24rem] bp-lg:items-center bp-lg:py-14">
           <div className="space-y-6">
             <Skeleton className="h-7 w-32 rounded-full" />
-            <div className="max-w-3xl space-y-4">
+            <div className="max-w-3xl space-y-2">
               <Skeleton className="h-10 w-full max-w-2xl" />
               <Skeleton className="h-10 w-4/5 max-w-xl" />
               <div className="space-y-2">

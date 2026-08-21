@@ -424,7 +424,7 @@ export default function TensionGuidePage() {
               <Gauge className="h-3.5 w-3.5" aria-hidden />
               TENSION LAB
             </Badge>
-            <div className="max-w-3xl space-y-4">
+            <div className="max-w-3xl space-y-2">
               <h1 className="font-ui-bold text-ui-page-title text-foreground bp-md:text-ui-page-title-lg">
                 감이 아닌 플레이 조건으로 적정 장력을 좁혀보세요.
               </h1>
