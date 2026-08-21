@@ -11,7 +11,6 @@ export default function Loading() {
           <Card variant="feature" className="overflow-hidden rounded-hero">
             <CardContent className="grid gap-7 p-5 bp-sm:p-8 bp-lg:grid-cols-[1.08fr_0.92fr] bp-lg:items-center bp-lg:p-10">
               <div className="space-y-5">
-                <Skeleton className="h-6 w-40 rounded-control" />
                 <Skeleton className="h-16 w-full max-w-2xl rounded-control bp-lg:h-24" />
                 <Skeleton className="h-12 w-4/5 rounded-control" />
                 <div className="grid gap-2 bp-sm:flex">
@@ -19,9 +18,11 @@ export default function Loading() {
                   <Skeleton className="h-11 w-full rounded-control bp-sm:w-36" />
                 </div>
               </div>
-              <div className="grid gap-3 bp-sm:grid-cols-3 bp-lg:grid-cols-1">
+              <div className="overflow-hidden rounded-control border border-border bg-card">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <Skeleton key={index} className="h-16 rounded-control" />
+                  <div key={index} className="border-b border-border px-4 py-3 last:border-b-0">
+                    <Skeleton className="h-5 w-28 rounded-control" />
+                  </div>
                 ))}
               </div>
             </CardContent>
