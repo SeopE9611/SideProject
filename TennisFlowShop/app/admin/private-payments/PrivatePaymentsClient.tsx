@@ -302,8 +302,13 @@ export default function PrivatePaymentsClient() {
     Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
     return params.toString();
   }, [filters, page, sort, dir]);
+  const clearSelection = () => {
+    setSelected([]);
+  };
   const load = async () => {
     const requestId = ++requestSequenceRef.current;
+
+    clearSelection();
     setIsLoading(true);
     setLoadError("");
 
@@ -322,7 +327,6 @@ export default function PrivatePaymentsClient() {
         page: Number(json.page || page),
         totalPages,
       });
-      setSelected([]);
     } catch (error) {
       if (requestId !== requestSequenceRef.current) return;
       setLoadError("목록을 불러오지 못했습니다.");
@@ -339,6 +343,7 @@ export default function PrivatePaymentsClient() {
   }, []);
   useEffect(() => {
     const timeout = window.setTimeout(() => {
+      clearSelection();
       setPage(1);
       setFilters((current) =>
         current.q === searchInput ? current : { ...current, q: searchInput },
@@ -360,6 +365,7 @@ export default function PrivatePaymentsClient() {
       return;
     }
     setSaving(true);
+    let shouldReload = false;
     try {
       const url = editing
         ? `/api/admin/private-payments/${editing.id}`
@@ -390,11 +396,15 @@ export default function PrivatePaymentsClient() {
           ? "수정했습니다."
           : "개인결제 링크를 생성했습니다. 링크 복사 메뉴로 고객에게 전달해 주세요.",
       );
-      await load();
+      shouldReload = true;
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "저장에 실패했습니다.");
     } finally {
       setSaving(false);
+    }
+
+    if (shouldReload) {
+      await load().catch(() => undefined);
     }
   };
   const openCreateDialog = () => {
@@ -442,6 +452,8 @@ export default function PrivatePaymentsClient() {
     await load();
   };
   const runBulkAction = async (action: "archive" | "unarchive" | "delete_pending") => {
+    if (isLoading || selected.length === 0) return;
+
     const json = await adminFetcher<SaveResponse>("/api/admin/private-payments/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -554,12 +566,21 @@ export default function PrivatePaymentsClient() {
     }
   };
   const toggleSort = (key: string) => {
+    clearSelection();
     setPage(1);
     if (sort === key) setDir(dir === "asc" ? "desc" : "asc");
     else {
       setSort(key);
       setDir("desc");
     }
+  };
+  const changePage = (nextPage: number) => {
+    const safePage = Math.min(pagination.totalPages, Math.max(1, nextPage));
+
+    if (safePage === page) return;
+
+    clearSelection();
+    setPage(safePage);
   };
   const allChecked = items.length > 0 && selected.length === items.length;
   const selectedItems = items.filter((item) => selected.includes(item.id));
@@ -574,10 +595,12 @@ export default function PrivatePaymentsClient() {
   );
   const currentViewLabel = filters.q ? "검색 결과" : hasAppliedFilters ? "필터 결과" : "활성 목록";
   const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
+    clearSelection();
     setPage(1);
     setFilters((current) => ({ ...current, [key]: value }));
   };
   const resetFilters = () => {
+    clearSelection();
     setSearchInput("");
     setPage(1);
     setFilters({ ...emptyFilters });
@@ -696,7 +719,10 @@ export default function PrivatePaymentsClient() {
                 className="w-full min-w-0"
                 placeholder="결제명, 고객명, 연락처 검색"
                 value={searchInput}
-                onChange={(event) => setSearchInput(event.target.value)}
+                onChange={(event) => {
+                  clearSelection();
+                  setSearchInput(event.target.value);
+                }}
               />
             </div>
             <div className="min-w-0 space-y-1.5">
@@ -781,24 +807,36 @@ export default function PrivatePaymentsClient() {
               <Button
                 size="sm"
                 variant="outline"
-                disabled={!hasArchivable}
-                onClick={() => runBulkAction("archive").catch((e) => setMessage(e.message))}
+                disabled={isLoading || !hasArchivable}
+                onClick={() => {
+                  if (isLoading) return;
+
+                  runBulkAction("archive").catch((e) => setMessage(e.message));
+                }}
               >
                 선택 보관
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                disabled={!hasUnarchivable}
-                onClick={() => runBulkAction("unarchive").catch((e) => setMessage(e.message))}
+                disabled={isLoading || !hasUnarchivable}
+                onClick={() => {
+                  if (isLoading) return;
+
+                  runBulkAction("unarchive").catch((e) => setMessage(e.message));
+                }}
               >
                 선택 보관 해제
               </Button>
               <Button
                 size="sm"
                 variant="destructive"
-                disabled={!hasPending}
-                onClick={() => openDeleteDialog()}
+                disabled={isLoading || !hasPending}
+                onClick={() => {
+                  if (isLoading) return;
+
+                  openDeleteDialog();
+                }}
               >
                 선택 삭제
               </Button>
@@ -824,8 +862,11 @@ export default function PrivatePaymentsClient() {
             <div role="columnheader" className="flex min-w-0 items-center justify-center px-2 py-2.5">
               <Checkbox
                 aria-label="현재 목록의 개인결제 전체 선택"
+                disabled={isLoading || items.length === 0}
                 checked={allChecked ? true : isPartiallySelected ? "indeterminate" : false}
                 onCheckedChange={(checked) => {
+                  if (isLoading) return;
+
                   setSelected(checked === true ? items.map((item) => item.id) : []);
                 }}
               />
@@ -1052,12 +1093,12 @@ export default function PrivatePaymentsClient() {
                 </span>
                 <div className="flex gap-2">
                   <Button type="button" variant="outline" size="sm" disabled={isLoading || page <= 1}
-                    onClick={() => setPage((current) => Math.max(1, current - 1))}>
+                    onClick={() => changePage(page - 1)}>
                     이전
                   </Button>
                   <Button type="button" variant="outline" size="sm"
                     disabled={isLoading || page >= pagination.totalPages}
-                    onClick={() => setPage((current) => Math.min(pagination.totalPages, current + 1))}>
+                    onClick={() => changePage(page + 1)}>
                     다음
                   </Button>
                 </div>
