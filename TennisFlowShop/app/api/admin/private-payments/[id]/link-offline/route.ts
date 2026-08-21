@@ -4,7 +4,11 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { privatePayments, serializePrivatePayment } from "@/lib/private-payments";
-import { normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
+import { normalizeEmail } from "@/lib/offline/normalizers";
+import { formatKoreanPhone, normalizePhoneDigits } from "@/lib/phone";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const OFFLINE_LINK_LIMITS = { customerName: 80, customerEmail: 254, memo: 500 } as const;
 
 export const runtime = "nodejs";
 
@@ -46,12 +50,41 @@ export async function POST(req: Request, ctx: Ctx) {
   }
 
   const customerName = clean(body.customerName || payment.customerName);
-  const customerPhone = clean(body.customerPhone || payment.customerPhone);
-  const customerEmail = clean(body.customerEmail || payment.customerEmail);
-  const phoneNormalized = normalizePhone(customerPhone);
+  const rawCustomerPhone = clean(body.customerPhone || payment.customerPhone);
+  const phoneNormalized = normalizePhoneDigits(rawCustomerPhone);
+  const customerPhone = phoneNormalized ? formatKoreanPhone(phoneNormalized) : "";
+  const customerEmail = clean(body.customerEmail || payment.customerEmail).toLowerCase();
   const emailLower = normalizeEmail(customerEmail);
-  if (!customerName)
-    return NextResponse.json({ ok: false, message: "고객명을 입력해 주세요." }, { status: 400 });
+  const adminMemo = clean(body.memo);
+  if (!customerName || customerName.length > OFFLINE_LINK_LIMITS.customerName)
+    return NextResponse.json(
+      { ok: false, message: "고객명은 1~80자로 입력해 주세요." },
+      { status: 400 },
+    );
+  if (phoneNormalized && (phoneNormalized.length < 9 || phoneNormalized.length > 11))
+    return NextResponse.json(
+      { ok: false, message: "연락처는 숫자 9~11자리로 입력해 주세요." },
+      { status: 400 },
+    );
+  if (
+    customerEmail &&
+    (customerEmail.length > OFFLINE_LINK_LIMITS.customerEmail ||
+      !EMAIL_PATTERN.test(customerEmail))
+  )
+    return NextResponse.json(
+      { ok: false, message: "이메일 형식을 확인해 주세요." },
+      { status: 400 },
+    );
+  if (!phoneNormalized && !emailLower)
+    return NextResponse.json(
+      { ok: false, message: "연락처 또는 이메일 중 하나를 입력해 주세요." },
+      { status: 400 },
+    );
+  if (adminMemo.length > OFFLINE_LINK_LIMITS.memo)
+    return NextResponse.json(
+      { ok: false, message: "작업 메모는 500자 이하로 입력해 주세요." },
+      { status: 400 },
+    );
 
   let customer: any = null;
   const customerId = clean(body.customerId);
@@ -139,7 +172,6 @@ export async function POST(req: Request, ctx: Ctx) {
     );
 
   if (body.createRecord !== false) {
-    const adminMemo = clean(body.memo);
     const memo = [
       `개인결제명: ${payment.title}`,
       `개인결제 금액: ${Number(payment.amount).toLocaleString("ko-KR")}원`,

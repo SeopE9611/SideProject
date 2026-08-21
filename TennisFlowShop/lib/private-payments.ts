@@ -1,4 +1,13 @@
 import { ObjectId, type Db } from "mongodb";
+import { formatKoreanPhone, normalizePhoneDigits } from "@/lib/phone";
+
+const PRIVATE_PAYMENT_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PRIVATE_PAYMENT_LIMITS = {
+  title: 80,
+  description: 500,
+  customerName: 80,
+  customerEmail: 254,
+} as const;
 
 export type PrivatePaymentStatus = "active" | "inactive";
 export type PrivatePaymentPaymentStatus = "결제대기" | "결제완료" | "결제취소";
@@ -158,8 +167,10 @@ export function serializePrivatePayment(doc: PrivatePaymentDocument): Serialized
 }
 
 export function normalizeAmount(value: unknown) {
-  const amount = Math.floor(Number(value));
-  return Number.isFinite(amount) ? amount : 0;
+  const raw = String(value ?? "").trim().replace(/,/g, "");
+  if (!/^\d+$/.test(raw)) return null;
+  const amount = Number(raw);
+  return Number.isSafeInteger(amount) ? amount : null;
 }
 
 export function validatePrivatePaymentInput(body: unknown, options: { partial?: boolean } = {}) {
@@ -171,19 +182,45 @@ export function validatePrivatePaymentInput(body: unknown, options: { partial?: 
 
   if (!options.partial || has("title")) {
     const title = String(source.title ?? "").trim();
-    if (!title || title.length > 80) errors.push("결제명은 1~80자로 입력해 주세요.");
+    if (!title || title.length > PRIVATE_PAYMENT_LIMITS.title)
+      errors.push("결제명은 1~80자로 입력해 주세요.");
     else input.title = title;
   }
 
   if (!options.partial || has("amount")) {
     const amount = normalizeAmount(source.amount);
-    if (!Number.isInteger(amount) || amount < 1000)
+    if (amount === null || amount < 1000)
       errors.push("금액은 1,000원 이상의 정수로 입력해 주세요.");
     else input.amount = amount;
   }
 
-  for (const key of ["description", "customerName", "customerPhone", "customerEmail"] as const) {
-    if (!options.partial || has(key)) input[key] = String(source[key] ?? "").trim();
+  if (!options.partial || has("description")) {
+    const description = String(source.description ?? "").trim();
+    if (description.length > PRIVATE_PAYMENT_LIMITS.description)
+      errors.push("설명은 500자 이하로 입력해 주세요.");
+    else input.description = description;
+  }
+  if (!options.partial || has("customerName")) {
+    const customerName = String(source.customerName ?? "").trim();
+    if (customerName.length > PRIVATE_PAYMENT_LIMITS.customerName)
+      errors.push("고객명은 80자 이하로 입력해 주세요.");
+    else input.customerName = customerName;
+  }
+  if (!options.partial || has("customerPhone")) {
+    const digits = normalizePhoneDigits(String(source.customerPhone ?? ""));
+    if (digits && (digits.length < 9 || digits.length > 11))
+      errors.push("연락처는 숫자 9~11자리로 입력해 주세요.");
+    else input.customerPhone = digits ? formatKoreanPhone(digits) : "";
+  }
+  if (!options.partial || has("customerEmail")) {
+    const customerEmail = String(source.customerEmail ?? "").trim().toLowerCase();
+    if (
+      customerEmail &&
+      (customerEmail.length > PRIVATE_PAYMENT_LIMITS.customerEmail ||
+        !PRIVATE_PAYMENT_EMAIL_PATTERN.test(customerEmail))
+    )
+      errors.push("이메일 형식을 확인해 주세요.");
+    else input.customerEmail = customerEmail;
   }
 
   if (!options.partial || has("expiresAt")) {
@@ -191,15 +228,17 @@ export function validatePrivatePaymentInput(body: unknown, options: { partial?: 
     if (raw === "" || raw === null || raw === undefined) {
       input.expiresAt = "";
     } else {
-      const date = new Date(String(raw));
-      if (Number.isNaN(date.getTime())) errors.push("만료일 형식을 확인해 주세요.");
-      else input.expiresAt = date.toISOString();
+      const rawText = String(raw).trim();
+      if (!/(Z|[+-]\d{2}:\d{2})$/.test(rawText)) {
+        errors.push("만료일 시간대 정보를 확인해 주세요.");
+      } else {
+        const date = new Date(rawText);
+        if (Number.isNaN(date.getTime())) errors.push("만료일 형식을 확인해 주세요.");
+        else if (date.getTime() <= Date.now())
+          errors.push("만료일은 현재 시각보다 이후로 설정해 주세요.");
+        else input.expiresAt = date.toISOString();
+      }
     }
-  }
-
-  if (has("customerEmail") && input.customerEmail) {
-    const email = String(input.customerEmail);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("이메일 형식을 확인해 주세요.");
   }
 
   return { input, errors };
