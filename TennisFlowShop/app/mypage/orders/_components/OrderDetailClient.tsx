@@ -800,7 +800,6 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               }),
             }
           : null;
-  const heroStatusTitle = displayOrderStatusLabel;
   const nextActionCopy = getCustomerNextActionCopy({
     hasTodo: Boolean(nextTodo),
     todoLabel: nextTodo?.label,
@@ -928,14 +927,13 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             : "주문 상품, 결제 상태, 배송 정보를 확인하세요."
         }
         icon={<ShoppingCart className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
-        status={
+        statusTitle={
           <OrderStatusBadge
             orderId={orderId}
             initialStatus={orderDetail.status}
             shippingMethod={orderDetail.shippingInfo}
           />
         }
-        statusTitle={heroStatusTitle}
         identifier={`주문번호: #${orderId.slice(-6).toUpperCase()}`}
         summary={
           <>

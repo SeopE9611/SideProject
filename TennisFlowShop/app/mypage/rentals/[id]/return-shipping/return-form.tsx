@@ -17,7 +17,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
 import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -56,6 +59,13 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
     if (prefillDone && baselineRef.current === null) baselineRef.current = fingerprint;
   }, [prefillDone, fingerprint]);
   useUnsavedChangesGuard(isDirty);
+  const handleBackToRentalDetail = () => {
+    if (isDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) {
+      return;
+    }
+
+    router.push(`/mypage/rentals/${rentalId}`);
+  };
   const loadExistingShipping = useCallback(
     async (signal?: AbortSignal, isRetry = false) => {
       setLookupStatus(isRetry ? "retrying" : "loading");
@@ -261,7 +271,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
             <Button
               variant="outline"
               disabled={busy}
-              onClick={() => router.push(`/mypage/rentals/${rentalId}`)}
+              onClick={handleBackToRentalDetail}
               className="h-12 w-full rounded-control bp-sm:w-auto"
             >
               대여 상세로 돌아가기
