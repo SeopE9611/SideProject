@@ -8,9 +8,12 @@ export default function Loading() {
       rows={6}
       filterColumnsClassName="grid-cols-[minmax(240px,2fr)_repeat(3,minmax(130px,1fr))]"
       filterFieldCount={4}
+      secondaryFilterFieldCount={2}
+      secondaryFilterActionCount={4}
       quickFilterCount={5}
       filterActionCount={1}
       showGuide
+      guideVariant="summary"
     />
   );
 }
