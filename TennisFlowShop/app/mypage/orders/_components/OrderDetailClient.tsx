@@ -921,7 +921,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
   return (
     <main className="w-full">
       <MypageDetailHero
-        variant="feature"
+        variant="transaction"
         title={serviceLinkedOrder ? "상품 구매 + 교체서비스 상세" : "주문 상세"}
         description={
           serviceLinkedOrder
@@ -944,13 +944,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             <MypageInfoField
               label="총 결제금액"
               value={formatCurrency(orderDetail.total)}
-              valueClassName="text-brand-highlight-ink"
             />
-            <MypageInfoField label="결제 상태" value={customerPaymentStatusLabel} />
-            {serviceLinkedOrder ? (
-              <MypageInfoField label="교체서비스" value={stringingSubmissionLabel} />
-            ) : null}
-            <MypageInfoField label="배송/수령" value={shippingMethodLabel} />
           </>
         }
         nextActionTitle={nextTodo ? nextActionCopy.title : undefined}
@@ -991,22 +985,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               disabled={!canUserEdit}
               className={cn(
                 "min-h-11 w-full whitespace-nowrap bp-sm:w-auto",
-                !isEditMode && "border-border bg-background hover:bg-brand-highlight-muted/70",
+                !isEditMode && "border-border bg-background hover:bg-muted/30",
               )}
             >
               {isEditMode ? "수정 종료" : "주문 정보 수정"}
             </Button>
 
-            {canShowCancelButton ? (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setCancelDialogOpen(true)}
-                className="min-h-11 w-full whitespace-normal break-keep bp-sm:w-auto"
-              >
-                취소 요청
-              </Button>
-            ) : null}
           </>
         }
       />
@@ -1044,10 +1028,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           <div className="space-y-5">
             {/* 주문 항목 */}
             <MypageDetailCard
-              title="주문상품"
+              title="주문 상품"
               description="구매한 상품과 선택 옵션을 확인하세요."
               icon={<ShoppingCart className="h-5 w-5" aria-hidden="true" />}
-              variant="feature"
+              variant="transaction"
             >
               <div className="divide-y divide-border/60">
                 {orderDetail.items.map((item, idx) => {
@@ -1137,7 +1121,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   description="진행 상태와 핵심 일정을 확인하세요."
                   icon={<Truck className="h-5 w-5" aria-hidden="true" />}
                   contentClassName="space-y-4"
-                  variant="feature"
+                  variant="transaction"
                 >
                   {hasLinkedStringingApps ? (
                     linkedStringingApps.map((app, appIndex) => {
@@ -1395,73 +1379,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           </div>
 
           <aside className="space-y-5">
-            {/* 결제 정보 */}
+            {/* 배송·수령 정보 */}
             <MypageDetailCard
-              variant="feature"
-              title="결제 요약"
-              description="최종 결제 내역을 확인하세요."
-              icon={<CreditCard className="h-5 w-5" aria-hidden="true" />}
-            >
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
-                    {(() => {
-                      const pay = getPaymentStatusBadgeSpec(
-                        isZeroPaymentOrder ? "결제완료" : orderDetail.paymentStatus,
-                      );
-                      return (
-                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                          {customerPaymentStatusLabel}
-                        </Badge>
-                      );
-                    })()}
-                  </div>
-                </div>
-
-                <div className="space-y-3 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
-                  <MypageInfoField label="결제 방식" value={customerPaymentMethodLabel} />
-
-                  {isBankTransferPayment ? (
-                    <div className="rounded-xl bg-muted/15 p-3 ring-1 ring-border/40">
-                      <p className="text-ui-label font-medium text-muted-foreground">입금 계좌</p>
-                      <p className="mt-1 font-medium text-foreground">{bankAccountLabel}</p>
-                      <p className="mt-1 text-ui-body-sm text-muted-foreground">
-                        예금주: {bankAccountHolderLabel}
-                      </p>
-
-                      {depositorName ? (
-                        <p className="mt-2 text-ui-body-sm text-foreground">
-                          입금자명: {depositorName}
-                        </p>
-                      ) : null}
-
-                      {isPaymentWaiting ? (
-                        <p className="mt-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
-                          {serviceLinkedOrder
-                            ? "입금 확인 후 주문과 교체서비스 작업이 진행됩니다."
-                            : "입금 확인 후 상품 준비가 진행됩니다."}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : paymentApprovedAtLabel ? (
-                    <MypageInfoField label="결제 일시" value={paymentApprovedAtLabel} />
-                  ) : null}
-                </div>
-
-                <MypageInfoField
-                  className="rounded-xl bg-brand-highlight-muted/60 p-4 ring-1 ring-brand-highlight-ink/15"
-                  label="결제 금액"
-                  value={formatCurrency(orderDetail.total)}
-                  valueClassName="text-ui-section-title text-brand-highlight-ink"
-                />
-              </div>
-            </MypageDetailCard>
-
-            {/* 배송/수령 요약 */}
-            <MypageDetailCard
-              variant="feature"
-              title="배송/수령 요약"
+              variant="transaction"
+              title="배송·수령 정보"
               description="수령·배송 핵심 정보입니다."
               icon={<Truck className="h-5 w-5" aria-hidden="true" />}
             >
@@ -1696,7 +1617,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     size="sm"
                     variant="outline"
                     onClick={() => setEditingCustomer(true)}
-                    className="min-h-11 w-full border-border hover:bg-brand-highlight-muted/70 bp-sm:w-auto"
+                    className="min-h-11 w-full border-border hover:bg-muted/30 bp-sm:w-auto"
                   >
                     {showDeliveryOnlyFields ? "배송지/연락처 수정" : "수령자 정보 수정"}
                   </Button>
@@ -1704,10 +1625,73 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               )}
             </MypageDetailCard>
 
+            {/* 결제 정보 */}
+            <MypageDetailCard
+              variant="transaction"
+              title="결제 정보"
+              description="최종 결제 내역을 확인하세요."
+              icon={<CreditCard className="h-5 w-5" aria-hidden="true" />}
+            >
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
+                    {(() => {
+                      const pay = getPaymentStatusBadgeSpec(
+                        isZeroPaymentOrder ? "결제완료" : orderDetail.paymentStatus,
+                      );
+                      return (
+                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                          {customerPaymentStatusLabel}
+                        </Badge>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                <div className="space-y-3 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
+                  <MypageInfoField label="결제 방식" value={customerPaymentMethodLabel} />
+
+                  {isBankTransferPayment ? (
+                    <div className="rounded-xl bg-muted/15 p-3 ring-1 ring-border/40">
+                      <p className="text-ui-label font-medium text-muted-foreground">입금 계좌</p>
+                      <p className="mt-1 font-medium text-foreground">{bankAccountLabel}</p>
+                      <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                        예금주: {bankAccountHolderLabel}
+                      </p>
+
+                      {depositorName ? (
+                        <p className="mt-2 text-ui-body-sm text-foreground">
+                          입금자명: {depositorName}
+                        </p>
+                      ) : null}
+
+                      {isPaymentWaiting ? (
+                        <p className="mt-2 break-keep text-ui-label leading-relaxed text-muted-foreground">
+                          {serviceLinkedOrder
+                            ? "입금 확인 후 주문과 교체서비스 작업이 진행됩니다."
+                            : "입금 확인 후 상품 준비가 진행됩니다."}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : paymentApprovedAtLabel ? (
+                    <MypageInfoField label="결제 일시" value={paymentApprovedAtLabel} />
+                  ) : null}
+                </div>
+
+                <div className={mypageDetailLayout.transactionTotalRow}>
+                  <span className="text-ui-body-sm font-medium">총 결제금액</span>
+                  <strong className="text-ui-section-title tabular-nums">
+                    {formatCurrency(orderDetail.total)}
+                  </strong>
+                </div>
+              </div>
+            </MypageDetailCard>
+
             {packageUsedSlots > 0 ? (
               <MypageDetailCard
-                variant="feature"
-                title="패키지 사용"
+                variant="transaction"
+                title="패키지 사용 내역"
                 description="이번 이용에 패키지 이용권이 사용되었습니다."
                 contentClassName="space-y-4 text-ui-body-sm"
               >
@@ -1746,6 +1730,25 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   <Link href="/mypage?tab=reviews">작성한 후기 보기</Link>
                 </Button>
               </div>
+            ) : null}
+
+            {canShowCancelButton ? (
+              <section className={mypageDetailLayout.managementSection}>
+                <div className="min-w-0">
+                  <h3 className="text-ui-card-title font-medium text-foreground">주문 관리</h3>
+                  <p className="mt-1 break-keep text-ui-body-sm text-muted-foreground">
+                    주문 취소가 필요한 경우 취소 요청을 접수할 수 있습니다.
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setCancelDialogOpen(true)}
+                  className="mt-4 min-h-11 w-full shrink-0 whitespace-normal break-keep bp-sm:mt-0 bp-sm:w-auto"
+                >
+                  취소 요청
+                </Button>
+              </section>
             ) : null}
           </aside>
         </div>

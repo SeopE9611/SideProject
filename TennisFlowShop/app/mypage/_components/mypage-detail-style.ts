@@ -12,4 +12,13 @@ export const mypageDetailLayout = {
   sideColumn: "space-y-5",
   subtlePanel: "rounded-xl border border-border/60 bg-background/70 p-3 bp-sm:p-4",
   actionPanel: "flex flex-col gap-3 rounded-xl bg-brand-highlight-muted/45 p-3 bp-sm:p-4",
+  transactionHero: "border-border bg-card shadow-none",
+  transactionHeroShell: "border-border/60",
+  transactionActionPanel: "border border-border bg-muted/20",
+  transactionCard: "border-border bg-card shadow-none",
+  transactionCardHeader: "border-b border-border/60 bg-card",
+  transactionTotalRow:
+    "flex items-center justify-between gap-4 border-t border-border/60 pt-4 text-foreground",
+  managementSection:
+    "rounded-2xl border border-border bg-card p-4 shadow-none bp-sm:flex bp-sm:items-center bp-sm:justify-between bp-sm:gap-6 bp-sm:p-5",
 } as const;
