@@ -120,6 +120,26 @@ test("사용자 패키지권 상세 API는 결제 생명주기와 실제 패스 
   assert.match(route, /paymentLifecycle === "paid" && usageStatus === "available"/);
 });
 
+test("사용자 패키지권 상세 API는 결제 종료 상태를 활성 패스보다 우선한다", () => {
+  const route = read("app/api/mypage/package-orders/[id]/route.ts");
+  assert.match(route, /const rawUsageStatus = !pass/);
+  assert.match(route, /paymentLifecycle === "refunded" \|\| paymentLifecycle === "cancelled"\s*\? "cancelled"/);
+  assert.match(route, /paymentLifecycle === "failed"\s*\? "unknown"\s*:\s*rawUsageStatus/);
+  assert.match(route, /paymentLifecycle === "refunded"\s*\? "환불 완료"/);
+  assert.match(route, /paymentLifecycle === "cancelled"\s*\? "결제 취소"/);
+  assert.match(route, /paymentLifecycle === "failed"\s*\? "failed"/);
+  assert.match(route, /paymentLifecycle === "failed"\s*\? "결제 실패로 미활성화"/);
+  assert.match(route, /paymentLifecycle === "paid" && usageStatus === "available"/);
+});
+
+test("패키지권 상세 배지는 최종 이용·활성화 상태에 맞는 tone을 사용한다", () => {
+  const client = read("app/mypage/packages/_components/PackageDetailClient.tsx");
+  assert.match(client, /item\.usageStatus === "available"\s*\? "success"/);
+  assert.match(client, /item\.usageStatus === "paused"\s*\? "warning"/);
+  assert.match(client, /item\.usageStatus === "cancelled" \|\| item\.activationStatus === "failed"\s*\? "danger"/);
+  assert.doesNotMatch(client, /available \? "success"/);
+});
+
 test("패키지권 상세 결제수단과 CTA는 정제된 API DTO만 사용한다", () => {
   const route = read("app/api/mypage/package-orders/[id]/route.ts");
   const client = read("app/mypage/packages/_components/PackageDetailClient.tsx");

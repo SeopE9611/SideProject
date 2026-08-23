@@ -69,7 +69,13 @@ export default function PackageDetailClient({ orderId }: { orderId: string }) {
     ? Math.max(0, Math.min(100, (item.usedCount! / item.totalCount!) * 100))
     : null;
   const badgeSpec = badgeStyleSpec(
-    available ? "success" : item.usageStatus === "paused" ? "warning" : item.usageStatus === "cancelled" ? "danger" : "neutral",
+    item.usageStatus === "available"
+      ? "success"
+      : item.usageStatus === "paused"
+        ? "warning"
+        : item.usageStatus === "cancelled" || item.activationStatus === "failed"
+          ? "danger"
+          : "neutral",
   );
 
   return (
