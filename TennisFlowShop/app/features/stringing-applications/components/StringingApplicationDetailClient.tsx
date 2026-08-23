@@ -3026,7 +3026,11 @@ export default function StringingApplicationDetailClient({
                       {(() => {
                         const pay = getPaymentStatusBadgeSpec(paymentStatusLabel);
                         return (
-                          <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                          <Badge
+                            variant={pay.variant}
+                            className={cn(badgeBase, badgeSizeSm)}
+                            aria-label={`결제 상태: ${paymentStatusLabel}`}
+                          >
                             {paymentStatusLabel}
                           </Badge>
                         );
@@ -3089,14 +3093,6 @@ export default function StringingApplicationDetailClient({
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            <div className="flex flex-wrap items-center gap-2 text-ui-body-sm font-medium text-foreground">
-                              <Badge
-                                variant={paymentStatusBadgeSpec.variant}
-                                className={cn(badgeBase, badgeSizeSm)}
-                              >
-                                {paymentStatusLabel}
-                              </Badge>
-                            </div>
                             <div className="space-y-1 text-ui-body-sm text-foreground/80">
                               <p>
                                 <span className="font-medium text-foreground">결제 문맥:</span>{" "}
