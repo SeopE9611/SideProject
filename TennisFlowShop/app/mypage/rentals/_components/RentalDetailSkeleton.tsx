@@ -7,8 +7,10 @@ import { mypageDetailLayout } from "../../_components/mypage-detail-style";
 
 function RentalDetailCardSkeleton({ compact = false }: { compact?: boolean }) {
   return (
-    <Card className="overflow-hidden rounded-2xl border border-brand-highlight-ink/20 bg-card shadow-none">
-      <CardHeader className="border-b border-brand-highlight-ink/15 bg-brand-highlight-muted/45 p-4 bp-sm:p-5">
+    <Card
+      className={`overflow-hidden rounded-2xl border ${mypageDetailLayout.transactionCard}`}
+    >
+      <CardHeader className={`p-4 bp-sm:p-5 ${mypageDetailLayout.transactionCardHeader}`}>
         <div className="flex items-center gap-2">
           <Skeleton className="h-5 w-5 rounded-full" />
           <Skeleton className="h-5 w-36 rounded-md" />
@@ -31,7 +33,7 @@ export default function RentalDetailSkeleton() {
       <section
         className={cn(
           mypageDetailLayout.heroSection,
-          "border-brand-highlight-ink/25 bg-brand-highlight-muted/40 shadow-none",
+          mypageDetailLayout.transactionHero,
         )}
       >
         <div className="min-w-0 space-y-2">
@@ -41,7 +43,10 @@ export default function RentalDetailSkeleton() {
         </div>
 
         <div
-          className={mypageDetailLayout.heroShell}
+          className={cn(
+            mypageDetailLayout.heroShell,
+            mypageDetailLayout.transactionHeroShell,
+          )}
         >
           <div className={mypageDetailLayout.heroGrid}>
             <div className="min-w-0">
@@ -50,7 +55,6 @@ export default function RentalDetailSkeleton() {
                 <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <Skeleton className="h-6 w-24 rounded-full" />
-                    <Skeleton className="h-5 w-36 rounded-md" />
                   </div>
                   <Skeleton className="h-4 w-52 max-w-full rounded-md" />
                 </div>
@@ -58,10 +62,14 @@ export default function RentalDetailSkeleton() {
               <div className={mypageDetailLayout.summaryGrid}>
                 <Skeleton className="h-16 rounded-xl" />
                 <Skeleton className="h-16 rounded-xl" />
-                <Skeleton className="h-16 rounded-xl" />
               </div>
             </div>
-            <div className={mypageDetailLayout.actionPanel}>
+            <div
+              className={cn(
+                mypageDetailLayout.actionPanel,
+                mypageDetailLayout.transactionActionPanel,
+              )}
+            >
               <Skeleton className="h-4 w-20 rounded-md" />
               <Skeleton className="h-5 w-48 max-w-full rounded-md" />
               <Skeleton className="h-11 w-full rounded-md bp-sm:w-32" />
@@ -69,21 +77,23 @@ export default function RentalDetailSkeleton() {
           </div>
         </div>
         <div className="mt-4 flex w-full flex-col gap-2 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:flex-wrap bp-lg:justify-end">
-          <Skeleton className="h-11 w-full rounded-md bp-sm:w-28" />
           <Skeleton className="h-11 w-full rounded-md bp-sm:w-32" />
         </div>
       </section>
 
       <div className={mypageDetailLayout.contentContainer}>
-        <div className={mypageDetailLayout.contentGrid}>
-          <div className={mypageDetailLayout.mainColumn}>
-            <RentalDetailCardSkeleton compact />
-            <RentalDetailCardSkeleton />
-            <RentalDetailCardSkeleton />
-          </div>
-          <div className={mypageDetailLayout.sideColumn}>
-            <RentalDetailCardSkeleton />
-          </div>
+        <div className="w-full space-y-5">
+          <RentalDetailCardSkeleton compact />
+          <RentalDetailCardSkeleton />
+          <RentalDetailCardSkeleton />
+          <RentalDetailCardSkeleton />
+          <section className={mypageDetailLayout.managementSection}>
+            <div className="min-w-0 flex-1 space-y-2">
+              <Skeleton className="h-5 w-24 rounded-md" />
+              <Skeleton className="h-4 w-80 max-w-full rounded-md" />
+            </div>
+            <Skeleton className="mt-4 h-11 w-full rounded-md bp-sm:mt-0 bp-sm:w-24" />
+          </section>
         </div>
       </div>
     </main>
