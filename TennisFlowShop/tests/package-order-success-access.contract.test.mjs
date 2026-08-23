@@ -59,7 +59,7 @@ test("기존 패키지 성공 화면과 결제 표시 기능을 유지한다", (
   assert.match(source, /LoginGate/);
   assert.match(source, /DevMarkPaidButton/);
   assert.match(source, /getPaymentDisplaySummary/);
-  assert.match(source, /UnifiedPackageCard/);
+  assert.match(source, /SummaryCard/);
   assert.match(source, /packageOrderId/);
   assert.match(source, /normalizedPaymentProvider === "nicepay"/);
   assert.match(source, /normalizedPaymentProvider === "tosspayments"/);

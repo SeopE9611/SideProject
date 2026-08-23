@@ -3,10 +3,11 @@
 import PassListSkeleton from "@/app/mypage/tabs/PassListSkeleton";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import AsyncState from "@/components/system/AsyncState";
-import { Card, CardContent } from "@/components/ui/card";
-import { badgeStyleSpec, getPaymentStatusBadgeSpec } from "@/lib/badge-style";
+import { Button } from "@/components/ui/button";
+import { badgeStyleSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { Clock, Ticket } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 
@@ -60,15 +61,6 @@ function getPassUsageBadgeSpec(usageStatus: UsageStatus) {
   if (usageStatus === "available") return badgeStyleSpec("success");
   if (usageStatus === "paused") return badgeStyleSpec("warning");
   if (usageStatus === "expired" || usageStatus === "cancelled") return badgeStyleSpec("danger");
-  return badgeStyleSpec("neutral");
-}
-function getPassActivationBadgeSpec(activationStatus: ActivationStatus) {
-  if (activationStatus === "active") return badgeStyleSpec("success");
-  if (activationStatus === "awaiting_payment" || activationStatus === "paused")
-    return badgeStyleSpec("warning");
-  if (activationStatus === "pending_issue") return badgeStyleSpec("info");
-  if (activationStatus === "cancelled" || activationStatus === "failed")
-    return badgeStyleSpec("danger");
   return badgeStyleSpec("neutral");
 }
 function statusDescription(item: PassItem) {
@@ -145,8 +137,7 @@ export default function PassList() {
   ].filter((section) => section.items.length > 0);
 
   return (
-    <Card className="rounded-panel border-border/80 bg-transparent shadow-none">
-      <CardContent className="space-y-4 p-0">
+    <div className="space-y-4">
         {isLoading ? <PassListSkeleton /> : null}
         {!isLoading && items.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-panel border border-border/80 bg-muted/25 px-4 py-14 text-center shadow-soft">
@@ -180,18 +171,16 @@ export default function PassList() {
                   ? { packageSize: passItem.packageSize, remainingCount: passItem.remainingCount }
                   : null;
               const hasUsageCounts = usageCounts !== null;
-              const remainPct = usageCounts
+              const usedPct = usageCounts
                 ? Math.max(
                     0,
-                    Math.min(100, (usageCounts.remainingCount / usageCounts.packageSize) * 100),
+                    Math.min(100, ((usageCounts.packageSize - usageCounts.remainingCount) / usageCounts.packageSize) * 100),
                   )
                 : null;
               const expiresAt = dateTime(passItem.expiresAt);
               const dday =
                 now && expiresAt !== null ? Math.ceil((expiresAt - now) / 86400000) : null;
               const usageBadgeSpec = getPassUsageBadgeSpec(passItem.usageStatus);
-              const paymentStatusBadgeSpec = getPaymentStatusBadgeSpec(passItem.paymentStatusLabel);
-              const activationBadgeSpec = getPassActivationBadgeSpec(passItem.activationStatus);
               const packageTitle = passItem.planTitle?.trim() || "교체서비스 패키지";
               const packageSizeTitle =
                 typeof passItem.packageSize === "number" && Number.isFinite(passItem.packageSize)
@@ -206,9 +195,9 @@ export default function PassList() {
               return (
                 <article
                   key={passItem.id}
-                  className={`rounded-panel border bg-card p-4 shadow-soft transition-shadow hover:shadow-md md:p-5 ${passItem.usageStatus === "available" ? "border-brand-highlight/30" : "border-border/80"}`}
+                  className={`rounded-control border bg-card p-3.5 ${passItem.usageStatus === "available" ? "border-brand-highlight/30" : "border-border/80"}`}
                 >
-                  <div className="flex flex-col gap-4 md:flex-row md:justify-between">
+                  <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                     <div className="flex min-w-0 gap-3">
                       <span className="rounded-control bg-brand-muted p-2.5 text-brand-highlight-ink">
                         <Ticket className="h-5 w-5" aria-hidden="true" />
@@ -228,27 +217,13 @@ export default function PassList() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-start gap-2 self-start">
+                    <div className="flex shrink-0 items-center gap-2 self-start">
                       <Badge
                         variant={usageBadgeSpec.variant}
                         className={usageBadgeSpec.className}
                         aria-label={`이용권 상태: ${passItem.usageStatusLabel}`}
                       >
                         {passItem.usageStatusLabel}
-                      </Badge>
-                      <Badge
-                        variant={paymentStatusBadgeSpec.variant}
-                        className={paymentStatusBadgeSpec.className}
-                        aria-label={`결제 상태: ${passItem.paymentStatusLabel}`}
-                      >
-                        {passItem.paymentStatusLabel}
-                      </Badge>
-                      <Badge
-                        variant={activationBadgeSpec.variant}
-                        className={activationBadgeSpec.className}
-                        aria-label={`활성화 상태: ${passItem.activationStatusLabel}`}
-                      >
-                        {passItem.activationStatusLabel}
                       </Badge>
                       {passItem.isExpiringSoon ? (
                         <Badge variant="warning" aria-label="만료 임박">
@@ -265,86 +240,32 @@ export default function PassList() {
                       ) : null}
                     </div>
                   </div>
-                  {passItem.source === "pass" ? (
-                    <>
-                      <div className="mt-5 rounded-control border border-brand-highlight/20 bg-brand-muted/45 p-4">
-                        <div className="flex flex-wrap items-end justify-between gap-2">
-                          <p className="text-ui-body-sm font-medium text-muted-foreground">
-                            남은 이용 횟수
-                          </p>
-                          {hasUsageCounts ? (
-                            <p className="font-ui-bold text-ui-section-title tabular-nums text-brand-highlight-ink">
-                              {passItem.remainingCount}회{" "}
-                              <span className="text-ui-body-sm font-medium text-muted-foreground">
-                                / 총 {passItem.packageSize}회
-                              </span>
-                            </p>
-                          ) : (
-                            <p className="text-ui-body-sm text-muted-foreground">
-                              횟수 정보 확인 중
-                            </p>
-                          )}
-                        </div>
-                        {remainPct !== null ? (
-                          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-background">
-                            <div
-                              className="h-full rounded-full bg-brand-highlight transition-[width] duration-200"
-                              style={{ width: `${remainPct}%` }}
-                            />
-                          </div>
-                        ) : null}
-                        {typeof passItem.usedCount === "number" &&
-                        Number.isFinite(passItem.usedCount) ? (
-                          <p className="mt-2 text-ui-label text-muted-foreground">
-                            지금까지 {passItem.usedCount}회 사용했습니다.
-                          </p>
-                        ) : null}
-                      </div>
-                      {passItem.recentUsages?.length > 0 ? (
-                        <div className="mt-3 rounded-control bg-muted/40 px-4 py-3">
-                          <p className="text-ui-label font-medium text-muted-foreground">
-                            최근 사용 내역
-                          </p>
-                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-ui-body-sm text-foreground">
-                            {passItem.recentUsages.slice(-3).map((usage, index) => (
-                              <span key={index}>
-                                {new Date(usage.usedAt).toLocaleDateString()}
-                                {usage.reverted ? " · 복원" : ""}
-                              </span>
-                            ))}
-                          </div>
+                  <div className="mt-3 grid gap-2 border-t border-border/60 pt-3 text-ui-label text-muted-foreground bp-sm:grid-cols-[1fr_auto] bp-sm:items-end">
+                    <div className="space-y-1">
+                      <p>{hasUsageCounts ? `잔여 ${passItem.remainingCount}회 / 총 ${passItem.packageSize}회` : packageSizeSummary}</p>
+                      <p>결제 {passItem.paymentStatusLabel} · 발급 {passItem.activationStatusLabel} · {passItem.paymentTotalAmount === null ? "금액 확인 중" : `${passItem.paymentTotalAmount.toLocaleString()}원`}</p>
+                      {canStartStringingService && usedPct !== null ? (
+                        <div className="h-2 max-w-md overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="패키지권 사용 진행률" aria-valuemin={0} aria-valuemax={passItem.packageSize!} aria-valuenow={passItem.usedCount ?? passItem.packageSize! - passItem.remainingCount!}>
+                          <div className="h-full rounded-full bg-brand-highlight" style={{ width: `${usedPct}%` }} />
                         </div>
                       ) : null}
-                    </>
-                  ) : (
-                    <p className="mt-4 text-ui-body-sm text-muted-foreground">
-                      {packageSizeSummary} · 아직 발급되지 않음
-                    </p>
-                  )}
-                  <div className="mt-4 flex flex-wrap gap-2">
+                    </div>
+                    <div className="flex flex-wrap gap-2">
                     {passItem.orderId?.trim() ? (
-                      <a
-                        href={`/services/packages/success?packageOrderId=${encodeURIComponent(passItem.orderId)}`}
-                        className="text-ui-body-sm font-medium text-brand-highlight-ink underline-offset-4 hover:underline"
-                      >
-                        주문·결제 정보
-                      </a>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/mypage/packages/${encodeURIComponent(passItem.orderId)}`}>상세 보기</Link>
+                      </Button>
                     ) : null}
                     {canStartStringingService ? (
-                      <a
-                        href="/services#service-start"
-                        className="text-ui-body-sm font-medium text-brand-highlight-ink underline-offset-4 hover:underline"
-                      >
-                        교체서비스 시작하기
-                      </a>
+                      <Button asChild size="sm"><Link href="/services#service-start">교체서비스 시작</Link></Button>
                     ) : null}
+                    </div>
                   </div>
                 </article>
               );
             })}
           </section>
         ))}
-      </CardContent>
-    </Card>
+    </div>
   );
 }

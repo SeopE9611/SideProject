@@ -18,6 +18,7 @@ import QnaListSkeleton from "@/app/mypage/tabs/_components/QnaListSkeleton";
 import ReviewListSkeleton from "@/app/mypage/tabs/_components/ReviewListSkeleton";
 import WishlistSkeleton from "@/app/mypage/tabs/_components/WishlistSkeleton";
 import PassListSkeleton from "@/app/mypage/tabs/PassListSkeleton";
+import PackageDetailSkeleton from "@/app/mypage/packages/_components/PackageDetailSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -61,6 +62,10 @@ const TransactionFlowList = dynamic(() => import("@/app/mypage/tabs/TransactionF
 const PassList = dynamic(() => import("@/app/mypage/tabs/PassList"), {
   loading: () => <PassListSkeleton />,
 });
+const PackageDetailClient = dynamic(
+  () => import("@/app/mypage/packages/_components/PackageDetailClient"),
+  { loading: () => <PackageDetailSkeleton /> },
+);
 const QnAList = dynamic(() => import("@/app/mypage/tabs/QnAList"), {
   loading: () => <QnaListSkeleton />,
 });
@@ -226,11 +231,15 @@ export default function MypageClient({ user }: Props) {
     }
     newParams.delete("applicationId");
     newParams.delete("rentalId");
+    if (value !== "passes") newParams.delete("packageOrderId");
 
     router.push(`/mypage?${newParams.toString()}`, { scroll: false });
   };
 
   const orderId = searchParams.get("orderId");
+  const packageOrderIdParam = searchParams.get("packageOrderId")?.trim() || null;
+  const packageOrderId =
+    packageOrderIdParam && /^[a-f\d]{24}$/i.test(packageOrderIdParam) ? packageOrderIdParam : null;
   const selectedApplicationId = searchParams.get("applicationId");
   const selectedRentalId = searchParams.get("rentalId");
   const flowType = searchParams.get("flowType");
@@ -454,13 +463,17 @@ export default function MypageClient({ user }: Props) {
 
               {/* 패키지권 탭 */}
               <TabsContent value="passes" className="mt-0">
-                <DashboardSectionPanel
-                  icon={<Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
-                  title="패키지권"
-                  description="보유 중인 패키지권을 확인하실 수 있습니다."
-                >
-                  {currentTab === "passes" ? <PassList /> : null}
-                </DashboardSectionPanel>
+                {currentTab === "passes" && packageOrderId ? (
+                  <PackageDetailClient orderId={packageOrderId} />
+                ) : (
+                  <DashboardSectionPanel
+                    icon={<Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />}
+                    title="패키지권"
+                    description="보유 중인 패키지권을 확인하실 수 있습니다."
+                  >
+                    {currentTab === "passes" ? <PassList /> : null}
+                  </DashboardSectionPanel>
+                )}
               </TabsContent>
 
               {/* 적립 포인트 탭 */}
