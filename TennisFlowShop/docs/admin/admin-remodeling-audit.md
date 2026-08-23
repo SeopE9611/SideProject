@@ -1,11 +1,16 @@
 # 관리자 리모델링 전수조사
 
+> 이 문서는 여러 단계의 변경 이력을 시간 순서로 누적한 문서다. 중간 단계의 “남은 작업”과
+> “다음 단계” 문구는 당시 시점의 기록이며, 현재 Admin Table V2 상태는 문서 마지막의 최종
+> 전수검사 절을 기준으로 판단한다. Apps in Toss 관련 관리자 코드는 이번 완료 범위에서 제외한다.
+
 ## 조사 범위와 방법
 
-2026-08-13 기준으로 `app/admin`, `components/admin`, `components/ui`, `lib/admin`,
+2026-08-23 기준으로 `app/admin`, `components/admin`, `components/ui`, `lib/admin`,
 `lib/badge-style.ts`, `app/globals.css`, `tailwind.config.ts`, `package.json`을 정적 조사했다.
-`app/admin`의 파일은 176개이며, `components/admin`까지 합치면 215개(이 중 TypeScript/TSX
-209개)다. 이번 변경은 기능 재설계가 아니라 공통 기반과 대표 화면의 시각적 계층을
+`app/admin`의 파일은 173개, `components/admin`의 파일은 41개이며, 합계는 214개(이 중
+TypeScript/TSX 208개)다. `app/admin`에는 `page.tsx` 48개와 `loading.tsx` 30개가 있다.
+이번 변경은 기능 재설계가 아니라 공통 기반과 대표 화면의 시각적 계층을
 안정화하는 1차 단계다.
 
 ## 관리자 라우트와 화면 유형
@@ -889,4 +894,171 @@ Phase 2-D2 최종 결과
 
 감사 로그는 고정 데스크톱 4열 구조를 사용한다.
 
-다음 단계는 Admin Table V2 Phase 2-D3 — 개인결제 관리 account-ledger 전환이다.
+이후 Phase 2-D3 개인결제 관리 전환과 후속 정리·최종 전수검사가 완료됐다.
+현재 상태는 아래 최종 절을 기준으로 확인한다.
+
+## Admin Table V2 Phase 2-D3 — 개인결제 관리 account-ledger 전환
+
+### 필터와 요약
+
+- 기존 개인결제 검색·상태·만료 조건과 적용 조건을 `AdminFilterBar`로 통합했다.
+- 요약 Card와 생성 action, 선택 삭제 업무 흐름을 유지했다.
+- 필터 변경과 페이지 동작을 유지했다.
+
+### 6열 account-ledger
+
+정확한 Grid는
+`grid-cols-[40px_minmax(360px,1.35fr)_150px_minmax(230px,0.85fr)_minmax(240px,0.9fr)_116px]`다.
+열은 선택, 결제 / 고객, 금액, 상태 / 연결, 만료 / 생성, 작업 순서다.
+
+- 오류, 로딩 Skeleton 6행, 조건별 빈 결과, 실제 데이터 상태를 분리했다.
+- 상태 행은 `col-span-6`, 목록 내부 페이지네이션은 `aria-colspan={6}`을 적용했다.
+- 개인결제 생성, 선택 삭제, 결제 상태, 오프라인 기록 연결, 만료, 고객 연락처와 결제 ID
+  참조, 정렬과 페이지네이션을 보존했다.
+- 기존 API·payload·validation을 보존했다.
+- 개인결제 API, 타입, 공통 관리자 컴포넌트, 모바일 대체 목록, breakpoint별 열 변경과
+  Apps in Toss 관련 코드는 변경하지 않았다.
+
+## Admin Table V2 후속 정리 — legacy 목록과 route loading
+
+### 미사용 legacy 목록 Client 제거
+
+- 활성 route와 import가 없음을 확인한 뒤 `app/admin/classes/ClassesClient.tsx`와
+  `app/admin/reviews/ReviewsClient.tsx`를 삭제했다.
+
+### 일반 목록 route loading 공통화
+
+- operations, orders, packages, products, rackets, rentals, users의 일반 목록 loading이
+  `AdminListPageSkeleton`을 사용한다.
+- 각 화면의 열 수, 필터 수, KPI, 빠른 보기, 선택 열과 페이지네이션 여부를 Props로 맞췄다.
+
+### 후기·정산 전용 loading
+
+- 후기는 고정 8열 custom Grid, sticky Header와 스크롤 구조를 전용 Skeleton에 반영했다.
+- 정산은 월별 snapshot Grid, Tabs, KPI와 전용 열 template을 Skeleton에 반영했다.
+- 두 화면의 고유 구조를 일반 목록 Skeleton으로 강제 통합하지 않았다.
+
+## Admin Table V2 후속 정리 — 오프라인 운영 목록
+
+### 오프라인 정합성
+
+정확한 7열 Grid는
+`grid-cols-[90px_150px_150px_minmax(180px,0.85fr)_minmax(280px,1.35fr)_180px_120px]`이며,
+열은 주의, 이슈, 발생일, 고객, 내용, 금액 / 패키지, 처리 순서다.
+
+- 필터와 현재 보기를 `AdminFilterBar`로 통합하고 native Table을 제거했다.
+- 오류·로딩·빈 결과·데이터 분기와 목록 내부 페이지네이션을 적용했다.
+- 메모 저장·무시·확인 완료, 고객·주문·기록 링크와 상세 Sheet를 유지했다.
+- API와 PATCH payload를 보존했다.
+
+### 오프라인 최근 작업·매출
+
+정확한 7열 Grid는
+`grid-cols-[40px_minmax(240px,1fr)_minmax(320px,1.35fr)_140px_120px_120px_116px]`이며,
+열은 선택, 고객 / 날짜, 유형 / 작업 내용, 금액, 결제, 상태, 작업 순서다.
+
+- 외곽 legacy Card와 native 9열 Table을 제거하고 빠른 보기·상세 필터·현재 조건을
+  `AdminFilterBar`로 통합했다.
+- 현재 페이지 전체·부분 선택, 페이지 간 선택 누적과 선택 삭제를 유지했다.
+- 고객 상세, 기록 수정 Modal과 목록 내부 페이지네이션을 유지했다.
+- API·payload와 mutation을 보존했다.
+
+### 오프라인 고객 상세 패키지 판매·주문 이력
+
+정확한 4열 Grid는
+`grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)_minmax(0,1fr)_96px]`이며,
+열은 패키지 / 횟수, 금액 / 결제, 일자 / 출처, 작업 순서다.
+
+- 상세 페이지 반쪽 폭 영역의 native 8열 Table을 제거했다.
+- 환불 Form을 행 내부에서 `AdminRowDetailsSheet`로 이동했다.
+- 온라인·기존 주문 상세 안내와 환불 완료 금액·일자·사유를 유지했다.
+- 오프라인 미환불 주문의 환불 사유·차단 사유·결과 Message를 유지했다.
+- 기존 확인창, API URL, `{ reason }` payload와 `mutateDetail()`을 보존했다.
+
+## Admin Table V2 후속 정리 — 대여 loading 정합화
+
+- 구형 수동 rental loading을 제거하고 실제 대여 5열 Grid와 같은 `columnsClassName`으로
+  `AdminListPageSkeleton`을 적용했다.
+- 기본 필터 4개, 날짜 입력 Skeleton 2개와 `~` 구분, 기간 preset Skeleton 4개,
+  빠른 보기 5개, 닫힌 업무 가이드 `summary`를 반영했다.
+- 선택적 공통 Props `secondaryFilterFieldCount`, `secondaryFilterActionCount`,
+  `guideVariant`를 추가했다. 기본값은 각각 `0`, `0`, `"panel"`이므로 다른 route loading의
+  출력을 보존한다.
+
+## Admin Table V2 후속 정리 — 미사용 legacy Table 코드 제거
+
+- 실행 코드 참조가 없음을 확인한 뒤 `app/admin/products/ProductsTableSkeleton.tsx`와
+  `components/admin/AdminSortableTableHead.tsx`를 삭제했다.
+- native `TableRow`·`TableCell` 기반 상품 Skeleton과 native `TableHead` 기반 정렬 wrapper를
+  제거했다.
+- `components/ui/table.tsx`와 `components/admin/AdminDataTable.ts`는 유지했다.
+- 실제 화면·API·타입·테스트와 문서 이외 파일은 변경하지 않았다.
+
+## Admin Table V2 최종 전수검사 — 2026-08-23
+
+### 완료 판정
+
+- Apps in Toss 제외 범위에서 일반 관리자 운영 목록의 Admin Table V2 전환을 완료했다.
+- 운영 객체 목록의 검색·필터·상태 분기·페이지네이션 구조 정리를 완료했다.
+- route loading의 일반 목록 공통화와 특수 목록 전용 정합화를 완료했다.
+- 확인된 미사용 legacy 목록·Table 코드 제거를 완료했다.
+- Table V2 범위에서 추가 코드 수정 대상은 없다.
+
+### V2 적용 화면
+
+이전 Phase와 후속 정리 절에서 다음 화면의 V2 적용을 확인했다.
+
+- 주문 관리, 운영 업무, 패키지 관리, 상품 관리, 라켓 관리, 대여 관리, 회원 관리
+- 아카데미 클래스 관리, 아카데미 신청 관리, 감사 로그, 개인결제 관리
+- 오프라인 최근 작업·매출, 오프라인 정합성
+- 오프라인 고객 상세 패키지 판매·주문 이력 상세 내부 list-table
+
+### 의도적으로 유지한 예외
+
+- **아카데미 클래스 상세 Table**: 상세 내부 최근 신청자 데이터와 행 단위 상세 이동을 위한
+  semantic Table이다. 일반 목록 route가 아니다.
+- **매출 리포트 Table**: snapshot 대 현재 값 비교와 날짜별 매출 추이를 다루는 수치 분석용
+  semantic data table이다.
+- **후기 custom Grid**: SWRInfinite 증분 조회, 고밀도 검수·선택·일괄 처리, sticky Header를
+  결합한 목록이며 전용 loading을 유지한다.
+- **정산 custom Grid**: 월별 snapshot·실시간 조회·차이 검증, CSV와 금액 비교를 위한
+  분석·정산 도구이며 전용 loading을 유지한다.
+- **게시판 카드 목록**: 게시글·신고 Tabs를 사용하는 카드 기반 업무 목록으로 Table 전환
+  대상이 아니다.
+- **redirect와 상세·Form route**: 교체서비스 목록 redirect와 등록·수정·배송·상세 loading은
+  일반 Table 목록 대상이 아니다.
+
+### 제외 범위
+
+Apps in Toss 관련 관리자 route, API, 타입, 테스트, 문서와 `TossMiniApp`은 이번 완료 판정에서
+제외했다. 해당 화면을 조사하거나 변경하지 않았으며 제외 범위를 미완료 페이지 수에 포함하지
+않았다.
+
+### 유지한 공통 기반
+
+- `AdminFilterBar`, `AdminListTable`, `AdminListColumnHeader`, `AdminListBody`, `AdminListRow`,
+  `AdminListCell`, `AdminListPrimary`, `AdminStatusGroup`, `AdminMoneyBlock`, `AdminRowActions`,
+  `AdminRowDetailsSheet`, `AdminListPageSkeleton`을 V2 공통 기반으로 유지한다.
+- `AdminDataTable`은 `AdminListTable`의 typography·상태 text class와 회원·개인결제·정산·감사·
+  대여 화면의 trigger 및 보조 text class 참조가 남아 있어 유지한다.
+- `components/ui/table.tsx`는 아카데미 클래스 상세의 허용 semantic Table 기반이므로 유지한다.
+  매출 리포트도 허용된 native semantic table 구조를 유지한다.
+
+### 최종 검증
+
+- 파일 수는 `app/admin` 173개, `components/admin` 41개, 합계 214개이며 TypeScript/TSX는
+  208개다. `page.tsx`는 48개, `loading.tsx`는 30개다.
+- native Table 검색 결과는 아카데미 클래스 상세와 매출 리포트 두 허용 예외뿐이다.
+- legacy 파일 4개의 부재와 삭제된 관리자 legacy 심볼의 실행 코드 참조가 없음을 확인했다.
+- operations, orders, packages, products, rackets, rentals, users loading의
+  `AdminListPageSkeleton` 적용을 확인했다.
+- `pnpm typecheck`는 앱과 Cypress TypeScript 설정 모두 통과했다.
+- `git diff --check`는 공백 오류 없이 통과했다.
+- 최종 변경 파일은 이 문서 한 개다.
+- lint, build, 테스트, dev server, Cypress·Playwright 실행과 브라우저 검증은 수행하지 않았다.
+
+### 남은 작업
+
+- Admin Table V2 코드 작업: 없음
+- 배포 화면 최종 육안 확인: 운영 데이터가 존재하는 화면에서 별도 수행
+- 관리자 전체 리모델링의 Form·설정·기타 범위: 별도 프로젝트 범위
