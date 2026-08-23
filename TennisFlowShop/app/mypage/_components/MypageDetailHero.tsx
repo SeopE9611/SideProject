@@ -17,7 +17,7 @@ type MypageDetailHeroProps = {
   nextActionSlot?: ReactNode;
   summary?: ReactNode;
   className?: string;
-  variant?: "default" | "feature";
+  variant?: "default" | "feature" | "transaction";
 };
 
 export default function MypageDetailHero({
@@ -40,12 +40,14 @@ export default function MypageDetailHero({
     Boolean(nextActionTitle) || Boolean(nextActionDescription) || Boolean(nextActionSlot);
 
   const isFeature = variant === "feature";
+  const isTransaction = variant === "transaction";
 
   return (
     <section
       className={cn(
         mypageDetailLayout.heroSection,
         isFeature && "border-brand-highlight-ink/25 bg-brand-highlight-muted/40 shadow-none",
+        isTransaction && mypageDetailLayout.transactionHero,
         className,
       )}
     >
@@ -55,6 +57,7 @@ export default function MypageDetailHero({
             className={cn(
               "text-ui-label font-medium text-primary",
               isFeature && "text-brand-highlight-ink",
+              isTransaction && "text-muted-foreground",
             )}
           >
             {eyebrow}
@@ -76,6 +79,7 @@ export default function MypageDetailHero({
         className={cn(
           mypageDetailLayout.heroShell,
           isFeature && "border-brand-highlight-ink/20",
+          isTransaction && mypageDetailLayout.transactionHeroShell,
         )}
       >
         <div className={cn(mypageDetailLayout.heroGrid, !hasNextAction && "bp-lg:grid-cols-1")}>
@@ -86,6 +90,7 @@ export default function MypageDetailHero({
                   "shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10",
                   isFeature &&
                     "bg-brand-highlight-muted text-brand-highlight-ink ring-brand-highlight-ink/20",
+                  isTransaction && "bg-muted/30 text-brand-highlight-ink ring-border/60",
                 )}
               >
                 {icon}
@@ -113,6 +118,7 @@ export default function MypageDetailHero({
               className={cn(
                 mypageDetailLayout.actionPanel,
                 isFeature && "bg-brand-highlight-muted/55",
+                isTransaction && mypageDetailLayout.transactionActionPanel,
               )}
             >
               <div className="min-w-0 flex-1">

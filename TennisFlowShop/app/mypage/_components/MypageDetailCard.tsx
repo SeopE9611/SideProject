@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { mypageDetailLayout } from "./mypage-detail-style";
 
 type MypageDetailCardProps = {
   title: ReactNode;
@@ -11,7 +12,7 @@ type MypageDetailCardProps = {
   children: ReactNode;
   className?: string;
   contentClassName?: string;
-  variant?: "default" | "feature";
+  variant?: "default" | "feature" | "transaction";
 };
 
 export default function MypageDetailCard({
@@ -25,12 +26,14 @@ export default function MypageDetailCard({
   variant = "default",
 }: MypageDetailCardProps) {
   const isFeature = variant === "feature";
+  const isTransaction = variant === "transaction";
 
   return (
     <Card
       className={cn(
         "overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm shadow-foreground/[0.02]",
         isFeature && "border-brand-highlight-ink/20 shadow-none",
+        isTransaction && mypageDetailLayout.transactionCard,
         className,
       )}
     >
@@ -38,6 +41,7 @@ export default function MypageDetailCard({
         className={cn(
           "border-b border-border/60 bg-secondary/20 p-4 bp-sm:p-5",
           isFeature && "bg-brand-highlight-muted/45",
+          isTransaction && mypageDetailLayout.transactionCardHeader,
         )}
       >
         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
@@ -48,7 +52,12 @@ export default function MypageDetailCard({
               )}
             >
               {icon ? (
-                <span className={cn("shrink-0", isFeature && "text-brand-highlight-ink")}>
+                <span
+                  className={cn(
+                    "shrink-0",
+                    (isFeature || isTransaction) && "text-brand-highlight-ink",
+                  )}
+                >
                   {icon}
                 </span>
               ) : null}
