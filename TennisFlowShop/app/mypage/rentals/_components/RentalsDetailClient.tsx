@@ -655,6 +655,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
   return (
     <main>
       <MypageDetailHero
+        headingLevel="h1"
         title="대여 상세"
         description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요."
         variant="transaction"

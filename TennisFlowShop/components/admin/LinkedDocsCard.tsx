@@ -198,21 +198,17 @@ export default function LinkedDocsCard({
                       <Copy className="h-4 w-4" />
                       복사
                     </Button>
-                    <Link
-                      href={d.href}
-                      aria-label="상세 보기"
-                      className={isTransaction ? "w-full bp-sm:w-auto" : undefined}
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className={isTransaction ? "min-h-11 w-full bp-sm:w-auto" : undefined}
                     >
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className={isTransaction ? "min-h-11 w-full bp-sm:w-auto" : undefined}
-                      >
+                      <Link href={d.href} aria-label="상세 보기">
                         <ExternalLink className="h-4 w-4" />
                         {ctaLabel}
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               );

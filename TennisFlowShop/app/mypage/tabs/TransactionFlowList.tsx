@@ -1177,14 +1177,6 @@ export default function TransactionFlowList() {
                     >
                       {representativeStatusLabel}
                     </Badge>
-                    {paymentStatusLabel && paymentStatusBadgeSpec ? (
-                      <Badge
-                        variant={paymentStatusBadgeSpec.variant}
-                        className="shrink-0 whitespace-nowrap"
-                      >
-                        {paymentStatusLabel}
-                      </Badge>
-                    ) : null}
                   </div>
 
                   <p className="hidden break-keep text-ui-label font-medium text-muted-foreground md:block">
