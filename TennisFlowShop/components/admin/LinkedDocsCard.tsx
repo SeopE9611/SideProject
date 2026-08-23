@@ -17,6 +17,7 @@ import {
   type OpsBadgeTone,
   type OpsKind,
 } from "@/lib/admin-ops-taxonomy";
+import { mypageDetailLayout } from "@/app/mypage/_components/mypage-detail-style";
 
 function opsBadgeVariant(tone: OpsBadgeTone) {
   return badgeToneVariant(tone);
@@ -64,6 +65,7 @@ type Props = {
    */
   description?: string;
   className?: string;
+  variant?: "admin" | "transaction";
 };
 
 const KIND_PRIORITY: Record<LinkedDocKind, number> = {
@@ -107,13 +109,35 @@ export default function LinkedDocsCard({
   docs,
   description,
   className,
+  variant = "admin",
 }: Props) {
   const list = sortDocs((docs ?? []).filter((d) => d?.id && d?.href));
+  const isTransaction = variant === "transaction";
 
   return (
-    <Card className={cn(adminSurface.detailCard, "overflow-hidden", className)}>
-      <CardHeader className={adminSurface.detailHeader}>
-        <CardTitle className={cn("flex items-center gap-2", adminTypography.sectionTitle)}>
+    <Card
+      className={cn(
+        isTransaction
+          ? cn("overflow-hidden rounded-2xl border", mypageDetailLayout.transactionCard)
+          : cn(adminSurface.detailCard, "overflow-hidden"),
+        className,
+      )}
+    >
+      <CardHeader
+        className={cn(
+          isTransaction
+            ? cn("p-4 bp-sm:p-5", mypageDetailLayout.transactionCardHeader)
+            : adminSurface.detailHeader,
+        )}
+      >
+        <CardTitle
+          className={cn(
+            "flex items-center gap-2",
+            isTransaction
+              ? "text-ui-card-title font-medium text-foreground"
+              : adminTypography.sectionTitle,
+          )}
+        >
           <Link2 className="h-4 w-4" />
           {title}
         </CardTitle>
@@ -123,13 +147,13 @@ export default function LinkedDocsCard({
         </CardDescription>
       </CardHeader>
 
-      <CardContent className={adminSurface.detailContent}>
+      <CardContent className={isTransaction ? "p-4 bp-sm:p-5" : adminSurface.detailContent}>
         {list.length === 0 ? (
           <div className={cn("rounded-lg border bg-muted/30 p-4", adminTypography.body)}>
             현재 문서는 단독 건으로 보입니다. (주문/대여/신청서 연결 없음)
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className={isTransaction ? undefined : "space-y-2"}>
             {list.map((d) => {
               const kindLabel = opsKindLabel(d.kind);
               const badgeVariant = opsBadgeVariant(opsKindBadgeTone(d.kind));
@@ -139,7 +163,11 @@ export default function LinkedDocsCard({
               return (
                 <div
                   key={`${d.kind}:${d.id}`}
-                  className="flex flex-row items-center justify-between gap-2"
+                  className={cn(
+                    isTransaction
+                      ? "flex flex-col gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
+                      : "flex flex-row items-center justify-between gap-2",
+                  )}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -152,20 +180,35 @@ export default function LinkedDocsCard({
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div
+                    className={cn(
+                      isTransaction
+                        ? "grid grid-cols-1 gap-2 bp-sm:flex bp-sm:shrink-0"
+                        : "flex shrink-0 items-center gap-2",
+                    )}
+                  >
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(String(d.id))}
-                      className="gap-1"
+                      className={cn("gap-1", isTransaction && "min-h-11 w-full bp-sm:w-auto")}
                       aria-label="ID 복사"
                     >
                       <Copy className="h-4 w-4" />
                       복사
                     </Button>
-                    <Link href={d.href} aria-label="상세 보기">
-                      <Button type="button" variant="outline" size="sm">
+                    <Link
+                      href={d.href}
+                      aria-label="상세 보기"
+                      className={isTransaction ? "w-full bp-sm:w-auto" : undefined}
+                    >
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={isTransaction ? "min-h-11 w-full bp-sm:w-auto" : undefined}
+                      >
                         <ExternalLink className="h-4 w-4" />
                         {ctaLabel}
                       </Button>
