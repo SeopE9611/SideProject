@@ -3,10 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function RacketCareValueSection() {
   const values = [
-    ["01", "교체 타이밍 관리", "플레이 빈도 기반 예상일 안내"],
-    ["02", "이전 이력 활용", "프로필과 완료된 교체 기록 재사용"],
-    ["03", "선택 부담 감소", "라켓과 플레이 빈도에 맞는 스트링 추천"],
-    ["04", "신청 흐름 단축", "상품 상세에서 교체서비스로 바로 이동"],
+    ["교체 타이밍 관리", "플레이 빈도 기반 예상일 안내"],
+    ["이전 이력 활용", "프로필과 완료된 교체 기록 재사용"],
+    ["선택 부담 감소", "라켓과 플레이 빈도에 맞는 스트링 추천"],
+    ["신청 흐름 단축", "상품 상세에서 교체서비스로 바로 이동"],
   ] as const;
   return (
     <section className="rounded-hero bg-surface-inverse p-5 text-surface-inverse-foreground bp-sm:p-8 bp-lg:p-12">
@@ -24,15 +24,14 @@ export default function RacketCareValueSection() {
           </p>
         </div>
         <div className="grid overflow-hidden border border-surface-inverse-foreground/15 bp-sm:grid-cols-2">
-          {values.map(([no, title, copy]) => (
+          {values.map(([title, copy]) => (
             <Card
-              key={no}
+              key={title}
               variant="inverse"
               className="rounded-none border-0 border-b border-surface-inverse-foreground/15 last:border-b-0 bp-sm:border-r bp-sm:even:border-r-0 bp-sm:[&:nth-last-child(-n+2)]:border-b-0"
             >
               <CardContent className="flex min-h-40 flex-col p-5 bp-sm:p-6">
-                <p className="text-ui-label text-brand-highlight">{no}</p>
-                <h3 className="mt-6 font-semibold">{title}</h3>
+                <h3 className="font-semibold">{title}</h3>
                 <p className="mt-2 break-keep text-ui-body-sm text-surface-inverse-muted">{copy}</p>
               </CardContent>
             </Card>

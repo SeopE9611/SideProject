@@ -146,7 +146,7 @@ export function AccordionContent({ value, motion = "default", className, childre
       className={cn(
         motion === "navigation"
           ? "grid overflow-hidden transition-[grid-template-rows] duration-[240ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-          : "grid overflow-hidden transition-all duration-200 ease-out",
+          : "grid overflow-hidden transition-[grid-template-rows,opacity] duration-200 ease-out",
         motion === "navigation"
           ? open
             ? "grid-rows-[1fr]"

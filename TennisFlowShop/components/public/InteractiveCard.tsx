@@ -18,7 +18,7 @@ type DivCardProps = {
 export type InteractiveCardProps = LinkCardProps | DivCardProps;
 
 const interactiveClassName =
-  "block rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-[transform,box-shadow,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:p-6";
+  "block rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:p-6";
 
 function isLinkCardProps(props: InteractiveCardProps): props is LinkCardProps {
   return props.href !== undefined;
