@@ -736,7 +736,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
         {/* 대여 취소 상태 안내 배너 */}
         {cancelBanner && (
           <div
-            className={`mb-4 flex items-center justify-between border-l-2 px-3 py-3 text-ui-body-sm ${cancelBanner.status === "requested" ? "border-warning bg-warning/10 text-muted-foreground dark:bg-warning/20 dark:text-foreground" : "border-destructive/60 bg-destructive/5 text-foreground dark:bg-destructive/10 dark:text-foreground"}`}
+            className={`mb-4 flex flex-col gap-3 border-l-2 px-3 py-3 text-ui-body-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between ${cancelBanner.status === "requested" ? "border-warning bg-warning/10 text-muted-foreground dark:bg-warning/20 dark:text-foreground" : "border-destructive/60 bg-destructive/5 text-foreground dark:bg-destructive/10 dark:text-foreground"}`}
           >
             <div>
               <p className="font-medium">{cancelBanner.title}</p>
@@ -749,7 +749,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                 size="sm"
                 onClick={handleWithdrawCancelRequest}
                 disabled={withdrawing}
-                className="mt-3 min-h-11 w-full whitespace-normal break-keep sm:ml-4 sm:mt-0 sm:w-auto"
+                className="min-h-11 w-full whitespace-normal break-keep bp-sm:ml-4 bp-sm:w-auto"
               >
                 {withdrawing ? "철회 중…" : "취소 요청 철회"}
               </Button>
