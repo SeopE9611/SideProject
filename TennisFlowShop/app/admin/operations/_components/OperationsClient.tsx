@@ -2129,8 +2129,15 @@ export default function OperationsClient() {
 
                   <AdminListCell align="end" className="px-2">
                     <AdminRowActions>
-                      {g.anchor.canSyncNicePayment ? (
-                        <AdminRowActionMenu ariaLabel={`${docLabel} 부가 작업 메뉴 열기`}>
+                      <AdminRowActionMenu ariaLabel={`${docLabel} 작업 메뉴 열기`}>
+                        <DropdownMenuItem asChild>
+                          <Link href={g.anchor.href}>
+                            <Link2 className="mr-2 h-4 w-4" aria-hidden="true" />
+                            상세 보기
+                          </Link>
+                        </DropdownMenuItem>
+
+                        {g.anchor.canSyncNicePayment ? (
                           <DropdownMenuItem
                             className="whitespace-nowrap"
                             title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
@@ -2139,11 +2146,11 @@ export default function OperationsClient() {
                               void handleNicePaymentSync(g.anchor.id);
                             }}
                           >
-                            <CreditCard className="mr-2 h-4 w-4" />
+                            <CreditCard className="mr-2 h-4 w-4" aria-hidden="true" />
                             {syncingNiceOrderId === g.anchor.id ? "확인 중..." : "PG 상태 확인"}
                           </DropdownMenuItem>
-                        </AdminRowActionMenu>
-                      ) : null}
+                        ) : null}
+                      </AdminRowActionMenu>
                     </AdminRowActions>
                   </AdminListCell>
                 </AdminListRow>
