@@ -1,7 +1,16 @@
 "use client";
 
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
-import { adminDataTable } from "@/components/admin/AdminDataTable";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminMoneyBlock,
+  AdminRowActions,
+} from "@/components/admin/AdminListTable";
+import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
 import { Button } from "@/components/ui/button";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
@@ -134,6 +143,8 @@ const PAYMENT_METHOD_LABELS = {
   bank_transfer: "계좌이체",
   etc: "기타",
 } as const;
+const PACKAGE_SALES_HISTORY_COLUMNS =
+  "grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)_minmax(0,1fr)_96px]";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Utility Functions
@@ -1936,36 +1947,28 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                     표시할 패키지 판매/주문 내역이 없습니다.
                   </p>
                 ) : (
-                  <div className="overflow-x-auto rounded-lg border border-border/40">
-                    <table className="min-w-[980px] text-left">
-                      <thead className={adminSurface.tableHeader}>
-                        <tr>
-                          <th className={adminDataTable.head}>패키지</th>
-                          <th className={adminDataTable.headRight}>
-                            횟수
-                          </th>
-                          <th className={adminDataTable.headRight}>
-                            금액
-                          </th>
-                          <th className={adminDataTable.headCenter}>
-                            결제수단
-                          </th>
-                          <th className={adminDataTable.headCenter}>
-                            결제상태
-                          </th>
-                          <th className={adminDataTable.headRight}>
-                            결제일
-                          </th>
-                          <th className={adminDataTable.headCenter}>
-                            출처
-                          </th>
-                          <th className={adminDataTable.actionHead}>
-                            환불 처리
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {packageSales.map((sale) => {
+                  <div
+                    role="table"
+                    aria-label="패키지 판매 및 주문 내역"
+                    data-columns-class={PACKAGE_SALES_HISTORY_COLUMNS}
+                    className="overflow-hidden rounded-lg border border-border bg-background"
+                  >
+                    <AdminListColumnHeader columnsClassName={PACKAGE_SALES_HISTORY_COLUMNS}>
+                      <div role="columnheader" className="min-w-0 px-4 py-2.5">
+                        패키지 / 횟수
+                      </div>
+                      <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
+                        금액 / 결제
+                      </div>
+                      <div role="columnheader" className="min-w-0 px-4 py-2.5 text-right">
+                        일자 / 출처
+                      </div>
+                      <div role="columnheader" className="min-w-0 px-3 py-2.5 text-right">
+                        작업
+                      </div>
+                    </AdminListColumnHeader>
+                    <AdminListBody>
+                      {packageSales.map((sale) => {
                           const isOfflineSale =
                             sale.source === "offline_admin" ||
                             sale.source === "offline" ||
@@ -1974,117 +1977,209 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             reason: "",
                           };
                           const isRefunding = refundingPackageOrderId === sale.id;
+                          const packageName = sale.packageName || "교체 서비스 패키지";
+                          const paymentMethodLabel =
+                            PAYMENT_METHOD_LABELS[
+                              sale.paymentMethod as OfflinePaymentMethod
+                            ] ??
+                            sale.paymentMethod ??
+                            "-";
+                          const sourceLabel =
+                            sale.sourceLabel ||
+                            (isOfflineSale ? "오프라인 판매" : "온라인/기존 주문");
+                          const canStartRefund =
+                            isOfflineSale && !sale.isRefunded && Boolean(sale.canRefund);
                           return (
-                            <tr
+                            <AdminListRow
                               key={sale.id}
-                              className={adminDataTable.row}
+                              columnsClassName={PACKAGE_SALES_HISTORY_COLUMNS}
+                              ariaLabel={`${packageName} · ${sourceLabel}`}
                             >
-                              <td className={adminDataTable.cellTopLeft}>
-                                <span
-                                  className={`line-clamp-2 max-w-[220px] break-keep ${adminDataTable.primaryText}`}
-                                  title={sale.packageName || "교체 서비스 패키지"}
-                                >
-                                  {sale.packageName || "교체 서비스 패키지"}
-                                </span>
-                              </td>
-                              <td className={adminDataTable.numericCell}>
-                                {Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회
-                              </td>
-                              <td className={adminDataTable.moneyCell}>
-                                <div>{formatCurrency(sale.price)}</div>
-                                {sale.isRefunded && (
-                                  <div
-                                    className={`mt-1 ${adminTypography.caption} text-destructive`}
-                                  >
-                                    환불 {formatCurrency(sale.refundAmount ?? sale.price)}
-                                  </div>
-                                )}
-                              </td>
-                              <td className={adminDataTable.cellCenter}>
-                                {PAYMENT_METHOD_LABELS[
-                                  sale.paymentMethod as OfflinePaymentMethod
-                                ] ??
-                                  sale.paymentMethod ??
-                                  "-"}
-                              </td>
-                              <td className={adminDataTable.cellCenter}>
-                                <div>{sale.paymentStatus || "-"}</div>
-                                {sale.isRefunded && (
-                                  <Badge
-                                    variant="destructive"
-                                    className="mt-1 shrink-0 whitespace-nowrap"
-                                  >
-                                    환불 완료
-                                  </Badge>
-                                )}
-                              </td>
-                              <td className={adminDataTable.dateCell}>
-                                <div>{formatDate(sale.paidAt || sale.createdAt)}</div>
-                                {sale.refundedAt && (
-                                  <div className={`mt-1 ${adminTypography.caption}`}>
-                                    환불일 {formatDate(sale.refundedAt)}
-                                  </div>
-                                )}
-                              </td>
-                              <td className={adminDataTable.cellCenter}>
-                                <Badge
-                                  variant={isOfflineSale ? "secondary" : "outline"}
-                                  className="shrink-0 whitespace-nowrap"
-                                >
-                                  {sale.sourceLabel ||
-                                    (isOfflineSale ? "오프라인 판매" : "온라인/기존 주문")}
-                                </Badge>
-                              </td>
-                              <td className={adminDataTable.actionCell}>
-                                {!isOfflineSale ? (
-                                  <span className={adminTypography.caption}>-</span>
-                                ) : sale.isRefunded ? (
-                                  <div className={`space-y-1 ${adminTypography.caption}`}>
-                                    <div className="font-medium text-destructive">환불 완료</div>
-                                    {sale.refundReason && <div>사유: {sale.refundReason}</div>}
-                                  </div>
-                                ) : (
-                                  <div className="ml-auto min-w-[240px] space-y-2 text-left">
-                                    <Input
-                                      value={refundForm.reason}
-                                      onChange={(event) =>
-                                        updatePackageRefundForm(sale.id, {
-                                          reason: event.target.value,
-                                        })
-                                      }
-                                      placeholder="환불 사유 입력"
-                                      disabled={!sale.canRefund || isRefunding}
-                                    />
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      disabled={!sale.canRefund || isRefunding}
-                                      onClick={() => handlePackageRefund(sale)}
+                              <AdminListCell>
+                                <AdminListPrimary
+                                  title={packageName}
+                                  meta={
+                                    <span className="tabular-nums">
+                                      {Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회
+                                    </span>
+                                  }
+                                />
+                              </AdminListCell>
+                              <AdminListCell align="end">
+                                <div className="min-w-0 space-y-2">
+                                  <AdminMoneyBlock
+                                    amount={formatCurrency(sale.price)}
+                                    meta={paymentMethodLabel}
+                                    detailAction={
+                                      sale.isRefunded ? (
+                                        <span className="text-destructive">
+                                          환불 {formatCurrency(sale.refundAmount ?? sale.price)}
+                                        </span>
+                                      ) : undefined
+                                    }
+                                  />
+                                  <div className="flex min-w-0 flex-wrap justify-end gap-1.5">
+                                    <Badge
+                                      variant={sale.isRefunded ? "destructive" : "secondary"}
+                                      className="shrink-0 whitespace-nowrap"
                                     >
-                                      {isRefunding ? "환불 처리 중..." : "수동 환불 처리"}
-                                    </Button>
-                                    <p className={adminTypography.caption}>
-                                      이 처리는 사이트 내부 기록용입니다. 실제 현금/카드/계좌이체
-                                      환불은 매장에서 별도로 완료해야 합니다.
-                                    </p>
-                                    {sale.refundBlockedReason && (
-                                      <p className={`${adminTypography.caption} text-destructive`}>
-                                        {sale.refundBlockedReason}
-                                      </p>
-                                    )}
-                                    {refundForm.message && (
-                                      <Message type={refundForm.messageType || "info"}>
-                                        {refundForm.message}
-                                      </Message>
-                                    )}
+                                      {sale.isRefunded
+                                        ? "환불 완료"
+                                        : sale.paymentStatus || "-"}
+                                    </Badge>
                                   </div>
-                                )}
-                              </td>
-                            </tr>
+                                </div>
+                              </AdminListCell>
+                              <AdminListCell align="end">
+                                <div className="min-w-0 space-y-2 text-right">
+                                  <div className="space-y-1">
+                                    <p className="whitespace-nowrap text-ui-label tabular-nums text-foreground">
+                                      결제일 {formatDate(sale.paidAt || sale.createdAt)}
+                                    </p>
+                                    {sale.refundedAt ? (
+                                      <p className="whitespace-nowrap text-ui-label tabular-nums text-muted-foreground">
+                                        환불일 {formatDate(sale.refundedAt)}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                  <div className="flex justify-end">
+                                    <Badge
+                                      variant={isOfflineSale ? "secondary" : "outline"}
+                                      className="max-w-full shrink-0 whitespace-nowrap"
+                                    >
+                                      {sourceLabel}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </AdminListCell>
+                              <AdminListCell align="end" className="px-3">
+                                <AdminRowActions>
+                                  <AdminRowDetailsSheet
+                                    trigger={
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={canStartRefund ? "destructive" : "outline"}
+                                        disabled={isRefunding}
+                                        className="whitespace-nowrap"
+                                      >
+                                        {isRefunding
+                                          ? "처리 중..."
+                                          : canStartRefund
+                                            ? "환불 처리"
+                                            : "상세"}
+                                      </Button>
+                                    }
+                                    title={`${packageName} 주문 상세`}
+                                    description="결제·출처·환불 상태를 확인하고 오프라인 판매 건의 수동 환불 기록을 처리합니다."
+                                  >
+                                    <div className="space-y-5">
+                                      <div className={adminSurface.fieldPanelMuted}>
+                                        <dl className="grid grid-cols-2 gap-x-4 gap-y-4">
+                                          {[
+                                            ["패키지", packageName],
+                                            [
+                                              "이용 횟수",
+                                              `${Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회`,
+                                            ],
+                                            ["판매 금액", formatCurrency(sale.price)],
+                                            ["결제수단", paymentMethodLabel],
+                                            ["결제상태", sale.paymentStatus || "-"],
+                                            [
+                                              "결제일",
+                                              formatDate(sale.paidAt || sale.createdAt),
+                                            ],
+                                            ["출처", sourceLabel],
+                                            ["환불 상태", sale.isRefunded ? "환불 완료" : "미환불"],
+                                          ].map(([label, value]) => (
+                                            <div key={label} className="min-w-0 space-y-1">
+                                              <dt className={adminTypography.caption}>{label}</dt>
+                                              <dd className={adminTypography.bodyStrong}>{value}</dd>
+                                            </div>
+                                          ))}
+                                        </dl>
+                                      </div>
+                                      {!isOfflineSale ? (
+                                        <div className="rounded-lg border border-border bg-muted/20 p-4">
+                                          <p className={adminTypography.metaMuted}>
+                                            온라인·기존 주문은 이 오프라인 고객 상세 화면에서 환불
+                                            처리할 수 없습니다.
+                                          </p>
+                                        </div>
+                                      ) : sale.isRefunded ? (
+                                        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+                                          <div className="space-y-2">
+                                            <p className="font-medium text-destructive">환불 완료</p>
+                                            <p className={adminTypography.body}>
+                                              환불 금액:{" "}
+                                              {formatCurrency(sale.refundAmount ?? sale.price)}
+                                            </p>
+                                            <p className={adminTypography.body}>
+                                              환불일: {formatDate(sale.refundedAt)}
+                                            </p>
+                                            <p className={adminTypography.body}>
+                                              사유: {sale.refundReason || "-"}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-3">
+                                          <div className="space-y-2">
+                                            <label
+                                              htmlFor={`offline-package-refund-${sale.id}`}
+                                              className={adminTypography.bodyStrong}
+                                            >
+                                              환불 사유
+                                            </label>
+                                            <Input
+                                              id={`offline-package-refund-${sale.id}`}
+                                              value={refundForm.reason}
+                                              onChange={(event) =>
+                                                updatePackageRefundForm(sale.id, {
+                                                  reason: event.target.value,
+                                                })
+                                              }
+                                              placeholder="환불 사유 입력"
+                                              disabled={!sale.canRefund || isRefunding}
+                                            />
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="destructive"
+                                            disabled={!sale.canRefund || isRefunding}
+                                            onClick={() => handlePackageRefund(sale)}
+                                          >
+                                            {isRefunding
+                                              ? "환불 처리 중..."
+                                              : "수동 환불 처리"}
+                                          </Button>
+                                          <p className={adminTypography.caption}>
+                                            이 처리는 사이트 내부 기록용입니다. 실제
+                                            현금/카드/계좌이체 환불은 매장에서 별도로 완료해야 합니다.
+                                          </p>
+                                          {sale.refundBlockedReason ? (
+                                            <p
+                                              className={`${adminTypography.caption} text-destructive`}
+                                            >
+                                              {sale.refundBlockedReason}
+                                            </p>
+                                          ) : null}
+                                          {refundForm.message ? (
+                                            <Message type={refundForm.messageType || "info"}>
+                                              {refundForm.message}
+                                            </Message>
+                                          ) : null}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </AdminRowDetailsSheet>
+                                </AdminRowActions>
+                              </AdminListCell>
+                            </AdminListRow>
                           );
-                        })}
-                      </tbody>
-                    </table>
+                      })}
+                    </AdminListBody>
                   </div>
                 )}
               </CollapsibleSection>
