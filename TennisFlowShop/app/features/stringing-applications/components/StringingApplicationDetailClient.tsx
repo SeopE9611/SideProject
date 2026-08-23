@@ -1628,6 +1628,7 @@ export default function StringingApplicationDetailClient({
                         <Badge
                           variant={paymentStatusBadgeSpec.variant}
                           className={cn(badgeBase, badgeSizeSm)}
+                          aria-label={`결제 상태: ${paymentStatusLabel}`}
                         >
                           {paymentStatusLabel}
                         </Badge>
