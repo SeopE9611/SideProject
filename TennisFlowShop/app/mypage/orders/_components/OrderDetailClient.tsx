@@ -800,9 +800,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               }),
             }
           : null;
-  const heroStatusTitle = serviceLinkedOrder
-    ? `${customerPaymentStatusLabel} · 교체서비스 ${stringingSubmissionLabel}`
-    : customerPaymentStatusLabel;
+  const heroStatusTitle = displayOrderStatusLabel;
   const nextActionCopy = getCustomerNextActionCopy({
     hasTodo: Boolean(nextTodo),
     todoLabel: nextTodo?.label,
@@ -922,6 +920,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     <main className="w-full">
       <MypageDetailHero
         variant="transaction"
+        headingLevel="h1"
         title={serviceLinkedOrder ? "상품 구매 + 교체서비스 상세" : "주문 상세"}
         description={
           serviceLinkedOrder
@@ -1004,7 +1003,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             {canWithdrawCancelRequest && (
               <Button
                 size="sm"
-                variant="destructive"
+                variant="outline"
                 onClick={handleWithdrawCancelRequest}
                 disabled={isWithdrawingCancelRequest}
                 className="min-h-11 w-full gap-1.5 whitespace-normal break-keep bp-sm:ml-4 bp-sm:w-auto"

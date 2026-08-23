@@ -18,6 +18,7 @@ type MypageDetailHeroProps = {
   summary?: ReactNode;
   className?: string;
   variant?: "default" | "feature" | "transaction";
+  headingLevel?: "h1" | "h2";
 };
 
 export default function MypageDetailHero({
@@ -35,12 +36,14 @@ export default function MypageDetailHero({
   summary,
   className,
   variant = "default",
+  headingLevel = "h2",
 }: MypageDetailHeroProps) {
   const hasNextAction =
     Boolean(nextActionTitle) || Boolean(nextActionDescription) || Boolean(nextActionSlot);
 
   const isFeature = variant === "feature";
   const isTransaction = variant === "transaction";
+  const Heading = headingLevel;
 
   return (
     <section
@@ -62,14 +65,14 @@ export default function MypageDetailHero({
           >
             {eyebrow}
           </div>
-          <h2
+          <Heading
             className={cn(
               "break-keep text-ui-card-title-lg text-foreground bp-sm:text-ui-section-title",
               isFeature ? "font-ui-bold tracking-normal" : "font-ui-medium",
             )}
           >
             {title}
-          </h2>
+          </Heading>
           <p className="break-keep text-ui-body-sm text-muted-foreground">{description}</p>
         </div>
 

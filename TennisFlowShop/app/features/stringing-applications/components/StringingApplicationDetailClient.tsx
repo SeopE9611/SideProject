@@ -1509,6 +1509,7 @@ export default function StringingApplicationDetailClient({
       {!isAdmin && (
         <MypageDetailHero
           variant="transaction"
+          headingLevel="h1"
           eyebrow={applicationContext.label}
           title="교체서비스 신청 상세"
           description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 확인하세요."

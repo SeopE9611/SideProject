@@ -55,7 +55,7 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
       className={cn("rounded-control border border-border bg-card p-1", className)}
       aria-label="거래/이용내역 하위 탭"
     >
-      <div className="grid grid-cols-5 gap-1">
+      <div className="flex max-w-full gap-1 overflow-x-auto bp-sm:grid bp-sm:grid-cols-5 bp-sm:overflow-visible">
         {SCOPE_ITEMS.map((item) => {
           const isActive = item.value === activeScope;
           return (
@@ -66,7 +66,7 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
               aria-label={item.label}
               title={item.label}
               className={cn(
-                "group relative flex min-h-11 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-control border px-1.5 py-2.5 text-ui-label font-medium transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:px-4 bp-sm:text-ui-body-sm",
+                "group relative flex min-h-11 min-w-max shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-control border px-4 py-2.5 text-ui-label font-medium transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:min-w-0 bp-sm:px-4 bp-sm:text-ui-body-sm",
                 isActive
                   ? "border-brand-highlight-ink/40 bg-brand-highlight-muted text-foreground"
                   : "border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground",
