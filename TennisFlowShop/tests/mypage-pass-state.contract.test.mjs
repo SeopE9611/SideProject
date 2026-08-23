@@ -78,7 +78,7 @@ test("실제 패키지권 API는 결제 종료 상태를 내역으로 분류하�
   assert.ok(!route.includes("packageSize: order.packageInfo?.sessions"));
 });
 
-test("패키지권 목록은 모든 그룹과 독립 상태 배지를 표시한다", () => {
+test("패키지권 목록은 모든 그룹과 대표 상태 및 상세 동작을 표시한다", () => {
   const client = read("app/mypage/tabs/PassList.tsx");
   assert.ok(client.includes('title: "사용 가능한 패키지권"'));
   assert.ok(client.includes('title: "처리 중·일시정지"'));
@@ -86,20 +86,35 @@ test("패키지권 목록은 모든 그룹과 독립 상태 배지를 표시한�
   assert.ok(client.includes("sections.map"));
   assert.ok(!client.includes("groups.find("));
   assert.ok(client.includes("getPassUsageBadgeSpec"));
-  assert.ok(client.includes("getPassActivationBadgeSpec"));
-  assert.ok(client.includes("getPaymentStatusBadgeSpec(passItem.paymentStatusLabel)"));
   assert.ok(client.includes("이용권 상태: ${passItem.usageStatusLabel}"));
-  assert.ok(client.includes("결제 상태: ${passItem.paymentStatusLabel}"));
-  assert.ok(client.includes("활성화 상태: ${passItem.activationStatusLabel}"));
   assert.ok(client.includes('aria-label="만료 임박"'));
-  assert.ok(client.includes("recentUsages.slice(-3)"));
-  assert.ok(client.includes(" · 복원"));
-  assert.ok(client.includes("/mypage?tab=passes") || client.includes("PassList"));
-  assert.ok(client.includes("/services/packages/success?packageOrderId="));
+  assert.match(client, /href=\{`\/mypage\/packages\/\$\{encodeURIComponent\(passItem\.orderId\)\}`\}/);
+  assert.ok(!client.includes("/services/packages/success?packageOrderId="));
+  assert.ok(client.includes(">상세 보기</Link>"));
   assert.ok(client.includes("/services#service-start"));
+  assert.ok(client.includes('role="progressbar"'));
   assert.ok(client.includes("PassListSkeleton"));
   assert.ok(client.includes("AsyncState"));
   assert.ok(client.includes("authenticatedSWRFetcher"));
+});
+
+test("사용자 패키지권 상세 API는 주문 ID와 사용자 ID를 함께 조회한다", () => {
+  const route = read("app/api/mypage/package-orders/[id]/route.ts");
+  assert.match(route, /ObjectId\.isValid\(id\)/);
+  assert.match(route, /\{ _id: orderId, userId: userObjectId \}/);
+  assert.match(route, /if \(!order\) return NextResponse\.json\(\{ error: "Not Found" \}, \{ status: 404 \}\)/);
+  assert.match(route, /collection\("service_passes"\)/);
+  assert.match(route, /collection\("service_pass_consumptions"\)/);
+  assert.doesNotMatch(route, /api\/admin\/package-orders|NextResponse\.redirect/);
+  assert.doesNotMatch(route, /paymentKey|rawSummary|userSnapshot|serviceInfo/);
+});
+
+test("패키지권 대표 상세주소는 인증 후 마이페이지 상세 상태로 연결한다", () => {
+  const page = read("app/mypage/packages/[id]/page.tsx");
+  assert.match(page, /getCurrentUser\(\)/);
+  assert.match(page, /`\/mypage\?tab=passes&packageOrderId=\$\{encodeURIComponent\(id\)\}`/);
+  assert.match(page, /redirect\(`\/login\?next=\$\{encodeURIComponent\(target\)\}`\)/);
+  assert.match(page, /redirect\(target\)/);
 });
 
 test("패키지권 목록은 결제 종료 패스 CTA와 횟수 fallback을 안전하게 처리한다", () => {
