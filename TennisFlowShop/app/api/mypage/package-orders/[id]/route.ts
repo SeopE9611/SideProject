@@ -149,7 +149,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const usedCount = number(pass?.usedCount);
     const remainingCount = number(pass?.remainingCount);
     const expired = pass?.expiresAt ? new Date(pass.expiresAt).getTime() <= Date.now() : false;
-    const usageStatus = !pass
+    const rawUsageStatus = !pass
       ? "not_issued"
       : passStatus === "cancelled"
         ? "cancelled"
@@ -162,44 +162,65 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
               : passStatus === "active"
                 ? "available"
                 : "unknown";
-    const usageStatusLabel = {
-      available: "사용 가능",
-      paused: "일시정지",
-      exhausted: "횟수 소진",
-      expired: "기간 만료",
-      cancelled: "취소",
-      not_issued: "아직 발급되지 않음",
-      unknown: "상태 확인 중",
-    }[usageStatus];
-    const activationStatus = !pass
-      ? paymentLifecycle === "pending"
-        ? "awaiting_payment"
-        : paymentLifecycle === "paid"
-          ? "pending_issue"
-          : paymentLifecycle === "cancelled" || paymentLifecycle === "refunded"
-            ? "cancelled"
-            : paymentLifecycle === "failed"
-              ? "failed"
-              : "unknown"
-      : usageStatus === "available"
-        ? "active"
-        : usageStatus === "paused"
-          ? "paused"
-          : usageStatus === "exhausted" || usageStatus === "expired"
-            ? "ended"
-            : usageStatus === "cancelled"
-              ? "cancelled"
-              : "unknown";
-    const activationStatusLabel = {
-      active: "활성화 완료",
-      awaiting_payment: "결제 확인 후 활성화",
-      pending_issue: "발급 처리 중",
-      paused: "활성화 일시정지",
-      ended: "이용 종료",
-      cancelled: "활성화 취소",
-      failed: "발급 처리 실패",
-      unknown: "활성화 상태 확인 중",
-    }[activationStatus];
+    const usageStatus =
+      paymentLifecycle === "refunded" || paymentLifecycle === "cancelled"
+        ? "cancelled"
+        : paymentLifecycle === "failed"
+          ? "unknown"
+          : rawUsageStatus;
+    const usageStatusLabel =
+      paymentLifecycle === "refunded"
+        ? "환불 완료"
+        : paymentLifecycle === "cancelled"
+          ? "결제 취소"
+          : paymentLifecycle === "failed"
+            ? "결제 실패"
+            : ({
+                available: "사용 가능",
+                paused: "일시정지",
+                exhausted: "횟수 소진",
+                expired: "기간 만료",
+                cancelled: "취소",
+                not_issued: "아직 발급되지 않음",
+                unknown: "상태 확인 중",
+              }[usageStatus]);
+    const activationStatus =
+      paymentLifecycle === "refunded" || paymentLifecycle === "cancelled"
+        ? "cancelled"
+        : paymentLifecycle === "failed"
+          ? "failed"
+          : !pass
+            ? paymentLifecycle === "pending"
+              ? "awaiting_payment"
+              : paymentLifecycle === "paid"
+                ? "pending_issue"
+                : "unknown"
+            : usageStatus === "available"
+              ? "active"
+              : usageStatus === "paused"
+                ? "paused"
+                : usageStatus === "exhausted" || usageStatus === "expired"
+                  ? "ended"
+                  : usageStatus === "cancelled"
+                    ? "cancelled"
+                    : "unknown";
+    const activationStatusLabel =
+      paymentLifecycle === "refunded"
+        ? "환불로 이용 종료"
+        : paymentLifecycle === "cancelled"
+          ? "취소로 활성화 종료"
+          : paymentLifecycle === "failed"
+            ? "결제 실패로 미활성화"
+            : ({
+                active: "활성화 완료",
+                awaiting_payment: "결제 확인 후 활성화",
+                pending_issue: "발급 처리 중",
+                paused: "활성화 일시정지",
+                ended: "이용 종료",
+                cancelled: "활성화 취소",
+                failed: "발급 처리 실패",
+                unknown: "활성화 상태 확인 중",
+              }[activationStatus]);
     const canStartStringingService = paymentLifecycle === "paid" && usageStatus === "available";
 
     return NextResponse.json({
