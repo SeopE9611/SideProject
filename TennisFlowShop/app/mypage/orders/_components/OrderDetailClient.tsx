@@ -926,7 +926,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             ? "주문 상품, 결제 상태, 교체서비스 진행 정보를 확인하세요."
             : "주문 상품, 결제 상태, 배송 정보를 확인하세요."
         }
-        icon={<ShoppingCart className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
+        icon={<ShoppingCart className="h-6 w-6 text-foreground" aria-hidden="true" />}
         statusTitle={
           <OrderStatusBadge
             orderId={orderId}
@@ -949,7 +949,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         nextActionSlot={
           nextTodo ? (
             <Button
-              variant="highlight_soft"
+              variant="secondary"
               asChild={Boolean(nextTodo.ctaHref)}
               onClick={nextTodo.onCtaClick}
               disabled={isConfirmingPurchase}
@@ -969,7 +969,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               variant="outline"
               size="sm"
               onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-              className="min-h-11 w-full whitespace-normal break-keep border-border bg-background hover:border-brand-highlight-ink/30 bp-sm:w-auto"
+              className="min-h-11 w-full whitespace-normal break-keep border-border bg-background bp-sm:w-auto"
             >
               <span className="bp-sm:hidden">목록</span>
               <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>

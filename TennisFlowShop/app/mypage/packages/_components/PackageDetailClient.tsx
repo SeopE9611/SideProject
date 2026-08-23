@@ -81,11 +81,11 @@ export default function PackageDetailClient({ orderId }: { orderId: string }) {
   return (
     <div className="space-y-4 bp-sm:space-y-5">
       <MypageDetailHero
-        variant="feature"
+        variant="transaction"
         eyebrow="패키지권 상세"
         title={item.packageTitle}
         description="결제와 이용 상태, 사용 내역을 한곳에서 확인하세요."
-        icon={<Ticket className="h-5 w-5" aria-hidden="true" />}
+        icon={<Ticket className="h-5 w-5 text-foreground" aria-hidden="true" />}
         status={
           <Badge variant={badgeSpec.variant} className={badgeSpec.className}>
             {item.usageStatusLabel}
@@ -104,7 +104,7 @@ export default function PackageDetailClient({ orderId }: { orderId: string }) {
         nextActionDescription={available ? "신청 시 보유 횟수에서 차감됩니다." : undefined}
         nextActionSlot={
           available ? (
-            <Button asChild>
+            <Button asChild variant="secondary">
               <Link href="/services#service-start">교체서비스 시작</Link>
             </Button>
           ) : undefined
