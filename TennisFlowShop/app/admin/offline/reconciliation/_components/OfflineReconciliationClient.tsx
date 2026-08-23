@@ -5,11 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import AdminPageSection from "@/components/admin/AdminPageSection";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminRowActions,
+} from "@/components/admin/AdminListTable";
 import AdminRowDetailsSheet from "@/components/admin/AdminRowDetailsSheet";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import AsyncState from "@/components/system/AsyncState";
-import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -20,7 +28,6 @@ import type {
   OfflineReconciliationStatus,
 } from "@/types/admin/offline";
 import {
-  AlertTriangle,
   CheckCircle2,
   ExternalLink,
   RefreshCcw,
@@ -45,6 +52,8 @@ const STATUS_LABELS = {
   all: "전체",
 } as const;
 const SEVERITY_LABELS = { warning: "주의", critical: "중요" } as const;
+const OFFLINE_RECONCILIATION_COLUMNS =
+  "grid-cols-[90px_150px_150px_minmax(180px,0.85fr)_minmax(280px,1.35fr)_180px_120px]";
 
 type TypeFilter = keyof typeof TYPE_LABELS;
 type StatusFilter = keyof typeof STATUS_LABELS;
@@ -303,6 +312,12 @@ export default function OfflineReconciliationClient() {
     setMessage(null);
   }
 
+  function applyFilters() {
+    setSubmitted(filters);
+    setPage(1);
+    setMessage(null);
+  }
+
   async function updateItem(
     item: OfflineReconciliationItem,
     status: OfflineReconciliationStatus,
@@ -375,29 +390,6 @@ export default function OfflineReconciliationClient() {
 
   return (
     <div className="space-y-6">
-      <div
-        className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 ${adminTypography.body}`}
-      >
-        <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
-
-        {submitted.from || submitted.to ? (
-          <p className="text-muted-foreground">
-            기간: {submitted.from || "시작일 없음"} ~ {submitted.to || "종료일 없음"}
-          </p>
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-2 ml-auto w-auto justify-end">
-          {hasCustomFilters && (
-            <Button type="button" size="sm" variant="ghost" onClick={resetFilters}>
-              필터 초기화
-            </Button>
-          )}
-
-          <span className="text-sm font-medium text-foreground">
-            총 {(data?.total ?? 0).toLocaleString("ko-KR")}건
-          </span>
-        </div>
-      </div>
       <div className="grid gap-3 grid-cols-3">
         <SummaryCard
           label="전체 미처리"
@@ -421,13 +413,52 @@ export default function OfflineReconciliationClient() {
           onClick={() => applyQuickFilter({ type: "package_usage", status: "open" })}
         />
       </div>
-      <AdminPageSection
-        title="필터"
-        description="유형, 상태, 기간으로 보정 대상 목록을 조정합니다."
-        icon={Search}
+
+      <AdminFilterBar
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={resetFilters}
+              disabled={
+                !hasCustomFilters &&
+                filters.type === "all" &&
+                filters.status === "open" &&
+                !filters.from &&
+                !filters.to
+              }
+            >
+              <RefreshCcw className="h-4 w-4" />
+              초기화
+            </Button>
+            <Button type="button" size="sm" onClick={applyFilters}>
+              <Search className="h-4 w-4" />
+              검색
+            </Button>
+          </>
+        }
+        activeFilters={
+          <>
+            <span className="font-medium text-foreground/80">
+              현재 보기: {currentViewLabel}
+            </span>
+            <span>유형: {TYPE_LABELS[submitted.type]}</span>
+            <span>상태: {STATUS_LABELS[submitted.status]}</span>
+            {submitted.from || submitted.to ? (
+              <span>
+                기간: {submitted.from || "시작일 없음"} ~ {submitted.to || "종료일 없음"}
+              </span>
+            ) : null}
+            <span className="tabular-nums">
+              총 {(data?.total ?? 0).toLocaleString("ko-KR")}건
+            </span>
+          </>
+        }
       >
-        <div className="grid gap-3 grid-cols-5">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-4 gap-3">
+          <div className="min-w-0 space-y-1.5">
             <Label htmlFor="type">유형</Label>
             <Select
               id="type"
@@ -446,7 +477,7 @@ export default function OfflineReconciliationClient() {
               ))}
             </Select>
           </div>
-          <div className="space-y-1.5">
+          <div className="min-w-0 space-y-1.5">
             <Label htmlFor="status">상태</Label>
             <Select
               id="status"
@@ -465,7 +496,7 @@ export default function OfflineReconciliationClient() {
               ))}
             </Select>
           </div>
-          <div className="space-y-1.5">
+          <div className="min-w-0 space-y-1.5">
             <Label htmlFor="from">시작일</Label>
             <Input
               id="from"
@@ -474,7 +505,7 @@ export default function OfflineReconciliationClient() {
               onChange={(e) => setFilters((prev) => ({ ...prev, from: e.target.value }))}
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="min-w-0 space-y-1.5">
             <Label htmlFor="to">종료일</Label>
             <Input
               id="to"
@@ -483,26 +514,8 @@ export default function OfflineReconciliationClient() {
               onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))}
             />
           </div>
-          <div className="flex w-full items-end gap-2">
-            <Button
-              type="button"
-              className="flex-1"
-              onClick={() => {
-                setSubmitted(filters);
-                setPage(1);
-                setMessage(null);
-              }}
-            >
-              <Search className="h-4 w-4" />
-              검색
-            </Button>
-            <Button type="button" variant="outline" className="flex-1" onClick={resetFilters}>
-              <RefreshCcw className="h-4 w-4" />
-              초기화
-            </Button>
-          </div>
         </div>
-      </AdminPageSection>
+      </AdminFilterBar>
 
       {message && (
         <div className={`${adminSurface.cardMuted} p-3 ${adminTypography.metaMuted}`}>
@@ -510,172 +523,150 @@ export default function OfflineReconciliationClient() {
         </div>
       )}
 
-      <AdminPageSection
+      <AdminListTable
         title="보정 필요 목록"
-        description="확인 상태, 메모, 관련 상세 이동을 한 곳에서 관리합니다."
-        icon={AlertTriangle}
+        viewLabel={currentViewLabel}
+        resultLabel={
+          error
+            ? "불러오기 실패"
+            : isLoading
+              ? "불러오는 중…"
+              : `총 ${(data?.total ?? 0).toLocaleString("ko-KR")}건`
+        }
+        description="확인 상태, 처리 메모와 관련 상세 이동을 한 곳에서 관리합니다."
+        columnsClassName={OFFLINE_RECONCILIATION_COLUMNS}
+        ariaLabel="오프라인 정합성 보정 필요 목록"
       >
-        {isLoading && (
-          <div className={`${adminSurface.tableCard} overflow-x-auto`}>
-            <table className="w-full min-w-[1150px] table-fixed">
-              <tbody className="divide-y">
-                {Array.from({ length: 4 }, (_, rowIndex) => (
-                  <tr key={rowIndex}>
-                    {Array.from({ length: 7 }, (_, cellIndex) => (
-                      <td key={cellIndex} className={adminDataTable.cell}>
-                        <Skeleton className="h-5 w-full" />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        {error && !isLoading && (
-          <AsyncState kind="error" tone="admin" resourceName="보정 필요 항목" onAction={() => void mutate()} />
-        )}
-        {!isLoading && !error && (data?.items.length ?? 0) === 0 && (
-          <AsyncState
-            kind="empty"
-            tone="admin"
-            title="조회 조건에 해당하는 보정 필요 항목이 없습니다"
-            description="검색 조건을 변경하거나 초기화해 다시 확인해 주세요."
-          />
-        )}
-        {!isLoading && !error && (data?.items.length ?? 0) > 0 && (
-          <div className={`${adminSurface.tableCard} overflow-x-auto`}>
-            <table className={`w-full min-w-[1150px] table-fixed ${adminTypography.body}`}>
-              <colgroup>
-                <col className="w-[90px]" />
-                <col className="w-[150px]" />
-                <col className="w-[150px]" />
-                <col className="w-[180px]" />
-                <col className="w-[280px]" />
-                <col className="w-[180px]" />
-                <col className="w-[120px]" />
-              </colgroup>
-              <thead className={adminSurface.tableHeader}>
-                <tr>
-                  <th className={adminDataTable.headCenter}>주의</th>
-                  <th className={adminDataTable.head}>이슈</th>
-                  <th className={adminDataTable.headRight}>발생일</th>
-                  <th className={adminDataTable.head}>고객</th>
-                  <th className={adminDataTable.head}>내용</th>
-                  <th className={adminDataTable.headRight}>금액 / 패키지</th>
-                  <th className={cn(adminDataTable.stickyActionHead, "w-[120px]")}>처리</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {data!.items.map((item) => {
-                  const note = notes[item.id] ?? item.note ?? "";
-                  const description =
-                    item.type === "package_usage"
-                      ? stringValue(item.metadata.lineSummary)
-                      : item.description;
-                  const errorReason = stringValue(
-                    item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음",
-                  );
-                  return (
-                    <tr
-                      key={`${item.type}-${item.id}`}
-                      className={cn(adminDataTable.row, updatingId === item.id && "opacity-60")}
-                    >
-                      <td className={adminDataTable.cellCenter}>
-                        <Badge variant={severityVariant(item.severity)}>
-                          {SEVERITY_LABELS[item.severity]}
-                        </Badge>
-                      </td>
-                      <td className={adminDataTable.cellTopLeft}>
-                        <p className={adminDataTable.categoryText}>{TYPE_LABELS[item.type]}</p>
-                        {submitted.status === "all" ? (
-                          <p className={adminDataTable.secondaryText}>{STATUS_LABELS[item.status]}</p>
-                        ) : null}
-                      </td>
-                      <td className={adminDataTable.dateCell}>
-                        {formatDate(
-                          stringValue(
-                            item.metadata.failedAt ?? item.metadata.occurredAt ?? item.updatedAt,
-                            "",
-                          ),
-                        )}
-                      </td>
-                      <td className={adminDataTable.cellTopLeft}>
-                        <p className="font-medium">{item.customer.name}</p>
-                        <p className={adminDataTable.secondaryText}>
-                          {item.customer.phoneMasked ?? "연락처 없음"}
-                        </p>
-                      </td>
-                      <td className={adminDataTable.cellTopLeft}>
-                        <p className="font-medium">{item.title}</p>
-                        <p
-                          className={cn(adminDataTable.secondaryText, "mt-1 line-clamp-2 break-words")}
-                          title={description}
-                        >
-                          {description}
-                        </p>
-                      </td>
-                      <td className={adminDataTable.cellRight}>
-                        <p>
-                          {item.type === "package_issue"
-                            ? stringValue(item.metadata.packageName)
-                            : `passId: ${stringValue(item.metadata.passId)}`}
-                        </p>
-                        <p className={adminDataTable.secondaryText}>
-                          {item.type === "package_issue"
-                            ? formatCurrency(item.metadata.amount)
-                            : `${stringValue(item.metadata.usedCount, "1")}회 사용 표시`}
-                        </p>
-                      </td>
-                      <td className={cn(adminDataTable.stickyActionCell, "w-[120px]")}>
-                        <ItemActions
-                          item={item}
-                          note={note}
-                          description={description}
-                          errorReason={errorReason}
-                          setNote={(value) =>
-                            setNotes((prev) => ({
-                              ...prev,
-                              [item.id]: value,
-                            }))
-                          }
-                          onUpdate={updateItem}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-        <div className={`mt-4 flex flex-row items-center gap-3 justify-between ${adminTypography.metaMuted}`}>
-          <span>
-            총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 · {data?.page ?? page}/
-            {Math.max(data?.totalPages ?? 0, 1)}페이지
-          </span>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            >
-              이전
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page >= (data?.totalPages ?? 0)}
-              onClick={() => setPage((prev) => prev + 1)}
-            >
-              다음
-            </Button>
+        <AdminListColumnHeader columnsClassName={OFFLINE_RECONCILIATION_COLUMNS}>
+          <div role="columnheader" className="flex min-w-0 items-center justify-center px-4 py-2.5 text-center">주의</div>
+          <div role="columnheader" className="flex min-w-0 items-center px-4 py-2.5">이슈</div>
+          <div role="columnheader" className="flex min-w-0 items-center justify-end px-4 py-2.5 text-right">발생일</div>
+          <div role="columnheader" className="flex min-w-0 items-center px-4 py-2.5">고객</div>
+          <div role="columnheader" className="flex min-w-0 items-center px-4 py-2.5">내용</div>
+          <div role="columnheader" className="flex min-w-0 items-center justify-end px-4 py-2.5 text-right">금액 / 패키지</div>
+          <div role="columnheader" className="flex min-w-0 items-center justify-end px-4 py-2.5 text-right">처리</div>
+        </AdminListColumnHeader>
+
+        <AdminListBody>
+          {isLoading ? (
+            Array.from({ length: 4 }, (_, rowIndex) => (
+              <AdminListRow key={rowIndex} columnsClassName={OFFLINE_RECONCILIATION_COLUMNS}>
+                <AdminListCell align="center"><Skeleton className="h-6 w-14 rounded-full" /></AdminListCell>
+                <AdminListCell><div className="space-y-2"><Skeleton className="h-4 w-28" /><Skeleton className="h-3 w-16" /></div></AdminListCell>
+                <AdminListCell align="end"><Skeleton className="h-4 w-28" /></AdminListCell>
+                <AdminListCell><div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-3 w-28" /></div></AdminListCell>
+                <AdminListCell><div className="space-y-2"><Skeleton className="h-4 w-44" /><Skeleton className="h-3 w-52" /></div></AdminListCell>
+                <AdminListCell align="end"><div className="space-y-2"><Skeleton className="h-4 w-28" /><Skeleton className="h-3 w-20" /></div></AdminListCell>
+                <AdminListCell align="end"><Skeleton className="h-8 w-16 rounded-md" /></AdminListCell>
+              </AdminListRow>
+            ))
+          ) : error ? (
+            <AdminListRow columnsClassName={OFFLINE_RECONCILIATION_COLUMNS} ariaLabel="보정 필요 목록 오류">
+              <AdminListCell className="col-span-7 py-10">
+                <AsyncState kind="error" tone="admin" resourceName="보정 필요 항목" onAction={() => void mutate()} />
+              </AdminListCell>
+            </AdminListRow>
+          ) : (data?.items.length ?? 0) === 0 ? (
+            <AdminListRow columnsClassName={OFFLINE_RECONCILIATION_COLUMNS} ariaLabel="보정 필요 항목 없음">
+              <AdminListCell className="col-span-7 py-10">
+                <AsyncState
+                  kind="empty"
+                  tone="admin"
+                  title="조회 조건에 해당하는 보정 필요 항목이 없습니다"
+                  description="검색 조건을 변경하거나 초기화해 다시 확인해 주세요."
+                />
+              </AdminListCell>
+            </AdminListRow>
+          ) : (
+            data!.items.map((item) => {
+              const note = notes[item.id] ?? item.note ?? "";
+              const description =
+                item.type === "package_usage"
+                  ? stringValue(item.metadata.lineSummary)
+                  : item.description;
+              const errorReason = stringValue(
+                item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음",
+              );
+              const occurredAt = stringValue(
+                item.metadata.failedAt ?? item.metadata.occurredAt ?? item.updatedAt,
+                "",
+              );
+              return (
+                <AdminListRow
+                  key={`${item.type}-${item.id}`}
+                  columnsClassName={OFFLINE_RECONCILIATION_COLUMNS}
+                  ariaLabel={`${TYPE_LABELS[item.type]} · ${item.customer.name}`}
+                  className={updatingId === item.id ? "opacity-60" : undefined}
+                >
+                  <AdminListCell align="center">
+                    <Badge variant={severityVariant(item.severity)}>{SEVERITY_LABELS[item.severity]}</Badge>
+                  </AdminListCell>
+                  <AdminListCell>
+                    <AdminListPrimary
+                      title={TYPE_LABELS[item.type]}
+                      meta={submitted.status === "all" ? <span>{STATUS_LABELS[item.status]}</span> : undefined}
+                    />
+                  </AdminListCell>
+                  <AdminListCell align="end">
+                    {occurredAt ? (
+                      <time dateTime={occurredAt} className="whitespace-nowrap text-ui-label tabular-nums text-foreground">
+                        {formatDate(occurredAt)}
+                      </time>
+                    ) : (
+                      <span className="text-ui-label text-muted-foreground">-</span>
+                    )}
+                  </AdminListCell>
+                  <AdminListCell>
+                    <AdminListPrimary title={item.customer.name} meta={<span>{item.customer.phoneMasked ?? "연락처 없음"}</span>} />
+                  </AdminListCell>
+                  <AdminListCell><AdminListPrimary title={item.title} supporting={description} /></AdminListCell>
+                  <AdminListCell align="end">
+                    <div className="min-w-0 space-y-1 text-right">
+                      <p className="truncate text-ui-label font-medium text-foreground">
+                        {item.type === "package_issue" ? stringValue(item.metadata.packageName) : `passId: ${stringValue(item.metadata.passId)}`}
+                      </p>
+                      <p className="text-ui-label text-muted-foreground">
+                        {item.type === "package_issue" ? formatCurrency(item.metadata.amount) : `${stringValue(item.metadata.usedCount, "1")}회 사용 표시`}
+                      </p>
+                    </div>
+                  </AdminListCell>
+                  <AdminListCell align="end" className="px-3">
+                    <AdminRowActions>
+                      <ItemActions
+                        item={item}
+                        note={note}
+                        description={description}
+                        errorReason={errorReason}
+                        setNote={(value) => setNotes((prev) => ({ ...prev, [item.id]: value }))}
+                        onUpdate={updateItem}
+                      />
+                    </AdminRowActions>
+                  </AdminListCell>
+                </AdminListRow>
+              );
+            })
+          )}
+        </AdminListBody>
+
+        <div role="rowgroup" className="border-t border-border">
+          <div role="row">
+            <div role="cell" aria-colspan={7} className="flex items-center justify-between gap-3 px-4 py-3">
+              <p className={adminTypography.metaMuted}>
+                총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 · {data?.page ?? page}/
+                {Math.max(data?.totalPages ?? 0, 1)}페이지
+              </p>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" size="sm" disabled={isLoading || page <= 1} onClick={() => setPage((prev) => Math.max(1, prev - 1))}>
+                  이전
+                </Button>
+                <Button type="button" variant="outline" size="sm" disabled={isLoading || !data || page >= data.totalPages} onClick={() => setPage((prev) => prev + 1)}>
+                  다음
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      </AdminPageSection>
+      </AdminListTable>
     </div>
   );
 }
