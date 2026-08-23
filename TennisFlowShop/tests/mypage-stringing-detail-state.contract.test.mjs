@@ -44,7 +44,18 @@ test("마이페이지 교체서비스 상세는 연결 거래 상태와 결제 �
   assert.match(client, /const paymentStatusLabel/);
   assert.match(client, /const paymentContextLabel/);
   assert.match(client, /교체서비스 진행 상태:/);
-  assert.match(client, /결제 상태:/);
+  assert.match(
+    client,
+    /\/\* 결제 정보 \*\/[\s\S]*?<CardHeader[\s\S]*?aria-label=\{`결제 상태: \$\{paymentStatusLabel\}`\}[\s\S]*?<\/CardHeader>/,
+  );
+  const paymentStatusAriaLabels =
+    client.match(/aria-label=\{`결제 상태: \$\{paymentStatusLabel\}`\}/g) ?? [];
+
+  assert.equal(paymentStatusAriaLabels.length, 2);
+  assert.doesNotMatch(
+    client,
+    /className="flex flex-wrap items-center gap-2 text-ui-body-sm font-medium text-foreground"[\s\S]*?\{paymentStatusLabel\}/,
+  );
   assert.match(client, /linkedOrderStatusLabel/);
   assert.match(client, /linkedRentalStatusLabel/);
   assert.doesNotMatch(client, /\?\? "결제대기"/);
