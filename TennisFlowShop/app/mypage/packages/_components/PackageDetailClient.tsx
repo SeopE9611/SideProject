@@ -18,14 +18,14 @@ type PackageDetail = {
   packageTitle: string;
   orderedAt: string | null;
   paymentAmount: number | null;
-  paymentMethod: string | null;
-  paymentProvider: string | null;
+  paymentMethodLabel: string;
   paymentStatusLabel: string;
   issued: boolean;
   activationStatus: string;
   activationStatusLabel: string;
   usageStatus: string;
   usageStatusLabel: string;
+  canStartStringingService: boolean;
   totalCount: number | null;
   usedCount: number | null;
   remainingCount: number | null;
@@ -58,7 +58,7 @@ export default function PackageDetailClient({ orderId }: { orderId: string }) {
     );
 
   const item = data.item;
-  const available = item.usageStatus === "available";
+  const available = item.canStartStringingService;
   const hasCounts =
     available &&
     item.totalCount !== null &&
@@ -71,7 +71,6 @@ export default function PackageDetailClient({ orderId }: { orderId: string }) {
   const badgeSpec = badgeStyleSpec(
     available ? "success" : item.usageStatus === "paused" ? "warning" : item.usageStatus === "cancelled" ? "danger" : "neutral",
   );
-  const paymentMethod = [item.paymentMethod, item.paymentProvider].filter(Boolean).join(" · ");
 
   return (
     <div className="space-y-4 bp-sm:space-y-5">
@@ -137,7 +136,7 @@ export default function PackageDetailClient({ orderId }: { orderId: string }) {
         <MypageDetailCard title="결제 정보" icon={<CreditCard className="h-4 w-4" aria-hidden="true" />}>
           <div className="grid grid-cols-2 gap-4">
             <MypageInfoField label="결제 금액" value={item.paymentAmount === null ? null : `${item.paymentAmount.toLocaleString()}원`} fallback="확인 중" />
-            <MypageInfoField label="결제수단" value={paymentMethod || null} fallback="확인 중" />
+            <MypageInfoField label="결제수단" value={item.paymentMethodLabel} fallback="확인 중" />
             <MypageInfoField label="결제상태" value={item.paymentStatusLabel} />
             <MypageInfoField label="주문일" value={formatDate(item.orderedAt)} fallback="확인 중" />
           </div>

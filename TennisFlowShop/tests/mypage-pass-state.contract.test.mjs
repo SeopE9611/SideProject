@@ -109,6 +109,28 @@ test("사용자 패키지권 상세 API는 주문 ID와 사용자 ID를 함께 �
   assert.doesNotMatch(route, /paymentKey|rawSummary|userSnapshot|serviceInfo/);
 });
 
+test("사용자 패키지권 상세 API는 결제 생명주기와 실제 패스 상태를 보존한다", () => {
+  const route = read("app/api/mypage/package-orders/[id]/route.ts");
+  assert.match(route, /"refundcompleted", "환불", "환불완료"/);
+  assert.match(route, /paymentLifecycle === "refunded"\s*\? "환불"/);
+  assert.doesNotMatch(route, /paymentLifecycle === "refunded"\s*\? "결제취소"/);
+  assert.match(route, /passStatus === "cancelled"\s*\? "cancelled"/);
+  assert.match(route, /usageStatus === "exhausted" \|\| usageStatus === "expired"/);
+  assert.match(route, /usageStatus === "cancelled"\s*\? "cancelled"\s*:\s*"unknown"/);
+  assert.match(route, /paymentLifecycle === "paid" && usageStatus === "available"/);
+});
+
+test("패키지권 상세 결제수단과 CTA는 정제된 API DTO만 사용한다", () => {
+  const route = read("app/api/mypage/package-orders/[id]/route.ts");
+  const client = read("app/mypage/packages/_components/PackageDetailClient.tsx");
+  assert.match(route, /getPaymentDisplaySummary/);
+  assert.match(route, /paymentMethodLabel/);
+  assert.doesNotMatch(route, /paymentKey|rawSummary|userSnapshot|serviceInfo/);
+  assert.match(client, /const available = item\.canStartStringingService/);
+  assert.match(client, /value=\{item\.paymentMethodLabel\}/);
+  assert.doesNotMatch(client, /\[item\.paymentMethod, item\.paymentProvider\]/);
+});
+
 test("패키지권 대표 상세주소는 인증 후 마이페이지 상세 상태로 연결한다", () => {
   const page = read("app/mypage/packages/[id]/page.tsx");
   assert.match(page, /getCurrentUser\(\)/);

@@ -1,6 +1,7 @@
 import { getCustomerTransactionPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
@@ -24,6 +25,29 @@ function number(value: unknown): number | null {
 
 function token(value: unknown) {
   return String(value ?? "").trim().toLowerCase().replace(/[\s_-]+/g, "");
+}
+
+type PaymentLifecycle =
+  | "pending"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refunded"
+  | "unknown";
+
+function getPaymentLifecycle(paymentStatus: string | null, orderStatus: unknown): PaymentLifecycle {
+  const paymentToken = token(paymentStatus);
+  const orderToken = token(orderStatus);
+  if (["refunded", "refund", "refundcompleted", "환불", "환불완료"].includes(paymentToken))
+    return "refunded";
+  if (["canceled", "cancelled", "결제취소", "취소"].includes(paymentToken)) return "cancelled";
+  if (["refunded", "refund", "refundcompleted", "환불", "환불완료"].includes(orderToken))
+    return "refunded";
+  if (["canceled", "cancelled", "결제취소", "취소"].includes(orderToken)) return "cancelled";
+  if (["failed", "결제실패", "paymentfailed"].includes(paymentToken)) return "failed";
+  if (["paid", "결제완료", "paymentcompleted"].includes(paymentToken)) return "paid";
+  if (["pending", "결제대기", "대기중", "paymentpending"].includes(paymentToken)) return "pending";
+  return "unknown";
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -56,6 +80,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
           "paymentInfo.method": 1,
           "paymentInfo.provider": 1,
           "paymentInfo.easyPayProvider": 1,
+          "paymentInfo.cardDisplayName": 1,
+          "paymentInfo.cardCompany": 1,
+          "paymentInfo.cardLabel": 1,
+          "paymentInfo.niceCard": 1,
         },
       },
     );
@@ -92,26 +120,39 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const paymentMethod = text(order.paymentInfo?.method);
     const paymentProvider = text(order.paymentInfo?.provider);
     const paymentAmount = number(order.totalPrice);
-    const paymentToken = token(paymentStatus);
-    const orderToken = token(order.status);
-    const cancelled = ["결제취소", "취소", "canceled", "cancelled", "환불", "refunded"].includes(paymentToken) || ["취소", "cancelled", "환불", "refunded"].includes(orderToken);
-    const failed = ["failed", "결제실패"].includes(paymentToken);
-    const paymentStatusForDisplay = cancelled ? "결제취소" : failed ? "결제실패" : paymentStatus;
+    const paymentLifecycle = getPaymentLifecycle(paymentStatus, order.status);
+    const paymentStatusForDisplay =
+      paymentLifecycle === "refunded"
+        ? "환불"
+        : paymentLifecycle === "cancelled"
+          ? "결제취소"
+          : paymentLifecycle === "failed"
+            ? "결제실패"
+            : paymentStatus;
     const paymentStatusLabel = getCustomerTransactionPaymentStatusLabel({
       paymentStatus: paymentStatusForDisplay,
       paymentMethod,
       paymentProvider,
       totalPrice: paymentAmount,
     });
+    const paymentMethodLabel = getPaymentDisplaySummary({
+      method: order.paymentInfo?.method,
+      provider: order.paymentInfo?.provider,
+      easyPayProvider: order.paymentInfo?.easyPayProvider,
+      cardDisplayName: order.paymentInfo?.cardDisplayName,
+      cardCompany: order.paymentInfo?.cardCompany,
+      cardLabel: order.paymentInfo?.cardLabel,
+      niceCard: order.paymentInfo?.niceCard,
+    }).userLabel;
     const passStatus = text(pass?.status);
     const totalCount = number(pass?.packageSize) ?? number(order.packageInfo?.sessions);
     const usedCount = number(pass?.usedCount);
     const remainingCount = number(pass?.remainingCount);
     const expired = pass?.expiresAt ? new Date(pass.expiresAt).getTime() <= Date.now() : false;
-    const usageStatus = cancelled
-      ? "cancelled"
-      : !pass
-        ? "not_issued"
+    const usageStatus = !pass
+      ? "not_issued"
+      : passStatus === "cancelled"
+        ? "cancelled"
         : remainingCount !== null && remainingCount <= 0
           ? "exhausted"
           : expired || passStatus === "expired"
@@ -130,21 +171,25 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       not_issued: "아직 발급되지 않음",
       unknown: "상태 확인 중",
     }[usageStatus];
-    const activationStatus = cancelled
-      ? "cancelled"
-      : failed
-        ? "failed"
-        : !pass
-          ? ["pending", "결제대기", "paymentpending"].includes(paymentToken)
-            ? "awaiting_payment"
-            : ["paid", "결제완료", "paymentcompleted"].includes(paymentToken)
-              ? "pending_issue"
+    const activationStatus = !pass
+      ? paymentLifecycle === "pending"
+        ? "awaiting_payment"
+        : paymentLifecycle === "paid"
+          ? "pending_issue"
+          : paymentLifecycle === "cancelled" || paymentLifecycle === "refunded"
+            ? "cancelled"
+            : paymentLifecycle === "failed"
+              ? "failed"
               : "unknown"
-          : usageStatus === "available"
-            ? "active"
-            : usageStatus === "paused"
-              ? "paused"
-              : "ended";
+      : usageStatus === "available"
+        ? "active"
+        : usageStatus === "paused"
+          ? "paused"
+          : usageStatus === "exhausted" || usageStatus === "expired"
+            ? "ended"
+            : usageStatus === "cancelled"
+              ? "cancelled"
+              : "unknown";
     const activationStatusLabel = {
       active: "활성화 완료",
       awaiting_payment: "결제 확인 후 활성화",
@@ -155,6 +200,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       failed: "발급 처리 실패",
       unknown: "활성화 상태 확인 중",
     }[activationStatus];
+    const canStartStringingService = paymentLifecycle === "paid" && usageStatus === "available";
 
     return NextResponse.json({
       item: {
@@ -162,8 +208,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         packageTitle: text(pass?.meta?.planTitle) ?? text(order.packageInfo?.title) ?? "교체서비스 패키지",
         orderedAt: order.createdAt ?? null,
         paymentAmount,
-        paymentMethod,
-        paymentProvider,
+        paymentMethodLabel,
         paymentStatus,
         paymentStatusLabel,
         issued: Boolean(pass),
@@ -171,6 +216,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         activationStatusLabel,
         usageStatus,
         usageStatusLabel,
+        canStartStringingService,
         totalCount,
         usedCount,
         remainingCount,
