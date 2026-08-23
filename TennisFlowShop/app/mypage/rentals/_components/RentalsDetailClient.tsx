@@ -985,7 +985,12 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             >
               <div className="space-y-4">
                 <div className="space-y-1 text-ui-body-sm">
-                  <Badge variant={paymentStatusBadgeSpec.variant}>{paymentStatusLabel}</Badge>
+                  <Badge
+                    variant={paymentStatusBadgeSpec.variant}
+                    aria-label={`결제 상태: ${paymentStatusLabel}`}
+                  >
+                    {paymentStatusLabel}
+                  </Badge>
                   <p className="font-medium text-foreground">
                     결제수단: {paymentSummary.userLabel}
                   </p>
