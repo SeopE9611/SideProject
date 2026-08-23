@@ -1,15 +1,28 @@
 "use client";
 
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
-import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminMoneyBlock,
+  AdminRowActions,
+  AdminStatusGroup,
+} from "@/components/admin/AdminListTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
+import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import {
   getKstMonthRange,
@@ -33,7 +46,6 @@ import {
   ClipboardList,
   CreditCard,
   ExternalLink,
-  History,
   Mail,
   Pencil,
   Phone,
@@ -138,6 +150,8 @@ const EMPTY_RECORD_FILTERS = {
   paymentStatus: "",
   paymentMethod: "",
 };
+const OFFLINE_RECORD_LIST_COLUMNS =
+  "grid-cols-[40px_minmax(240px,1fr)_minmax(320px,1.35fr)_140px_120px_120px_116px]";
 
 function toDateInputValue(value: string | Date | null | undefined): string {
   if (!value) return "";
@@ -457,6 +471,7 @@ export default function OfflineAdminClient() {
   const {
     data: records,
     isLoading: recordsLoading,
+    error: recordsError,
     mutate: mutateRecords,
   } = useSWR<{
     items: any[];
@@ -642,6 +657,14 @@ export default function OfflineAdminClient() {
   function resetRecordFilters() {
     setRecordFilters(EMPTY_RECORD_FILTERS);
     setSubmittedRecordFilters(EMPTY_RECORD_FILTERS);
+    setRecordsPage(1);
+    setSelectedRecordIds([]);
+    setRecordsMessage(null);
+    setRecordsMessageType(null);
+  }
+
+  function applyRecordFilters() {
+    setSubmittedRecordFilters({ ...recordFilters });
     setRecordsPage(1);
     setSelectedRecordIds([]);
     setRecordsMessage(null);
@@ -1794,572 +1817,309 @@ export default function OfflineAdminClient() {
       </div>
 
       {/* Records History Section */}
-      <Card className="overflow-hidden border-border/60">
-        <CardHeader className="pb-0">
-          <div className="flex gap-3 flex-row items-center justify-between">
-            <SectionHeader
-              icon={History}
-              title="최근 오프라인 작업/매출"
-              description="등록된 기록을 조회하고 관리합니다"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="shrink-0"
-            >
-              {showFilters ? <X className="mr-2 h-4 w-4" /> : <Search className="mr-2 h-4 w-4" />}
-              {showFilters ? "필터 닫기" : "필터 열기"}
-            </Button>
+      <section aria-labelledby="offline-records-heading" className="space-y-4">
+        <div className="flex items-start justify-between gap-3 px-1">
+          <div className="min-w-0">
+            <h2 id="offline-records-heading" className={adminTypography.sectionTitle}>
+              최근 오프라인 작업/매출
+            </h2>
+            <p className={cn("mt-1", adminTypography.metaMuted)}>
+              등록된 작업·결제 기록을 조회하고 관리합니다.
+            </p>
           </div>
-        </CardHeader>
-        <CardContent className="pt-4 space-y-4">
-          {/* 빠른 보기: 기존 API가 허용하는 필터 값만 사용합니다. */}
-          <div className={`${adminSurface.filterCard} flex flex-wrap items-center gap-2`}>
-            <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters((value) => !value)}
+            className="shrink-0"
+          >
+            {showFilters ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
+            {showFilters ? "필터 닫기" : "필터 열기"}
+          </Button>
+        </div>
 
-            <Button
-              type="button"
-              size="sm"
-              variant={!hasSubmittedRecordFilters ? "default" : "outline"}
-              onClick={resetRecordFilters}
-            >
-              전체
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentRecordViewLabel === "미결제 작업" ? "default" : "outline"}
-              onClick={() =>
-                applyRecordQuickView({
-                  paymentStatus: "pending",
-                })
-              }
-            >
-              미결제
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentRecordViewLabel === "결제완료" ? "default" : "outline"}
-              onClick={() =>
-                applyRecordQuickView({
-                  paymentStatus: "paid",
-                })
-              }
-            >
-              결제완료
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentRecordViewLabel === "수령완료" ? "default" : "outline"}
-              onClick={() =>
-                applyRecordQuickView({
-                  status: "picked_up",
-                })
-              }
-            >
-              수령완료
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentRecordViewLabel === "작업중" ? "default" : "outline"}
-              onClick={() =>
-                applyRecordQuickView({
-                  status: "in_progress",
-                })
-              }
-            >
-              작업중
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentRecordViewLabel === "패키지 판매" ? "default" : "outline"}
-              onClick={() =>
-                applyRecordQuickView({
-                  kind: "package_sale",
-                })
-              }
-            >
-              패키지 판매
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={currentRecordViewLabel === "오늘 기록" ? "default" : "outline"}
-              onClick={() => {
-                const today = buildSummaryRangePreset("today");
-                applyRecordQuickView({
-                  from: today.from,
-                  to: today.to,
-                });
+        <AdminFilterBar
+          quickFilters={
+            <>
+              <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
+              <Button type="button" size="sm" variant={!hasSubmittedRecordFilters ? "default" : "outline"} onClick={resetRecordFilters}>
+                전체
+              </Button>
+              <Button type="button" size="sm" variant={currentRecordViewLabel === "미결제 작업" ? "default" : "outline"} onClick={() => applyRecordQuickView({ paymentStatus: "pending" })}>
+                미결제
+              </Button>
+              <Button type="button" size="sm" variant={currentRecordViewLabel === "결제완료" ? "default" : "outline"} onClick={() => applyRecordQuickView({ paymentStatus: "paid" })}>
+                결제완료
+              </Button>
+              <Button type="button" size="sm" variant={currentRecordViewLabel === "수령완료" ? "default" : "outline"} onClick={() => applyRecordQuickView({ status: "picked_up" })}>
+                수령완료
+              </Button>
+              <Button type="button" size="sm" variant={currentRecordViewLabel === "작업중" ? "default" : "outline"} onClick={() => applyRecordQuickView({ status: "in_progress" })}>
+                작업중
+              </Button>
+              <Button type="button" size="sm" variant={currentRecordViewLabel === "패키지 판매" ? "default" : "outline"} onClick={() => applyRecordQuickView({ kind: "package_sale" })}>
+                패키지 판매
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={currentRecordViewLabel === "오늘 기록" ? "default" : "outline"}
+                onClick={() => {
+                  const today = buildSummaryRangePreset("today");
+                  applyRecordQuickView({ from: today.from, to: today.to });
+                }}
+              >
+                오늘 기록
+              </Button>
+            </>
+          }
+          actions={
+            showFilters ? (
+              <>
+                <Button type="button" variant="outline" size="sm" onClick={resetRecordFilters}>
+                  <RotateCcw className="h-4 w-4" />
+                  초기화
+                </Button>
+                <Button type="submit" form="offline-record-filter-form" size="sm">
+                  <Search className="h-4 w-4" />
+                  검색
+                </Button>
+              </>
+            ) : undefined
+          }
+          activeFilters={
+            <>
+              <span className="font-medium text-foreground/80">
+                현재 보기: {currentRecordViewLabel}
+              </span>
+              {submittedRecordFilterLabels.map((label) => (
+                <span key={label}>{label}</span>
+              ))}
+              <span className="tabular-nums">총 {recordsTotal.toLocaleString("ko-KR")}건</span>
+              <span className="tabular-nums">
+                선택 {selectedRecordIds.length.toLocaleString("ko-KR")}개
+              </span>
+            </>
+          }
+        >
+          {showFilters ? (
+            <form
+              id="offline-record-filter-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                applyRecordFilters();
               }}
             >
-              오늘 기록
-            </Button>
-          </div>
-          {/* 현재 보기 요약: 실제 조회에 적용된 submittedRecordFilters 기준입니다. */}
-          <div
-            className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-sm`}
-          >
-            {/* 좌측: 현재 뷰 및 필터 상태 */}
-            <p className="font-semibold text-foreground">현재 보기: {currentRecordViewLabel}</p>
-            {submittedRecordFilterLabels.length > 0 && (
-              <p className="text-muted-foreground">
-                필터: {submittedRecordFilterLabels.join(" / ")}
-              </p>
-            )}
+              <div className="grid grid-cols-4 gap-3">
+                <FormField label="시작일" htmlFor="record-from">
+                  <Input id="record-from" type="date" value={recordFilters.from} onChange={(e) => setRecordFilters({ ...recordFilters, from: e.target.value })} className="h-10" />
+                </FormField>
+                <FormField label="종료일" htmlFor="record-to">
+                  <Input id="record-to" type="date" value={recordFilters.to} onChange={(e) => setRecordFilters({ ...recordFilters, to: e.target.value })} className="h-10" />
+                </FormField>
+                <FormField label="고객명" htmlFor="record-name">
+                  <Input id="record-name" placeholder="고객명 검색" value={recordFilters.name} onChange={(e) => setRecordFilters({ ...recordFilters, name: e.target.value })} className="h-10" />
+                </FormField>
+                <FormField label="휴대폰 번호" htmlFor="record-phone">
+                  <Input id="record-phone" placeholder="01012345678" value={recordFilters.phone} onChange={(e) => setRecordFilters({ ...recordFilters, phone: e.target.value })} className="h-10" />
+                </FormField>
+                <FormField label="작업 유형" htmlFor="record-kind">
+                  <Select id="record-kind" value={recordFilters.kind} onChange={(e) => setRecordFilters({ ...recordFilters, kind: e.target.value })}>
+                    <option value="">전체</option>
+                    {Object.entries(KIND_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </Select>
+                </FormField>
+                <FormField label="작업 상태" htmlFor="record-status">
+                  <Select id="record-status" value={recordFilters.status} onChange={(e) => setRecordFilters({ ...recordFilters, status: e.target.value })}>
+                    <option value="">전체</option>
+                    {Object.entries(RECORD_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </Select>
+                </FormField>
+                <FormField label="결제 상태" htmlFor="record-payment-status">
+                  <Select id="record-payment-status" value={recordFilters.paymentStatus} onChange={(e) => setRecordFilters({ ...recordFilters, paymentStatus: e.target.value })}>
+                    <option value="">전체</option>
+                    {Object.entries(PAYMENT_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </Select>
+                </FormField>
+                <FormField label="결제수단" htmlFor="record-payment-method">
+                  <Select id="record-payment-method" value={recordFilters.paymentMethod} onChange={(e) => setRecordFilters({ ...recordFilters, paymentMethod: e.target.value })}>
+                    <option value="">전체</option>
+                    {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </Select>
+                </FormField>
+              </div>
+            </form>
+          ) : (
+            <p className={adminTypography.metaMuted}>
+              빠른 보기를 선택하거나 필터를 열어 기간·고객·작업·결제 조건을 지정하세요.
+            </p>
+          )}
+        </AdminFilterBar>
 
-            {/* 우측: 수량 정보 및 액션 버튼 */}
-            <div className="ml-auto flex flex-wrap items-center gap-3">
-              {hasSubmittedRecordFilters && (
-                <Button type="button" size="sm" variant="ghost" onClick={resetRecordFilters}>
-                  필터 초기화
-                </Button>
-              )}
+        {recordsMessage && <Message type={recordsMessageType || "info"}>{recordsMessage}</Message>}
 
-              {/* 총 수량 및 선택 수량 그룹화 */}
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-medium text-foreground">
-                  총 {recordsTotal.toLocaleString("ko-KR")}건
-                </span>
-                <span className="text-muted-foreground/50">|</span> {/* 구분선 추가 */}
-                <span className="text-muted-foreground">
+        <AdminListTable
+          title="기록 목록"
+          viewLabel={currentRecordViewLabel}
+          resultLabel={recordsError ? "불러오기 실패" : recordsLoading ? "불러오는 중…" : `총 ${recordsTotal.toLocaleString("ko-KR")}건`}
+          description="고객, 작업 내용, 결제와 진행 상태를 확인하고 필요한 기록을 수정합니다."
+          columnsClassName={OFFLINE_RECORD_LIST_COLUMNS}
+          ariaLabel="최근 오프라인 작업 및 매출 기록"
+          headerActions={
+            <>
+              {selectedRecordIds.length > 0 ? (
+                <span className="text-ui-label font-medium tabular-nums text-foreground">
                   선택 {selectedRecordIds.length.toLocaleString("ko-KR")}개
                 </span>
-              </div>
-
+              ) : null}
               <Button
                 type="button"
                 size="sm"
                 variant="destructive"
-                disabled={selectedRecordIds.length === 0 || isDeletingRecords}
+                disabled={selectedRecordIds.length === 0 || isDeletingRecords || recordsLoading}
                 onClick={deleteSelectedOfflineRecords}
                 className="gap-1 whitespace-nowrap"
               >
                 <Trash2 className="h-4 w-4" />
                 {isDeletingRecords ? "삭제 중..." : "선택 삭제"}
               </Button>
+            </>
+          }
+        >
+          <AdminListColumnHeader columnsClassName={OFFLINE_RECORD_LIST_COLUMNS}>
+            <div role="columnheader" className="px-2 text-center">
+              <Checkbox
+                checked={isCurrentPageAllRecordsSelected ? true : isCurrentPagePartiallySelected ? "indeterminate" : false}
+                disabled={recordsLoading || isDeletingRecords || currentPageRecordIds.length === 0}
+                onCheckedChange={(checked) => {
+                  if (recordsLoading || isDeletingRecords || currentPageRecordIds.length === 0) return;
+                  toggleSelectAllCurrentRecords(Boolean(checked));
+                }}
+                aria-label="현재 페이지 전체 선택"
+              />
+            </div>
+            <div role="columnheader" className="px-4 text-left">고객 / 날짜</div>
+            <div role="columnheader" className="px-4 text-left">유형 / 작업 내용</div>
+            <div role="columnheader" className="px-4 text-right">금액</div>
+            <div role="columnheader" className="px-4 text-center">결제</div>
+            <div role="columnheader" className="px-4 text-center">상태</div>
+            <div role="columnheader" className="px-3 text-right">작업</div>
+          </AdminListColumnHeader>
+
+          <AdminListBody>
+            {recordsLoading ? (
+              Array.from({ length: 6 }).map((_, index) => (
+                <AdminListRow key={index} columnsClassName={OFFLINE_RECORD_LIST_COLUMNS} ariaLabel="오프라인 기록 불러오는 중">
+                  <AdminListCell align="center" className="px-2"><Skeleton className="h-4 w-4 rounded-sm" /></AdminListCell>
+                  <AdminListCell><div className="space-y-2"><Skeleton className="h-4 w-28" /><Skeleton className="h-3 w-32" /><Skeleton className="h-3 w-24" /></div></AdminListCell>
+                  <AdminListCell><div className="space-y-2"><Skeleton className="h-5 w-24 rounded-full" /><Skeleton className="h-4 w-52" /><Skeleton className="h-3 w-64" /></div></AdminListCell>
+                  <AdminListCell align="end"><div className="space-y-2"><Skeleton className="h-5 w-24" /><Skeleton className="h-5 w-24 rounded-full" /></div></AdminListCell>
+                  <AdminListCell align="center"><Skeleton className="h-6 w-20 rounded-full" /></AdminListCell>
+                  <AdminListCell align="center"><Skeleton className="h-6 w-20 rounded-full" /></AdminListCell>
+                  <AdminListCell align="end"><div className="flex gap-1"><Skeleton className="h-8 w-8 rounded-md" /><Skeleton className="h-8 w-8 rounded-md" /></div></AdminListCell>
+                </AdminListRow>
+              ))
+            ) : recordsError ? (
+              <AdminListRow columnsClassName={OFFLINE_RECORD_LIST_COLUMNS} ariaLabel="오프라인 기록 목록 오류">
+                <AdminListCell className="col-span-7 py-10"><AsyncState kind="error" variant="inline" tone="admin" resourceName="오프라인 작업·매출 기록" onAction={() => void mutateRecords()} /></AdminListCell>
+              </AdminListRow>
+            ) : !records?.items?.length ? (
+              <AdminListRow columnsClassName={OFFLINE_RECORD_LIST_COLUMNS} ariaLabel="오프라인 기록 없음">
+                <AdminListCell className="col-span-7 py-10"><AsyncState kind="empty" variant="inline" tone="admin" title="조회 조건에 해당하는 오프라인 기록이 없습니다" description="빠른 보기나 상세 필터를 변경해 다시 확인해 주세요." /></AdminListCell>
+              </AdminListRow>
+            ) : (
+              records.items.map((r: any) => (
+                <AdminListRow key={r.id} columnsClassName={OFFLINE_RECORD_LIST_COLUMNS} ariaLabel={`${r.customerName ?? "오프라인 기록"} · ${formatDate(r.occurredAt)}`}>
+                  <AdminListCell align="center" className="px-2">
+                    <Checkbox checked={selectedRecordIds.includes(String(r.id))} disabled={isDeletingRecords} onCheckedChange={(checked) => toggleRecordSelection(String(r.id), Boolean(checked))} aria-label={`${r.customerName ?? "오프라인 기록"} 선택`} />
+                  </AdminListCell>
+                  <AdminListCell>
+                    <AdminListPrimary
+                      title={r.offlineCustomerId ? <Link className="transition-colors hover:text-primary" href={`/admin/offline/customers/${r.offlineCustomerId}`}>{r.customerName}</Link> : r.customerName}
+                      meta={<><span className="tabular-nums">{r.customerPhoneMasked}</span><time dateTime={String(r.occurredAt)} className="tabular-nums">{formatDate(r.occurredAt)}</time></>}
+                    />
+                  </AdminListCell>
+                  <AdminListCell>
+                    <AdminStatusGroup
+                      primary={<><Badge variant="secondary">{KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}</Badge>{r.source === "private_payment" ? <Badge variant="secondary">개인결제 연결</Badge> : null}{r.privatePaymentSync?.paymentStatus === "결제취소" ? <Badge variant="destructive">개인결제 취소됨</Badge> : null}</>}
+                      secondary={formatLineSummary(r.lines)}
+                    />
+                  </AdminListCell>
+                  <AdminListCell align="end"><AdminMoneyBlock amount={formatCurrency(r.payment?.amount)} meta={r.revenueExcluded ? <Badge variant="outline" className="whitespace-nowrap">오프라인 매출 제외</Badge> : undefined} /></AdminListCell>
+                  <AdminListCell align="center"><StatusBadge status={r.payment?.status} type="payment" /></AdminListCell>
+                  <AdminListCell align="center"><StatusBadge status={r.status} type="record" /></AdminListCell>
+                  <AdminListCell align="end" className="px-3">
+                    <AdminRowActions>
+                      {r.offlineCustomerId ? (
+                        <Button asChild size="sm" variant="ghost" className="h-8 w-8 shrink-0 p-0">
+                          <Link href={`/admin/offline/customers/${r.offlineCustomerId}`} aria-label={`${r.customerName} 고객 상세 보기`}><ExternalLink className="h-3.5 w-3.5" /></Link>
+                        </Button>
+                      ) : null}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 shrink-0 p-0"
+                        aria-label={`${r.customerName} 오프라인 기록 편집`}
+                        onClick={() => {
+                          const existingLines = Array.isArray(r.lines) && r.lines.length > 0 ? r.lines : [{}];
+                          setEditingRecord(r);
+                          setEditForm({
+                            kind: r.kind ?? "stringing",
+                            occurredAt: toDateInputValue(r.occurredAt),
+                            lines: existingLines.map((line: any, index: number) => {
+                              const fallbackStringName = String(line.stringName ?? "").trim();
+                              return {
+                                id: `edit-line-${r.id}-${index}`,
+                                racketName: String(line.racketName ?? ""),
+                                mainStringName: String(line.mainStringName ?? fallbackStringName),
+                                crossStringName: String(line.crossStringName ?? ""),
+                                tensionMain: String(line.tensionMain ?? ""),
+                                tensionCross: String(line.tensionCross ?? ""),
+                                amount: Number(line.amount ?? 0),
+                                note: String(line.note ?? ""),
+                              };
+                            }),
+                            status: r.status,
+                            paymentStatus: r.payment?.status ?? "pending",
+                            paymentMethod: r.payment?.method ?? "cash",
+                            paymentAmount: Number(r.payment?.amount ?? 0),
+                            memo: r.memo ?? "",
+                          });
+                          setEditMessage(null);
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </AdminRowActions>
+                  </AdminListCell>
+                </AdminListRow>
+              ))
+            )}
+          </AdminListBody>
+
+          <div role="rowgroup" className="border-t border-border">
+            <div role="row">
+              <div role="cell" aria-colspan={7} className="flex items-center justify-between gap-3 px-4 py-3">
+                <p className={adminTypography.metaMuted}>
+                  <span className="font-medium text-foreground">{currentRecordsPage}</span>{" "}
+                  / {Math.max(recordsTotalPages, 1)}페이지
+                  <span className="mx-2">·</span>
+                  전체 <span className="font-medium text-foreground">{recordsTotal.toLocaleString("ko-KR")}</span>건
+                </p>
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" variant="outline" disabled={recordsLoading || currentRecordsPage <= 1 || recordsTotalPages <= 1} onClick={() => setRecordsPage((page) => Math.max(1, page - 1))}>
+                    <ChevronLeft className="mr-1 h-4 w-4" />이전
+                  </Button>
+                  <Button type="button" size="sm" variant="outline" disabled={recordsLoading || recordsTotalPages <= 1 || currentRecordsPage >= recordsTotalPages} onClick={() => setRecordsPage((page) => page + 1)}>
+                    다음<ChevronRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-          {recordsMessage && (
-            <Message type={recordsMessageType || "info"}>{recordsMessage}</Message>
-          )}
-          {/* Filter Section */}
-          {showFilters && (
-            <form
-              className="rounded-xl border border-border/60 bg-background/70 p-5 space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSubmittedRecordFilters({ ...recordFilters });
-                setRecordsPage(1);
-              }}
-            >
-              <div className="grid gap-4 grid-cols-4">
-                <FormField label="시작일" htmlFor="record-from">
-                  <Input
-                    id="record-from"
-                    type="date"
-                    value={recordFilters.from}
-                    onChange={(e) =>
-                      setRecordFilters({
-                        ...recordFilters,
-                        from: e.target.value,
-                      })
-                    }
-                    className="h-10"
-                  />
-                </FormField>
-                <FormField label="종료일" htmlFor="record-to">
-                  <Input
-                    id="record-to"
-                    type="date"
-                    value={recordFilters.to}
-                    onChange={(e) => setRecordFilters({ ...recordFilters, to: e.target.value })}
-                    className="h-10"
-                  />
-                </FormField>
-                <FormField label="고객명" htmlFor="record-name">
-                  <Input
-                    id="record-name"
-                    placeholder="고객명 검색"
-                    value={recordFilters.name}
-                    onChange={(e) =>
-                      setRecordFilters({
-                        ...recordFilters,
-                        name: e.target.value,
-                      })
-                    }
-                    className="h-10"
-                  />
-                </FormField>
-                <FormField label="휴대폰 번호" htmlFor="record-phone">
-                  <Input
-                    id="record-phone"
-                    placeholder="01012345678"
-                    value={recordFilters.phone}
-                    onChange={(e) =>
-                      setRecordFilters({
-                        ...recordFilters,
-                        phone: e.target.value,
-                      })
-                    }
-                    className="h-10"
-                  />
-                </FormField>
-                <FormField label="작업 유형" htmlFor="record-kind">
-                  <Select
-                    id="record-kind"
-                    value={recordFilters.kind}
-                    onChange={(e) =>
-                      setRecordFilters({
-                        ...recordFilters,
-                        kind: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">전체</option>
-                    {Object.entries(KIND_LABELS).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
-                <FormField label="작업 상태" htmlFor="record-status">
-                  <Select
-                    id="record-status"
-                    value={recordFilters.status}
-                    onChange={(e) =>
-                      setRecordFilters({
-                        ...recordFilters,
-                        status: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">전체</option>
-                    {Object.entries(RECORD_STATUS_LABELS).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
-                <FormField label="결제 상태" htmlFor="record-payment-status">
-                  <Select
-                    id="record-payment-status"
-                    value={recordFilters.paymentStatus}
-                    onChange={(e) =>
-                      setRecordFilters({
-                        ...recordFilters,
-                        paymentStatus: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">전체</option>
-                    {Object.entries(PAYMENT_STATUS_LABELS).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
-                <FormField label="결제수단" htmlFor="record-payment-method">
-                  <Select
-                    id="record-payment-method"
-                    value={recordFilters.paymentMethod}
-                    onChange={(e) =>
-                      setRecordFilters({
-                        ...recordFilters,
-                        paymentMethod: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">전체</option>
-                    {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={resetRecordFilters}>
-                  <RotateCcw className="mr-2 h-3 w-3" />
-                  초기화
-                </Button>
-                <Button type="submit" size="sm">
-                  <Search className="mr-2 h-3 w-3" />
-                  검색
-                </Button>
-              </div>
-            </form>
-          )}
-
-          {/* Loading State */}
-          {recordsLoading && (
-            <div className="flex items-center justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!recordsLoading && !records?.items?.length && (
-            <AdminInlineEmpty>아직 등록된 기록이 없습니다.</AdminInlineEmpty>
-          )}
-
-          {/* Records Table */}
-          {!!records?.items?.length && (
-            <div className={adminSurface.tableCard}>
-              <div className="overflow-x-auto">
-                <table className="min-w-[1200px] w-full table-fixed text-sm">
-                  <colgroup>
-                    <col className="w-[52px]" />
-                    <col className="w-[120px]" />
-                    <col className="w-[180px]" />
-                    <col className="w-[150px]" />
-                    <col />
-                    <col className="w-[150px]" />
-                    <col className="w-[104px]" />
-                    <col className="w-[104px]" />
-                    <col className="w-[96px]" />
-                  </colgroup>
-                  <thead>
-                    <tr className={adminSurface.tableHeader}>
-                      <th className={adminDataTable.head}>
-                        <Checkbox
-                          checked={
-                            isCurrentPageAllRecordsSelected ||
-                            (isCurrentPagePartiallySelected ? "indeterminate" : false)
-                          }
-                          onCheckedChange={(checked) =>
-                            toggleSelectAllCurrentRecords(Boolean(checked))
-                          }
-                          aria-label="현재 페이지 전체 선택"
-                        />
-                      </th>
-
-                      <th className={adminDataTable.headRight}>날짜</th>
-                      <th className={adminDataTable.head}>고객</th>
-
-                      <th className={adminDataTable.headCenter}>유형</th>
-
-                      <th className={adminDataTable.head}>작업 내용</th>
-
-                      <th className={adminDataTable.headRight}>금액</th>
-
-                      <th className={adminDataTable.headCenter}>결제</th>
-
-                      <th className={adminDataTable.headCenter}>상태</th>
-
-                      <th className={adminDataTable.stickyActionHead}>관리</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60">
-                    {(records?.items || []).map((r: any) => (
-                      <tr key={r.id} className={adminDataTable.row}>
-                        <td className={adminDataTable.cellLeft}>
-                          <Checkbox
-                            checked={selectedRecordIds.includes(String(r.id))}
-                            onCheckedChange={(checked) =>
-                              toggleRecordSelection(String(r.id), Boolean(checked))
-                            }
-                            aria-label={`${r.customerName ?? "오프라인 기록"} 선택`}
-                          />
-                        </td>
-
-                        <td className={adminDataTable.dateCell}>
-                          <div className="flex shrink-0 items-center gap-2">
-                            <span className="tabular-nums">{formatDate(r.occurredAt)}</span>
-                          </div>
-                        </td>
-                        <td className={adminDataTable.cellLeft}>
-                          <div className="min-w-0 max-w-[180px]">
-                            <p
-                              className="line-clamp-2 break-words font-medium"
-                              title={r.customerName}
-                            >
-                              {r.offlineCustomerId ? (
-                                <Link
-                                  className="hover:text-primary transition-colors"
-                                  href={`/admin/offline/customers/${r.offlineCustomerId}`}
-                                >
-                                  {r.customerName}
-                                </Link>
-                              ) : (
-                                r.customerName
-                              )}
-                            </p>
-                            <p
-                              className="whitespace-nowrap text-xs tabular-nums text-muted-foreground"
-                              title={r.customerPhoneMasked}
-                            >
-                              {r.customerPhoneMasked}
-                            </p>
-                          </div>
-                        </td>
-                        <td className={adminDataTable.cellCenter}>
-                          <div className="flex min-w-0 flex-col items-center gap-1.5">
-                            <span className="text-foreground/80">
-                              {KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}
-                            </span>
-                            <div className="flex max-w-[130px] flex-wrap justify-center gap-1">
-                              {r.source === "private_payment" && (
-                                <Badge variant="secondary">
-                                  개인결제 연결
-                                </Badge>
-                              )}
-                              {r.privatePaymentSync?.paymentStatus === "결제취소" && (
-                                <Badge variant="destructive">
-                                  개인결제 취소됨
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className={adminDataTable.cellTopLeft}>
-                          <span
-                            className="line-clamp-2 break-words text-muted-foreground"
-                            title={formatLineSummary(r.lines)}
-                          >
-                            {formatLineSummary(r.lines)}
-                          </span>
-                        </td>
-                        <td className={adminDataTable.moneyCell}>
-                          <div className="flex flex-col items-end gap-1.5">
-                            <span className="whitespace-nowrap tabular-nums">
-                              {formatCurrency(r.payment?.amount)}
-                            </span>
-                            {r.revenueExcluded && (
-                              <Badge variant="outline" className="whitespace-nowrap">
-                                오프라인 매출 제외
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className={adminDataTable.cellCenter}>
-                          <StatusBadge status={r.payment?.status} type="payment" />
-                        </td>
-                        <td className={adminDataTable.cellCenter}>
-                          <StatusBadge status={r.status} type="record" />
-                        </td>
-                        <td className={adminDataTable.stickyActionCell}>
-                          <div className="flex shrink-0 items-center justify-end gap-1">
-                            {r.offlineCustomerId && (
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 w-8 shrink-0 p-0"
-                              >
-                                <Link href={`/admin/offline/customers/${r.offlineCustomerId}`} aria-label={`${r.customerName} 고객 상세 보기`}>
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                </Link>
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 shrink-0 p-0"
-                              aria-label={`${r.customerName} 오프라인 기록 편집`}
-                              onClick={() => {
-                                const existingLines =
-                                  Array.isArray(r.lines) && r.lines.length > 0 ? r.lines : [{}];
-
-                                setEditingRecord(r);
-                                setEditForm({
-                                  kind: r.kind ?? "stringing",
-                                  occurredAt: toDateInputValue(r.occurredAt),
-
-                                  lines: existingLines.map((line: any, index: number) => {
-                                    const fallbackStringName = String(line.stringName ?? "").trim();
-
-                                    return {
-                                      id: `edit-line-${r.id}-${index}`,
-                                      racketName: String(line.racketName ?? ""),
-                                      mainStringName: String(
-                                        line.mainStringName ?? fallbackStringName,
-                                      ),
-                                      crossStringName: String(line.crossStringName ?? ""),
-                                      tensionMain: String(line.tensionMain ?? ""),
-                                      tensionCross: String(line.tensionCross ?? ""),
-                                      amount: Number(line.amount ?? 0),
-                                      note: String(line.note ?? ""),
-                                    };
-                                  }),
-
-                                  status: r.status,
-                                  paymentStatus: r.payment?.status ?? "pending",
-                                  paymentMethod: r.payment?.method ?? "cash",
-                                  paymentAmount: Number(r.payment?.amount ?? 0),
-                                  memo: r.memo ?? "",
-                                });
-                                setEditMessage(null);
-                              }}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Pagination */}
-          <div className="flex gap-3 rounded-xl border border-border/60 bg-background/70 p-4 flex-row items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{currentRecordsPage}</span> /{" "}
-              {Math.max(recordsTotalPages, 1)} 페이지
-              <span className="mx-2">·</span>
-              전체{" "}
-              <span className="font-medium text-foreground">
-                {recordsTotal.toLocaleString("ko-KR")}
-              </span>
-              건
-            </p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={recordsLoading || currentRecordsPage <= 1 || recordsTotalPages <= 1}
-                onClick={() => setRecordsPage((page) => Math.max(1, page - 1))}
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                이전
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={
-                  recordsLoading ||
-                  recordsTotalPages <= 1 ||
-                  currentRecordsPage >= recordsTotalPages
-                }
-                onClick={() => setRecordsPage((page) => page + 1)}
-              >
-                다음
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </AdminListTable>
+      </section>
 
       {/* Edit Record Modal */}
       {editingRecord && (
