@@ -433,7 +433,7 @@ export default function HorizontalProducts({
   const MoreCard = () => (
     <Link href={moreHref} className={moreSurfaceClass}>
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
-        <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 rounded-full border border-border/60 bg-secondary mx-auto flex items-center justify-center transition-all duration-300 group-hover:shadow-sm">
+        <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 rounded-full border border-border/60 bg-secondary mx-auto flex items-center justify-center transition-shadow duration-300 group-hover:shadow-sm">
           <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-foreground" />
         </div>
         <div className="space-y-1 bp-sm:space-y-1.5">
