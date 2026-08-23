@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -10,10 +12,13 @@ type AdminListPageSkeletonProps = {
   summaryVariant?: "strip" | "cards";
   filterColumnsClassName?: string;
   filterFieldCount?: number;
+  secondaryFilterFieldCount?: number;
+  secondaryFilterActionCount?: number;
   quickFilterCount?: number;
   headerActionCount?: number;
   filterActionCount?: number;
   showGuide?: boolean;
+  guideVariant?: "panel" | "summary";
   selectionColumn?: boolean;
   showPagination?: boolean;
   className?: string;
@@ -27,10 +32,13 @@ export default function AdminListPageSkeleton({
   summaryVariant = "strip",
   filterColumnsClassName = "grid-cols-1",
   filterFieldCount = 1,
+  secondaryFilterFieldCount = 0,
+  secondaryFilterActionCount = 0,
   quickFilterCount = 0,
   headerActionCount = 0,
   filterActionCount = 0,
   showGuide = false,
+  guideVariant = "panel",
   selectionColumn = false,
   showPagination = true,
   className,
@@ -39,6 +47,14 @@ export default function AdminListPageSkeleton({
   const safeRows = Math.max(0, rows);
   const safeSummaryCount = Math.max(0, summaryCount);
   const safeFilterFieldCount = Math.max(0, filterFieldCount);
+  const safeSecondaryFilterFieldCount = Math.max(
+    0,
+    secondaryFilterFieldCount,
+  );
+  const safeSecondaryFilterActionCount = Math.max(
+    0,
+    secondaryFilterActionCount,
+  );
   const safeQuickFilterCount = Math.max(0, quickFilterCount);
   const safeHeaderActionCount = Math.max(0, headerActionCount);
   const safeFilterActionCount = Math.max(0, filterActionCount);
@@ -70,7 +86,16 @@ export default function AdminListPageSkeleton({
           ) : null}
         </div>
 
-        {showGuide ? (
+        {showGuide && guideVariant === "summary" ? (
+          <div
+            aria-hidden="true"
+            className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3"
+          >
+            <Skeleton className="h-4 w-36" />
+          </div>
+        ) : null}
+
+        {showGuide && guideVariant === "panel" ? (
           <div
             aria-hidden="true"
             className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2"
@@ -158,6 +183,25 @@ export default function AdminListPageSkeleton({
               </div>
             ) : null}
           </div>
+          {safeSecondaryFilterFieldCount > 0 || safeSecondaryFilterActionCount > 0 ? (
+            <div className="mt-3 flex items-center gap-2">
+              <div className="flex items-center gap-2">
+                {Array.from({ length: safeSecondaryFilterFieldCount }).map((_, index) => (
+                  <Fragment key={index}>
+                    <Skeleton className="h-9 w-[150px] rounded-md" />
+                    {safeSecondaryFilterFieldCount === 2 && index === 0 ? (
+                      <span className="text-xs text-muted-foreground">~</span>
+                    ) : null}
+                  </Fragment>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                {Array.from({ length: safeSecondaryFilterActionCount }).map((_, index) => (
+                  <Skeleton key={index} className="h-9 w-16 rounded-md" />
+                ))}
+              </div>
+            </div>
+          ) : null}
           {safeQuickFilterCount > 0 ? (
             <div className="mt-3 flex items-center gap-2 border-t border-border/50 pt-3">
               <Skeleton className="h-3 w-14" />
