@@ -35,5 +35,6 @@ pnpm build
 - [프로젝트 요구사항](./docs/requirements.md)
 - [정보구조](./docs/information-architecture.md)
 - [콘텐츠 운영 및 공개 원칙](./docs/content-governance.md)
+- [디자인 시스템](./docs/design-system.md)
 
 위 문서는 구현 범위, 정보구조, 콘텐츠 공개 기준을 결정하는 프로젝트 기준 문서입니다. 확정되지 않은 시설 정보와 운영 정책은 임의로 작성하지 않고 `확인 필요`로 관리합니다.

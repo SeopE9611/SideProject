@@ -4,10 +4,10 @@ import { siteConfig } from "@/config/site";
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-gray-200 bg-white">
-      <div className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+    <header className="border-b border-border bg-surface">
+      <div className="mx-auto flex w-full max-w-site flex-col gap-4 px-page py-5 sm:flex-row sm:items-center sm:justify-between sm:px-page-wide">
         <Link
-          className="text-lg font-bold text-gray-950 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
+          className="text-lg font-bold text-foreground underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
           href="/"
         >
           {siteConfig.name}
@@ -17,7 +17,7 @@ export function SiteHeader() {
             {siteConfig.mainNavigation.map((item) => (
               <li key={item.href}>
                 <Link
-                  className="text-sm font-medium text-gray-700 underline decoration-gray-400 underline-offset-4 hover:text-gray-950 focus-visible:outline-2 focus-visible:outline-offset-4"
+                  className="text-sm font-medium text-muted-foreground underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
                   href={item.href}
                 >
                   {item.label}
