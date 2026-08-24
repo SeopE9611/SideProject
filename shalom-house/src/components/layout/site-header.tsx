@@ -1,31 +1,25 @@
 import Link from "next/link";
 
+import { SiteNavigation } from "@/components/layout/site-navigation";
 import { siteConfig } from "@/config/site";
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-border bg-surface">
-      <div className="mx-auto flex w-full max-w-site flex-col gap-4 px-page py-5 sm:flex-row sm:items-center sm:justify-between sm:px-page-wide">
+    <header className="relative z-40 border-b border-border bg-surface">
+      <div className="mx-auto flex min-h-20 w-full max-w-site items-center justify-between gap-4 px-page py-4 sm:px-page-wide">
         <Link
-          className="text-lg font-bold text-foreground underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+          aria-label={`${siteConfig.name} 홈`}
+          className="group inline-flex min-w-0 flex-col rounded-control focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
           href="/"
         >
-          {siteConfig.name}
+          <span className="text-xl font-bold tracking-tight text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard group-hover:text-primary">
+            {siteConfig.name}
+          </span>
+          <span className="text-small font-medium text-muted-foreground">
+            공식 홈페이지
+          </span>
         </Link>
-        <nav aria-label="주요 메뉴">
-          <ul className="flex flex-wrap gap-x-5 gap-y-3">
-            {siteConfig.mainNavigation.map((item) => (
-              <li key={item.href}>
-                <Link
-                  className="text-sm font-medium text-muted-foreground underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
-                  href={item.href}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <SiteNavigation />
       </div>
     </header>
   );
