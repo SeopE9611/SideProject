@@ -4,171 +4,127 @@ import { siteConfig } from "@/config/site";
 
 type NavigationHref = (typeof siteConfig.mainNavigation)[number]["href"];
 
-const homeInformationFlows = [
+const quickLinks = [
   {
-    title: "시설과 생활",
-    description: "샬롬의 집의 기본 정보와 생활 관련 안내를 확인합니다.",
-    links: [
-      { href: "/about", description: "시설의 기본 정보와 연락 안내" },
-      { href: "/life", description: "생활과 프로그램 안내" },
-    ],
+    href: "/about",
+    title: "시설 소개",
+    description: "샬롬의 집의 기본 정보와 연락처를 확인하세요.",
   },
   {
-    title: "소식과 참여",
-    description:
-      "공지사항과 활동 소식, 후원과 자원봉사 안내 경로를 확인합니다.",
-    links: [
-      { href: "/news", description: "공지사항과 활동 소식" },
-      { href: "/support", description: "후원과 자원봉사 안내" },
-    ],
+    href: "/life",
+    title: "함께하는 생활",
+    description: "생활 안내와 주요 프로그램을 살펴보세요.",
   },
   {
-    title: "운영 정보",
-    description: "공개가 승인된 운영 자료를 확인합니다.",
-    links: [
-      { href: "/transparency", description: "공개가 승인된 운영 자료" },
-    ],
+    href: "/news",
+    title: "샬롬 소식",
+    description: "공지사항과 활동 소식을 확인하세요.",
+  },
+  {
+    href: "/support",
+    title: "후원 및 봉사",
+    description: "후원과 자원봉사 참여 방법을 알아보세요.",
+  },
+  {
+    href: "/transparency",
+    title: "투명한 운영",
+    description: "공개가 승인된 운영 자료를 확인하세요.",
   },
 ] satisfies ReadonlyArray<{
+  href: NavigationHref;
   title: string;
   description: string;
-  links: ReadonlyArray<{ href: NavigationHref; description: string }>;
 }>;
-
-function getNavigationLabel(href: NavigationHref) {
-  const navigationItem = siteConfig.mainNavigation.find(
-    (item) => item.href === href,
-  );
-
-  if (!navigationItem) {
-    throw new Error(`등록되지 않은 홈페이지 경로입니다: ${href}`);
-  }
-
-  return navigationItem.label;
-}
 
 export default function Home() {
   return (
     <>
-      <section className="border-b border-border bg-primary-soft">
-        <div className="mx-auto w-full max-w-site px-page py-16 sm:px-page-wide sm:py-20">
+      <section className="relative isolate overflow-hidden bg-gradient-to-br from-amber-700 via-orange-700 to-primary">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-slate-950/70"
+        />
+        <div className="mx-auto w-full max-w-site px-page py-20 sm:px-page-wide sm:py-28">
           <div className="max-w-content">
-            <p className="text-small font-bold text-primary">
+            <p className="text-small font-bold text-amber-100">
               {siteConfig.description}
             </p>
-            <h1 className="mt-5 text-display font-bold text-foreground sm:text-display-lg">
-              샬롬의 집 정보를 한곳에서 확인하세요
+            <h1 className="mt-5 text-display font-bold text-white sm:text-display-lg">
+              서로의 일상을 존중하며 함께 살아갑니다
             </h1>
-            <p className="mt-6 text-body text-muted-foreground">
-              시설 소개와 생활, 소식, 후원과 봉사, 공개 운영 자료를 메뉴별로
-              확인할 수 있습니다.
+            <h2 className="sr-only">샬롬의 집 홈페이지 소개</h2>
+            <p className="mt-6 max-w-2xl text-body text-white">
+              샬롬의 집은 모든 사람이 존중받는 따뜻한 일상을 함께 만들어
+              갑니다. 시설 안내부터 후원과 봉사까지 필요한 정보를 편리하게
+              확인하세요.
             </p>
-            <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-              <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-base font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:border-primary-hover hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                href="/about"
-              >
-                시설 소개 보기
-              </Link>
-              <Link
-                className="inline-flex min-h-11 items-center gap-2 px-2 py-3 text-base font-bold text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                href="/life"
-              >
-                함께하는 생활 보기
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
+            <Link
+              className="mt-8 inline-flex min-h-11 items-center justify-center rounded-control border border-white bg-white px-6 py-3 text-base font-bold text-primary transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-amber-100 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              href="/about"
+            >
+              샬롬의 집 알아보기
+            </Link>
           </div>
         </div>
       </section>
 
-      <aside
-        aria-labelledby="home-contact-heading"
-        className="border-b border-border bg-surface"
-      >
-        <div className="mx-auto w-full max-w-site px-page py-8 sm:px-page-wide">
-          <h2
-            id="home-contact-heading"
-            className="text-heading font-bold text-foreground"
-          >
-            기본 연락 안내
-          </h2>
-          <address className="mt-5 grid gap-5 not-italic sm:grid-cols-2 sm:gap-8">
-            <div className="min-w-0">
-              <p className="text-small font-bold text-foreground">주소</p>
-              <p className="mt-1 break-words text-body text-muted-foreground">
-                {siteConfig.address}
-              </p>
-            </div>
-            <div className="min-w-0">
-              <p className="text-small font-bold text-foreground">대표 전화</p>
-              <a
-                className="mt-1 inline-flex min-h-11 items-center text-body text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                href={`tel:${siteConfig.phone}`}
-              >
-                {siteConfig.phone}
-              </a>
-            </div>
-          </address>
+      <section className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
+        <h2 className="sr-only">주요 메뉴 바로가기</h2>
+        <div aria-hidden="true">
+          <p className="text-small font-bold text-primary">빠른 안내</p>
+          <p className="mt-2 text-title font-bold text-foreground">
+            자주 찾는 메뉴
+          </p>
         </div>
-      </aside>
-
-      <section
-        aria-labelledby="home-information-heading"
-        className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide"
-      >
-        <p className="text-small font-bold text-primary">정보 안내</p>
-        <h2
-          id="home-information-heading"
-          className="mt-2 text-title font-bold text-foreground"
-        >
-          필요한 정보를 찾아보세요
-        </h2>
         <p className="mt-4 max-w-content text-body text-muted-foreground">
-          방문 목적에 따라 시설과 생활, 소식과 참여, 운영 정보를 확인할 수
-          있습니다.
+          원하는 메뉴의 카드 전체를 누르면 해당 안내 페이지로 이동합니다.
         </p>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-3 lg:gap-8">
-          {homeInformationFlows.map((flow) => (
-            <section
-              key={flow.title}
-              aria-labelledby={`home-flow-${flow.links[0].href.slice(1)}`}
-              className="border-t border-border-strong pt-6"
-            >
-              <h3
-                id={`home-flow-${flow.links[0].href.slice(1)}`}
-                className="text-heading font-bold text-foreground"
+        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {quickLinks.map((link) => (
+            <li key={link.href}>
+              <Link
+                className="group flex min-h-44 h-full flex-col justify-between rounded-card border border-border bg-surface p-6 text-foreground shadow-card transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:border-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+                href={link.href}
               >
-                {flow.title}
-              </h3>
-              <p className="mt-3 text-body text-muted-foreground">
-                {flow.description}
-              </p>
-              <ul className="mt-6 divide-y divide-border border-y border-border">
-                {flow.links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      className="group flex min-h-11 items-center justify-between gap-4 py-4 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                      href={link.href}
-                    >
-                      <span className="min-w-0">
-                        <span className="block font-bold">
-                          {getNavigationLabel(link.href)}
-                        </span>
-                        <span className="mt-1 block text-small text-muted-foreground group-hover:text-primary">
-                          {link.description}
-                        </span>
-                      </span>
-                      <span aria-hidden="true" className="shrink-0 font-bold">
-                        →
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
+                <span>
+                  <span className="block text-heading font-bold group-hover:text-primary">
+                    {link.title}
+                  </span>
+                  <span className="mt-3 block text-body text-muted-foreground">
+                    {link.description}
+                  </span>
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="mt-6 self-end text-xl font-bold text-primary"
+                >
+                  →
+                </span>
+              </Link>
+            </li>
           ))}
+        </ul>
+      </section>
+
+      <section className="border-t border-border bg-primary-soft">
+        <h2 className="sr-only">기본 연락 안내</h2>
+        <div className="mx-auto grid w-full max-w-site gap-6 px-page py-10 sm:grid-cols-2 sm:px-page-wide">
+          <div>
+            <h3 className="text-small font-bold text-foreground">주소</h3>
+            <p className="mt-2 break-words text-body text-muted-foreground">
+              {siteConfig.address}
+            </p>
+          </div>
+          <div>
+            <h3 className="text-small font-bold text-foreground">대표 전화</h3>
+            <a
+              className="mt-1 inline-flex min-h-11 items-center text-body font-bold text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              href={`tel:${siteConfig.phone}`}
+            >
+              {siteConfig.phone}
+            </a>
+          </div>
         </div>
       </section>
     </>
