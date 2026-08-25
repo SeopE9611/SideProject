@@ -21,6 +21,10 @@ if (!uri) {
         { publicationStatus: 1, approvalStatus: 1, publishedAt: -1 },
         { name: "news_posts_public_list" },
       ),
+      collection.createIndex(
+        { deletedAt: 1, updatedAt: -1, _id: -1 },
+        { name: "news_posts_admin_updated" },
+      ),
     ]);
 
     console.log("뉴스 인덱스를 확인했습니다.", {
