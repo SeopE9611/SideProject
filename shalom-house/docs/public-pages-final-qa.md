@@ -1,0 +1,120 @@
+# 공개 페이지 전역 QA
+
+## 1. 문서 목적
+
+- 샬롬의 집 공개 경로 6개와 존재하지 않는 경로, 공통 사이트 셸을 같은 기준으로 검사한 결과를 기록한다.
+- 제목과 랜드마크, 링크·버튼, 포커스 스타일, 대상 크기, 반응형 위험 패턴, 색상·모션을 정적으로 확인하고 프로덕션 빌드의 HTTP 응답과 렌더링 HTML을 검사했다.
+- 이 문서는 실행한 범위의 QA 기록이며 전문 접근성 인증이나 전체 적합 선언이 아니다.
+
+## 2. 기준 상태
+
+- 시작 HEAD: `0fed6a7d9b2ca9d70ee8b85aee195a2f0f6ded5f`
+- 검사 브랜치: `work`
+- 검사 날짜: 2026-08-25 (UTC)
+- Next.js: 16.3.2
+- 실행 환경: Ubuntu 24.04, Linux 6.18.35 x86_64, Node.js v20.20.2, pnpm 10.28.1
+- 작업 전 `git status --short`: 출력 없음
+
+## 3. 검사 대상 경로
+
+- `/`
+- `/about`
+- `/life`
+- `/news`
+- `/support`
+- `/transparency`
+- 존재하지 않는 경로: `/this-page-does-not-exist`
+
+## 4. 검사 환경
+
+- 브라우저와 버전: 미실행 — 브라우저 제어 기능이 제공되지 않았다.
+- 운영체제: Ubuntu 24.04
+- viewport: 미실행 — 320px, 390px, 768px, 1024px, 1440px 실제 렌더링을 확인하지 않았다.
+- 확대 비율: 미실행 — 200%, 400% 브라우저 확대를 확인하지 않았다.
+- 보조기술: 미실행 — 스크린리더와 forced-colors 환경이 제공되지 않았다.
+- 로컬 실행: Next.js 프로덕션 서버 `http://localhost:3000`
+- 정적 검사와 HTTP·렌더링 HTML 검사는 실행했지만, 이를 실제 시각·키보드 검사 결과로 확대 해석하지 않는다.
+
+## 5. 정적 검사 결과
+
+- 제목 — **통과**: 각 페이지 파일의 `<h1`이 정확히 1개였고, 코드 검토에서 비어 있는 제목, 제목 단계 건너뜀, 유효하지 않은 `aria-labelledby`, 중복 정적 `id`를 발견하지 않았다.
+- 랜드마크 — **통과**: 공개 레이아웃과 404가 `SkipLink`, `SiteHeader`, `main#main-content[tabIndex="-1"]`, `SiteFooter`를 같은 순서로 제공하며 페이지 내부에 중복 `main`이 없다.
+- 링크와 버튼 — **통과**: 링크 문구로 목적을 구분할 수 있고, 장식 화살표는 `aria-hidden`, 전화번호는 `tel:` 링크다. 새 창 링크는 없다. 모바일 메뉴 버튼은 `type="button"`, `aria-expanded`, `aria-controls`, 상태별 `aria-label`을 가지며 현재 메뉴 링크는 `aria-current="page"`를 사용한다.
+- 포커스 — **통과(정적)**: 상호작용 요소에 `focus-visible` 또는 SkipLink의 `focus` outline이 있고 대체 표시 없는 `outline-none`은 없다. 실제 outline 가림 여부는 브라우저 미실행이다.
+- 대상 크기 — **통과(정적)**: 주요 메뉴, 모바일 버튼·메뉴, 본문 CTA·목록·전화 링크, 푸터 메뉴·전화 링크, 404 홈 링크는 `min-h-11` 또는 충분한 세로 padding을 사용한다. 헤더 홈 링크와 푸터 홈 링크는 텍스트 line-height와 padding/콘텐츠 높이 조합을 검토했다. 실제 포인터 측정은 미실행이다.
+- 반응형 위험 패턴 — **통과(정적)**: 콘텐츠 고정 높이·고정 폭·`whitespace-nowrap`은 없고, 긴 주소와 목록 flex 자식에 `break-words`, `break-all`, `min-w-0`이 필요한 위치에 적용되어 있다. 모바일 메뉴의 절대 위치와 viewport 기반 최대 높이는 헤더 아래 내부 스크롤을 위한 의도된 사용이다.
+- 색상과 모션 — **통과(정적)**: TSX에 원시 HEX/RGB/HSL/OKLCH가 없고 의미 토큰을 사용한다. hover가 있는 상호작용 요소에는 포커스 표시가 있다. 전역 `prefers-reduced-motion: reduce` 정책이 유지된다. 현재 메뉴는 색상 외에도 굵기, border, `aria-current`를 제공한다.
+
+## 6. 경로별 결과
+
+| 경로 | HTTP | 제목·랜드마크 | 반응형 | 키보드 | 확대 | 상태 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `/` | 200 통과 | 정적·HTML 통과 | 미실행 | 미실행 | 미실행 | 정적·HTTP 통과 |
+| `/about` | 200 통과 | 정적·HTML 통과 | 미실행 | 미실행 | 미실행 | 정적·HTTP 통과 |
+| `/life` | 200 통과 | 정적·HTML 통과 | 미실행 | 미실행 | 미실행 | 정적·HTTP 통과 |
+| `/news` | 200 통과 | 정적·HTML 통과 | 미실행 | 미실행 | 미실행 | 정적·HTTP 통과 |
+| `/support` | 200 통과 | 정적·HTML 통과 | 미실행 | 미실행 | 미실행 | 정적·HTTP 통과 |
+| `/transparency` | 200 통과 | 정적·HTML 통과 | 미실행 | 미실행 | 미실행 | 정적·HTTP 통과 |
+| `/this-page-does-not-exist` | 404 통과 | 정적·HTML 통과 | 미실행 | 미실행 | 미실행 | 정적·HTTP 통과 |
+
+렌더링 HTML 검사에서는 각 경로의 H1 1개, `main#main-content[tabindex="-1"]`, 본문 바로가기, 사이트명, footer를 확인했다. 404에서는 추가로 `오류 404`와 `홈으로 돌아가기`를 확인했다.
+
+## 7. 발견한 문제
+
+이번 실행 범위에서 재현된 문제 없음.
+
+브라우저 제어 환경이 없어 시각·반응형·키보드·확대 문제를 재현하는 검사는 수행하지 않았다. 따라서 검사하지 않은 영역까지 문제가 없다고 해석하지 않으며, 재현 근거가 없는 UI 코드는 수정하지 않았다.
+
+## 8. 공통 레이아웃
+
+- SkipLink — **정적 통과**: DOM의 첫 공통 탐색 요소이며 `href="#main-content"`와 포커스 표시 스타일을 제공한다. 실제 포커스 이동은 미실행이다.
+- SiteHeader — **정적 통과**: `header`와 목적이 명확한 홈 링크를 제공한다.
+- 데스크톱 메뉴 — **정적 통과**: 레이블이 있는 `nav`, 44px 최소 높이, 현재 경로의 `aria-current`, 굵기와 하단 border를 제공한다. 1024px·1440px 렌더링은 미실행이다.
+- 모바일 메뉴 — **정적 통과**: 네이티브 button, 상태 속성, Enter/Space 기본 동작, Escape 닫기와 버튼 포커스 복귀, 외부 pointer 닫기, 링크 선택 닫기, 경로별 상태 초기화, 내부 세로 스크롤 코드가 있다. 실제 입력 검사는 미실행이다.
+- main — **정적·HTML 통과**: 공개 페이지와 404 모두 단일 `main#main-content[tabIndex={-1}]`를 제공한다.
+- SiteFooter — **정적·HTML 통과**: `footer`, 구분된 푸터 내비게이션, 주소와 `tel:` 링크를 제공한다.
+- 404 사이트 셸 — **정적·HTTP·HTML 통과**: 공통 header·main·footer와 복귀 링크를 제공하고 존재하지 않는 경로가 HTTP 404를 반환했다.
+
+## 9. 실행 명령과 결과
+
+- `pwd`, `git status --short`, `git branch --show-current`, `git rev-parse HEAD` — **통과**
+- 요청된 `find` 3개 명령 — **통과**
+- 지정된 구현·설정·기준 문서 전체 읽기 — **통과**
+- `rg -n "not-found|Link Component|usePathname|Server Component|Client Component|Metadata|layout" shalom-house/node_modules/next/dist/docs` — **통과**, 1,598개 일치 행 확인
+- 페이지별 `<h1` 개수 loop — **통과**, 7개 파일 모두 1개
+- 랜드마크, 링크·버튼, 포커스, 대상 크기, 반응형 위험 패턴, 원시 색상, 모션 정적 검색 — **통과**, 결과를 코드와 함께 검토
+- `pnpm --dir shalom-house typecheck` — **통과**
+- `pnpm --dir shalom-house lint` — **통과**
+- `pnpm --dir shalom-house build` — **통과**, 7개 공개/404 route 정적 생성
+- `pnpm --dir shalom-house start` — **통과**, localhost:3000에서 Ready
+- `curl` HTTP loop — **통과**, 정상 경로 6개는 200, 존재하지 않는 경로는 404
+- Python 표준 라이브러리 `html.parser` 기반 렌더링 HTML 검사 — **통과**, 각 응답의 H1·main·SkipLink·사이트명·footer 및 404 필수 문구 확인
+- `git diff --check` — 문서 작성 전 **통과**, 최종 변경 범위 검사에서 재실행한다.
+
+## 10. 미실행 검사
+
+| 검사명 | 미실행 이유 | 후속 검증 방법 |
+| --- | --- | --- |
+| 실제 브라우저 레이아웃 | 브라우저 제어 기능이 제공되지 않음 | 지원 브라우저에서 7개 경로를 320/390/768/1024/1440px로 확인 |
+| 모바일 메뉴 입력 | 실제 키보드·포인터 제어 환경이 없음 | 320/390/768px에서 Enter, Space, Escape, 외부 클릭, 링크 선택과 포커스 복귀 확인 |
+| 전체 키보드 순서 | 실제 브라우저 입력 환경이 없음 | 각 대표 경로에서 Tab·Shift+Tab과 SkipLink 이동, 포커스 가림·함정 확인 |
+| 확대와 reflow | 브라우저 확대 기능이 없음 | 대표 5개 경로에서 200%, 400% 또는 320 CSS px 상당 reflow 확인 |
+| reduced motion | 미디어 기능 에뮬레이션 환경이 없음 | `prefers-reduced-motion: reduce` 에뮬레이션 후 기능·정보 유지 확인 |
+| forced-colors | Windows 고대비/에뮬레이션 환경이 없음 | `forced-colors: active`에서 포커스·현재 메뉴·경계 확인 |
+| 스크린리더 | 보조기술 환경이 제공되지 않음 | NVDA/VoiceOver 등에서 title, 랜드마크, 제목, 상태와 링크 이름 확인 |
+| Vercel 최종 상태 | PR 생성 전 문서 작성 환경이며 Vercel 프로젝트 상태 접근 수단이 없음 | PR 생성 뒤 각 프로젝트의 배포 항목·실제 빌드·최종 상태를 각각 확인 |
+
+## 11. 접근성 완료 판단
+
+- 이번 실행에서 코드 정적 감사, 타입 검사, lint, 프로덕션 빌드, HTTP 상태와 제한된 렌더링 HTML 구조 검사를 완료했다.
+- 실제 브라우저의 시각적 배치, 키보드 상호작용, 확대, forced-colors, 스크린리더 검사는 완료하지 못했다.
+- 자동·정적 검사와 빌드 성공은 실제 사용성이나 모든 접근성 요구의 충족을 증명하지 않는다.
+- 전문 심사, 보조기술 조합별 검사, 실제 장애인·고령 사용자 평가를 수행하지 않았으므로 전문 접근성 적합을 주장하지 않는다.
+
+## 12. Vercel 배포 분리
+
+- shalom-house: 배포 항목 생성 여부 **확인하지 못함**, 실제 빌드 실행 여부 **확인하지 못함**, 최종 상태 **확인하지 못함**.
+- tennisflow: 배포 항목 생성 여부 **확인하지 못함**, 실제 빌드 실행 여부 **확인하지 못함**, 최종 상태 **확인하지 못함**.
+- sideproject: 배포 항목 생성 여부 **확인하지 못함**, 최종 상태 **확인하지 못함**.
+- 최종 상태: 확인하지 못함 — PR 생성 환경에서 Vercel 최종 상태 접근 불가.
+- `vercel.json`, Ignored Build Step, Root Directory, Git 연결 및 다른 프로젝트 코드는 변경하지 않는다.
