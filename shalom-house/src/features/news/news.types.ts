@@ -39,6 +39,19 @@ const categoryLabels: Record<NewsCategory, string> = {
   activity: "활동 소식",
 };
 
+const publicationStatusLabels: Record<NewsPublicationStatus, string> = {
+  draft: "작성 중",
+  review: "검토 중",
+  published: "게시",
+  archived: "보관",
+};
+
+const approvalStatusLabels: Record<NewsApprovalStatus, string> = {
+  pending: "승인 대기",
+  approved: "승인 완료",
+  rejected: "공개 거부",
+};
+
 export function getNewsCategoryLabel(category: NewsCategory): string {
   return categoryLabels[category];
 }
@@ -47,6 +60,36 @@ export function isNewsCategory(value: unknown): value is NewsCategory {
   return (
     typeof value === "string" && newsCategories.includes(value as NewsCategory)
   );
+}
+
+export function isNewsPublicationStatus(
+  value: unknown,
+): value is NewsPublicationStatus {
+  return (
+    typeof value === "string" &&
+    newsPublicationStatuses.includes(value as NewsPublicationStatus)
+  );
+}
+
+export function isNewsApprovalStatus(
+  value: unknown,
+): value is NewsApprovalStatus {
+  return (
+    typeof value === "string" &&
+    newsApprovalStatuses.includes(value as NewsApprovalStatus)
+  );
+}
+
+export function getNewsPublicationStatusLabel(
+  status: NewsPublicationStatus,
+): string {
+  return publicationStatusLabels[status];
+}
+
+export function getNewsApprovalStatusLabel(
+  status: NewsApprovalStatus,
+): string {
+  return approvalStatusLabels[status];
 }
 
 export function isValidNewsSlug(value: unknown): value is string {

@@ -1,35 +1,19 @@
-import { type Document, type Filter, ObjectId, type WithId } from "mongodb";
+import { type Document, type Filter, type WithId } from "mongodb";
 
 import { getMongoDatabase } from "@/lib/mongodb";
 
 import type { NewsRepository } from "./news.repository";
 import {
+  NEWS_COLLECTION_NAME,
+  type MongoNewsPostDocument,
+} from "./news.mongo-schema";
+import { normalizePublicNewsLimit } from "./news.pagination";
+import {
   isNewsCategory,
   isValidNewsSlug,
-  type NewsApprovalStatus,
-  type NewsCategory,
-  type NewsPublicationStatus,
   type PublicNewsPost,
   type PublicNewsPostSummary,
 } from "./news.types";
-import { normalizeNewsLimit } from "./news.repository";
-
-const newsCollectionName = "news_posts";
-
-type MongoNewsPostDocument = {
-  _id: ObjectId;
-  slug: string;
-  category: NewsCategory;
-  title: string;
-  summary: string;
-  body: string[];
-  publicationStatus: NewsPublicationStatus;
-  approvalStatus: NewsApprovalStatus;
-  publishedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date | null;
-};
 
 function isValidDate(value: unknown): value is Date {
   return value instanceof Date && !Number.isNaN(value.getTime());
@@ -91,7 +75,7 @@ export class MongoNewsRepository implements NewsRepository {
   }): Promise<readonly PublicNewsPostSummary[]> {
     const database = await getMongoDatabase();
     const documents = await database
-      .collection<MongoNewsPostDocument>(newsCollectionName)
+      .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
       .find(createPublicFilter(new Date()), {
         projection: {
           slug: 1,
@@ -103,7 +87,7 @@ export class MongoNewsRepository implements NewsRepository {
         },
       })
       .sort({ publishedAt: -1, _id: -1 })
-      .limit(normalizeNewsLimit(options?.limit))
+      .limit(normalizePublicNewsLimit(options?.limit))
       .toArray();
 
     return documents.flatMap((document) => {
@@ -125,7 +109,7 @@ export class MongoNewsRepository implements NewsRepository {
 
     const database = await getMongoDatabase();
     const document = await database
-      .collection<MongoNewsPostDocument>(newsCollectionName)
+      .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
       .findOne(
         { ...createPublicFilter(new Date()), slug },
         {

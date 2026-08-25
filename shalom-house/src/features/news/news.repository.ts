@@ -1,5 +1,6 @@
 import { getPublishedFixtureNewsPosts } from "./news.fixtures";
 import { MongoNewsRepository } from "./news.mongo-repository";
+import { normalizePublicNewsLimit } from "./news.pagination";
 import type { PublicNewsPost, PublicNewsPostSummary } from "./news.types";
 
 export interface NewsRepository {
@@ -8,18 +9,6 @@ export interface NewsRepository {
   }): Promise<readonly PublicNewsPostSummary[]>;
 
   findPublishedBySlug(slug: string): Promise<PublicNewsPost | null>;
-}
-
-const defaultLimit = 20;
-const minimumLimit = 1;
-const maximumLimit = 50;
-
-export function normalizeNewsLimit(limit?: number): number {
-  if (typeof limit !== "number" || !Number.isFinite(limit)) {
-    return defaultLimit;
-  }
-
-  return Math.min(maximumLimit, Math.max(minimumLimit, Math.trunc(limit)));
 }
 
 const emptyNewsRepository: NewsRepository = {
@@ -33,7 +22,7 @@ const emptyNewsRepository: NewsRepository = {
 
 const fixtureNewsRepository: NewsRepository = {
   async listPublished(options) {
-    const limit = normalizeNewsLimit(options?.limit);
+    const limit = normalizePublicNewsLimit(options?.limit);
     return getPublishedFixtureNewsPosts()
       .slice(0, limit)
       .map((post) => ({
