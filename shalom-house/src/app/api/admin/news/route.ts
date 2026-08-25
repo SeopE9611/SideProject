@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 const MAX_ADMIN_NEWS_REQUEST_BYTES = 64 * 1024;
 const jsonHeaders = {
   "Cache-Control": "no-store",
-  "Content-Type": "application/json",
+  "Content-Type": "application/json; charset=utf-8",
 };
 
 function jsonResponse(body: unknown, status: number): Response {
@@ -28,6 +28,13 @@ function payloadTooLargeResponse(): Response {
   );
 }
 
+function isJsonContentType(request: Request): boolean {
+  const contentType = request.headers.get("content-type");
+  if (!contentType) return false;
+
+  return contentType.split(";", 1)[0].trim().toLowerCase() === "application/json";
+}
+
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) {
     return jsonResponse(
@@ -36,65 +43,65 @@ export async function POST(request: Request) {
     );
   }
 
-  const admin = await getCurrentAdmin();
-  if (!admin) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "unauthorized",
-        message: "관리자 로그인이 필요합니다.",
-      },
-      401,
-    );
-  }
+  try {
+    const admin = await getCurrentAdmin();
+    if (!admin) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "unauthorized",
+          message: "관리자 로그인이 필요합니다.",
+        },
+        401,
+      );
+    }
 
-  if (!request.headers.get("content-type")?.startsWith("application/json")) {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "unsupported_media_type",
-        message: "JSON 형식으로 작성 내용을 보내 주세요.",
-      },
-      415,
-    );
-  }
+    if (!isJsonContentType(request)) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "unsupported_media_type",
+          message: "JSON 형식으로 작성 내용을 보내 주세요.",
+        },
+        415,
+      );
+    }
 
-  const contentLength = request.headers.get("content-length");
-  if (contentLength !== null) {
-    const declaredBytes = Number.parseInt(contentLength, 10);
-    if (Number.isFinite(declaredBytes) && declaredBytes > MAX_ADMIN_NEWS_REQUEST_BYTES) {
+    const contentLength = request.headers.get("content-length");
+    if (contentLength !== null) {
+      const declaredBytes = Number.parseInt(contentLength, 10);
+      if (Number.isFinite(declaredBytes) && declaredBytes > MAX_ADMIN_NEWS_REQUEST_BYTES) {
+        return payloadTooLargeResponse();
+      }
+    }
+
+    const requestText = await request.text();
+    if (new TextEncoder().encode(requestText).byteLength > MAX_ADMIN_NEWS_REQUEST_BYTES) {
       return payloadTooLargeResponse();
     }
-  }
 
-  const requestText = await request.text();
-  if (new TextEncoder().encode(requestText).byteLength > MAX_ADMIN_NEWS_REQUEST_BYTES) {
-    return payloadTooLargeResponse();
-  }
+    let input: unknown;
+    try {
+      input = JSON.parse(requestText) as unknown;
+    } catch {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "invalid_json",
+          message: "작성 내용을 확인해 주세요.",
+        },
+        400,
+      );
+    }
 
-  let input: unknown;
-  try {
-    input = JSON.parse(requestText) as unknown;
-  } catch {
-    return jsonResponse(
-      {
-        ok: false,
-        error: "invalid_json",
-        message: "작성 내용을 확인해 주세요.",
-      },
-      400,
-    );
-  }
+    const validation = validateAdminNewsDraftInput(input);
+    if (!validation.ok) {
+      return jsonResponse(
+        { ok: false, error: "validation", fieldErrors: validation.fieldErrors },
+        400,
+      );
+    }
 
-  const validation = validateAdminNewsDraftInput(input);
-  if (!validation.ok) {
-    return jsonResponse(
-      { ok: false, error: "validation", fieldErrors: validation.fieldErrors },
-      400,
-    );
-  }
-
-  try {
     const result = await createAdminNewsDraft(validation.value);
     if (!result.ok) {
       return jsonResponse(

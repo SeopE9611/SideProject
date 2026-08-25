@@ -1,4 +1,9 @@
-import { MongoServerError, type Filter, type WithId } from "mongodb";
+import {
+  MongoServerError,
+  ObjectId,
+  type Filter,
+  type WithId,
+} from "mongodb";
 
 import { getMongoDatabase } from "@/lib/mongodb";
 
@@ -35,6 +40,11 @@ export type AdminNewsListItem = {
   isPubliclyVisible: boolean;
 };
 
+export type AdminNewsDetail = AdminNewsListItem & {
+  body: readonly string[];
+  isEditable: boolean;
+};
+
 export type AdminNewsListFilters = {
   category?: NewsCategory;
   publicationStatus?: NewsPublicationStatus;
@@ -52,6 +62,17 @@ export type AdminNewsListResult = {
 export type CreateAdminNewsDraftResult =
   | { ok: true; id: string; slug: string }
   | { ok: false; reason: "slug_conflict" };
+
+export type UpdateAdminNewsDraftResult =
+  | { ok: true; id: string; slug: string; updatedAt: string }
+  | {
+      ok: false;
+      reason:
+        | "slug_conflict"
+        | "not_found"
+        | "not_editable"
+        | "edit_conflict";
+    };
 
 type MongoNewsPostInsertDocument = Omit<MongoNewsPostDocument, "_id">;
 
@@ -95,6 +116,21 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function isPubliclyVisible(
+  document: Pick<
+    MongoNewsPostDocument,
+    "publicationStatus" | "approvalStatus" | "publishedAt"
+  >,
+  now: Date,
+): boolean {
+  return (
+    document.publicationStatus === "published" &&
+    document.approvalStatus === "approved" &&
+    document.publishedAt !== null &&
+    document.publishedAt <= now
+  );
+}
+
 function toAdminNewsListItem(
   document: WithId<MongoNewsPostDocument>,
   now: Date,
@@ -124,12 +160,149 @@ function toAdminNewsListItem(
     publishedAt: document.publishedAt?.toISOString() ?? null,
     createdAt: document.createdAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
-    isPubliclyVisible:
-      document.publicationStatus === "published" &&
-      document.approvalStatus === "approved" &&
-      document.publishedAt !== null &&
-      document.publishedAt <= now,
+    isPubliclyVisible: isPubliclyVisible(document, now),
   };
+}
+
+export function isValidAdminNewsId(value: unknown): value is string {
+  if (typeof value !== "string" || !/^[a-fA-F0-9]{24}$/.test(value)) {
+    return false;
+  }
+
+  return (
+    ObjectId.isValid(value) &&
+    new ObjectId(value).toHexString() === value.toLowerCase()
+  );
+}
+
+export async function findAdminNewsPostById(
+  id: string,
+  now: Date = new Date(),
+): Promise<AdminNewsDetail | null> {
+  if (!isValidAdminNewsId(id)) return null;
+
+  const database = await getMongoDatabase();
+  const document = await database
+    .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
+    .findOne(
+      { _id: new ObjectId(id), deletedAt: null },
+      {
+        projection: {
+          slug: 1,
+          category: 1,
+          title: 1,
+          summary: 1,
+          body: 1,
+          publicationStatus: 1,
+          approvalStatus: 1,
+          publishedAt: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    );
+
+  if (!document) return null;
+  const listItem = toAdminNewsListItem(document, now);
+  if (
+    !listItem ||
+    !Array.isArray(document.body) ||
+    !document.body.every(isNonEmptyString)
+  ) {
+    console.error("관리자 뉴스 상세 문서 검증 실패", {
+      documentId: document._id.toString(),
+    });
+    return null;
+  }
+
+  return {
+    ...listItem,
+    body: document.body,
+    isEditable:
+      document.publicationStatus === "draft" &&
+      document.approvalStatus === "pending",
+  };
+}
+
+export async function updateAdminNewsDraft(input: {
+  id: string;
+  draft: ValidatedAdminNewsDraft;
+  expectedUpdatedAt: Date;
+  now?: Date;
+}): Promise<UpdateAdminNewsDraftResult> {
+  if (!isValidAdminNewsId(input.id)) return { ok: false, reason: "not_found" };
+
+  const nextUpdatedAt = new Date(
+    Math.max(
+      (input.now ?? new Date()).getTime(),
+      input.expectedUpdatedAt.getTime() + 1,
+    ),
+  );
+  const database = await getMongoDatabase();
+  const collection = database.collection<MongoNewsPostDocument>(
+    NEWS_COLLECTION_NAME,
+  );
+  let updatedDocument: WithId<MongoNewsPostDocument> | null;
+
+  try {
+    updatedDocument = await collection.findOneAndUpdate(
+      {
+        _id: new ObjectId(input.id),
+        $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }],
+        publicationStatus: "draft",
+        approvalStatus: "pending",
+        updatedAt: input.expectedUpdatedAt,
+      },
+      {
+        $set: {
+          slug: input.draft.slug,
+          category: input.draft.category,
+          title: input.draft.title,
+          summary: input.draft.summary,
+          body: Array.from(input.draft.body),
+          updatedAt: nextUpdatedAt,
+        },
+      },
+      { returnDocument: "after", includeResultMetadata: false },
+    );
+  } catch (error) {
+    if (error instanceof MongoServerError && error.code === 11000) {
+      return { ok: false, reason: "slug_conflict" };
+    }
+    throw error;
+  }
+
+  if (updatedDocument) {
+    return {
+      ok: true,
+      id: updatedDocument._id.toString(),
+      slug: updatedDocument.slug,
+      updatedAt: updatedDocument.updatedAt.toISOString(),
+    };
+  }
+
+  const current = await collection.findOne(
+    { _id: new ObjectId(input.id) },
+    {
+      projection: {
+        publicationStatus: 1,
+        approvalStatus: 1,
+        updatedAt: 1,
+        deletedAt: 1,
+      },
+    },
+  );
+  if (!current || current.deletedAt != null) {
+    return { ok: false, reason: "not_found" };
+  }
+  if (
+    current.publicationStatus !== "draft" ||
+    current.approvalStatus !== "pending"
+  ) {
+    return { ok: false, reason: "not_editable" };
+  }
+
+  return { ok: false, reason: "edit_conflict" };
 }
 
 export async function listAdminNewsPosts(input: {

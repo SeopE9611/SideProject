@@ -20,6 +20,10 @@ export type AdminNewsDraftInput = {
   contentSafetyConfirmed: boolean;
 };
 
+export type AdminNewsDraftUpdateInput = AdminNewsDraftInput & {
+  expectedUpdatedAt: unknown;
+};
+
 export type ValidatedAdminNewsDraft = {
   category: NewsCategory;
   slug: string;
@@ -43,6 +47,19 @@ export type AdminNewsDraftFieldErrors = Partial<
 export type AdminNewsDraftValidationResult =
   | { ok: true; value: ValidatedAdminNewsDraft }
   | { ok: false; fieldErrors: AdminNewsDraftFieldErrors };
+
+export type ValidatedAdminNewsDraftUpdate = {
+  draft: ValidatedAdminNewsDraft;
+  expectedUpdatedAt: Date;
+};
+
+export type AdminNewsDraftUpdateValidationResult =
+  | { ok: true; value: ValidatedAdminNewsDraftUpdate }
+  | {
+      ok: false;
+      fieldErrors: AdminNewsDraftFieldErrors;
+      formError?: "invalid_version";
+    };
 
 export function validateAdminNewsDraftInput(
   input: unknown,
@@ -122,5 +139,37 @@ export function validateAdminNewsDraftInput(
       summary,
       body,
     },
+  };
+}
+
+export function validateAdminNewsDraftUpdateInput(
+  input: unknown,
+): AdminNewsDraftUpdateValidationResult {
+  const draftValidation = validateAdminNewsDraftInput(input);
+  const value =
+    typeof input === "object" && input !== null
+      ? (input as Record<string, unknown>)
+      : {};
+  const expectedUpdatedAtValue = value.expectedUpdatedAt;
+  const expectedUpdatedAt =
+    typeof expectedUpdatedAtValue === "string"
+      ? new Date(expectedUpdatedAtValue)
+      : null;
+  const hasValidVersion =
+    expectedUpdatedAt !== null &&
+    !Number.isNaN(expectedUpdatedAt.getTime()) &&
+    expectedUpdatedAt.toISOString() === expectedUpdatedAtValue;
+
+  if (!draftValidation.ok || !hasValidVersion) {
+    return {
+      ok: false,
+      fieldErrors: draftValidation.ok ? {} : draftValidation.fieldErrors,
+      ...(!hasValidVersion ? { formError: "invalid_version" as const } : {}),
+    };
+  }
+
+  return {
+    ok: true,
+    value: { draft: draftValidation.value, expectedUpdatedAt },
   };
 }

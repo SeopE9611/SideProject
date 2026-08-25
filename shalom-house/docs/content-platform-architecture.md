@@ -6,8 +6,9 @@
 MongoDB 세션, 로그인 제한, 관리자 로그인·로그아웃, 관리자 보호 레이아웃과
 대시보드와 관리자 뉴스 목록 조회를 제공한다. 관리자 뉴스 목록의 분류·게시 상태·
 승인 상태 필터, 페이지 이동과 현재 공개 여부 표시, 관리자 뉴스 초안 작성 화면,
-클라이언트·서버 입력 검증, 관리자 작성 API, 중복 slug 처리와 MongoDB 초안 저장을
-완료했다. 수정, 검토 요청, 승인, 게시·보관, 삭제·복구는 후속 작업 범위다.
+클라이언트·서버 입력 검증, 관리자 작성 API, 중복 slug 처리와 MongoDB 초안 저장,
+관리자 뉴스 상세 조회와 안전한 초안 수정, `updatedAt` 기반 동시 수정 충돌 방지를
+완료했다. 검토 요청, 승인, 게시·보관, 삭제·복구는 후속 작업 범위다.
 
 ## 2. 데이터 소스
 
@@ -119,7 +120,7 @@ pnpm --dir shalom-house admin:create-user
 - `news.mongo-schema.ts`: 컬렉션명과 MongoDB 문서 타입을 공유한다.
 - `news.pagination.ts`: 공개 목록 limit와 관리자 page를 정규화한다.
 - `news.mongo-repository.ts`: 공개 뉴스 목록과 상세 읽기만 담당한다.
-- `news.admin-repository.ts`: 관리자 전용 뉴스 목록 읽기를 담당한다.
+- `news.admin-repository.ts`: 관리자 전용 뉴스 목록·상세 읽기를 담당한다.
 
 ## 8. 관리자 뉴스 초안 작성
 
@@ -147,22 +148,38 @@ createdAt=updatedAt
 - `news.admin-validation.ts`: 브라우저와 서버가 공유하는 초안 입력 검증을 담당한다.
 - `news.admin-repository.ts`: 관리자 목록 조회와 MongoDB 초안 생성을 담당한다.
 
-## 9. 향후 관리자 방향
+## 9. 관리자 뉴스 상세와 초안 수정
+
+- 상세 경로는 `/admin/news/[id]`, 수정 경로는 `/admin/news/[id]/edit`, 수정 API는
+  `PATCH /api/admin/news/[id]`이며 변경 가능한 slug 대신 MongoDB ObjectId를 사용한다.
+- 수정은 `publicationStatus=draft`, `approvalStatus=pending`, `deletedAt=null`인
+  게시물에만 허용한다. 수정 가능 필드는 `category`, `slug`, `title`, `summary`,
+  `body`, `updatedAt`이다. `publicationStatus`, `approvalStatus`, `publishedAt`,
+  `createdAt`, `deletedAt`은 변경하지 않는다.
+- form이 로드한 `updatedAt`을 `expectedUpdatedAt`으로 전달하고 MongoDB 원자적
+  update filter에서 일치를 확인한다. 먼저 저장된 변경으로 값이 불일치하면
+  `409 edit_conflict`를 반환한다. 수정 slug 중복은 unique 인덱스 오류에 따라
+  `409 slug_conflict`, 수정 불가 상태는 `409 not_editable`로 구분한다.
+- 작성·수정 API는 `application/json` 미디어 타입을 정확히 비교한다. 작성 API는
+  세션 DB 조회 오류도 JSON 503으로 처리하고, 공통 form은 비JSON 또는 파싱할 수
+  없는 서버 응답을 네트워크 요청 실패와 구분한다.
+
+## 10. 향후 관리자 방향
 
 아래 항목은 구현된 기능이 아니라 향후 진행 순서다.
 
 완료: 관리자 인증과 권한, 관리자 공통 레이아웃, 관리자 뉴스 목록 조회,
-관리자 뉴스 초안 작성
+관리자 뉴스 초안 작성, 관리자 뉴스 상세 조회, 관리자 뉴스 초안 수정,
+동시 수정 충돌·수정 slug 중복·수정 불가 상태 처리
 
-1. 게시물 상세 관리
-2. 게시물 수정
-3. 검토 요청
-4. 최종 승인
-5. 공개·비공개·보관
-6. 수정 이력과 감사 기록
-7. 이미지와 첨부파일
+1. 검토 요청
+2. 최종 승인
+3. 공개·비공개·보관
+4. 수정 이력과 감사 기록
+5. 삭제·복구
+6. 이미지와 첨부파일
 
-## 10. 도깨비테니스 참고 범위
+## 11. 도깨비테니스 참고 범위
 
 공개 영역과 관리자 영역의 분리, 목록과 상세 경로의 분리, DB 연결 중앙화,
 공개 상태와 비공개 상태의 분리, 목록과 상세 조회 책임의 분리라는 구조적 원칙만

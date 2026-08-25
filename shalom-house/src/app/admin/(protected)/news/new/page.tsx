@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { AdminNewsCreateForm } from "@/components/admin/admin-news-create-form";
+import { AdminNewsDraftForm } from "@/components/admin/admin-news-draft-form";
 
 export const metadata: Metadata = {
   title: "뉴스 작성",
@@ -36,7 +36,7 @@ export default function AdminNewsCreatePage() {
 
       <section aria-labelledby="admin-news-form-heading">
         <h2 id="admin-news-form-heading" className="sr-only">뉴스 초안 입력</h2>
-        <AdminNewsCreateForm />
+        <AdminNewsDraftForm mode="create" />
       </section>
     </div>
   );
