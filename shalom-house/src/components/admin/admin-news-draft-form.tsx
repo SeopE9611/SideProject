@@ -47,7 +47,65 @@ function describedBy(
     .join(" ") || undefined;
 }
 
-export function AdminNewsCreateForm() {
+export type AdminNewsDraftFormInitialValues = {
+  category: string;
+  slug: string;
+  title: string;
+  summary: string;
+  body: string;
+};
+
+export type AdminNewsDraftFormProps =
+  | { mode: "create" }
+  | {
+      mode: "edit";
+      postId: string;
+      expectedUpdatedAt: string;
+      initialValues: AdminNewsDraftFormInitialValues;
+    };
+
+async function readJsonResponse(response: Response): Promise<unknown | null> {
+  const mediaType = response.headers
+    .get("content-type")
+    ?.split(";", 1)[0]
+    .trim()
+    .toLowerCase();
+  if (mediaType !== "application/json") return null;
+
+  try {
+    return (await response.json()) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getResponseError(value: unknown): string | null {
+  return isRecord(value) && typeof value.error === "string" ? value.error : null;
+}
+
+function getFieldErrors(value: unknown): AdminNewsDraftFieldErrors | null {
+  if (!isRecord(value) || !isRecord(value.fieldErrors)) return null;
+  const errors: AdminNewsDraftFieldErrors = {};
+  for (const field of Object.keys(fieldErrorIds) as AdminNewsDraftField[]) {
+    if (typeof value.fieldErrors[field] === "string") {
+      errors[field] = value.fieldErrors[field];
+    }
+  }
+  return errors;
+}
+
+function getSafeRedirect(value: unknown): string | null {
+  if (!isRecord(value) || typeof value.redirectTo !== "string") return null;
+  return /^\/admin\/news(?:[/?]|$)/.test(value.redirectTo)
+    ? value.redirectTo
+    : null;
+}
+
+export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
   const router = useRouter();
   const [fieldErrors, setFieldErrors] = useState<AdminNewsDraftFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -66,6 +124,9 @@ export function AdminNewsCreateForm() {
       summary: formData.get("summary"),
       body: formData.get("body"),
       contentSafetyConfirmed: formData.get("contentSafetyConfirmed") === "on",
+      ...(props.mode === "edit"
+        ? { expectedUpdatedAt: props.expectedUpdatedAt }
+        : {}),
     };
     const validation = validateAdminNewsDraftInput(input);
 
@@ -78,14 +139,29 @@ export function AdminNewsCreateForm() {
     setFieldErrors({});
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/admin/news", {
-        method: "POST",
+      const response = await fetch(
+        props.mode === "create"
+          ? "/api/admin/news"
+          : `/api/admin/news/${encodeURIComponent(props.postId)}`,
+        {
+        method: props.mode === "create" ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         credentials: "same-origin",
         body: JSON.stringify(input),
-      });
-      if (response.status === 201) {
-        router.push("/admin/news?created=1");
+        },
+      );
+      const responseBody = await readJsonResponse(response);
+      const expectedSuccessStatus = props.mode === "create" ? 201 : 200;
+      if (
+        response.status === expectedSuccessStatus &&
+        isRecord(responseBody) &&
+        responseBody.ok === true
+      ) {
+        const fallback =
+          props.mode === "create"
+            ? "/admin/news?created=1"
+            : `/admin/news/${props.postId}?updated=1`;
+        router.push(getSafeRedirect(responseBody) ?? fallback);
         router.refresh();
         return;
       }
@@ -94,16 +170,19 @@ export function AdminNewsCreateForm() {
         return;
       }
 
-      const responseBody = (await response.json()) as unknown;
+      const error = getResponseError(responseBody);
+      const serverFieldErrors = getFieldErrors(responseBody);
       if (
         (response.status === 400 || response.status === 409) &&
-        typeof responseBody === "object" &&
-        responseBody !== null &&
-        "fieldErrors" in responseBody
+        serverFieldErrors
       ) {
-        setFieldErrors(
-          (responseBody as { fieldErrors: AdminNewsDraftFieldErrors }).fieldErrors,
-        );
+        setFieldErrors(serverFieldErrors);
+      } else if (props.mode === "edit" && response.status === 404 && error === "not_found") {
+        setFormError("수정할 게시물을 찾을 수 없습니다.");
+      } else if (props.mode === "edit" && response.status === 409 && error === "edit_conflict") {
+        setFormError("다른 관리자가 이 게시물을 먼저 수정했습니다. 입력 내용을 복사한 뒤 상세 화면을 새로 확인해 주세요.");
+      } else if (props.mode === "edit" && response.status === 409 && error === "not_editable") {
+        setFormError("현재 게시 상태에서는 내용을 수정할 수 없습니다.");
       } else {
         setFormError("현재 초안을 저장할 수 없습니다. 잠시 후 다시 시도해 주세요.");
       }
@@ -135,6 +214,7 @@ export function AdminNewsCreateForm() {
           id="admin-news-category"
           name="category"
           required
+          defaultValue={props.mode === "edit" ? props.initialValues.category : ""}
           aria-invalid={fieldErrors.category ? true : undefined}
           aria-describedby={describedBy("category", fieldErrors)}
           className={`min-h-11 ${controlClass}`}
@@ -148,27 +228,27 @@ export function AdminNewsCreateForm() {
 
       <div className="grid gap-2">
         <label htmlFor="admin-news-title" className="font-semibold">제목</label>
-        <input id="admin-news-title" name="title" type="text" required maxLength={ADMIN_NEWS_TITLE_MAX_LENGTH} autoComplete="off" aria-invalid={fieldErrors.title ? true : undefined} aria-describedby={describedBy("title", fieldErrors)} className={`min-h-11 ${controlClass}`} />
+        <input id="admin-news-title" name="title" type="text" required defaultValue={props.mode === "edit" ? props.initialValues.title : ""} maxLength={ADMIN_NEWS_TITLE_MAX_LENGTH} autoComplete="off" aria-invalid={fieldErrors.title ? true : undefined} aria-describedby={describedBy("title", fieldErrors)} className={`min-h-11 ${controlClass}`} />
         <FieldError field="title" errors={fieldErrors} />
       </div>
 
       <div className="grid gap-2">
         <label htmlFor="admin-news-slug" className="font-semibold">슬러그</label>
-        <input id="admin-news-slug" name="slug" type="text" required maxLength={ADMIN_NEWS_SLUG_MAX_LENGTH} autoComplete="off" autoCapitalize="none" spellCheck={false} aria-invalid={fieldErrors.slug ? true : undefined} aria-describedby={describedBy("slug", fieldErrors, "admin-news-slug-help")} className={`min-h-11 ${controlClass}`} />
+        <input id="admin-news-slug" name="slug" type="text" required defaultValue={props.mode === "edit" ? props.initialValues.slug : ""} maxLength={ADMIN_NEWS_SLUG_MAX_LENGTH} autoComplete="off" autoCapitalize="none" spellCheck={false} aria-invalid={fieldErrors.slug ? true : undefined} aria-describedby={describedBy("slug", fieldErrors, "admin-news-slug-help")} className={`min-h-11 ${controlClass}`} />
         <p id="admin-news-slug-help" className="text-small text-muted-foreground">영문 소문자, 숫자와 하이픈만 사용할 수 있습니다.<br />공개 주소는 /news/입력한-슬러그 형태가 됩니다.</p>
         <FieldError field="slug" errors={fieldErrors} />
       </div>
 
       <div className="grid gap-2">
         <label htmlFor="admin-news-summary" className="font-semibold">요약</label>
-        <textarea id="admin-news-summary" name="summary" required maxLength={ADMIN_NEWS_SUMMARY_MAX_LENGTH} rows={4} aria-invalid={fieldErrors.summary ? true : undefined} aria-describedby={describedBy("summary", fieldErrors, "admin-news-summary-help")} className={controlClass} />
+        <textarea id="admin-news-summary" name="summary" required defaultValue={props.mode === "edit" ? props.initialValues.summary : ""} maxLength={ADMIN_NEWS_SUMMARY_MAX_LENGTH} rows={4} aria-invalid={fieldErrors.summary ? true : undefined} aria-describedby={describedBy("summary", fieldErrors, "admin-news-summary-help")} className={controlClass} />
         <p id="admin-news-summary-help" className="text-small text-muted-foreground">뉴스 목록과 검색 설명에 사용될 짧은 내용을 입력합니다.</p>
         <FieldError field="summary" errors={fieldErrors} />
       </div>
 
       <div className="grid gap-2">
         <label htmlFor="admin-news-body" className="font-semibold">본문</label>
-        <textarea id="admin-news-body" name="body" required maxLength={ADMIN_NEWS_BODY_MAX_LENGTH} rows={18} aria-invalid={fieldErrors.body ? true : undefined} aria-describedby={describedBy("body", fieldErrors, "admin-news-body-help")} className={controlClass} />
+        <textarea id="admin-news-body" name="body" required defaultValue={props.mode === "edit" ? props.initialValues.body : ""} maxLength={ADMIN_NEWS_BODY_MAX_LENGTH} rows={18} aria-invalid={fieldErrors.body ? true : undefined} aria-describedby={describedBy("body", fieldErrors, "admin-news-body-help")} className={controlClass} />
         <p id="admin-news-body-help" className="text-small text-muted-foreground">빈 줄로 문단을 구분합니다.<br />HTML과 Markdown이 아닌 일반 텍스트로 저장됩니다.</p>
         <FieldError field="body" errors={fieldErrors} />
       </div>
@@ -182,8 +262,8 @@ export function AdminNewsCreateForm() {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={isSubmitting} className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">{isSubmitting ? "저장 중…" : "초안 저장"}</button>
-        <Link href="/admin/news" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">작성 취소</Link>
+        <button type="submit" disabled={isSubmitting} className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">{isSubmitting ? "저장 중…" : props.mode === "create" ? "초안 저장" : "변경 사항 저장"}</button>
+        <Link href={props.mode === "create" ? "/admin/news" : `/admin/news/${props.postId}`} className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">취소</Link>
       </div>
     </form>
   );

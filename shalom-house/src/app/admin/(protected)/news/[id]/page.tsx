@@ -1,0 +1,112 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { findAdminNewsPostById } from "@/features/news/news.admin-repository";
+import {
+  getNewsApprovalStatusLabel,
+  getNewsCategoryLabel,
+  getNewsPublicationStatusLabel,
+} from "@/features/news/news.types";
+
+export const metadata: Metadata = {
+  title: "뉴스 상세 관리",
+  robots: { index: false, follow: false },
+};
+
+const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "UTC",
+});
+
+function DateValue({ value }: { value: string | null }) {
+  return value ? (
+    <time dateTime={value}>{dateFormatter.format(new Date(value))}</time>
+  ) : (
+    <>게시일 미설정</>
+  );
+}
+
+export default async function AdminNewsDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ updated?: string | string[] }>;
+}) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const post = await findAdminNewsPostById(id);
+  if (!post) notFound();
+  const wasUpdated = typeof query.updated === "string" && query.updated === "1";
+
+  const details = [
+    ["게시 상태", getNewsPublicationStatusLabel(post.publicationStatus)],
+    ["승인 상태", getNewsApprovalStatusLabel(post.approvalStatus)],
+    ["공개 여부", post.isPubliclyVisible ? "공개 중" : "비공개"],
+    ["slug", post.slug],
+  ] as const;
+
+  return (
+    <div className="space-y-8">
+      <header>
+        <Link href="/admin/news" className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+          ← 뉴스 관리로 돌아가기
+        </Link>
+        <p className="mt-4 text-small font-semibold text-primary">{getNewsCategoryLabel(post.category)}</p>
+        <h1 className="mt-1 text-title font-bold">게시물 상세 관리</h1>
+        <p className="mt-3 break-words text-heading font-bold">{post.title}</p>
+      </header>
+
+      {wasUpdated ? (
+        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
+          게시물 내용을 수정했습니다.
+        </p>
+      ) : null}
+
+      <div className="flex flex-wrap gap-3">
+        {post.isEditable ? (
+          <Link href={`/admin/news/${post.id}/edit`} className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+            게시물 수정
+          </Link>
+        ) : null}
+        {post.isPubliclyVisible ? (
+          <Link href={`/news/${post.slug}`} className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+            공개 페이지 보기
+          </Link>
+        ) : null}
+      </div>
+
+      {!post.isEditable ? (
+        <aside className="rounded-card border border-border-strong bg-surface p-5">
+          <p className="font-semibold">현재 게시 상태에서는 내용을 수정할 수 없습니다.</p>
+          <p className="mt-2 text-small text-muted-foreground">상태 전환 기능은 후속 작업에서 연결합니다.</p>
+        </aside>
+      ) : null}
+
+      <section aria-labelledby="admin-news-status-heading" className="rounded-card border border-border bg-surface p-5">
+        <h2 id="admin-news-status-heading" className="text-heading font-bold">상태 정보</h2>
+        <dl className="mt-5 grid gap-5 sm:grid-cols-2">
+          {details.map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <dt className="text-small font-semibold text-muted-foreground">{label}</dt>
+              <dd className="mt-1 break-all">{value}</dd>
+            </div>
+          ))}
+          <div><dt className="text-small font-semibold text-muted-foreground">게시일</dt><dd className="mt-1"><DateValue value={post.publishedAt} /></dd></div>
+          <div><dt className="text-small font-semibold text-muted-foreground">생성일</dt><dd className="mt-1"><DateValue value={post.createdAt} /></dd></div>
+          <div><dt className="text-small font-semibold text-muted-foreground">최근 수정일</dt><dd className="mt-1"><DateValue value={post.updatedAt} /></dd></div>
+        </dl>
+      </section>
+
+      <section aria-labelledby="admin-news-content-heading" className="space-y-6">
+        <h2 id="admin-news-content-heading" className="text-heading font-bold">내용</h2>
+        <div><h3 className="font-bold">요약</h3><p className="mt-2 whitespace-pre-wrap break-words">{post.summary}</p></div>
+        <div><h3 className="font-bold">본문</h3><div className="mt-2 space-y-4">{post.body.map((paragraph, index) => <p key={index} className="whitespace-pre-wrap break-words">{paragraph}</p>)}</div></div>
+      </section>
+    </div>
+  );
+}

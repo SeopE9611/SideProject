@@ -204,7 +204,14 @@ export default async function AdminNewsPage({
                       <p className="text-small font-semibold text-primary">
                         {getNewsCategoryLabel(item.category)}
                       </p>
-                      <h3 className="mt-1 break-words text-heading font-bold">{item.title}</h3>
+                      <h3 className="mt-1 break-words text-heading font-bold">
+                        <Link
+                          href={`/admin/news/${item.id}`}
+                          className="underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                        >
+                          {item.title}
+                        </Link>
+                      </h3>
                       <p className="mt-2 break-words text-small text-muted-foreground">{item.summary}</p>
                       <p className="mt-2 break-all text-small text-muted-foreground">slug: {item.slug}</p>
                     </div>
