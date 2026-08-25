@@ -29,6 +29,35 @@ export type AdminNewsReviewRequestInput = {
   reviewReadinessConfirmed: unknown;
 };
 
+export const adminNewsReviewDecisions = ["approve", "reject"] as const;
+
+export type AdminNewsReviewDecision =
+  (typeof adminNewsReviewDecisions)[number];
+
+export type AdminNewsReviewDecisionInput = {
+  expectedUpdatedAt: unknown;
+  decision: unknown;
+  decisionConfirmed: unknown;
+};
+
+export type ValidatedAdminNewsReviewDecision = {
+  expectedUpdatedAt: Date;
+  decision: AdminNewsReviewDecision;
+};
+
+export type AdminNewsReviewDecisionFieldErrors = {
+  decision?: string;
+  decisionConfirmed?: string;
+};
+
+export type AdminNewsReviewDecisionValidationResult =
+  | { ok: true; value: ValidatedAdminNewsReviewDecision }
+  | {
+      ok: false;
+      fieldErrors: AdminNewsReviewDecisionFieldErrors;
+      formError?: "invalid_version";
+    };
+
 export type ValidatedAdminNewsDraft = {
   category: NewsCategory;
   slug: string;
@@ -89,6 +118,15 @@ function parseCanonicalIsoDate(value: unknown): Date | null {
   return !Number.isNaN(date.getTime()) && date.toISOString() === value
     ? date
     : null;
+}
+
+export function isAdminNewsReviewDecision(
+  value: unknown,
+): value is AdminNewsReviewDecision {
+  return (
+    typeof value === "string" &&
+    adminNewsReviewDecisions.includes(value as AdminNewsReviewDecision)
+  );
 }
 
 export function validateAdminNewsDraftInput(
@@ -221,4 +259,39 @@ export function validateAdminNewsReviewRequestInput(
   }
 
   return { ok: true, value: { expectedUpdatedAt } };
+}
+
+export function validateAdminNewsReviewDecisionInput(
+  input: unknown,
+): AdminNewsReviewDecisionValidationResult {
+  const value =
+    typeof input === "object" && input !== null
+      ? (input as Record<string, unknown>)
+      : {};
+  const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
+  const fieldErrors: AdminNewsReviewDecisionFieldErrors = {};
+
+  if (!isAdminNewsReviewDecision(value.decision)) {
+    fieldErrors.decision = "검토 결과를 선택해 주세요.";
+  }
+  if (value.decisionConfirmed !== true) {
+    fieldErrors.decisionConfirmed =
+      "선택한 검토 결과와 이후 상태 변화를 확인해 주세요.";
+  }
+
+  if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
+    return {
+      ok: false,
+      fieldErrors,
+      ...(!expectedUpdatedAt ? { formError: "invalid_version" as const } : {}),
+    };
+  }
+
+  return {
+    ok: true,
+    value: {
+      expectedUpdatedAt,
+      decision: value.decision as AdminNewsReviewDecision,
+    },
+  };
 }

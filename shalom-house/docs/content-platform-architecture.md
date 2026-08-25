@@ -10,7 +10,9 @@ MongoDB 세션, 로그인 제한, 관리자 로그인·로그아웃, 관리자 �
 관리자 뉴스 상세 조회와 안전한 초안 수정, `updatedAt` 기반 동시 수정 충돌 방지를
 완료했다. 관리자 뉴스 검토 요청, `draft → review` 원자적 상태 전환,
 `updatedAt` 기반 검토 요청 충돌 감지와 검토 요청 후 내용 수정 잠금도 제공한다.
-최종 승인·반려, 게시·보관, 삭제·복구는 후속 작업 범위다.
+검토 승인·반려, `review+pending → review+approved`,
+`review+pending → draft+rejected`, 반려 후 수정과 재검토 요청도 제공한다.
+게시·보관, 삭제·복구는 후속 작업 범위다.
 
 ## 2. 데이터 소스
 
@@ -154,7 +156,8 @@ createdAt=updatedAt
 
 - 상세 경로는 `/admin/news/[id]`, 수정 경로는 `/admin/news/[id]/edit`, 수정 API는
   `PATCH /api/admin/news/[id]`이며 변경 가능한 slug 대신 MongoDB ObjectId를 사용한다.
-- 수정은 `publicationStatus=draft`, `approvalStatus=pending`, `deletedAt=null`인
+- 수정은 `publicationStatus=draft`, `approvalStatus`가 `pending` 또는 `rejected`,
+  `publishedAt=null`, `deletedAt`이 없거나 `null`인
   게시물에만 허용한다. 수정 가능 필드는 `category`, `slug`, `title`, `summary`,
   `body`, `updatedAt`이다. `publicationStatus`, `approvalStatus`, `publishedAt`,
   `createdAt`, `deletedAt`은 변경하지 않는다.
@@ -172,42 +175,77 @@ createdAt=updatedAt
   세션은 검토 요청할 수 있으며 현재 관리자 역할은 `admin` 하나뿐이다.
 - 검토 요청은 내용 작성이 완료된 초안을 검토 대기 상태로 옮기고 일반 내용 수정을
   잠그는 절차다. 독립적인 승인이나 직무 분리를 의미하지 않으며 작성자·검토자·
-  승인자 구분은 아직 구현하지 않았다. 최종 승인 역할 정책은 후속 작업에서 결정한다.
-- 삭제되지 않았고 `draft`, `pending`, `publishedAt=null`이며 `updatedAt`이 form이
+  승인자 구분은 아직 구현하지 않았다.
+- 삭제되지 않았고 `draft`, `pending` 또는 `rejected`, `publishedAt=null`이며 `updatedAt`이 form이
   읽은 값과 일치하는 게시물만 다음과 같이 전환한다.
 
 ```text
 draft + pending + publishedAt=null
 →
 review + pending + publishedAt=null
+
+draft + rejected + publishedAt=null
+→
+review + pending + publishedAt=null
 ```
 
 - MongoDB `findOneAndUpdate` 하나로 원자적으로 전환하며 변경 필드는
-  `publicationStatus`, `updatedAt`뿐이다. `updatedAt`은 서버 시각과 기존 값보다
+  `publicationStatus`, `approvalStatus`, `updatedAt`뿐이다. `updatedAt`은 서버 시각과 기존 값보다
   1ms 큰 시각 중 더 큰 값으로 갱신한다.
-- `approvalStatus`, `publishedAt`, `createdAt`, `deletedAt`, `slug`, `category`,
+- `publishedAt`, `createdAt`, `deletedAt`, `slug`, `category`,
   `title`, `summary`, `body`는 검토 요청으로 변경하지 않는다.
 - 문서 없음·삭제 상태는 `not_found`, 요청할 수 없는 상태는 `not_requestable`,
   먼저 발생한 수정은 `edit_conflict`로 구분하며 조건을 완화해 자동 재시도하지 않는다.
 - 검토 중 게시물은 `review + pending + publishedAt=null`이므로 기존 공개 조건을
   충족하지 않고, 상세 화면과 직접 수정 화면 모두 내용 수정 form을 제공하지 않는다.
 
-## 11. 향후 관리자 방향
+## 11. 관리자 뉴스 검토 승인과 반려
+
+- 활성 `admin` 하나가 검토 요청·승인·반려를 수행할 수 있다. 이는 독립 승인이나
+  직무 분리를 의미하지 않으며 역할 분리와 담당자 기록은 아직 구현하지 않았다.
+- 승인은 다음과 같이 검토 완료 상태만 기록하며 게시하거나 공개하지 않는다. 승인 후
+  내용 수정은 허용하지 않는다.
+
+```text
+review + pending + publishedAt=null
+→ review + approved + publishedAt=null
+```
+
+- 반려는 다음과 같이 수정 가능한 초안으로 되돌린다. 수정 저장만으로 `rejected`가
+  해제되지 않으며 재검토 요청할 때만 `pending`으로 복귀한다.
+
+```text
+review + pending + publishedAt=null
+→ draft + rejected + publishedAt=null
+
+draft + rejected + publishedAt=null
+→ review + pending + publishedAt=null
+```
+
+- 결정은 `expectedUpdatedAt`을 확인하는 MongoDB `findOneAndUpdate` 하나로 원자적으로
+  처리한다. 오래된 화면은 `edit_conflict`, 이미 결정된 상태는 `not_decidable`로
+  구분하며 자동 재시도하지 않는다.
+- 반려 사유는 현재 저장하지 않으며 결정자 기록과 함께 감사 기록 모델에서 후속
+  설계한다.
+
+## 12. 향후 관리자 방향
 
 아래 항목은 구현된 기능이 아니라 향후 진행 순서다.
 
 완료: 관리자 인증과 권한, 관리자 공통 레이아웃, 관리자 뉴스 목록 조회,
 관리자 뉴스 초안 작성, 관리자 뉴스 상세 조회, 관리자 뉴스 초안 수정,
 동시 수정 충돌·수정 slug 중복·수정 불가 상태 처리, 관리자 뉴스 검토 요청,
-`draft → review` 원자적 상태 전환, 검토 요청 충돌 감지와 내용 수정 잠금
+`draft → review` 원자적 상태 전환, 검토 요청 충돌 감지와 내용 수정 잠금,
+검토 승인·반려, 반려 후 수정과 재검토 요청
 
-1. 최종 승인과 반려
+1. 승인된 게시물 게시
 2. 공개·비공개·보관
 3. 수정 이력과 감사 기록
-4. 삭제·복구
-5. 이미지와 첨부파일
+4. 역할·승인자 정책
+5. 삭제·복구
+6. 이미지와 첨부파일
 
-## 12. 도깨비테니스 참고 범위
+## 13. 도깨비테니스 참고 범위
 
 공개 영역과 관리자 영역의 분리, 목록과 상세 경로의 분리, DB 연결 중앙화,
 공개 상태와 비공개 상태의 분리, 목록과 상세 조회 책임의 분리라는 구조적 원칙만

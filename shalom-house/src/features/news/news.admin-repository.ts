@@ -11,7 +11,10 @@ import {
   NEWS_COLLECTION_NAME,
   type MongoNewsPostDocument,
 } from "./news.mongo-schema";
-import type { ValidatedAdminNewsDraft } from "./news.admin-validation";
+import type {
+  AdminNewsReviewDecision,
+  ValidatedAdminNewsDraft,
+} from "./news.admin-validation";
 import {
   ADMIN_NEWS_MAXIMUM_PAGE,
   ADMIN_NEWS_PAGE_SIZE,
@@ -44,6 +47,7 @@ export type AdminNewsDetail = AdminNewsListItem & {
   body: readonly string[];
   isEditable: boolean;
   canRequestReview: boolean;
+  canDecideReview: boolean;
 };
 
 export type AdminNewsListFilters = {
@@ -80,6 +84,18 @@ export type RequestAdminNewsReviewResult =
   | {
       ok: false;
       reason: "not_found" | "not_requestable" | "edit_conflict";
+    };
+
+export type DecideAdminNewsReviewResult =
+  | {
+      ok: true;
+      id: string;
+      decision: AdminNewsReviewDecision;
+      updatedAt: string;
+    }
+  | {
+      ok: false;
+      reason: "not_found" | "not_decidable" | "edit_conflict";
     };
 
 type MongoNewsPostInsertDocument = Omit<MongoNewsPostDocument, "_id">;
@@ -127,6 +143,30 @@ function isNonEmptyString(value: unknown): value is string {
 function createNextUpdatedAt(expectedUpdatedAt: Date, now: Date): Date {
   return new Date(
     Math.max(now.getTime(), expectedUpdatedAt.getTime() + 1),
+  );
+}
+
+function isEditableDraftState(
+  publicationStatus: NewsPublicationStatus,
+  approvalStatus: NewsApprovalStatus,
+  publishedAt: Date | null,
+): boolean {
+  return (
+    publicationStatus === "draft" &&
+    (approvalStatus === "pending" || approvalStatus === "rejected") &&
+    publishedAt === null
+  );
+}
+
+function isPendingReviewState(
+  publicationStatus: NewsPublicationStatus,
+  approvalStatus: NewsApprovalStatus,
+  publishedAt: Date | null,
+): boolean {
+  return (
+    publicationStatus === "review" &&
+    approvalStatus === "pending" &&
+    publishedAt === null
   );
 }
 
@@ -199,7 +239,10 @@ export async function findAdminNewsPostById(
   const document = await database
     .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
     .findOne(
-      { _id: new ObjectId(id), deletedAt: null },
+      {
+        _id: new ObjectId(id),
+        $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }],
+      },
       {
         projection: {
           slug: 1,
@@ -232,13 +275,21 @@ export async function findAdminNewsPostById(
   return {
     ...listItem,
     body: document.body,
-    isEditable:
-      document.publicationStatus === "draft" &&
-      document.approvalStatus === "pending",
-    canRequestReview:
-      document.publicationStatus === "draft" &&
-      document.approvalStatus === "pending" &&
-      document.publishedAt === null,
+    isEditable: isEditableDraftState(
+      document.publicationStatus,
+      document.approvalStatus,
+      document.publishedAt,
+    ),
+    canRequestReview: isEditableDraftState(
+      document.publicationStatus,
+      document.approvalStatus,
+      document.publishedAt,
+    ),
+    canDecideReview: isPendingReviewState(
+      document.publicationStatus,
+      document.approvalStatus,
+      document.publishedAt,
+    ),
   };
 }
 
@@ -266,7 +317,8 @@ export async function updateAdminNewsDraft(input: {
         _id: new ObjectId(input.id),
         $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }],
         publicationStatus: "draft",
-        approvalStatus: "pending",
+        approvalStatus: { $in: ["pending", "rejected"] },
+        publishedAt: null,
         updatedAt: input.expectedUpdatedAt,
       },
       {
@@ -303,6 +355,7 @@ export async function updateAdminNewsDraft(input: {
       projection: {
         publicationStatus: 1,
         approvalStatus: 1,
+        publishedAt: 1,
         updatedAt: 1,
         deletedAt: 1,
       },
@@ -312,8 +365,11 @@ export async function updateAdminNewsDraft(input: {
     return { ok: false, reason: "not_found" };
   }
   if (
-    current.publicationStatus !== "draft" ||
-    current.approvalStatus !== "pending"
+    !isEditableDraftState(
+      current.publicationStatus,
+      current.approvalStatus,
+      current.publishedAt,
+    )
   ) {
     return { ok: false, reason: "not_editable" };
   }
@@ -341,13 +397,14 @@ export async function requestAdminNewsReview(input: {
       _id: new ObjectId(input.id),
       $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }],
       publicationStatus: "draft",
-      approvalStatus: "pending",
+      approvalStatus: { $in: ["pending", "rejected"] },
       publishedAt: null,
       updatedAt: input.expectedUpdatedAt,
     },
     {
       $set: {
         publicationStatus: "review",
+        approvalStatus: "pending",
         updatedAt: nextUpdatedAt,
       },
     },
@@ -378,11 +435,96 @@ export async function requestAdminNewsReview(input: {
     return { ok: false, reason: "not_found" };
   }
   if (
-    current.publicationStatus !== "draft" ||
-    current.approvalStatus !== "pending" ||
-    current.publishedAt !== null
+    !isEditableDraftState(
+      current.publicationStatus,
+      current.approvalStatus,
+      current.publishedAt,
+    )
   ) {
     return { ok: false, reason: "not_requestable" };
+  }
+  if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) {
+    return { ok: false, reason: "edit_conflict" };
+  }
+
+  return { ok: false, reason: "edit_conflict" };
+}
+
+export async function decideAdminNewsReview(input: {
+  id: string;
+  decision: AdminNewsReviewDecision;
+  expectedUpdatedAt: Date;
+  now?: Date;
+}): Promise<DecideAdminNewsReviewResult> {
+  if (!isValidAdminNewsId(input.id)) return { ok: false, reason: "not_found" };
+
+  const nextUpdatedAt = createNextUpdatedAt(
+    input.expectedUpdatedAt,
+    input.now ?? new Date(),
+  );
+  const database = await getMongoDatabase();
+  const collection = database.collection<MongoNewsPostDocument>(
+    NEWS_COLLECTION_NAME,
+  );
+  const updatedDocument = await collection.findOneAndUpdate(
+    {
+      _id: new ObjectId(input.id),
+      $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }],
+      publicationStatus: "review",
+      approvalStatus: "pending",
+      publishedAt: null,
+      updatedAt: input.expectedUpdatedAt,
+    },
+    input.decision === "approve"
+      ? {
+          $set: {
+            publicationStatus: "review",
+            approvalStatus: "approved",
+            updatedAt: nextUpdatedAt,
+          },
+        }
+      : {
+          $set: {
+            publicationStatus: "draft",
+            approvalStatus: "rejected",
+            updatedAt: nextUpdatedAt,
+          },
+        },
+    { returnDocument: "after", includeResultMetadata: false },
+  );
+
+  if (updatedDocument) {
+    return {
+      ok: true,
+      id: updatedDocument._id.toString(),
+      decision: input.decision,
+      updatedAt: updatedDocument.updatedAt.toISOString(),
+    };
+  }
+
+  const current = await collection.findOne(
+    { _id: new ObjectId(input.id) },
+    {
+      projection: {
+        publicationStatus: 1,
+        approvalStatus: 1,
+        publishedAt: 1,
+        updatedAt: 1,
+        deletedAt: 1,
+      },
+    },
+  );
+  if (!current || current.deletedAt != null) {
+    return { ok: false, reason: "not_found" };
+  }
+  if (
+    !isPendingReviewState(
+      current.publicationStatus,
+      current.approvalStatus,
+      current.publishedAt,
+    )
+  ) {
+    return { ok: false, reason: "not_decidable" };
   }
   if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) {
     return { ok: false, reason: "edit_conflict" };
