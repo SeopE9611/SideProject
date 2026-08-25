@@ -3,16 +3,24 @@ import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
 
-const aboutRelatedDescriptions: Partial<
-  Record<(typeof siteConfig.mainNavigation)[number]["href"], string>
-> = {
-  "/life": "생활과 프로그램 안내를 확인합니다.",
-  "/news": "공지사항과 활동 소식을 확인합니다.",
-  "/support": "후원과 자원봉사 참여 정보를 확인합니다.",
-  "/transparency": "공개가 승인된 운영 자료를 확인합니다.",
-} satisfies Partial<
-  Record<(typeof siteConfig.mainNavigation)[number]["href"], string>
->;
+type NavigationHref = (typeof siteConfig.mainNavigation)[number]["href"];
+
+const aboutRelatedLinks = [
+  { href: "/life", description: "생활과 프로그램 안내" },
+  { href: "/transparency", description: "공개가 승인된 운영 자료" },
+] satisfies ReadonlyArray<{ href: NavigationHref; description: string }>;
+
+function getNavigationLabel(href: NavigationHref) {
+  const navigationItem = siteConfig.mainNavigation.find(
+    (item) => item.href === href,
+  );
+
+  if (!navigationItem) {
+    throw new Error(`등록되지 않은 홈페이지 경로입니다: ${href}`);
+  }
+
+  return navigationItem.label;
+}
 
 export const metadata: Metadata = {
   title: "시설 소개",
@@ -23,66 +31,91 @@ export default function AboutPage() {
   return (
     <>
       <section className="border-b border-border bg-surface-subtle">
-        <div className="mx-auto grid w-full max-w-site items-center gap-10 px-page py-16 sm:px-page-wide sm:py-20 lg:min-h-[32rem] lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
-          <div>
-            <p className="inline-flex rounded-full border border-border bg-surface px-4 py-2 text-small font-semibold text-primary">
-              시설 소개
-            </p>
-            <h1 className="mt-6 max-w-3xl text-display font-bold text-foreground sm:text-display-lg">
+        <div className="mx-auto w-full max-w-site px-page py-16 sm:px-page-wide sm:py-20">
+          <div className="max-w-content">
+            <p className="text-small font-bold text-primary">시설 소개</p>
+            <h1 className="mt-5 text-display font-bold text-foreground sm:text-display-lg">
               샬롬의 집을 소개합니다
             </h1>
-            <div className="mt-6 max-w-2xl space-y-3 text-body text-muted-foreground">
-              <p>{siteConfig.description}</p>
+            <div className="mt-6 space-y-3 text-body text-muted-foreground">
+              <p>{siteConfig.description}입니다.</p>
               <p>
-                현재 확인 가능한 기본 정보와 홈페이지의 주요 안내 경로를
+                현재 확인 가능한 시설 기본 정보와 공개가 승인된 홈페이지 안내를
                 제공합니다.
               </p>
             </div>
           </div>
+        </div>
+      </section>
 
-          <aside
-            aria-labelledby="about-basic-info-heading"
-            className="rounded-card border border-border bg-surface p-6 shadow-card sm:p-8"
+      <section
+        aria-labelledby="about-basic-info-heading"
+        className="border-b border-border bg-surface"
+      >
+        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
+          <p className="text-small font-bold text-primary">기본 정보</p>
+          <h2
+            id="about-basic-info-heading"
+            className="mt-2 text-title font-bold text-foreground"
           >
-            <p className="text-small font-bold text-primary">기본 정보</p>
+            현재 확인된 시설 정보
+          </h2>
+          <address className="mt-10 not-italic">
+            <dl className="grid border-y border-border md:grid-cols-3">
+              <div className="border-b border-border py-6 md:border-r md:border-b-0 md:pr-8">
+                <dt className="text-small font-bold text-foreground">시설명</dt>
+                <dd className="mt-2 text-body text-muted-foreground">
+                  {siteConfig.name}
+                </dd>
+              </div>
+              <div className="border-b border-border py-6 md:border-r md:border-b-0 md:px-8">
+                <dt className="text-small font-bold text-foreground">주소</dt>
+                <dd className="mt-2 break-words text-body text-muted-foreground">
+                  {siteConfig.address}
+                </dd>
+              </div>
+              <div className="py-6 md:pl-8">
+                <dt className="text-small font-bold text-foreground">
+                  대표 전화
+                </dt>
+                <dd className="mt-1 text-body text-muted-foreground">
+                  <a
+                    className="inline-flex min-h-11 items-center text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                    href={`tel:${siteConfig.phone}`}
+                  >
+                    {siteConfig.phone}
+                  </a>
+                </dd>
+              </div>
+            </dl>
+          </address>
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="about-information-policy-heading"
+        className="bg-primary-soft"
+      >
+        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide lg:grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
+          <div>
+            <p className="text-small font-bold text-primary">상세 소개 안내</p>
             <h2
-              id="about-basic-info-heading"
-              className="mt-2 text-heading font-bold text-foreground"
+              id="about-information-policy-heading"
+              className="mt-2 max-w-xl text-title font-bold text-foreground"
             >
-              시설 연락 안내
+              더 자세한 시설 정보는 확인 후 공개합니다
             </h2>
-            <address className="mt-6 not-italic">
-              <dl className="space-y-5">
-                <div>
-                  <dt className="text-small font-bold text-foreground">
-                    시설명
-                  </dt>
-                  <dd className="mt-1 text-body text-muted-foreground">
-                    {siteConfig.name}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-small font-bold text-foreground">주소</dt>
-                  <dd className="mt-1 text-body text-muted-foreground">
-                    {siteConfig.address}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-small font-bold text-foreground">
-                    대표 전화
-                  </dt>
-                  <dd className="mt-1 text-body text-muted-foreground">
-                    <a
-                      className="inline-flex rounded-control text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                      href={`tel:${siteConfig.phone}`}
-                    >
-                      {siteConfig.phone}
-                    </a>
-                  </dd>
-                </div>
-              </dl>
-            </address>
-          </aside>
+          </div>
+          <div className="mt-8 max-w-content space-y-5 border-t border-border-strong pt-6 text-body text-muted-foreground lg:mt-0">
+            <p>
+              시설의 연혁, 운영 방향과 시설 환경 등 상세 소개는 담당자 확인과
+              공개 범위 검토를 거쳐 순차적으로 안내합니다.
+            </p>
+            <p>
+              사진과 관계자 정보는 공개 동의와 개인정보 검수를 거친 자료만
+              사용합니다.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -90,90 +123,37 @@ export default function AboutPage() {
         aria-labelledby="about-related-heading"
         className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide"
       >
-        <p className="text-small font-bold text-primary">홈페이지 안내</p>
         <h2
           id="about-related-heading"
-          className="mt-2 text-title font-bold text-foreground"
+          className="text-title font-bold text-foreground"
         >
-          샬롬의 집 정보를 더 살펴보세요
+          다음 정보를 이어서 확인하세요
         </h2>
-        <p className="mt-4 max-w-2xl text-body text-muted-foreground">
-          생활과 프로그램, 소식, 참여 방법과 공개 운영 자료를 메뉴별로 확인할 수
-          있습니다.
+        <p className="mt-4 max-w-content text-body text-muted-foreground">
+          샬롬의 집의 생활 안내와 공개 운영 자료를 확인할 수 있습니다.
         </p>
-
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          {siteConfig.mainNavigation.map((item) => {
-            const description = aboutRelatedDescriptions[item.href];
-
-            if (!description) {
-              return null;
-            }
-
-            const isSupport = item.href === "/support";
-
-            return (
+        <ul className="mt-8 max-w-content divide-y divide-border border-y border-border">
+          {aboutRelatedLinks.map((link) => (
+            <li key={link.href}>
               <Link
-                key={item.href}
-                className={`group flex min-h-44 flex-col justify-between rounded-card border p-6 transition-colors duration-[var(--motion-duration-standard)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring ${
-                  isSupport
-                    ? "border-primary bg-primary text-primary-foreground hover:border-primary-hover hover:bg-primary-hover"
-                    : "border-border bg-surface text-foreground hover:border-primary hover:bg-primary-soft"
-                }`}
-                href={item.href}
+                className="group flex min-h-11 items-center justify-between gap-5 py-5 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                href={link.href}
               >
-                <div>
-                  <h3
-                    className={`text-heading font-bold ${
-                      isSupport
-                        ? "text-primary-foreground"
-                        : "text-foreground"
-                    }`}
-                  >
-                    {item.label}
-                  </h3>
-                  <p
-                    className={`mt-4 text-body ${
-                      isSupport
-                        ? "text-primary-foreground opacity-90"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {description}
-                  </p>
-                </div>
-                <span className="mt-8 inline-flex items-center gap-2 text-small font-bold">
-                  안내 보기
-                  <span aria-hidden="true">→</span>
+                <span>
+                  <span className="block font-bold">
+                    {getNavigationLabel(link.href)}
+                  </span>
+                  <span className="mt-1 block text-small text-muted-foreground group-hover:text-primary">
+                    {link.description}
+                  </span>
+                </span>
+                <span aria-hidden="true" className="shrink-0 font-bold">
+                  →
                 </span>
               </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      <section
-        aria-labelledby="about-information-policy-heading"
-        className="mx-auto w-full max-w-site px-page pb-section sm:px-page-wide sm:pb-section-wide"
-      >
-        <div className="rounded-card border border-border bg-primary-soft p-6 sm:p-8">
-          <p className="text-small font-bold text-primary">정보 공개 원칙</p>
-          <h2
-            id="about-information-policy-heading"
-            className="mt-2 text-heading font-bold text-foreground"
-          >
-            확인된 정보를 바탕으로 안내합니다
-          </h2>
-          <div className="mt-4 max-w-3xl space-y-3 text-body text-muted-foreground">
-            <p>
-              시설의 연혁, 운영 방향, 시설 환경 등 상세 소개는 담당자 확인과 공개
-              범위 검토를 거쳐 순차적으로 안내합니다.
-            </p>
-            <p>
-              사진과 관계자 정보는 공개 동의와 검수를 거친 자료만 사용합니다.
-            </p>
-          </div>
-        </div>
+            </li>
+          ))}
+        </ul>
       </section>
     </>
   );
