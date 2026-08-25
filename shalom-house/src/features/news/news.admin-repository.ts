@@ -43,6 +43,7 @@ export type AdminNewsListItem = {
 export type AdminNewsDetail = AdminNewsListItem & {
   body: readonly string[];
   isEditable: boolean;
+  canRequestReview: boolean;
 };
 
 export type AdminNewsListFilters = {
@@ -72,6 +73,13 @@ export type UpdateAdminNewsDraftResult =
         | "not_found"
         | "not_editable"
         | "edit_conflict";
+    };
+
+export type RequestAdminNewsReviewResult =
+  | { ok: true; id: string; updatedAt: string }
+  | {
+      ok: false;
+      reason: "not_found" | "not_requestable" | "edit_conflict";
     };
 
 type MongoNewsPostInsertDocument = Omit<MongoNewsPostDocument, "_id">;
@@ -114,6 +122,12 @@ function isValidDate(value: unknown): value is Date {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function createNextUpdatedAt(expectedUpdatedAt: Date, now: Date): Date {
+  return new Date(
+    Math.max(now.getTime(), expectedUpdatedAt.getTime() + 1),
+  );
 }
 
 function isPubliclyVisible(
@@ -221,6 +235,10 @@ export async function findAdminNewsPostById(
     isEditable:
       document.publicationStatus === "draft" &&
       document.approvalStatus === "pending",
+    canRequestReview:
+      document.publicationStatus === "draft" &&
+      document.approvalStatus === "pending" &&
+      document.publishedAt === null,
   };
 }
 
@@ -232,11 +250,9 @@ export async function updateAdminNewsDraft(input: {
 }): Promise<UpdateAdminNewsDraftResult> {
   if (!isValidAdminNewsId(input.id)) return { ok: false, reason: "not_found" };
 
-  const nextUpdatedAt = new Date(
-    Math.max(
-      (input.now ?? new Date()).getTime(),
-      input.expectedUpdatedAt.getTime() + 1,
-    ),
+  const nextUpdatedAt = createNextUpdatedAt(
+    input.expectedUpdatedAt,
+    input.now ?? new Date(),
   );
   const database = await getMongoDatabase();
   const collection = database.collection<MongoNewsPostDocument>(
@@ -300,6 +316,76 @@ export async function updateAdminNewsDraft(input: {
     current.approvalStatus !== "pending"
   ) {
     return { ok: false, reason: "not_editable" };
+  }
+
+  return { ok: false, reason: "edit_conflict" };
+}
+
+export async function requestAdminNewsReview(input: {
+  id: string;
+  expectedUpdatedAt: Date;
+  now?: Date;
+}): Promise<RequestAdminNewsReviewResult> {
+  if (!isValidAdminNewsId(input.id)) return { ok: false, reason: "not_found" };
+
+  const nextUpdatedAt = createNextUpdatedAt(
+    input.expectedUpdatedAt,
+    input.now ?? new Date(),
+  );
+  const database = await getMongoDatabase();
+  const collection = database.collection<MongoNewsPostDocument>(
+    NEWS_COLLECTION_NAME,
+  );
+  const updatedDocument = await collection.findOneAndUpdate(
+    {
+      _id: new ObjectId(input.id),
+      $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }],
+      publicationStatus: "draft",
+      approvalStatus: "pending",
+      publishedAt: null,
+      updatedAt: input.expectedUpdatedAt,
+    },
+    {
+      $set: {
+        publicationStatus: "review",
+        updatedAt: nextUpdatedAt,
+      },
+    },
+    { returnDocument: "after", includeResultMetadata: false },
+  );
+
+  if (updatedDocument) {
+    return {
+      ok: true,
+      id: updatedDocument._id.toString(),
+      updatedAt: updatedDocument.updatedAt.toISOString(),
+    };
+  }
+
+  const current = await collection.findOne(
+    { _id: new ObjectId(input.id) },
+    {
+      projection: {
+        publicationStatus: 1,
+        approvalStatus: 1,
+        publishedAt: 1,
+        updatedAt: 1,
+        deletedAt: 1,
+      },
+    },
+  );
+  if (!current || current.deletedAt != null) {
+    return { ok: false, reason: "not_found" };
+  }
+  if (
+    current.publicationStatus !== "draft" ||
+    current.approvalStatus !== "pending" ||
+    current.publishedAt !== null
+  ) {
+    return { ok: false, reason: "not_requestable" };
+  }
+  if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) {
+    return { ok: false, reason: "edit_conflict" };
   }
 
   return { ok: false, reason: "edit_conflict" };

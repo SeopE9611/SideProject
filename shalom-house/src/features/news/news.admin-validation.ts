@@ -24,6 +24,11 @@ export type AdminNewsDraftUpdateInput = AdminNewsDraftInput & {
   expectedUpdatedAt: unknown;
 };
 
+export type AdminNewsReviewRequestInput = {
+  expectedUpdatedAt: unknown;
+  reviewReadinessConfirmed: unknown;
+};
+
 export type ValidatedAdminNewsDraft = {
   category: NewsCategory;
   slug: string;
@@ -60,6 +65,31 @@ export type AdminNewsDraftUpdateValidationResult =
       fieldErrors: AdminNewsDraftFieldErrors;
       formError?: "invalid_version";
     };
+
+export type ValidatedAdminNewsReviewRequest = {
+  expectedUpdatedAt: Date;
+};
+
+export type AdminNewsReviewRequestFieldErrors = {
+  reviewReadinessConfirmed?: string;
+};
+
+export type AdminNewsReviewRequestValidationResult =
+  | { ok: true; value: ValidatedAdminNewsReviewRequest }
+  | {
+      ok: false;
+      fieldErrors: AdminNewsReviewRequestFieldErrors;
+      formError?: "invalid_version";
+    };
+
+function parseCanonicalIsoDate(value: unknown): Date | null {
+  if (typeof value !== "string") return null;
+
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime()) && date.toISOString() === value
+    ? date
+    : null;
+}
 
 export function validateAdminNewsDraftInput(
   input: unknown,
@@ -150,15 +180,8 @@ export function validateAdminNewsDraftUpdateInput(
     typeof input === "object" && input !== null
       ? (input as Record<string, unknown>)
       : {};
-  const expectedUpdatedAtValue = value.expectedUpdatedAt;
-  const expectedUpdatedAt =
-    typeof expectedUpdatedAtValue === "string"
-      ? new Date(expectedUpdatedAtValue)
-      : null;
-  const hasValidVersion =
-    expectedUpdatedAt !== null &&
-    !Number.isNaN(expectedUpdatedAt.getTime()) &&
-    expectedUpdatedAt.toISOString() === expectedUpdatedAtValue;
+  const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
+  const hasValidVersion = expectedUpdatedAt !== null;
 
   if (!draftValidation.ok || !hasValidVersion) {
     return {
@@ -172,4 +195,30 @@ export function validateAdminNewsDraftUpdateInput(
     ok: true,
     value: { draft: draftValidation.value, expectedUpdatedAt },
   };
+}
+
+export function validateAdminNewsReviewRequestInput(
+  input: unknown,
+): AdminNewsReviewRequestValidationResult {
+  const value =
+    typeof input === "object" && input !== null
+      ? (input as Record<string, unknown>)
+      : {};
+  const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
+  const fieldErrors: AdminNewsReviewRequestFieldErrors = {};
+
+  if (value.reviewReadinessConfirmed !== true) {
+    fieldErrors.reviewReadinessConfirmed =
+      "게시물 내용과 개인정보·공개 금지 정보 확인을 완료해 주세요.";
+  }
+
+  if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
+    return {
+      ok: false,
+      fieldErrors,
+      ...(!expectedUpdatedAt ? { formError: "invalid_version" as const } : {}),
+    };
+  }
+
+  return { ok: true, value: { expectedUpdatedAt } };
 }

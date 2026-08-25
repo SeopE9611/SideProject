@@ -19,6 +19,8 @@ export default async function AdminNewsEditPage({
   const { id } = await params;
   const post = await findAdminNewsPostById(id);
   if (!post) notFound();
+  const isPendingReview =
+    post.publicationStatus === "review" && post.approvalStatus === "pending";
 
   return (
     <div className="space-y-8">
@@ -34,8 +36,17 @@ export default async function AdminNewsEditPage({
 
       {!post.isEditable ? (
         <aside className="rounded-card border border-border-strong bg-surface p-5">
-          <p className="font-semibold">현재 게시 상태에서는 내용을 수정할 수 없습니다.</p>
-          <p className="mt-2 text-small text-muted-foreground">상태 전환 기능은 후속 작업에서 연결합니다.</p>
+          {isPendingReview ? (
+            <>
+              <p className="font-semibold">검토 중인 게시물은 내용을 수정할 수 없습니다.</p>
+              <p className="mt-2 text-small text-muted-foreground">최종 승인·반려 기능은 다음 작업에서 연결합니다.</p>
+            </>
+          ) : (
+            <>
+              <p className="font-semibold">현재 게시 상태에서는 내용을 수정할 수 없습니다.</p>
+              <p className="mt-2 text-small text-muted-foreground">상태 전환 기능은 후속 작업에서 연결합니다.</p>
+            </>
+          )}
           <Link href={`/admin/news/${post.id}`} className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">게시물 상세 보기</Link>
         </aside>
       ) : (
