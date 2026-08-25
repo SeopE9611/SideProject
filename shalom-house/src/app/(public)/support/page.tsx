@@ -3,41 +3,29 @@ import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
 
-const supportGuidanceAreas = [
-  {
-    title: "후원 안내",
-    description:
-      "공식 후원 방법과 필요한 안내 사항을 담당자 확인 후 제공합니다.",
-  },
-  {
-    title: "자원봉사 안내",
-    description:
-      "신청 방식과 참여 전 확인할 내용을 협의한 뒤 제공합니다.",
-  },
-  {
-    title: "참여 절차",
-    description:
-      "각 참여 방식이 확정되면 순서와 준비 사항을 단계별로 안내합니다.",
-  },
-  {
-    title: "문의 방법",
-    description:
-      "전용 문의 경로와 담당 범위를 확인한 뒤 안내합니다.",
-  },
-] as const;
+type NavigationHref = (typeof siteConfig.mainNavigation)[number]["href"];
 
-const supportPreparationItems = [
+const supportParticipationFlows = [
   {
     label: "후원",
     title: "공식 후원 안내를 확인하고 있습니다",
     description:
       "후원 방법과 관련 안내 문구는 공식 담당자의 확인을 거쳐 공개합니다.",
+    guidance: [
+      "공식 후원 방법과 필요한 안내 사항",
+      "후원 참여 절차와 준비 사항",
+      "후원 문의 경로와 담당 범위",
+    ],
   },
   {
     label: "자원봉사",
     title: "참여 신청 방식을 확인하고 있습니다",
-    description:
-      "신청 과정과 필요한 정보 범위를 협의한 뒤 공개합니다.",
+    description: "신청 과정과 필요한 정보 범위를 협의한 뒤 공개합니다.",
+    guidance: [
+      "신청 방식과 참여 전 확인 사항",
+      "자원봉사 참여 절차와 준비 사항",
+      "자원봉사 문의 경로와 담당 범위",
+    ],
   },
 ] as const;
 
@@ -59,14 +47,25 @@ const supportInformationPrinciples = [
   },
 ] as const;
 
-const supportRelatedDescriptions: Partial<
-  Record<(typeof siteConfig.mainNavigation)[number]["href"], string>
-> = {
-  "/news": "공개가 승인된 공지사항과 활동 소식을 확인합니다.",
-  "/transparency": "공개가 승인된 운영 및 후원 관련 자료를 확인합니다.",
-} satisfies Partial<
-  Record<(typeof siteConfig.mainNavigation)[number]["href"], string>
->;
+const supportRelatedLinks = [
+  { href: "/news", description: "공개가 승인된 공지사항과 활동 소식" },
+  {
+    href: "/transparency",
+    description: "공개가 승인된 운영 및 후원 관련 자료",
+  },
+] satisfies ReadonlyArray<{ href: NavigationHref; description: string }>;
+
+function getNavigationLabel(href: NavigationHref) {
+  const navigationItem = siteConfig.mainNavigation.find(
+    (item) => item.href === href,
+  );
+
+  if (!navigationItem) {
+    throw new Error(`등록되지 않은 홈페이지 경로입니다: ${href}`);
+  }
+
+  return navigationItem.label;
+}
 
 export const metadata: Metadata = {
   title: "후원과 봉사",
@@ -78,195 +77,178 @@ export default function SupportPage() {
   return (
     <>
       <section className="border-b border-border bg-primary-soft">
-        <div className="mx-auto grid w-full max-w-site items-center gap-10 px-page py-16 sm:px-page-wide sm:py-20 lg:min-h-[32rem] lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
-          <div>
-            <p className="inline-flex rounded-full border border-border bg-surface px-4 py-2 text-small font-semibold text-primary">
-              후원과 봉사
-            </p>
-            <h1 className="mt-6 max-w-3xl text-display font-bold text-foreground sm:text-display-lg">
+        <div className="mx-auto w-full max-w-site px-page py-16 sm:px-page-wide sm:py-20">
+          <div className="max-w-content">
+            <p className="text-small font-bold text-primary">후원과 봉사</p>
+            <h1 className="mt-5 text-display font-bold text-foreground sm:text-display-lg">
               후원과 자원봉사 참여 안내를 준비하고 있습니다
             </h1>
-            <div className="mt-6 max-w-2xl space-y-3 text-body text-muted-foreground">
+            <div className="mt-6 space-y-3 text-body text-muted-foreground">
               <p>
                 {siteConfig.name}의 후원과 자원봉사 방법은 공식 담당자 확인을
                 거쳐 안내합니다.
               </p>
               <p>
-                현재는 준비 중인 안내 범위와 개인정보 보호 원칙을 확인할 수
-                있습니다.
+                현재는 두 참여 방식의 준비 상태와 공개 원칙, 시설 대표
+                연락처를 확인할 수 있습니다.
               </p>
             </div>
           </div>
-
-          <aside
-            aria-labelledby="support-guidance-heading"
-            className="rounded-card border border-border bg-surface p-6 shadow-card sm:p-8"
-          >
-            <p className="text-small font-bold text-primary">참여 안내 범위</p>
-            <h2
-              id="support-guidance-heading"
-              className="mt-2 text-heading font-bold text-foreground"
-            >
-              확인 후 제공할 정보
-            </h2>
-            <ul className="mt-6 space-y-4">
-              {supportGuidanceAreas.map((area) => (
-                <li
-                  key={area.title}
-                  className="rounded-control border border-border bg-surface-subtle p-4"
-                >
-                  <p className="font-bold text-foreground">{area.title}</p>
-                  <p className="mt-1 text-small text-muted-foreground">
-                    {area.description}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </aside>
         </div>
       </section>
 
       <section
-        aria-labelledby="support-preparation-heading"
+        aria-labelledby="support-participation-heading"
         className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide"
       >
-        <p className="text-small font-bold text-primary">참여 안내 상태</p>
+        <p className="text-small font-bold text-primary">참여 안내</p>
         <h2
-          id="support-preparation-heading"
-          className="mt-2 max-w-3xl text-title font-bold text-foreground"
+          id="support-participation-heading"
+          className="mt-2 max-w-content text-title font-bold text-foreground"
         >
-          공식 참여 방법을 확인하고 있습니다
+          후원과 자원봉사를 구분해 안내합니다
         </h2>
-        <p className="mt-4 max-w-3xl text-body text-muted-foreground">
-          후원과 자원봉사의 실제 방법과 절차는 담당자 확인을 마친 뒤 이
-          페이지에 안내합니다.
+        <p className="mt-4 max-w-content text-body text-muted-foreground">
+          실제 방법과 절차는 아직 확정되지 않았으며, 아래 내용은 현재 준비
+          상태와 확인 후 제공할 정보입니다.
         </p>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
-          {supportPreparationItems.map((item) => (
-            <article
-              key={item.label}
-              className="rounded-card border border-border bg-surface p-6 shadow-card sm:p-8"
+        <div className="mt-10 grid border-y border-border md:grid-cols-2">
+          {supportParticipationFlows.map((flow, index) => (
+            <section
+              key={flow.label}
+              aria-labelledby={`support-flow-${index}`}
+              className="border-b border-border py-8 last:border-b-0 md:border-b-0 md:even:border-l md:even:pl-10 md:odd:pr-10"
             >
               <p className="text-small font-bold text-primary">
-                안내 준비 중 · {item.label}
+                안내 준비 중 · {flow.label}
               </p>
-              <h3 className="mt-2 text-heading font-bold text-foreground">
-                {item.title}
+              <h3
+                id={`support-flow-${index}`}
+                className="mt-2 text-heading font-bold text-foreground"
+              >
+                {flow.title}
               </h3>
               <p className="mt-4 text-body text-muted-foreground">
-                {item.description}
+                {flow.description}
               </p>
-            </article>
+              <p className="mt-7 font-bold text-foreground">
+                확인 후 안내할 내용
+              </p>
+              <ul className="mt-3 space-y-2 text-body text-muted-foreground">
+                {flow.guidance.map((item) => (
+                  <li key={item} className="flex gap-3">
+                    <span aria-hidden="true">—</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
         </div>
+      </section>
 
-        <aside
-          aria-labelledby="support-contact-heading"
-          className="mt-6 rounded-card border border-border-strong bg-primary-soft p-6 sm:p-8"
-        >
+      <aside
+        aria-labelledby="support-contact-heading"
+        className="border-y border-border bg-surface-subtle"
+      >
+        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
           <p className="text-small font-bold text-primary">
             현재 공개된 연락처
           </p>
-          <h3
+          <h2
             id="support-contact-heading"
-            className="mt-2 text-heading font-bold text-foreground"
+            className="mt-2 text-title font-bold text-foreground"
           >
-            시설 대표 전화
-          </h3>
-          <p className="mt-4 max-w-3xl text-body text-muted-foreground">
+            시설 대표 전화 안내
+          </h2>
+          <p className="mt-4 max-w-content text-body text-muted-foreground">
             후원과 자원봉사 전용 문의 경로는 담당자 확인 후 안내합니다. 아래
             번호는 현재 홈페이지에 공개된 시설 대표 전화입니다.
           </p>
-          <address className="mt-5 not-italic">
+          <address className="mt-7 not-italic">
+            <p className="text-small font-bold text-foreground">
+              시설 대표 전화
+            </p>
             <a
-              className="inline-flex min-h-11 items-center justify-center rounded-control border border-primary bg-primary px-5 py-3 text-base font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:border-primary-hover hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              className="mt-1 inline-flex min-h-11 items-center break-all text-body font-bold text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               href={`tel:${siteConfig.phone}`}
             >
               {siteConfig.phone}
             </a>
           </address>
-        </aside>
-      </section>
+        </div>
+      </aside>
 
       <section
         aria-labelledby="support-principles-heading"
-        className="border-y border-border bg-surface-subtle"
+        className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide lg:grid lg:grid-cols-2 lg:gap-16"
       >
-        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
+        <div>
           <p className="text-small font-bold text-primary">참여 정보 원칙</p>
           <h2
             id="support-principles-heading"
-            className="mt-2 max-w-3xl text-title font-bold text-foreground"
+            className="mt-2 text-title font-bold text-foreground"
           >
             확인과 동의를 바탕으로 안내합니다
           </h2>
-          <p className="mt-4 max-w-3xl text-body text-muted-foreground">
+          <p className="mt-4 max-w-content text-body text-muted-foreground">
             후원과 자원봉사 정보는 공식 확인, 개인정보 최소화, 공개 동의
             원칙에 따라 안내합니다.
           </p>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {supportInformationPrinciples.map((principle) => (
-              <article
-                key={principle.title}
-                className="rounded-card border border-border bg-surface p-6"
-              >
-                <h3 className="text-heading font-bold text-foreground">
-                  {principle.title}
-                </h3>
-                <p className="mt-4 text-body text-muted-foreground">
-                  {principle.description}
-                </p>
-              </article>
-            ))}
-          </div>
         </div>
+        <ul className="mt-10 border-b border-border lg:mt-0">
+          {supportInformationPrinciples.map((principle) => (
+            <li key={principle.title} className="border-t border-border py-6">
+              <h3 className="text-heading font-bold text-foreground">
+                {principle.title}
+              </h3>
+              <p className="mt-3 text-body text-muted-foreground">
+                {principle.description}
+              </p>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section
         aria-labelledby="support-related-heading"
-        className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide"
+        className="border-t border-border bg-surface"
       >
-        <p className="text-small font-bold text-primary">관련 정보</p>
-        <h2
-          id="support-related-heading"
-          className="mt-2 text-title font-bold text-foreground"
-        >
-          소식과 공개 자료를 함께 확인하세요
-        </h2>
-        <p className="mt-4 max-w-2xl text-body text-muted-foreground">
-          공개가 승인된 소식과 운영 자료는 각 페이지에서 확인할 수 있습니다.
-        </p>
-
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          {siteConfig.mainNavigation.map((item) => {
-            const description = supportRelatedDescriptions[item.href];
-
-            if (!description) {
-              return null;
-            }
-
-            return (
-              <Link
-                key={item.href}
-                className="group flex min-h-44 flex-col justify-between rounded-card border border-border bg-surface p-6 text-foreground transition-colors duration-[var(--motion-duration-standard)] ease-standard hover:border-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
-                href={item.href}
-              >
-                <div>
-                  <h3 className="text-heading font-bold text-foreground">
-                    {item.label}
-                  </h3>
-                  <p className="mt-4 text-body text-muted-foreground">
-                    {description}
-                  </p>
-                </div>
-                <span className="mt-8 inline-flex items-center gap-2 text-small font-bold">
-                  안내 보기
-                  <span aria-hidden="true">→</span>
-                </span>
-              </Link>
-            );
-          })}
+        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
+          <p className="text-small font-bold text-primary">관련 정보</p>
+          <h2
+            id="support-related-heading"
+            className="mt-2 text-title font-bold text-foreground"
+          >
+            소식과 공개 자료를 함께 확인하세요
+          </h2>
+          <p className="mt-4 max-w-content text-body text-muted-foreground">
+            공개가 승인된 소식과 운영 자료는 각 페이지에서 확인할 수
+            있습니다.
+          </p>
+          <ul className="mt-8 max-w-content divide-y divide-border border-y border-border">
+            {supportRelatedLinks.map((link) => (
+              <li key={link.href}>
+                <Link
+                  className="group flex min-h-11 items-center justify-between gap-5 py-5 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                  href={link.href}
+                >
+                  <span className="min-w-0">
+                    <span className="block font-bold">
+                      {getNavigationLabel(link.href)}
+                    </span>
+                    <span className="mt-1 block text-small text-muted-foreground group-hover:text-primary">
+                      {link.description}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="shrink-0 font-bold">
+                    →
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </>
