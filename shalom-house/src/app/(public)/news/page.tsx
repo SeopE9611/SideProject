@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
+import { getNewsRepository } from "@/features/news/news.repository";
+import { getNewsCategoryLabel } from "@/features/news/news.types";
 
 const newsCategories = [
   {
@@ -40,7 +42,20 @@ export const metadata: Metadata = {
     "샬롬의 집의 공지사항과 공개가 승인된 활동 소식 안내를 확인합니다.",
 };
 
-export default function NewsPage() {
+export const dynamic = "force-dynamic";
+
+const publishedDateFormatter = new Intl.DateTimeFormat("ko-KR", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
+
+export default async function NewsPage() {
+  const newsRepository = getNewsRepository();
+  const posts = await newsRepository.listPublished({ limit: 20 });
+  const hasDemoPosts = posts.some((post) => post.isDemo);
+
   return (
     <>
       <section className="border-b border-border bg-surface-subtle">
@@ -55,7 +70,16 @@ export default function NewsPage() {
                 {siteConfig.name}에서 공식적으로 공개하는 공지사항과 활동 소식을
                 이 페이지에서 확인할 수 있습니다.
               </p>
-              <p>현재는 공개가 승인된 게시물이 준비되지 않았습니다.</p>
+              {posts.length === 0 ? (
+                <p>현재는 공개가 승인된 게시물이 준비되지 않았습니다.</p>
+              ) : hasDemoPosts ? (
+                <p>
+                  현재는 목록과 상세 화면을 확인하기 위한 개발용 예시 데이터를
+                  표시합니다.
+                </p>
+              ) : (
+                <p>공개 승인된 게시물을 아래 목록에서 확인할 수 있습니다.</p>
+              )}
             </div>
           </div>
         </div>
@@ -110,38 +134,93 @@ export default function NewsPage() {
           안내합니다.
         </p>
 
-        <div
-          aria-labelledby="news-empty-heading"
-          className="mt-10 border-y border-border-strong py-8 sm:py-10"
-        >
-          <p className="text-small font-bold text-primary">게시물 준비 중</p>
-          <h3
-            id="news-empty-heading"
-            className="mt-2 text-heading font-bold text-foreground"
+        {posts.length === 0 ? (
+          <div
+            aria-labelledby="news-empty-heading"
+            className="mt-10 border-y border-border-strong py-8 sm:py-10"
           >
-            현재 공개된 게시물이 없습니다
-          </h3>
-          <p className="mt-4 max-w-2xl text-body text-muted-foreground">
-            사실관계와 공개 범위 검토를 마친 게시물이 준비되면 이곳에서
-            안내합니다.
-          </p>
-          <div className="mt-6 flex flex-col items-start gap-2 sm:flex-row sm:gap-6">
-            <Link
-              className="inline-flex min-h-11 items-center gap-2 py-2 text-base font-bold text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              href="/life"
+            <p className="text-small font-bold text-primary">게시물 준비 중</p>
+            <h3
+              id="news-empty-heading"
+              className="mt-2 text-heading font-bold text-foreground"
             >
-              함께하는 생활 보기
-              <span aria-hidden="true">→</span>
-            </Link>
-            <Link
-              className="inline-flex min-h-11 items-center gap-2 py-2 text-base font-bold text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              href="/support"
-            >
-              후원과 봉사 안내
-              <span aria-hidden="true">→</span>
-            </Link>
+              현재 공개된 게시물이 없습니다
+            </h3>
+            <p className="mt-4 max-w-2xl text-body text-muted-foreground">
+              사실관계와 공개 범위 검토를 마친 게시물이 준비되면 이곳에서
+              안내합니다.
+            </p>
+            <div className="mt-6 flex flex-col items-start gap-2 sm:flex-row sm:gap-6">
+              <Link
+                className="inline-flex min-h-11 items-center gap-2 py-2 text-base font-bold text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                href="/life"
+              >
+                함께하는 생활 보기
+                <span aria-hidden="true">→</span>
+              </Link>
+              <Link
+                className="inline-flex min-h-11 items-center gap-2 py-2 text-base font-bold text-primary underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                href="/support"
+              >
+                후원과 봉사 안내
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-10">
+            {hasDemoPosts ? (
+              <aside className="border-y border-border-strong bg-primary-soft px-5 py-6">
+                <p className="text-small font-bold text-primary">
+                  개발용 예시 콘텐츠
+                </p>
+                <p className="mt-2 max-w-3xl text-body text-muted-foreground">
+                  현재 표시된 게시물은 목록과 상세 화면을 확인하기 위한
+                  예시이며 샬롬의 집의 공식 소식이 아닙니다.
+                </p>
+              </aside>
+            ) : null}
+            <ul
+              className={
+                hasDemoPosts
+                  ? "mt-8 border-t border-border-strong"
+                  : "border-t border-border-strong"
+              }
+            >
+              {posts.map((post) => (
+                <li
+                  key={post.id}
+                  className="border-b border-border py-7 sm:py-8"
+                >
+                  <article>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-small font-bold text-primary">
+                      <p>{getNewsCategoryLabel(post.category)}</p>
+                      {post.isDemo ? <p>개발용 예시</p> : null}
+                    </div>
+                    <h3 className="mt-3 text-heading font-bold text-foreground">
+                      <Link
+                        href={`/news/${post.slug}`}
+                        className="inline-flex min-h-11 items-center gap-2 py-1 underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+                      >
+                        {post.title}
+                        <span aria-hidden="true">→</span>
+                      </Link>
+                    </h3>
+                    <p className="mt-3 max-w-3xl text-body text-muted-foreground">
+                      {post.summary}
+                    </p>
+                    <time
+                      dateTime={post.publishedAt}
+                      className="mt-4 block text-small text-muted-foreground"
+                    >
+                      {publishedDateFormatter.format(new Date(post.publishedAt))}
+                    </time>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       <section
