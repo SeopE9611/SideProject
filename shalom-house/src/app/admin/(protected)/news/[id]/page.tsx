@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AdminNewsReviewRequestForm } from "@/components/admin/admin-news-review-request-form";
 import { findAdminNewsPostById } from "@/features/news/news.admin-repository";
 import {
   getNewsApprovalStatusLabel,
@@ -36,12 +37,20 @@ export default async function AdminNewsDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ updated?: string | string[] }>;
+  searchParams: Promise<{
+    updated?: string | string[];
+    reviewRequested?: string | string[];
+  }>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const post = await findAdminNewsPostById(id);
   if (!post) notFound();
   const wasUpdated = typeof query.updated === "string" && query.updated === "1";
+  const wasReviewRequested =
+    typeof query.reviewRequested === "string" &&
+    query.reviewRequested === "1";
+  const isPendingReview =
+    post.publicationStatus === "review" && post.approvalStatus === "pending";
 
   const details = [
     ["게시 상태", getNewsPublicationStatusLabel(post.publicationStatus)],
@@ -67,6 +76,12 @@ export default async function AdminNewsDetailPage({
         </p>
       ) : null}
 
+      {wasReviewRequested ? (
+        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
+          게시물을 검토 중 상태로 전환했습니다.
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap gap-3">
         {post.isEditable ? (
           <Link href={`/admin/news/${post.id}/edit`} className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
@@ -82,8 +97,17 @@ export default async function AdminNewsDetailPage({
 
       {!post.isEditable ? (
         <aside className="rounded-card border border-border-strong bg-surface p-5">
-          <p className="font-semibold">현재 게시 상태에서는 내용을 수정할 수 없습니다.</p>
-          <p className="mt-2 text-small text-muted-foreground">상태 전환 기능은 후속 작업에서 연결합니다.</p>
+          {isPendingReview ? (
+            <>
+              <p className="font-semibold">검토 요청된 게시물입니다.</p>
+              <p className="mt-2 text-small text-muted-foreground">검토 중에는 내용 수정이 잠겨 있으며 최종 승인·반려 기능은 다음 작업에서 연결합니다.</p>
+            </>
+          ) : (
+            <>
+              <p className="font-semibold">현재 게시 상태에서는 내용을 수정할 수 없습니다.</p>
+              <p className="mt-2 text-small text-muted-foreground">상태 전환 기능은 후속 작업에서 연결합니다.</p>
+            </>
+          )}
         </aside>
       ) : null}
 
@@ -107,6 +131,20 @@ export default async function AdminNewsDetailPage({
         <div><h3 className="font-bold">요약</h3><p className="mt-2 whitespace-pre-wrap break-words">{post.summary}</p></div>
         <div><h3 className="font-bold">본문</h3><div className="mt-2 space-y-4">{post.body.map((paragraph, index) => <p key={index} className="whitespace-pre-wrap break-words">{paragraph}</p>)}</div></div>
       </section>
+
+      {post.canRequestReview ? (
+        <section aria-labelledby="admin-news-review-heading" className="rounded-card border border-border-strong bg-surface p-5">
+          <h2 id="admin-news-review-heading" className="text-heading font-bold">검토 요청</h2>
+          <p className="mt-3 text-small text-muted-foreground">
+            검토 요청 후 게시 상태가 검토 중으로 변경되며 내용 수정이 잠깁니다.<br />
+            이 작업만으로 게시물이 승인되거나 공개되지는 않습니다.
+          </p>
+          <AdminNewsReviewRequestForm
+            postId={post.id}
+            expectedUpdatedAt={post.updatedAt}
+          />
+        </section>
+      ) : null}
     </div>
   );
 }
