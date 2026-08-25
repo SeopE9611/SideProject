@@ -69,20 +69,15 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
         <ul className="flex items-center gap-1">
           {siteConfig.mainNavigation.map((item) => {
             const isActive = isCurrentPath(pathname, item.href);
-            const isSupport = item.href === "/support";
 
             return (
               <li key={item.href}>
                 <Link
                   aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex min-h-10 items-center rounded-control px-3 py-2 text-small font-semibold transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
-                    isSupport
-                      ? `border border-primary bg-primary text-primary-foreground hover:border-primary-hover hover:bg-primary-hover hover:text-primary-foreground ${
-                          isActive ? "border-primary-hover bg-primary-hover font-bold" : ""
-                        }`
-                      : isActive
-                        ? "bg-primary-soft font-bold text-primary"
-                        : "text-muted-foreground hover:bg-primary-soft hover:text-primary"
+                  className={`inline-flex min-h-11 items-center border-b-2 px-2 py-2 text-small transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3 ${
+                    isActive
+                      ? "border-primary font-bold text-foreground"
+                      : "border-transparent font-semibold text-muted-foreground hover:border-border-strong"
                   }`}
                   href={item.href}
                 >
@@ -100,7 +95,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
         aria-controls={menuId}
         aria-expanded={isOpen}
         aria-label={isOpen ? "주요 메뉴 닫기" : "주요 메뉴 열기"}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border-strong bg-surface text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring lg:hidden"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-border-strong bg-surface px-3 text-small font-semibold text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring lg:hidden"
         onClick={() => setIsOpen((current) => !current)}
       >
         {isOpen ? (
@@ -132,31 +127,27 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
             <path d="M4 7h16M4 12h16M4 17h16" />
           </svg>
         )}
+        <span>{isOpen ? "닫기" : "메뉴"}</span>
       </button>
 
       {isOpen && (
         <nav
           id={menuId}
           aria-label="모바일 주요 메뉴"
-          className="absolute inset-x-0 top-full border-b border-border bg-surface shadow-card lg:hidden"
+          className="absolute inset-x-0 top-full max-h-[calc(100dvh-5rem)] overflow-y-auto border-b border-border bg-surface lg:hidden"
         >
-          <ul className="mx-auto w-full max-w-site px-page py-4 sm:px-page-wide">
+          <ul className="mx-auto w-full max-w-site divide-y divide-border px-page py-2 sm:px-page-wide">
             {siteConfig.mainNavigation.map((item) => {
               const isActive = isCurrentPath(pathname, item.href);
-              const isSupport = item.href === "/support";
 
               return (
                 <li key={item.href}>
                   <Link
                     aria-current={isActive ? "page" : undefined}
-                    className={`flex min-h-11 w-full items-center rounded-control px-4 py-3 text-base font-semibold transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
-                      isSupport
-                        ? `mt-2 justify-center border border-primary bg-primary text-primary-foreground hover:border-primary-hover hover:bg-primary-hover hover:text-primary-foreground ${
-                            isActive ? "border-primary-hover bg-primary-hover font-bold" : ""
-                          }`
-                        : isActive
-                          ? "bg-primary-soft font-bold text-primary"
-                          : "text-foreground hover:bg-primary-soft hover:text-primary"
+                    className={`flex min-h-11 w-full items-center border-l-4 px-4 py-3 text-base transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+                      isActive
+                        ? "border-primary bg-primary-soft font-bold text-foreground"
+                        : "border-transparent font-semibold text-foreground hover:bg-primary-soft hover:text-primary"
                     }`}
                     href={item.href}
                     onClick={() => setIsOpen(false)}
