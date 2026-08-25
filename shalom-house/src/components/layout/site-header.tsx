@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/site";
 
 export function SiteHeader() {
   return (
-    <header className="relative z-40 border-b border-border bg-surface">
+    <header className="relative z-40 border-b border-border-strong bg-background">
       <div className="mx-auto flex min-h-20 w-full max-w-site items-center justify-between gap-4 px-page py-4 sm:px-page-wide">
         <Link
           aria-label={`${siteConfig.name} 홈`}
