@@ -21,6 +21,9 @@ type AdminNewsSearchParams = {
   page?: string | string[];
 };
 
+const adminNewsDesktopGridClass =
+  "xl:grid-cols-[minmax(0,2.4fr)_minmax(0,0.75fr)_minmax(0,0.75fr)_minmax(0,0.65fr)_minmax(0,0.9fr)_minmax(0,0.9fr)]";
+
 const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
   month: "long",
@@ -172,15 +175,15 @@ export default async function AdminNewsPage({
         </h2>
         {result.items.length > 0 ? (
           <>
-            <div className="hidden gap-4 border-y border-border bg-surface-subtle px-4 py-3 text-small font-bold lg:grid lg:grid-cols-[minmax(16rem,2fr)_minmax(6rem,0.7fr)_minmax(6rem,0.7fr)_minmax(6rem,0.6fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)]">
+            <div className={`hidden gap-4 border-y border-border bg-surface-subtle px-4 py-3 text-small font-bold xl:grid ${adminNewsDesktopGridClass}`}>
               <span>소식</span><span>게시 상태</span><span>승인 상태</span>
               <span>공개 여부</span><span>게시일</span><span>최근 수정</span>
             </div>
             <ul className="divide-y divide-border border-b border-border">
               {result.items.map((item) => (
                 <li key={item.id}>
-                  <article className="grid min-w-0 gap-5 px-4 py-5 lg:grid-cols-[minmax(16rem,2fr)_minmax(6rem,0.7fr)_minmax(6rem,0.7fr)_minmax(6rem,0.6fr)_minmax(7rem,0.8fr)_minmax(7rem,0.8fr)] lg:items-start lg:gap-4">
-                    <div className="min-w-0">
+                  <article className={`grid min-w-0 gap-5 px-4 py-5 md:grid-cols-2 xl:items-start xl:gap-4 ${adminNewsDesktopGridClass}`}>
+                    <div className="min-w-0 md:col-span-2 xl:col-span-1">
                       <p className="text-small font-semibold text-primary">
                         {getNewsCategoryLabel(item.category)}
                       </p>
@@ -188,16 +191,16 @@ export default async function AdminNewsPage({
                       <p className="mt-2 break-words text-small text-muted-foreground">{item.summary}</p>
                       <p className="mt-2 break-all text-small text-muted-foreground">slug: {item.slug}</p>
                     </div>
-                    <div><p className="text-small font-semibold lg:hidden">게시 상태</p><p className="mt-1 lg:mt-0">{getNewsPublicationStatusLabel(item.publicationStatus)}</p></div>
-                    <div><p className="text-small font-semibold lg:hidden">승인 상태</p><p className="mt-1 lg:mt-0">{getNewsApprovalStatusLabel(item.approvalStatus)}</p></div>
-                    <div><p className="text-small font-semibold lg:hidden">공개 여부</p><p className="mt-1 font-semibold lg:mt-0">{item.isPubliclyVisible ? "공개 중" : "비공개"}</p></div>
-                    <div>
-                      <p className="text-small font-semibold lg:hidden">게시일</p>
-                      {item.publishedAt ? <time className="mt-1 block lg:mt-0" dateTime={item.publishedAt}>{formatDate(item.publishedAt)}</time> : <p className="mt-1 lg:mt-0">게시일 미설정</p>}
+                    <div className="min-w-0"><p className="text-small font-semibold xl:hidden">게시 상태</p><p className="mt-1 break-words xl:mt-0">{getNewsPublicationStatusLabel(item.publicationStatus)}</p></div>
+                    <div className="min-w-0"><p className="text-small font-semibold xl:hidden">승인 상태</p><p className="mt-1 break-words xl:mt-0">{getNewsApprovalStatusLabel(item.approvalStatus)}</p></div>
+                    <div className="min-w-0"><p className="text-small font-semibold xl:hidden">공개 여부</p><p className="mt-1 break-words font-semibold xl:mt-0">{item.isPubliclyVisible ? "공개 중" : "비공개"}</p></div>
+                    <div className="min-w-0">
+                      <p className="text-small font-semibold xl:hidden">게시일</p>
+                      {item.publishedAt ? <time className="mt-1 block break-words xl:mt-0" dateTime={item.publishedAt}>{formatDate(item.publishedAt)}</time> : <p className="mt-1 break-words xl:mt-0">게시일 미설정</p>}
                     </div>
-                    <div>
-                      <p className="text-small font-semibold lg:hidden">최근 수정</p>
-                      <time className="mt-1 block lg:mt-0" dateTime={item.updatedAt}>{formatDate(item.updatedAt)}</time>
+                    <div className="min-w-0">
+                      <p className="text-small font-semibold xl:hidden">최근 수정</p>
+                      <time className="mt-1 block break-words xl:mt-0" dateTime={item.updatedAt}>{formatDate(item.updatedAt)}</time>
                     </div>
                   </article>
                 </li>
