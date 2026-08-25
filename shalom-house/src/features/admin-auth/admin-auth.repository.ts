@@ -124,27 +124,31 @@ export async function saveLoginAttempt(input: {
   const windowStartCutoff = new Date(input.now.getTime() - input.windowMilliseconds);
   const blockedUntil = new Date(input.now.getTime() + input.blockMilliseconds);
   const expiresAt = new Date(blockedUntil.getTime() + input.windowMilliseconds);
+  const startsNewWindow = {
+    $or: [
+      { $eq: [{ $type: "$windowStartedAt" }, "missing"] },
+      { $lt: ["$windowStartedAt", windowStartCutoff] },
+    ],
+  };
 
   await database.collection<AdminLoginAttemptDocument>(attemptsCollectionName).updateOne(
     { keyHash: input.keyHash },
     [
       {
         $set: {
-          _id: { $ifNull: ["$_id", new ObjectId()] },
           keyHash: input.keyHash,
           windowStartedAt: {
-            $cond: [
-              { $or: [{ $eq: [{ $type: "$windowStartedAt" }, "missing"] }, { $lt: ["$windowStartedAt", windowStartCutoff] }] },
-              input.now,
-              "$windowStartedAt",
-            ],
+            $cond: [startsNewWindow, input.now, "$windowStartedAt"],
           },
           failedCount: {
             $cond: [
-              { $or: [{ $eq: [{ $type: "$windowStartedAt" }, "missing"] }, { $lt: ["$windowStartedAt", windowStartCutoff] }] },
+              startsNewWindow,
               1,
               { $add: [{ $ifNull: ["$failedCount", 0] }, 1] },
             ],
+          },
+          blockedUntil: {
+            $cond: [startsNewWindow, null, { $ifNull: ["$blockedUntil", null] }],
           },
           updatedAt: input.now,
           expiresAt,
