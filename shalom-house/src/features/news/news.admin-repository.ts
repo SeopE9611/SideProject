@@ -1,4 +1,4 @@
-import type { Filter, WithId } from "mongodb";
+import { MongoServerError, type Filter, type WithId } from "mongodb";
 
 import { getMongoDatabase } from "@/lib/mongodb";
 
@@ -6,6 +6,7 @@ import {
   NEWS_COLLECTION_NAME,
   type MongoNewsPostDocument,
 } from "./news.mongo-schema";
+import type { ValidatedAdminNewsDraft } from "./news.admin-validation";
 import {
   ADMIN_NEWS_MAXIMUM_PAGE,
   ADMIN_NEWS_PAGE_SIZE,
@@ -47,6 +48,44 @@ export type AdminNewsListResult = {
   totalItems: number;
   totalPages: number;
 };
+
+export type CreateAdminNewsDraftResult =
+  | { ok: true; id: string; slug: string }
+  | { ok: false; reason: "slug_conflict" };
+
+type MongoNewsPostInsertDocument = Omit<MongoNewsPostDocument, "_id">;
+
+export async function createAdminNewsDraft(
+  input: ValidatedAdminNewsDraft,
+  now: Date = new Date(),
+): Promise<CreateAdminNewsDraftResult> {
+  const document: MongoNewsPostInsertDocument = {
+    slug: input.slug,
+    category: input.category,
+    title: input.title,
+    summary: input.summary,
+    body: Array.from(input.body),
+    publicationStatus: "draft",
+    approvalStatus: "pending",
+    publishedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+  };
+  const database = await getMongoDatabase();
+
+  try {
+    const result = await database
+      .collection<MongoNewsPostInsertDocument>(NEWS_COLLECTION_NAME)
+      .insertOne(document);
+    return { ok: true, id: result.insertedId.toString(), slug: input.slug };
+  } catch (error) {
+    if (error instanceof MongoServerError && error.code === 11000) {
+      return { ok: false, reason: "slug_conflict" };
+    }
+    throw error;
+  }
+}
 
 function isValidDate(value: unknown): value is Date {
   return value instanceof Date && !Number.isNaN(value.getTime());

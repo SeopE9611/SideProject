@@ -19,6 +19,7 @@ type AdminNewsSearchParams = {
   publication?: string | string[];
   approval?: string | string[];
   page?: string | string[];
+  created?: string | string[];
 };
 
 const adminNewsDesktopGridClass =
@@ -56,6 +57,8 @@ export default async function AdminNewsPage({
   searchParams: Promise<AdminNewsSearchParams>;
 }) {
   const query = await searchParams;
+  const wasCreated =
+    typeof query.created === "string" && query.created === "1";
   const category =
     typeof query.category === "string" && isNewsCategory(query.category)
       ? query.category
@@ -85,17 +88,31 @@ export default async function AdminNewsPage({
           공지사항과 활동 소식의 게시 상태와 승인 상태를 확인합니다.
         </p>
         <p className="mt-2 text-small text-muted-foreground">
-          이번 단계는 조회 전용입니다.
+          새 게시물은 작성 중·승인 대기 상태로 저장됩니다.
           <br />
-          작성·수정과 상태 변경은 다음 작업에서 연결합니다.
+          수정과 검토·승인·공개 상태 변경은 다음 작업에서 연결합니다.
         </p>
-        <Link
-          href="/news"
-          className="mt-4 inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-        >
-          공개 뉴스 페이지 보기
-        </Link>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            href="/admin/news/new"
+            className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          >
+            새 게시물 작성
+          </Link>
+          <Link
+            href="/news"
+            className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          >
+            공개 뉴스 페이지 보기
+          </Link>
+        </div>
       </div>
+
+      {wasCreated ? (
+        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
+          새 게시물을 작성 중·승인 대기 상태로 저장했습니다.
+        </p>
+      ) : null}
 
       <section
         aria-labelledby="admin-news-filter-heading"
@@ -215,7 +232,7 @@ export default async function AdminNewsPage({
             {hasFilters ? (
               <Link href="/admin/news" className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">필터 초기화</Link>
             ) : (
-              <p className="mt-3 text-muted-foreground">다음 작업에서 작성 기능이 연결되면 이 화면에서 게시 상태를 확인할 수 있습니다.</p>
+              <p className="mt-3 text-muted-foreground">새 게시물 작성에서 초안을 저장하면 이 화면에서 게시 상태를 확인할 수 있습니다.</p>
             )}
           </div>
         )}
