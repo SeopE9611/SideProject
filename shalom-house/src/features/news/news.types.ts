@@ -49,7 +49,7 @@ const publicationStatusLabels: Record<NewsPublicationStatus, string> = {
 const approvalStatusLabels: Record<NewsApprovalStatus, string> = {
   pending: "승인 대기",
   approved: "승인 완료",
-  rejected: "공개 거부",
+  rejected: "반려",
 };
 
 export function getNewsCategoryLabel(category: NewsCategory): string {
