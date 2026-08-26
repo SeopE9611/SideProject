@@ -12,7 +12,9 @@ MongoDB 세션, 로그인 제한, 관리자 로그인·로그아웃, 관리자 �
 `updatedAt` 기반 검토 요청 충돌 감지와 검토 요청 후 내용 수정 잠금도 제공한다.
 검토 승인·반려, `review+pending → review+approved`,
 `review+pending → draft+rejected`, 반려 후 수정과 재검토 요청도 제공한다.
-게시·보관, 삭제·복구는 후속 작업 범위다.
+승인 게시물 즉시 게시, `review+approved → published+approved` 전환, 서버 게시
+시각 기록, `updatedAt` 기반 게시 충돌 감지와 기존 공개 뉴스 목록·상세 연결을
+제공한다. 게시 중단·보관, 삭제·복구는 후속 작업 범위다.
 
 ## 2. 데이터 소스
 
@@ -228,7 +230,23 @@ draft + rejected + publishedAt=null
 - 반려 사유는 현재 저장하지 않으며 결정자 기록과 함께 감사 기록 모델에서 후속
   설계한다.
 
-## 12. 향후 관리자 방향
+## 12. 관리자 뉴스 즉시 게시
+
+- 활성 `admin` 세션은 승인 완료 게시물을 게시할 수 있다. 독립된 게시자 역할은 없고
+  게시자 정보나 담당자 기록을 저장하지 않으므로 직무 분리를 의미하지 않는다.
+- 게시 조건은 삭제되지 않은 `review + approved + publishedAt=null` 게시물이며,
+  `updatedAt`가 form이 읽은 값과 일치해야 한다.
+- 상태 전환은 `review + approved + publishedAt=null → published + approved +
+  publishedAt=<server time>`이다. 서버가 만든 같은 시각을 `publishedAt`과
+  `updatedAt`에 기록한다.
+- 하나의 `findOneAndUpdate`가 `publicationStatus`, `publishedAt`, `updatedAt`만
+  변경한다. `approvalStatus`, `createdAt`, `deletedAt`, `slug`, `category`, `title`,
+  `summary`, `body`는 변경하지 않는다.
+- 게시 후 기존 공개 조건인 `published + approved`, 현재 이하의 `publishedAt`,
+  미삭제 조건을 만족하므로 dynamic 공개 목록과 상세의 다음 요청부터 노출된다.
+- 예약 게시와 게시일 입력은 제공하지 않는다.
+
+## 13. 향후 관리자 방향
 
 아래 항목은 구현된 기능이 아니라 향후 진행 순서다.
 
@@ -236,16 +254,16 @@ draft + rejected + publishedAt=null
 관리자 뉴스 초안 작성, 관리자 뉴스 상세 조회, 관리자 뉴스 초안 수정,
 동시 수정 충돌·수정 slug 중복·수정 불가 상태 처리, 관리자 뉴스 검토 요청,
 `draft → review` 원자적 상태 전환, 검토 요청 충돌 감지와 내용 수정 잠금,
-검토 승인·반려, 반려 후 수정과 재검토 요청
+검토 승인·반려, 반려 후 수정과 재검토 요청, 승인 게시물 즉시 게시,
+서버 게시 시각 기록, 게시 충돌 감지와 공개 뉴스 목록·상세 연결
 
-1. 승인된 게시물 게시
-2. 공개·비공개·보관
-3. 수정 이력과 감사 기록
-4. 역할·승인자 정책
-5. 삭제·복구
-6. 이미지와 첨부파일
+1. 게시 중단과 보관
+2. 수정 이력과 감사 기록
+3. 역할·게시자 정책
+4. 삭제·복구
+5. 이미지와 첨부파일
 
-## 13. 도깨비테니스 참고 범위
+## 14. 도깨비테니스 참고 범위
 
 공개 영역과 관리자 영역의 분리, 목록과 상세 경로의 분리, DB 연결 중앙화,
 공개 상태와 비공개 상태의 분리, 목록과 상세 조회 책임의 분리라는 구조적 원칙만

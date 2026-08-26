@@ -2,16 +2,17 @@ import Link from "next/link";
 
 const preparedItems = [
   "관리자 로그인과 세션",
-  "관리자 공통 레이아웃",
-  "공개 뉴스 목록과 상세",
-  "MongoDB 뉴스 읽기 저장소",
+  "뉴스 목록·상세 관리",
+  "뉴스 초안 작성·수정",
+  "검토 요청·승인·반려",
+  "승인 게시물 공개",
 ] as const;
 
 const nextItems = [
-  "뉴스 게시물 목록 관리",
-  "작성·수정",
-  "검토 요청과 승인",
-  "공개·보관 처리",
+  "게시 중단·보관",
+  "수정 이력과 감사 기록",
+  "삭제·복구",
+  "이미지·첨부파일",
 ] as const;
 
 export default function AdminDashboardPage() {
@@ -39,7 +40,7 @@ export default function AdminDashboardPage() {
       </div>
       <div className="flex flex-wrap gap-3">
         <Link href="/admin/news" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-          뉴스 관리 준비 화면 보기
+          뉴스 관리 열기
         </Link>
         <Link href="/" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           공개 홈페이지 보기
