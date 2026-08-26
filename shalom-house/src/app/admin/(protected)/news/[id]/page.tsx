@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { AdminNewsReviewRequestForm } from "@/components/admin/admin-news-review-request-form";
 import { AdminNewsReviewDecisionForm } from "@/components/admin/admin-news-review-decision-form";
+import { AdminNewsPublishForm } from "@/components/admin/admin-news-publish-form";
 import { findAdminNewsPostById } from "@/features/news/news.admin-repository";
 import {
   getNewsApprovalStatusLabel,
@@ -42,6 +43,7 @@ export default async function AdminNewsDetailPage({
     updated?: string | string[];
     reviewRequested?: string | string[];
     decision?: string | string[];
+    published?: string | string[];
   }>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
@@ -62,6 +64,8 @@ export default async function AdminNewsDetailPage({
     post.approvalStatus === "rejected" &&
     post.publishedAt === null;
   const decision = typeof query.decision === "string" ? query.decision : null;
+  const wasPublished =
+    typeof query.published === "string" && query.published === "1";
 
   const details = [
     ["게시 상태", getNewsPublicationStatusLabel(post.publicationStatus)],
@@ -105,6 +109,13 @@ export default async function AdminNewsDetailPage({
         </p>
       ) : null}
 
+      {wasPublished ? (
+        <div role="status" className="rounded-control border border-border-strong bg-surface p-4">
+          <p className="font-semibold">게시물을 공개했습니다.</p>
+          <p className="mt-2 text-small text-muted-foreground">공개 뉴스 목록과 상세 페이지에서 확인할 수 있습니다.</p>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap gap-3">
         {post.isEditable ? (
           <Link href={`/admin/news/${post.id}/edit`} className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
@@ -128,7 +139,12 @@ export default async function AdminNewsDetailPage({
           ) : isApprovedReview ? (
             <>
               <p className="font-semibold">검토 승인이 완료된 게시물입니다.</p>
-              <p className="mt-2 text-small text-muted-foreground">아직 공개되지 않았으며 게시 기능은 다음 작업에서 연결합니다.</p>
+              <p className="mt-2 text-small text-muted-foreground">최종 공개 내용을 확인한 뒤 아래 게시 절차를 진행해 주세요.</p>
+            </>
+          ) : post.isPubliclyVisible ? (
+            <>
+              <p className="font-semibold">현재 홈페이지에 공개 중인 게시물입니다.</p>
+              <p className="mt-2 text-small text-muted-foreground">게시 중단과 보관 기능은 다음 작업에서 연결합니다.</p>
             </>
           ) : (
             <>
@@ -196,6 +212,17 @@ export default async function AdminNewsDetailPage({
             반려하면 수정 가능한 초안으로 돌아가며 다시 검토를 요청할 수 있습니다.
           </p>
           <AdminNewsReviewDecisionForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
+        </section>
+      ) : null}
+
+      {post.canPublish ? (
+        <section aria-labelledby="admin-news-publish-heading" className="rounded-card border border-border-strong bg-surface p-5">
+          <h2 id="admin-news-publish-heading" className="text-heading font-bold">게시</h2>
+          <p className="mt-3 text-small text-muted-foreground">
+            게시하면 현재 승인된 내용이 즉시 공개 뉴스 목록과 상세 페이지에 표시됩니다.<br />
+            게시 후 내용 수정과 게시 중단은 별도 상태 전환이 필요합니다.
+          </p>
+          <AdminNewsPublishForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </section>
       ) : null}
     </div>

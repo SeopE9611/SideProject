@@ -48,6 +48,7 @@ export type AdminNewsDetail = AdminNewsListItem & {
   isEditable: boolean;
   canRequestReview: boolean;
   canDecideReview: boolean;
+  canPublish: boolean;
 };
 
 export type AdminNewsListFilters = {
@@ -96,6 +97,19 @@ export type DecideAdminNewsReviewResult =
   | {
       ok: false;
       reason: "not_found" | "not_decidable" | "edit_conflict";
+    };
+
+export type PublishAdminNewsResult =
+  | {
+      ok: true;
+      id: string;
+      slug: string;
+      publishedAt: string;
+      updatedAt: string;
+    }
+  | {
+      ok: false;
+      reason: "not_found" | "not_publishable" | "edit_conflict";
     };
 
 type MongoNewsPostInsertDocument = Omit<MongoNewsPostDocument, "_id">;
@@ -166,6 +180,18 @@ function isPendingReviewState(
   return (
     publicationStatus === "review" &&
     approvalStatus === "pending" &&
+    publishedAt === null
+  );
+}
+
+function isApprovedReviewState(
+  publicationStatus: NewsPublicationStatus,
+  approvalStatus: NewsApprovalStatus,
+  publishedAt: Date | null,
+): boolean {
+  return (
+    publicationStatus === "review" &&
+    approvalStatus === "approved" &&
     publishedAt === null
   );
 }
@@ -290,7 +316,88 @@ export async function findAdminNewsPostById(
       document.approvalStatus,
       document.publishedAt,
     ),
+    canPublish: isApprovedReviewState(
+      document.publicationStatus,
+      document.approvalStatus,
+      document.publishedAt,
+    ),
   };
+}
+
+export async function publishAdminNews(input: {
+  id: string;
+  expectedUpdatedAt: Date;
+  now?: Date;
+}): Promise<PublishAdminNewsResult> {
+  if (!isValidAdminNewsId(input.id)) return { ok: false, reason: "not_found" };
+
+  const publicationTime = createNextUpdatedAt(
+    input.expectedUpdatedAt,
+    input.now ?? new Date(),
+  );
+  const database = await getMongoDatabase();
+  const collection = database.collection<MongoNewsPostDocument>(
+    NEWS_COLLECTION_NAME,
+  );
+  const updatedDocument = await collection.findOneAndUpdate(
+    {
+      _id: new ObjectId(input.id),
+      $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }],
+      publicationStatus: "review",
+      approvalStatus: "approved",
+      publishedAt: null,
+      updatedAt: input.expectedUpdatedAt,
+    },
+    {
+      $set: {
+        publicationStatus: "published",
+        publishedAt: publicationTime,
+        updatedAt: publicationTime,
+      },
+    },
+    { returnDocument: "after", includeResultMetadata: false },
+  );
+
+  if (updatedDocument) {
+    return {
+      ok: true,
+      id: updatedDocument._id.toString(),
+      slug: updatedDocument.slug,
+      publishedAt: updatedDocument.publishedAt!.toISOString(),
+      updatedAt: updatedDocument.updatedAt.toISOString(),
+    };
+  }
+
+  const current = await collection.findOne(
+    { _id: new ObjectId(input.id) },
+    {
+      projection: {
+        slug: 1,
+        publicationStatus: 1,
+        approvalStatus: 1,
+        publishedAt: 1,
+        updatedAt: 1,
+        deletedAt: 1,
+      },
+    },
+  );
+  if (!current || current.deletedAt != null) {
+    return { ok: false, reason: "not_found" };
+  }
+  if (
+    !isApprovedReviewState(
+      current.publicationStatus,
+      current.approvalStatus,
+      current.publishedAt,
+    )
+  ) {
+    return { ok: false, reason: "not_publishable" };
+  }
+  if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) {
+    return { ok: false, reason: "edit_conflict" };
+  }
+
+  return { ok: false, reason: "edit_conflict" };
 }
 
 export async function updateAdminNewsDraft(input: {

@@ -29,6 +29,27 @@ export type AdminNewsReviewRequestInput = {
   reviewReadinessConfirmed: unknown;
 };
 
+export type AdminNewsPublishInput = {
+  expectedUpdatedAt: unknown;
+  publicationConfirmed: unknown;
+};
+
+export type ValidatedAdminNewsPublish = {
+  expectedUpdatedAt: Date;
+};
+
+export type AdminNewsPublishFieldErrors = {
+  publicationConfirmed?: string;
+};
+
+export type AdminNewsPublishValidationResult =
+  | { ok: true; value: ValidatedAdminNewsPublish }
+  | {
+      ok: false;
+      fieldErrors: AdminNewsPublishFieldErrors;
+      formError?: "invalid_version";
+    };
+
 export const adminNewsReviewDecisions = ["approve", "reject"] as const;
 
 export type AdminNewsReviewDecision =
@@ -294,4 +315,30 @@ export function validateAdminNewsReviewDecisionInput(
       decision: value.decision as AdminNewsReviewDecision,
     },
   };
+}
+
+export function validateAdminNewsPublishInput(
+  input: unknown,
+): AdminNewsPublishValidationResult {
+  const value =
+    typeof input === "object" && input !== null
+      ? (input as Record<string, unknown>)
+      : {};
+  const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
+  const fieldErrors: AdminNewsPublishFieldErrors = {};
+
+  if (value.publicationConfirmed !== true) {
+    fieldErrors.publicationConfirmed =
+      "게시 즉시 홈페이지에 공개된다는 점과 개인정보·공개 범위 확인을 완료해 주세요.";
+  }
+
+  if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
+    return {
+      ok: false,
+      fieldErrors,
+      ...(!expectedUpdatedAt ? { formError: "invalid_version" as const } : {}),
+    };
+  }
+
+  return { ok: true, value: { expectedUpdatedAt } };
 }
