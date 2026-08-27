@@ -50,6 +50,35 @@ export type AdminNewsPublishValidationResult =
       formError?: "invalid_version";
     };
 
+export const adminNewsPublicationActions = ["unpublish", "archive"] as const;
+
+export type AdminNewsPublicationAction =
+  (typeof adminNewsPublicationActions)[number];
+
+export type AdminNewsPublicationStateInput = {
+  expectedUpdatedAt: unknown;
+  action: unknown;
+  transitionConfirmed: unknown;
+};
+
+export type ValidatedAdminNewsPublicationState = {
+  expectedUpdatedAt: Date;
+  action: AdminNewsPublicationAction;
+};
+
+export type AdminNewsPublicationStateFieldErrors = {
+  action?: string;
+  transitionConfirmed?: string;
+};
+
+export type AdminNewsPublicationStateValidationResult =
+  | { ok: true; value: ValidatedAdminNewsPublicationState }
+  | {
+      ok: false;
+      fieldErrors: AdminNewsPublicationStateFieldErrors;
+      formError?: "invalid_version";
+    };
+
 export const adminNewsReviewDecisions = ["approve", "reject"] as const;
 
 export type AdminNewsReviewDecision =
@@ -148,6 +177,50 @@ export function isAdminNewsReviewDecision(
     typeof value === "string" &&
     adminNewsReviewDecisions.includes(value as AdminNewsReviewDecision)
   );
+}
+
+export function isAdminNewsPublicationAction(
+  value: unknown,
+): value is AdminNewsPublicationAction {
+  return (
+    typeof value === "string" &&
+    adminNewsPublicationActions.includes(value as AdminNewsPublicationAction)
+  );
+}
+
+export function validateAdminNewsPublicationStateInput(
+  input: unknown,
+): AdminNewsPublicationStateValidationResult {
+  const value =
+    typeof input === "object" && input !== null
+      ? (input as Record<string, unknown>)
+      : {};
+  const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
+  const fieldErrors: AdminNewsPublicationStateFieldErrors = {};
+
+  if (!isAdminNewsPublicationAction(value.action)) {
+    fieldErrors.action = "게시 상태 변경 방법을 선택해 주세요.";
+  }
+  if (value.transitionConfirmed !== true) {
+    fieldErrors.transitionConfirmed =
+      "선택한 상태 변경과 공개 종료 결과를 확인해 주세요.";
+  }
+
+  if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
+    return {
+      ok: false,
+      fieldErrors,
+      ...(!expectedUpdatedAt ? { formError: "invalid_version" as const } : {}),
+    };
+  }
+
+  return {
+    ok: true,
+    value: {
+      expectedUpdatedAt,
+      action: value.action as AdminNewsPublicationAction,
+    },
+  };
 }
 
 export function validateAdminNewsDraftInput(

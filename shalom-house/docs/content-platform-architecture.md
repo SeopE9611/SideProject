@@ -14,7 +14,8 @@ MongoDB 세션, 로그인 제한, 관리자 로그인·로그아웃, 관리자 �
 `review+pending → draft+rejected`, 반려 후 수정과 재검토 요청도 제공한다.
 승인 게시물 즉시 게시, `review+approved → published+approved` 전환, 서버 게시
 시각 기록, `updatedAt` 기반 게시 충돌 감지와 기존 공개 뉴스 목록·상세 연결을
-제공한다. 게시 중단·보관, 삭제·복구는 후속 작업 범위다.
+제공한다. 공개 게시물의 게시 중단과 보관, 게시 중단 후 재게시, 보관 후
+공개·수정·재게시 차단과 `updatedAt` 기반 상태 변경 충돌 감지도 제공한다.
 
 ## 2. 데이터 소스
 
@@ -248,6 +249,22 @@ draft + rejected + publishedAt=null
 
 ## 13. 향후 관리자 방향
 
+### 게시 상태 변경
+
+- 게시 중단은 `published + approved + publishedAt=Date → review + approved +
+  publishedAt=null`로 전환한다. `publicationStatus`, `publishedAt`, `updatedAt`만
+  변경하므로 즉시 비공개되고 승인은 유지되며 기존 게시 기능으로 재게시할 수 있다.
+  이전 게시 시각은 현재 문서에서 보존하지 않는다.
+- 보관은 `published + approved + publishedAt=Date → archived + approved +
+  publishedAt=기존 Date`로 전환한다. `publicationStatus`, `updatedAt`만 변경해
+  즉시 비공개하되 기존 게시일은 유지하며 현재는 복구·재게시할 수 없다.
+- 두 전환 모두 삭제되지 않은 `published+approved` 문서와 설정된 `publishedAt`,
+  일치하는 `expectedUpdatedAt`을 filter에서 확인하고 `findOneAndUpdate` 하나로
+  처리한다. 오래된 화면은 `edit_conflict`, 이미 상태가 변경된 문서는
+  `not_manageable`이며 자동 재시도하지 않는다.
+- 현재 활성 `admin`은 게시 중단과 보관을 수행할 수 있다. 독립된 게시 관리자 역할과
+  담당자 기록은 없으며 이는 직무 분리를 의미하지 않는다.
+
 아래 항목은 구현된 기능이 아니라 향후 진행 순서다.
 
 완료: 관리자 인증과 권한, 관리자 공통 레이아웃, 관리자 뉴스 목록 조회,
@@ -255,13 +272,14 @@ draft + rejected + publishedAt=null
 동시 수정 충돌·수정 slug 중복·수정 불가 상태 처리, 관리자 뉴스 검토 요청,
 `draft → review` 원자적 상태 전환, 검토 요청 충돌 감지와 내용 수정 잠금,
 검토 승인·반려, 반려 후 수정과 재검토 요청, 승인 게시물 즉시 게시,
-서버 게시 시각 기록, 게시 충돌 감지와 공개 뉴스 목록·상세 연결
+서버 게시 시각 기록, 게시 충돌 감지와 공개 뉴스 목록·상세 연결, 공개 게시물
+게시 중단·보관, 게시 중단 후 재게시, 보관 후 공개·수정·재게시 차단,
+`updatedAt` 기반 게시 상태 변경 충돌 감지
 
-1. 게시 중단과 보관
-2. 수정 이력과 감사 기록
-3. 역할·게시자 정책
-4. 삭제·복구
-5. 이미지와 첨부파일
+1. 수정 이력과 감사 기록
+2. 역할·게시자 정책
+3. 삭제·복구
+4. 이미지와 첨부파일
 
 ## 14. 도깨비테니스 참고 범위
 
