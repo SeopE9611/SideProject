@@ -12,6 +12,7 @@ import {
   type MongoNewsPostDocument,
 } from "./news.mongo-schema";
 import type {
+  AdminNewsPublicationAction,
   AdminNewsReviewDecision,
   ValidatedAdminNewsDraft,
 } from "./news.admin-validation";
@@ -49,6 +50,7 @@ export type AdminNewsDetail = AdminNewsListItem & {
   canRequestReview: boolean;
   canDecideReview: boolean;
   canPublish: boolean;
+  canManagePublicationState: boolean;
 };
 
 export type AdminNewsListFilters = {
@@ -110,6 +112,21 @@ export type PublishAdminNewsResult =
   | {
       ok: false;
       reason: "not_found" | "not_publishable" | "edit_conflict";
+    };
+
+export type ChangeAdminNewsPublicationStateResult =
+  | {
+      ok: true;
+      id: string;
+      slug: string;
+      action: AdminNewsPublicationAction;
+      publicationStatus: "review" | "archived";
+      publishedAt: string | null;
+      updatedAt: string;
+    }
+  | {
+      ok: false;
+      reason: "not_found" | "not_manageable" | "edit_conflict";
     };
 
 type MongoNewsPostInsertDocument = Omit<MongoNewsPostDocument, "_id">;
@@ -193,6 +210,18 @@ function isApprovedReviewState(
     publicationStatus === "review" &&
     approvalStatus === "approved" &&
     publishedAt === null
+  );
+}
+
+function isPublishedApprovedState(
+  publicationStatus: NewsPublicationStatus,
+  approvalStatus: NewsApprovalStatus,
+  publishedAt: Date | null,
+): boolean {
+  return (
+    publicationStatus === "published" &&
+    approvalStatus === "approved" &&
+    publishedAt !== null
   );
 }
 
@@ -321,7 +350,112 @@ export async function findAdminNewsPostById(
       document.approvalStatus,
       document.publishedAt,
     ),
+    canManagePublicationState: isPublishedApprovedState(
+      document.publicationStatus,
+      document.approvalStatus,
+      document.publishedAt,
+    ),
   };
+}
+
+export async function changeAdminNewsPublicationState(input: {
+  id: string;
+  action: AdminNewsPublicationAction;
+  expectedUpdatedAt: Date;
+  now?: Date;
+}): Promise<ChangeAdminNewsPublicationStateResult> {
+  if (!isValidAdminNewsId(input.id)) return { ok: false, reason: "not_found" };
+
+  const nextUpdatedAt = createNextUpdatedAt(
+    input.expectedUpdatedAt,
+    input.now ?? new Date(),
+  );
+  const database = await getMongoDatabase();
+  const collection = database.collection<MongoNewsPostDocument>(
+    NEWS_COLLECTION_NAME,
+  );
+  const updatedDocument = await collection.findOneAndUpdate(
+    {
+      _id: new ObjectId(input.id),
+      $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }],
+      publicationStatus: "published",
+      approvalStatus: "approved",
+      publishedAt: { $ne: null },
+      updatedAt: input.expectedUpdatedAt,
+    },
+    input.action === "unpublish"
+      ? {
+          $set: {
+            publicationStatus: "review",
+            publishedAt: null,
+            updatedAt: nextUpdatedAt,
+          },
+        }
+      : {
+          $set: {
+            publicationStatus: "archived",
+            updatedAt: nextUpdatedAt,
+          },
+        },
+    { returnDocument: "after", includeResultMetadata: false },
+  );
+
+  if (updatedDocument) {
+    const validPublishedAt =
+      input.action === "unpublish"
+        ? updatedDocument.publishedAt === null
+        : isValidDate(updatedDocument.publishedAt);
+    if (
+      !isValidNewsSlug(updatedDocument.slug) ||
+      !isValidDate(updatedDocument.updatedAt) ||
+      !validPublishedAt ||
+      updatedDocument.publicationStatus !==
+        (input.action === "unpublish" ? "review" : "archived")
+    ) {
+      throw new Error("게시 상태 변경 결과 문서가 유효하지 않습니다.");
+    }
+    return {
+      ok: true,
+      id: updatedDocument._id.toString(),
+      slug: updatedDocument.slug,
+      action: input.action,
+      publicationStatus: updatedDocument.publicationStatus,
+      publishedAt: updatedDocument.publishedAt?.toISOString() ?? null,
+      updatedAt: updatedDocument.updatedAt.toISOString(),
+    };
+  }
+
+  const current = await collection.findOne(
+    { _id: new ObjectId(input.id) },
+    {
+      projection: {
+        publicationStatus: 1,
+        approvalStatus: 1,
+        publishedAt: 1,
+        updatedAt: 1,
+        deletedAt: 1,
+      },
+    },
+  );
+  if (!current || current.deletedAt != null) {
+    return { ok: false, reason: "not_found" };
+  }
+  if (
+    !isPublishedApprovedState(
+      current.publicationStatus,
+      current.approvalStatus,
+      current.publishedAt,
+    )
+  ) {
+    return { ok: false, reason: "not_manageable" };
+  }
+  if (
+    !isValidDate(current.updatedAt) ||
+    current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()
+  ) {
+    return { ok: false, reason: "edit_conflict" };
+  }
+  return { ok: false, reason: "edit_conflict" };
 }
 
 export async function publishAdminNews(input: {
