@@ -23,40 +23,58 @@
   --color-warning-soft: #fff4d9;
   --color-danger: #a23b3b;
   --color-danger-soft: #fbecec;
+  --color-hero-forest: #25483b;
+  --color-hero-clay: #88482f;
+  --color-hero-night: #22343b;
+  --color-hero-on-dark: #ffffff;
+  --color-hero-muted: #edf3ef;
+  --color-sun-soft: #f2d39d;
+  --color-on-dark: #ffffff;
+  --color-hero-mist: #d9e8e0;
+  --color-hero-sun: #f2d39d;
 
   /* 타이포그래피 */
-  --text-display: 2.25rem;
-  --text-display--line-height: 1.2;
-  --text-display--letter-spacing: -0.025em;
-  --text-display-lg: 3rem;
-  --text-display-lg--line-height: 1.15;
-  --text-display-lg--letter-spacing: -0.03em;
+  --text-hero: 2.625rem;
+  --text-hero--line-height: 1.12;
+  --text-hero--letter-spacing: -0.035em;
+  --text-hero-lg: 4.5rem;
+  --text-hero-lg--line-height: 1.06;
+  --text-hero-lg--letter-spacing: -0.045em;
+  --text-display: 2.5rem;
+  --text-display--line-height: 1.15;
+  --text-display--letter-spacing: -0.03em;
+  --text-display-lg: 3.5rem;
+  --text-display-lg--line-height: 1.1;
+  --text-display-lg--letter-spacing: -0.035em;
   --text-title: 2rem;
   --text-title--line-height: 1.25;
-  --text-title--letter-spacing: -0.02em;
+  --text-title--letter-spacing: -0.025em;
   --text-heading: 1.5rem;
   --text-heading--line-height: 1.35;
-  --text-body: 1rem;
+  --text-body: 1.0625rem;
   --text-body--line-height: 1.75;
-  --text-small: 0.875rem;
+  --text-small: 0.9375rem;
   --text-small--line-height: 1.6;
 
   /* 컨테이너와 간격 */
-  --container-site: 72rem;
-  --container-content: 48rem;
-  --spacing-page: 1.5rem;
-  --spacing-page-wide: 2rem;
-  --spacing-section: 4rem;
-  --spacing-section-wide: 5rem;
+  --container-site: 80rem;
+  --container-content: 46rem;
+  --spacing-page: 1.25rem;
+  --spacing-page-wide: 3rem;
+  --spacing-section: 5rem;
+  --spacing-section-wide: 7rem;
 
   /* 모서리 */
-  --radius-control: 0.625rem;
-  --radius-card: 1rem;
+  --radius-control: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-panel: 2rem;
 
   /* 그림자 */
   --shadow-card:
-    0 1px 2px rgb(36 50 58 / 0.06),
-    0 10px 30px rgb(36 50 58 / 0.08);
+    0 1px 2px rgb(36 50 58 / 0.05),
+    0 14px 34px rgb(36 50 58 / 0.08);
+  --shadow-nav: 0 12px 30px rgb(36 50 58 / 0.1);
+  --shadow-elevated: 0 24px 60px rgb(20 37 32 / 0.2);
 
   /* easing */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -64,11 +82,13 @@
 
 :root {
   --motion-duration-fast: 150ms;
-  --motion-duration-standard: 200ms;
+  --motion-duration-standard: 240ms;
+  --motion-duration-hero: 520ms;
 }
 
 @layer base {
   html {
+    scroll-padding-top: 7rem;
     background: var(--color-background);
   }
 
@@ -87,6 +107,22 @@
   :focus-visible {
     outline-color: var(--color-focus-ring);
   }
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-hero-enter {
+  animation: hero-enter 520ms var(--ease-standard) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

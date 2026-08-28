@@ -74,10 +74,12 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
               <li key={item.href}>
                 <Link
                   aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex min-h-11 items-center border-b-2 px-2 py-2 text-small transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3 ${
+                  className={`inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-small font-bold transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-4 ${
                     isActive
-                      ? "border-primary font-bold text-primary"
-                      : "border-transparent font-semibold text-foreground hover:border-primary hover:text-primary"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : item.emphasis
+                        ? "border-accent bg-accent-soft text-accent-hover hover:bg-accent hover:text-primary-foreground"
+                        : "border-transparent text-foreground hover:border-border-strong hover:bg-surface hover:text-primary"
                   }`}
                   href={item.href}
                 >
@@ -95,7 +97,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
         aria-controls={menuId}
         aria-expanded={isOpen}
         aria-label={isOpen ? "주요 메뉴 닫기" : "주요 메뉴 열기"}
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-border-strong bg-primary-soft px-3 text-small font-bold text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-surface hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring lg:hidden"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-border-strong bg-surface px-3 text-small font-bold text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring lg:hidden"
         onClick={() => setIsOpen((current) => !current)}
       >
         {isOpen ? (
@@ -133,7 +135,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
       <nav
         id={menuId}
         aria-label="모바일 주요 메뉴"
-        className="absolute inset-x-0 top-full max-h-[calc(100dvh-5rem)] overflow-y-auto border-b border-border-strong bg-surface-subtle shadow-card lg:hidden"
+        className="absolute inset-x-0 top-full max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-b border-border-strong bg-surface shadow-nav lg:hidden"
         hidden={!isOpen}
       >
         <ul className="mx-auto w-full max-w-site divide-y divide-border px-page py-2 sm:px-page-wide">
@@ -144,15 +146,27 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
               <li key={item.href}>
                 <Link
                   aria-current={isActive ? "page" : undefined}
-                  className={`flex min-h-11 w-full items-center border-l-4 px-4 py-3 text-base transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+                  className={`flex min-h-16 w-full items-center justify-between gap-4 border-l-4 px-4 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
                     isActive
-                      ? "border-primary bg-primary-soft font-bold text-foreground"
-                      : "border-transparent font-semibold text-foreground hover:bg-primary-soft hover:text-primary"
+                      ? "border-primary bg-primary-soft text-foreground"
+                      : item.emphasis
+                        ? "border-accent bg-accent-soft text-foreground hover:bg-surface-subtle"
+                        : "border-transparent text-foreground hover:bg-primary-soft"
                   }`}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
                 >
-                  {item.label}
+                  <span>
+                    <span className="block text-base font-bold">
+                      {item.label}
+                    </span>
+                    <span className="mt-1 block text-small text-muted-foreground">
+                      {item.description}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="text-xl font-bold">
+                    →
+                  </span>
                 </Link>
               </li>
             );

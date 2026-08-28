@@ -5,24 +5,34 @@ export const siteConfig = {
   phone: "02-2662-2488",
   mainNavigation: [
     {
-      label: "샬롬의 집",
+      label: "샬롬 소개",
+      description: "시설 소개와 기본 정보",
       href: "/about",
+      emphasis: false,
     },
     {
-      label: "함께하는 생활",
+      label: "생활과 활동",
+      description: "함께 만드는 일상과 활동",
       href: "/life",
+      emphasis: false,
     },
     {
-      label: "샬롬 소식",
+      label: "소식과 이야기",
+      description: "공지사항과 활동 이야기",
       href: "/news",
+      emphasis: false,
     },
     {
-      label: "후원과 봉사",
+      label: "함께하기",
+      description: "후원과 자원봉사 문의",
       href: "/support",
+      emphasis: true,
     },
     {
-      label: "투명한 운영",
+      label: "운영 공개",
+      description: "운영 및 후원 관련 공개 자료",
       href: "/transparency",
+      emphasis: false,
     },
   ],
 } as const;
