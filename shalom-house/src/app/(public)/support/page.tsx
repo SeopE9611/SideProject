@@ -3,13 +3,68 @@ import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
 
-const inputClassName =
-  "mt-2 min-h-12 w-full rounded-control border border-border-strong bg-surface px-4 text-body text-foreground outline-none transition-colors duration-[var(--motion-duration-fast)] placeholder:text-muted-foreground focus:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
+const participationGuides = [
+  {
+    label: "후원 문의",
+    title: "후원 방법을 확인하기 전",
+    description:
+      "후원 방식과 공식 정보를 안전하게 확인할 수 있도록 문의할 내용을 먼저 정리해 주세요.",
+    steps: [
+      {
+        title: "궁금한 후원 방식 정리",
+        description:
+          "정기 후원, 일시 후원, 물품 후원 중 어떤 방식이 가능한지 궁금한 항목을 정리합니다.",
+      },
+      {
+        title: "시설 대표 전화로 문의",
+        description:
+          "통화가 연결되면 후원 문의임을 먼저 알리고 공식 안내가 가능한 내용을 확인합니다.",
+      },
+      {
+        title: "공식 정보 재확인",
+        description:
+          "계좌, 예금주, 사용 목적 등은 담당자가 확인한 안내와 일치하는지 확인한 뒤 진행합니다.",
+      },
+    ],
+  },
+  {
+    label: "자원봉사 문의",
+    title: "참여 가능 여부를 확인하기 전",
+    description:
+      "서로의 일정과 활동 조건을 확인할 수 있도록 가능한 시간과 관심 활동을 미리 정리해 주세요.",
+    steps: [
+      {
+        title: "가능한 일정 정리",
+        description:
+          "참여할 수 있는 요일과 시간대, 관심 있는 활동을 간단히 정리합니다.",
+      },
+      {
+        title: "시설 대표 전화로 문의",
+        description:
+          "통화가 연결되면 자원봉사 문의임을 먼저 알리고 담당자 안내를 요청합니다.",
+      },
+      {
+        title: "일정과 준비 사항 확인",
+        description:
+          "활동 가능 여부, 일정과 준비 사항은 담당자와 협의한 내용을 기준으로 확정합니다.",
+      },
+    ],
+  },
+] as const;
+
+const relatedDescriptions: Partial<
+  Record<(typeof siteConfig.mainNavigation)[number]["href"], string>
+> = {
+  "/news": "공개가 승인된 공지사항과 활동 소식을 확인합니다.",
+  "/transparency": "공개가 승인된 운영 및 후원 관련 자료를 확인합니다.",
+} satisfies Partial<
+  Record<(typeof siteConfig.mainNavigation)[number]["href"], string>
+>;
 
 export const metadata: Metadata = {
   title: "후원과 봉사",
   description:
-    "샬롬의 집 후원과 자원봉사 참여 방법, 문의 전 준비할 내용을 안내합니다.",
+    "샬롬의 집 후원과 자원봉사 문의 전 확인할 내용과 시설 대표 전화를 안내합니다.",
 };
 
 export default function SupportPage() {
@@ -39,179 +94,139 @@ export default function SupportPage() {
         </h1>
         <p className="mt-5 max-w-content text-body text-muted-foreground">
           보내 주시는 관심은 거주인의 편안한 일상과 다양한 활동을 이어 가는
-          힘이 됩니다. 참여 전 궁금한 점은 시설 대표 전화로 편하게 문의해
-          주세요.
+          힘이 됩니다. 이 페이지에서는 개인정보를 입력하거나 전송하지
+          않으며, 문의에 필요한 내용을 정리한 뒤 시설 대표 전화로 확인할 수
+          있습니다.
         </p>
       </header>
 
-      <div>
-        <section
-          aria-labelledby="support-heading"
-          className="py-section sm:py-section-wide"
-        >
-          <p className="text-small font-bold text-primary">후원 안내</p>
-          <h2 id="support-heading" className="mt-2 text-title font-bold">
-            후원 방법을 먼저 확인해 주세요
-          </h2>
-          <div className="mt-6 rounded-card border border-border bg-primary-soft p-6 sm:p-8">
-            <h3 className="text-heading font-bold">안전한 후원 정보 확인</h3>
-            <p className="mt-3 text-body text-muted-foreground">
-              후원 계좌와 사용 목적은 정확한 안내를 위해 담당자 확인 후
-              전달합니다. 홈페이지에 확인되지 않은 계좌로는 송금하지 마세요.
-            </p>
-            <a
-              href={`tel:${siteConfig.phone}`}
-              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+      <section
+        aria-labelledby="participation-heading"
+        className="py-section sm:py-section-wide"
+      >
+        <p className="text-small font-bold text-primary">문의 전 확인</p>
+        <h2 id="participation-heading" className="mt-2 text-title font-bold">
+          필요한 내용을 순서대로 확인해 주세요
+        </h2>
+        <p className="mt-4 max-w-content text-body text-muted-foreground">
+          후원과 자원봉사는 서로 다른 흐름으로 안내합니다. 실제 참여 방법과
+          일정은 담당자와 확인한 내용을 기준으로 합니다.
+        </p>
+
+        <div className="mt-10 grid gap-10 md:grid-cols-2 md:gap-8">
+          {participationGuides.map((guide) => (
+            <article
+              key={guide.label}
+              className="border-t border-border-strong pt-6"
             >
-              후원 계좌 전화로 확인하기
-            </a>
-            <p className="mt-3 text-small text-muted-foreground">
-              시설 대표 전화 {siteConfig.phone}
-            </p>
-          </div>
-        </section>
+              <p className="text-small font-bold text-primary">{guide.label}</p>
+              <h3 className="mt-2 text-heading font-bold text-foreground">
+                {guide.title}
+              </h3>
+              <p className="mt-3 text-body text-muted-foreground">
+                {guide.description}
+              </p>
 
-        <section
-          aria-labelledby="volunteer-form-heading"
-          className="border-t border-border py-section sm:py-section-wide"
-        >
-          <p className="text-small font-bold text-primary">자원봉사 신청</p>
-          <h2 id="volunteer-form-heading" className="mt-2 text-title font-bold">
-            가능한 활동을 함께 찾아보세요
-          </h2>
-          <p id="volunteer-form-help" className="mt-4 text-body text-muted-foreground">
-            아래 항목은 신청할 때 필요한 기본 정보입니다. 온라인 접수 기능을
-            준비하고 있어, 현재는 내용을 확인한 뒤 대표 전화로 신청해 주세요.
-          </p>
+              <ol className="mt-6 divide-y divide-border border-y border-border">
+                {guide.steps.map((step, index) => (
+                  <li
+                    key={step.title}
+                    className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-3 py-5"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="text-small font-bold text-primary"
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <p className="font-bold text-foreground">{step.title}</p>
+                      <p className="mt-2 text-small text-muted-foreground">
+                        {step.description}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </article>
+          ))}
+        </div>
+      </section>
 
-          <form
-            aria-describedby="volunteer-form-help volunteer-form-status"
-            className="mt-8 space-y-6 rounded-card border border-border bg-surface p-6 shadow-card sm:p-8"
+      <section
+        aria-labelledby="contact-heading"
+        className="border-t border-border py-section sm:py-section-wide"
+      >
+        <p className="text-small font-bold text-primary">연락 안내</p>
+        <h2 id="contact-heading" className="mt-2 text-title font-bold">
+          시설 대표 전화로 문의해 주세요
+        </h2>
+        <p className="mt-4 max-w-content text-body text-muted-foreground">
+          아래 번호는 후원·자원봉사 전용 접수 번호가 아닌 시설 대표
+          전화입니다. 통화가 연결되면 문의 목적을 먼저 말씀해 주세요.
+        </p>
+        <p className="mt-6">
+          <a
+            href={`tel:${siteConfig.phone}`}
+            className="inline-flex min-h-11 items-center text-heading font-bold text-primary underline decoration-2 underline-offset-4 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
           >
-            <div>
-              <label htmlFor="volunteer-name" className="font-bold">
-                신청자 이름 <span aria-hidden="true" className="text-danger">*</span>
-              </label>
-              <input
-                id="volunteer-name"
-                name="volunteerName"
-                type="text"
-                autoComplete="name"
-                required
-                aria-invalid="false"
-                aria-describedby="volunteer-name-help"
-                className={inputClassName}
-              />
-              <p id="volunteer-name-help" className="mt-2 text-small text-muted-foreground">
-                담당자가 부를 수 있는 이름을 입력해 주세요.
-              </p>
-            </div>
+            {siteConfig.phone}에 전화하기
+          </a>
+        </p>
 
-            <div>
-              <label htmlFor="volunteer-phone" className="font-bold">
-                연락처 <span aria-hidden="true" className="text-danger">*</span>
-              </label>
-              <input
-                id="volunteer-phone"
-                name="volunteerPhone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                required
-                aria-invalid="false"
-                aria-describedby="volunteer-phone-help"
-                className={inputClassName}
-              />
-              <p id="volunteer-phone-help" className="mt-2 text-small text-muted-foreground">
-                연락 가능한 전화번호를 입력해 주세요.
-              </p>
-            </div>
-
-            <div>
-              <label htmlFor="volunteer-interest" className="font-bold">
-                희망 활동 또는 문의 내용
-              </label>
-              <textarea
-                id="volunteer-interest"
-                name="volunteerInterest"
-                rows={5}
-                aria-invalid="false"
-                aria-describedby="volunteer-interest-help"
-                className={inputClassName}
-              />
-              <p id="volunteer-interest-help" className="mt-2 text-small text-muted-foreground">
-                가능한 요일과 시간, 관심 있는 활동을 적어 주세요.
-              </p>
-            </div>
-
-            <div
-              id="volunteer-form-status"
-              role="status"
-              className="rounded-control bg-warning-soft p-4 text-small text-warning"
-            >
-              온라인 접수는 준비 중입니다. 입력한 정보는 전송되지 않으므로,
-              아래 버튼으로 전화해 신청을 마무리해 주세요.
-            </div>
-            <a
-              href={`tel:${siteConfig.phone}`}
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-control bg-primary px-6 text-center font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:w-auto"
-            >
-              전화로 봉사활동 신청하기
-            </a>
-          </form>
-        </section>
-
-        <section
-          aria-labelledby="inquiry-form-heading"
-          className="border-t border-border py-section sm:py-section-wide"
+        <aside
+          aria-labelledby="safe-support-heading"
+          className="mt-8 border-l-4 border-primary bg-primary-soft px-5 py-4 sm:px-6"
         >
-          <p className="text-small font-bold text-primary">후원 문의</p>
-          <h2 id="inquiry-form-heading" className="mt-2 text-title font-bold">
-            문의할 내용을 미리 정리해 보세요
-          </h2>
-          <form className="mt-8 space-y-6 rounded-card border border-border bg-surface p-6 sm:p-8">
-            <div>
-              <label htmlFor="supporter-name" className="font-bold">
-                문의자 이름
-              </label>
-              <input
-                id="supporter-name"
-                name="supporterName"
-                type="text"
-                autoComplete="name"
-                aria-invalid="false"
-                aria-describedby="supporter-name-help"
-                className={inputClassName}
-              />
-              <p id="supporter-name-help" className="mt-2 text-small text-muted-foreground">
-                오류가 있으면 이 안내 영역에 원인과 해결 방법을 함께 표시합니다.
-              </p>
-            </div>
-            <div>
-              <label htmlFor="support-question" className="font-bold">
-                후원 문의 내용
-              </label>
-              <textarea
-                id="support-question"
-                name="supportQuestion"
-                rows={5}
-                aria-invalid="false"
-                aria-describedby="support-question-help"
-                className={inputClassName}
-              />
-              <p id="support-question-help" className="mt-2 text-small text-muted-foreground">
-                정기 후원, 물품 후원 등 궁금한 내용을 적어 주세요.
-              </p>
-            </div>
-            <a
-              href={`tel:${siteConfig.phone}`}
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-primary bg-surface px-6 text-center font-bold text-primary transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:w-auto"
-            >
-              전화로 후원 문의하기
-            </a>
-          </form>
-        </section>
-      </div>
+          <h3 id="safe-support-heading" className="font-bold text-foreground">
+            후원 정보는 한 번 더 확인해 주세요
+          </h3>
+          <p className="mt-2 text-small text-muted-foreground">
+            계좌와 예금주 등 후원 정보는 담당자가 확인한 공식 안내와
+            일치하는지 확인한 뒤 이용해 주세요.
+          </p>
+        </aside>
+      </section>
+
+      <section
+        aria-labelledby="related-heading"
+        className="border-t border-border py-section sm:py-section-wide"
+      >
+        <p className="text-small font-bold text-primary">관련 정보</p>
+        <h2 id="related-heading" className="mt-2 text-title font-bold">
+          소식과 공개 자료를 함께 확인하세요
+        </h2>
+        <ul className="mt-8 divide-y divide-border border-y border-border">
+          {siteConfig.mainNavigation.map((item) => {
+            const description = relatedDescriptions[item.href];
+
+            if (!description) {
+              return null;
+            }
+
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="group flex min-h-24 items-center justify-between gap-6 py-5 text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+                >
+                  <span>
+                    <span className="block font-bold underline decoration-1 underline-offset-4 group-hover:text-primary">
+                      {item.label}
+                    </span>
+                    <span className="mt-2 block text-small text-muted-foreground">
+                      {description}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="font-bold text-primary">
+                    →
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
     </div>
   );
 }
