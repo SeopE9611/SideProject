@@ -23,21 +23,21 @@ const activityStories = [
     category: "자원봉사",
     title: "평일 점심 식사 지원",
     description:
-      "평일 점심 식사 준비를 돕는 자원봉사자를 모집해 활동한 바 있습니다.",
+      "평일 점심 식사 준비를 함께할 자원봉사자를 모집해 활동했습니다.",
   },
   {
     number: "02",
     category: "외부 활동",
     title: "나들이 지원",
     description:
-      "외부 활동과 지역사회 경험을 돕는 나들이 지원 사업을 진행했습니다.",
+      "외부 활동과 지역사회 경험을 지원하는 나들이 사업을 진행했습니다.",
   },
   {
     number: "03",
     category: "생활 공간",
     title: "공간복지 드림하우스",
     description:
-      "생활 공간을 안전하고 편안하게 개선하는 공간복지 지원 사업이 진행됐습니다.",
+      "생활 공간을 안전하고 편안하게 가꾸는 공간복지 사업을 진행했습니다.",
   },
 ] as const;
 
@@ -83,20 +83,20 @@ export default async function Home() {
         aria-labelledby="home-life-heading"
         className="border-b border-border bg-surface"
       >
-        <div className="mx-auto grid w-full max-w-site gap-12 px-page py-section sm:px-page-wide sm:py-section-wide lg:grid-cols-[0.62fr_1.38fr] lg:gap-20">
+        <div className="mx-auto grid w-full max-w-site gap-10 px-page py-16 sm:px-page-wide sm:py-20 lg:grid-cols-[minmax(20rem,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
           <div>
             <p className="text-small font-bold text-accent">주요 활동</p>
             <h2
               id="home-life-heading"
-              className="mt-4 text-display font-bold text-foreground sm:text-display-lg"
+              className="mt-4 text-title font-bold text-foreground sm:text-display"
             >
-              생활 속에서 이어 온 활동을 소개합니다
+              함께 이어 가는 일상
             </h2>
             <p className="mt-6 max-w-content text-body text-muted-foreground">
-              식사, 외부 활동, 생활 공간과 관련된 지원을 지역사회와 함께 진행해
-              왔습니다.
+              식사 준비, 나들이, 생활 공간 개선처럼 일상에 필요한 활동을
+              지역사회와 함께했습니다.
             </p>
-            <div className="mt-8 flex flex-col items-start gap-3">
+            <div className="mt-8">
               <Link
                 className="inline-flex min-h-11 items-center gap-2 text-base font-bold text-primary underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                 href="/life"
@@ -104,13 +104,6 @@ export default async function Home() {
                 생활이야기 보기
                 <span aria-hidden="true">→</span>
               </Link>
-              <a
-                className="inline-flex min-h-11 items-center gap-2 text-base font-bold text-foreground underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                href={siteConfig.instagram}
-              >
-                공식 인스타그램 보기
-                <span aria-hidden="true">↗</span>
-              </a>
             </div>
           </div>
 
@@ -140,28 +133,28 @@ export default async function Home() {
         </div>
       </section>
 
-      <section aria-labelledby="home-news-heading" className="bg-background">
-        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
-          <div className="grid gap-6 border-b border-border-strong pb-8 sm:grid-cols-[1fr_auto] sm:items-end">
-            <div>
-              <p className="text-small font-bold text-primary">최근 소식</p>
-              <h2
-                id="home-news-heading"
-                className="mt-3 text-display font-bold text-foreground sm:text-display-lg"
+      {newsPosts.length > 0 ? (
+        <section aria-labelledby="home-news-heading" className="bg-background">
+          <div className="mx-auto w-full max-w-site px-page py-16 sm:px-page-wide sm:py-20">
+            <div className="grid gap-6 border-b border-border-strong pb-7 sm:grid-cols-[1fr_auto] sm:items-end">
+              <div>
+                <p className="text-small font-bold text-primary">최근 소식</p>
+                <h2
+                  id="home-news-heading"
+                  className="mt-3 text-title font-bold text-foreground sm:text-display"
+                >
+                  샬롬의 집 소식
+                </h2>
+              </div>
+              <Link
+                className="inline-flex min-h-11 items-center gap-2 justify-self-start text-base font-bold text-primary underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:justify-self-end"
+                href="/news"
               >
-                샬롬의 집 소식
-              </h2>
+                전체 소식 보기
+                <span aria-hidden="true">→</span>
+              </Link>
             </div>
-            <Link
-              className="inline-flex min-h-11 items-center gap-2 justify-self-start text-base font-bold text-primary underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:justify-self-end"
-              href="/news"
-            >
-              전체 소식 보기
-              <span aria-hidden="true">→</span>
-            </Link>
-          </div>
 
-          {newsPosts.length > 0 ? (
             <ul>
               {newsPosts.map((post) => (
                 <li key={post.id} className="border-b border-border">
@@ -195,45 +188,54 @@ export default async function Home() {
                 </li>
               ))}
             </ul>
-          ) : (
-            <div className="grid gap-6 border-b border-border py-8 sm:grid-cols-[1fr_auto] sm:items-center">
-              <div>
-                <p className="text-heading font-bold text-foreground">
-                  홈페이지 소식을 준비하고 있습니다
-                </p>
-                <p className="mt-3 max-w-2xl text-body text-muted-foreground">
-                  현재 활동 기록은 공식 인스타그램에서 확인할 수 있습니다.
-                </p>
-              </div>
-              <a
-                className="inline-flex min-h-12 items-center gap-2 justify-self-start rounded-control border border-border-strong px-5 py-3 text-base font-bold text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:border-primary hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring sm:justify-self-end"
-                href={siteConfig.instagram}
+          </div>
+        </section>
+      ) : (
+        <section
+          aria-labelledby="home-news-heading"
+          className="border-b border-border bg-background"
+        >
+          <div className="mx-auto grid w-full max-w-site gap-7 px-page py-12 sm:grid-cols-[1fr_auto] sm:items-center sm:px-page-wide sm:py-14">
+            <div>
+              <p className="text-small font-bold text-primary">최근 소식</p>
+              <h2
+                id="home-news-heading"
+                className="mt-3 text-title font-bold text-foreground"
               >
-                인스타그램에서 보기
-                <span aria-hidden="true">↗</span>
-              </a>
+                새 소식은 인스타그램에서 전합니다
+              </h2>
+              <p className="mt-3 max-w-2xl text-body text-muted-foreground">
+                샬롬의 집의 현재 활동과 이야기를 공식 계정에서 확인하세요.
+              </p>
             </div>
-          )}
-        </div>
-      </section>
+            <a
+              className="inline-flex min-h-12 items-center gap-2 justify-self-start rounded-control border border-border-strong px-5 py-3 text-base font-bold text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:border-primary hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring sm:justify-self-end"
+              href={siteConfig.instagram}
+            >
+              인스타그램에서 보기
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </section>
+      )}
 
       <section
         aria-labelledby="home-guide-heading"
         className="border-y border-border bg-surface"
       >
-        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
+        <div className="mx-auto w-full max-w-site px-page py-16 sm:px-page-wide sm:py-20">
           <div className="max-w-content">
             <p className="text-small font-bold text-accent">이용 안내</p>
             <h2
               id="home-guide-heading"
-              className="mt-3 text-display font-bold text-foreground sm:text-display-lg"
+              className="mt-3 text-title font-bold text-foreground sm:text-display"
             >
-              참여 방법과 공개자료를 확인하세요
+              함께하는 방법과 공개자료
             </h2>
           </div>
 
           <div className="mt-10 grid border-y border-border-strong lg:grid-cols-2">
-            <article className="border-b border-border bg-accent-soft p-7 sm:p-9 lg:border-b-0 lg:border-r lg:p-11">
+            <article className="border-b border-border bg-accent-soft p-7 sm:p-9 lg:border-b-0 lg:border-r">
               <p className="text-small font-bold text-accent">함께하기</p>
               <h3 className="mt-4 text-title font-bold text-foreground">
                 자원봉사와 후원 안내
@@ -250,7 +252,7 @@ export default async function Home() {
               </Link>
             </article>
 
-            <article className="p-7 sm:p-9 lg:p-11">
+            <article className="p-7 sm:p-9">
               <p className="text-small font-bold text-primary">정보공개</p>
               <h3 className="mt-4 text-title font-bold text-foreground">
                 운영 및 후원 공개자료

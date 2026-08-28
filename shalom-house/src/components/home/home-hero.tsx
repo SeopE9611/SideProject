@@ -26,9 +26,9 @@ const quickLinks = [
   },
   {
     number: "04",
-    label: "찾아오시는 길",
-    description: "주소와 방문 문의",
-    href: "/about/directions",
+    label: "정보공개",
+    description: "운영 관련 공개자료",
+    href: "/transparency",
   },
 ] as const;
 
@@ -139,8 +139,8 @@ export function HomeHero({ newsItems }: HomeHeroProps) {
       onPointerEnter={() => setIsPointerInside(true)}
       onPointerLeave={() => setIsPointerInside(false)}
     >
-      <div className="mx-auto grid min-h-[39rem] w-full max-w-site lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
-        <div className="flex min-w-0 flex-col justify-between px-page py-14 sm:px-page-wide sm:py-18 lg:py-20">
+      <div className="mx-auto grid min-h-[34rem] w-full max-w-site lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
+        <div className="flex min-w-0 flex-col justify-between px-page py-12 sm:px-page-wide sm:py-14 lg:py-16">
           <div className="max-w-3xl">
             <p className="text-small font-bold text-sun-soft">
               장애인거주시설
@@ -171,13 +171,13 @@ export function HomeHero({ newsItems }: HomeHeroProps) {
                 </p>
               </article>
             ) : (
-              <div className="mt-9 max-w-2xl border-l-4 border-sun-soft pl-5 sm:pl-7">
+              <div className="mt-8 max-w-2xl border-l-4 border-sun-soft pl-5 sm:pl-7">
                 <p className="text-title font-bold leading-snug text-hero-on-dark sm:text-display sm:leading-tight">
-                  지체 및 지적 장애인이 함께 생활하는 공간입니다.
+                  함께 생활하고 일상을 나누는 곳
                 </p>
                 <p className="mt-5 max-w-xl text-body text-hero-muted">
-                  홈페이지에서 시설 정보, 생활이야기, 소식과 참여 방법을 확인할
-                  수 있습니다.
+                  샬롬의 집은 지체 및 지적 장애인이 함께 생활하는
+                  장애인거주시설입니다.
                 </p>
               </div>
             )}
@@ -255,7 +255,7 @@ export function HomeHero({ newsItems }: HomeHeroProps) {
 
         <aside
           aria-labelledby="home-quick-links-heading"
-          className="border-t border-hero-night/20 bg-sun-soft px-page py-10 text-hero-night sm:px-page-wide lg:border-l lg:border-t-0 lg:py-16"
+          className="border-t border-hero-night/20 bg-sun-soft px-page py-9 text-hero-night sm:px-page-wide lg:border-l lg:border-t-0 lg:py-12"
         >
           <p className="text-small font-bold text-hero-clay">빠른 안내</p>
           <h2
@@ -264,11 +264,11 @@ export function HomeHero({ newsItems }: HomeHeroProps) {
           >
             필요한 정보를 바로 찾으세요
           </h2>
-          <ol className="mt-8 border-t border-hero-night/35">
+          <ol className="mt-6 border-t border-hero-night/35">
             {quickLinks.map((item) => (
               <li key={item.href} className="border-b border-hero-night/35">
                 <Link
-                  className="group grid min-h-24 grid-cols-[2.5rem_1fr_auto] items-center gap-3 py-4 text-hero-night transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-clay"
+                  className="group grid min-h-20 grid-cols-[2.5rem_1fr_auto] items-center gap-3 py-3 text-hero-night transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-clay"
                   href={item.href}
                 >
                   <span className="text-small font-bold text-hero-clay">
