@@ -4,77 +4,72 @@ import { siteConfig } from "@/config/site";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-primary-hover bg-primary text-primary-foreground">
-      <div className="mx-auto w-full max-w-site px-page py-12 sm:px-page-wide">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+    <footer className="border-t border-hero-night bg-hero-night text-hero-on-dark">
+      <div className="mx-auto w-full max-w-site px-page py-14 sm:px-page-wide sm:py-16">
+        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.35fr] lg:gap-20">
           <section aria-labelledby="footer-about-heading">
             <h2 id="footer-about-heading">
               <Link
-                className="inline-flex text-heading font-bold text-primary-foreground underline decoration-primary-foreground underline-offset-4 transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-foreground"
+                className="inline-flex text-title font-bold text-hero-on-dark underline decoration-hero-on-dark/70 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
                 href="/"
               >
                 {siteConfig.name}
               </Link>
             </h2>
-            <p className="mt-3 max-w-md text-body text-primary-foreground">
-              {siteConfig.description}
+            <p className="mt-4 max-w-md text-body text-hero-muted">
+              지체 및 지적 장애인이 함께 생활하며 지역사회와 일상을 이어가는
+              따뜻한 보금자리입니다.
             </p>
           </section>
 
-          <nav
-            aria-label="푸터 주요 메뉴"
-            className="lg:border-l lg:border-primary-foreground/30 lg:pl-8"
-          >
-            <h2 className="text-base font-bold text-primary-foreground">
-              바로가기
-            </h2>
-            <ul className="mt-3">
+          <nav aria-label="푸터 주요 메뉴">
+            <h2 className="text-base font-bold text-hero-on-dark">바로가기</h2>
+            <ul className="mt-4 grid border-t border-hero-on-dark/25 sm:grid-cols-2">
               {siteConfig.mainNavigation.map((item) => (
-                <li key={item.href}>
+                <li
+                  key={item.href}
+                  className="border-b border-hero-on-dark/25 sm:odd:pr-5 sm:even:pl-5"
+                >
                   <Link
-                    className="inline-flex min-h-11 items-center px-2 text-small font-semibold text-primary-foreground underline decoration-primary-foreground underline-offset-4 transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
+                    className="group flex min-h-20 items-center justify-between gap-4 py-4 text-hero-on-dark transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
                     href={item.href}
                   >
-                    {item.label}
+                    <span>
+                      <span className="block text-base font-bold">
+                        {item.label}
+                      </span>
+                      <span className="mt-1 block text-small text-hero-muted">
+                        {item.description}
+                      </span>
+                    </span>
+                    <span aria-hidden="true" className="text-xl font-bold">
+                      →
+                    </span>
                   </Link>
                 </li>
               ))}
             </ul>
           </nav>
-
-          <section
-            aria-labelledby="footer-contact-heading"
-            className="lg:border-l lg:border-primary-foreground/30 lg:pl-8"
-          >
-            <h2
-              id="footer-contact-heading"
-              className="text-base font-bold text-primary-foreground"
-            >
-              연락처
-            </h2>
-            <address className="mt-3 space-y-3 text-small not-italic text-primary-foreground">
-              <p>
-                <span className="block font-bold text-primary-foreground">
-                  주소
-                </span>
-                {siteConfig.address}
-              </p>
-              <p>
-                <span className="block font-bold text-primary-foreground">
-                  대표 전화
-                </span>
-                <a
-                  className="inline-flex min-h-11 items-center px-2 text-primary-foreground underline decoration-primary-foreground underline-offset-4 transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
-                  href={`tel:${siteConfig.phone}`}
-                >
-                  {siteConfig.phone}
-                </a>
-              </p>
-            </address>
-          </section>
         </div>
 
-        <div className="mt-10 border-t border-primary-foreground/30 pt-6 text-small text-primary-foreground">
+        <div className="mt-12 grid gap-6 border-t border-hero-on-dark/25 pt-8 text-small text-hero-muted md:grid-cols-[1fr_auto] md:items-end">
+          <address className="space-y-2 not-italic">
+            <p>
+              <span className="mr-3 font-bold text-hero-on-dark">주소</span>
+              {siteConfig.address}
+            </p>
+            <p>
+              <span className="mr-3 font-bold text-hero-on-dark">
+                대표 전화
+              </span>
+              <a
+                className="inline-flex min-h-11 items-center underline decoration-hero-on-dark/70 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                href={`tel:${siteConfig.phone}`}
+              >
+                {siteConfig.phone}
+              </a>
+            </p>
+          </address>
           <p>
             © {new Date().getFullYear()} {siteConfig.name}
           </p>
