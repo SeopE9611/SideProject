@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { HomeHero } from "@/components/home/home-hero";
@@ -46,7 +47,23 @@ const quickLinks = [
   },
 ] as const;
 
-const activityCards = [
+type ActivityKind = "meal" | "outing" | "space";
+
+type ActivityCard = {
+  number: string;
+  category: string;
+  title: string;
+  description: string;
+  kind: ActivityKind;
+  imageSrc: string | null;
+  imageAlt: string;
+  cardClassName: string;
+  gridClassName: string;
+  mediaClassName: string;
+  mediaBorderClassName: string;
+};
+
+const activityCards: readonly ActivityCard[] = [
   {
     number: "01",
     category: "자원봉사",
@@ -54,7 +71,12 @@ const activityCards = [
     description:
       "평일 점심 식사 준비를 돕는 손길이 모여 따뜻한 한 끼를 만듭니다.",
     kind: "meal",
-    className: "bg-home-sun lg:col-span-7",
+    imageSrc: null,
+    imageAlt: "샬롬의 집 점심 식사 준비 활동",
+    cardClassName: "lg:col-span-7",
+    gridClassName: "",
+    mediaClassName: "min-h-56 bg-home-sun",
+    mediaBorderClassName: "border-t",
   },
   {
     number: "02",
@@ -63,7 +85,12 @@ const activityCards = [
     description:
       "나들이를 통해 새로운 장소를 만나고 지역사회에서 다양한 경험을 나눕니다.",
     kind: "outing",
-    className: "bg-home-sky lg:col-span-5",
+    imageSrc: null,
+    imageAlt: "샬롬의 집 나들이와 외부 활동",
+    cardClassName: "lg:col-span-5",
+    gridClassName: "",
+    mediaClassName: "min-h-56 bg-home-sky",
+    mediaBorderClassName: "border-t",
   },
   {
     number: "03",
@@ -72,11 +99,50 @@ const activityCards = [
     description:
       "매일 머무는 생활 공간을 안전하고 편안하게 바꾸는 활동을 이어 왔습니다.",
     kind: "space",
-    className: "bg-home-coral lg:col-span-12",
+    imageSrc: null,
+    imageAlt: "안전하고 편안하게 가꾼 샬롬의 집 생활 공간",
+    cardClassName: "lg:col-span-12",
+    gridClassName: "sm:grid-cols-[1.08fr_0.92fr]",
+    mediaClassName: "min-h-64 bg-home-coral sm:min-h-[22rem]",
+    mediaBorderClassName: "border-t sm:border-l sm:border-t-0",
   },
-] as const;
+];
 
-type ActivityKind = (typeof activityCards)[number]["kind"];
+type SocialPreviewSlot = {
+  number: string;
+  label: string;
+  imageSrc: string | null;
+  imageAlt: string;
+  className: string;
+  colorClassName: string;
+};
+
+const socialPreviewSlots: readonly SocialPreviewSlot[] = [
+  {
+    number: "01",
+    label: "함께하는 생활",
+    imageSrc: null,
+    imageAlt: "샬롬의 집에서 함께하는 생활 모습",
+    className: "col-span-2 min-h-44 sm:min-h-52",
+    colorClassName: "bg-home-sun",
+  },
+  {
+    number: "02",
+    label: "일상의 활동",
+    imageSrc: null,
+    imageAlt: "샬롬의 집 일상 활동 모습",
+    className: "min-h-44",
+    colorClassName: "bg-home-sky",
+  },
+  {
+    number: "03",
+    label: "편안한 공간",
+    imageSrc: null,
+    imageAlt: "샬롬의 집의 편안한 생활 공간",
+    className: "min-h-44",
+    colorClassName: "bg-home-coral",
+  },
+];
 
 const publishedDateFormatter = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
@@ -101,7 +167,7 @@ function ActivityArtwork({ kind }: { kind: ActivityKind }) {
       <svg
         aria-hidden="true"
         focusable="false"
-        className="size-40 sm:size-48"
+        className="size-36 sm:size-44"
         viewBox="0 0 200 200"
         fill="none"
         stroke="currentColor"
@@ -121,7 +187,7 @@ function ActivityArtwork({ kind }: { kind: ActivityKind }) {
       <svg
         aria-hidden="true"
         focusable="false"
-        className="size-40 sm:size-48"
+        className="size-36 sm:size-44"
         viewBox="0 0 200 200"
         fill="none"
         stroke="currentColor"
@@ -141,7 +207,7 @@ function ActivityArtwork({ kind }: { kind: ActivityKind }) {
     <svg
       aria-hidden="true"
       focusable="false"
-      className="size-40 sm:size-48"
+      className="size-36 sm:size-44"
       viewBox="0 0 200 200"
       fill="none"
       stroke="currentColor"
@@ -155,6 +221,62 @@ function ActivityArtwork({ kind }: { kind: ActivityKind }) {
       <circle cx="58" cy="59" r="11" />
       <path d="M136 75c-15-20-34-8-34 8 0 19 34 33 34 33s34-14 34-33c0-16-19-28-34-8Z" />
     </svg>
+  );
+}
+
+function ActivityMedia({ activity }: { activity: ActivityCard }) {
+  return (
+    <div
+      className={`relative grid place-items-center overflow-hidden border-border text-home-ink ${activity.mediaBorderClassName} ${activity.mediaClassName}`}
+    >
+      {activity.imageSrc ? (
+        <Image
+          fill
+          sizes="(min-width: 1024px) 42vw, (min-width: 640px) 50vw, 100vw"
+          src={activity.imageSrc}
+          alt={activity.imageAlt}
+          className="object-cover"
+        />
+      ) : (
+        <div className="grid size-full place-items-center p-8 opacity-70">
+          <ActivityArtwork kind={activity.kind} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SocialPreview({ slot }: { slot: SocialPreviewSlot }) {
+  return (
+    <div
+      className={`relative overflow-hidden rounded-card border border-hero-on-dark/15 text-home-ink ${slot.className} ${slot.colorClassName}`}
+    >
+      {slot.imageSrc ? (
+        <>
+          <Image
+            fill
+            sizes="(min-width: 1024px) 24vw, 50vw"
+            src={slot.imageSrc}
+            alt={slot.imageAlt}
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-home-ink/75 via-transparent to-transparent" />
+          <p className="text-safe-wrap absolute bottom-5 left-5 right-5 font-bold text-hero-on-dark">
+            {slot.label}
+          </p>
+        </>
+      ) : (
+        <div
+          aria-hidden="true"
+          className="flex size-full flex-col justify-between p-5 sm:p-6"
+        >
+          <span className="text-small font-bold">{slot.number}</span>
+          <span className="text-safe-wrap text-balance text-title font-bold">
+            {slot.label}
+          </span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -183,8 +305,10 @@ export default async function Home() {
                   {item.number}
                 </span>
                 <span>
-                  <span className="block text-base font-bold">{item.label}</span>
-                  <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                  <span className="text-safe-wrap block text-base font-bold">
+                    {item.label}
+                  </span>
+                  <span className="text-safe-wrap mt-1 block text-sm leading-6 text-muted-foreground">
                     {item.description}
                   </span>
                 </span>
@@ -210,13 +334,13 @@ export default async function Home() {
               <p className="text-small font-bold text-accent">샬롬의 일상</p>
               <h2
                 id="home-life-heading"
-                className="mt-3 max-w-3xl text-display font-bold text-foreground sm:text-display-lg"
+                className="text-safe-wrap mt-3 max-w-3xl text-balance text-display font-bold text-foreground sm:text-display-lg"
               >
                 같이 먹고, 걷고, 쉬는 하루
               </h2>
             </div>
             <div className="lg:justify-self-end">
-              <p className="max-w-xl text-body text-muted-foreground">
+              <p className="text-safe-wrap max-w-xl text-pretty text-body text-muted-foreground">
                 특별한 행사가 아니어도 괜찮습니다. 함께 보내는 평범한 시간이
                 샬롬의 집 이야기가 됩니다.
               </p>
@@ -234,25 +358,25 @@ export default async function Home() {
             {activityCards.map((activity) => (
               <article
                 key={activity.number}
-                className={`relative min-h-[25rem] overflow-hidden rounded-panel p-7 text-home-ink sm:p-9 ${activity.className}`}
+                className={`overflow-hidden rounded-panel border border-border bg-surface shadow-card ${activity.cardClassName}`}
               >
-                <div className="relative z-10 flex h-full min-h-[20.5rem] flex-col justify-between gap-8 sm:flex-row sm:items-end">
-                  <div className="max-w-xl self-start">
-                    <div className="flex items-center gap-3 text-small font-bold">
-                      <span>{activity.number}</span>
-                      <span className="h-px w-10 bg-home-ink/50" />
-                      <span>{activity.category}</span>
+                <div className={`grid h-full ${activity.gridClassName}`}>
+                  <div className="flex min-h-[17rem] flex-col justify-between p-7 sm:p-9">
+                    <div>
+                      <div className="flex items-center gap-3 text-small font-bold text-primary">
+                        <span>{activity.number}</span>
+                        <span className="h-px w-10 bg-primary/40" />
+                        <span>{activity.category}</span>
+                      </div>
+                      <h3 className="text-safe-wrap mt-5 max-w-lg text-balance text-title font-bold text-foreground sm:text-display">
+                        {activity.title}
+                      </h3>
                     </div>
-                    <h3 className="mt-5 max-w-lg text-title font-bold sm:text-display">
-                      {activity.title}
-                    </h3>
-                    <p className="mt-4 max-w-xl text-body text-home-ink/80">
+                    <p className="text-safe-wrap mt-6 max-w-xl text-pretty text-body text-muted-foreground">
                       {activity.description}
                     </p>
                   </div>
-                  <div className="shrink-0 self-end opacity-80">
-                    <ActivityArtwork kind={activity.kind} />
-                  </div>
+                  <ActivityMedia activity={activity} />
                 </div>
               </article>
             ))}
@@ -270,7 +394,7 @@ export default async function Home() {
               <p className="text-small font-bold text-primary">최근 소식</p>
               <h2
                 id="home-news-heading"
-                className="mt-3 text-display font-bold text-foreground sm:text-display-lg"
+                className="text-safe-wrap mt-3 text-balance text-display font-bold text-foreground sm:text-display-lg"
               >
                 샬롬의 집에서 전하는 이야기
               </h2>
@@ -293,14 +417,14 @@ export default async function Home() {
                     <div>
                       <h3 className="text-heading font-bold text-foreground">
                         <Link
-                          className="inline-flex min-h-11 items-center gap-2 underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                          className="text-safe-wrap inline-flex min-h-11 items-center gap-2 underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                           href={`/news/${post.slug}`}
                         >
                           {post.title}
                           <span aria-hidden="true">→</span>
                         </Link>
                       </h3>
-                      <p className="mt-2 max-w-2xl text-body text-muted-foreground">
+                      <p className="text-safe-wrap mt-2 max-w-2xl text-pretty text-body text-muted-foreground">
                         {post.summary}
                       </p>
                     </div>
@@ -321,16 +445,16 @@ export default async function Home() {
           aria-labelledby="home-news-heading"
           className="bg-home-cream py-20 sm:py-24"
         >
-          <div className="mx-auto grid w-full max-w-site overflow-hidden rounded-panel bg-home-lilac lg:grid-cols-[1fr_0.95fr]">
+          <div className="mx-auto grid w-full max-w-site overflow-hidden rounded-panel border border-border bg-surface shadow-card lg:grid-cols-[1fr_0.95fr]">
             <div className="px-7 py-12 sm:px-12 sm:py-16 lg:px-14">
-              <p className="text-small font-bold text-home-ink/70">공식 채널</p>
+              <p className="text-small font-bold text-primary">공식 채널</p>
               <h2
                 id="home-news-heading"
-                className="mt-4 max-w-xl text-display font-bold text-home-ink sm:text-display-lg"
+                className="text-safe-wrap mt-4 max-w-xl text-balance text-display font-bold text-foreground sm:text-display-lg"
               >
                 새로운 일상은 인스타그램에서 전합니다
               </h2>
-              <p className="mt-5 max-w-xl text-body text-home-ink/75">
+              <p className="text-safe-wrap mt-5 max-w-xl text-pretty text-body text-muted-foreground">
                 사진과 활동 기록이 연결되면 이 공간에서 샬롬의 집의 최근
                 이야기를 이어서 볼 수 있습니다.
               </p>
@@ -343,19 +467,10 @@ export default async function Home() {
               </a>
             </div>
 
-            <div
-              aria-hidden="true"
-              className="relative min-h-[24rem] overflow-hidden border-t border-home-ink/15 bg-home-ink p-7 lg:border-l lg:border-t-0"
-            >
-              <div className="absolute left-[8%] top-[12%] aspect-[4/5] w-[38%] rotate-[-7deg] rounded-card bg-home-sun p-5 shadow-elevated">
-                <span className="text-small font-bold text-home-ink">01</span>
-              </div>
-              <div className="absolute right-[8%] top-[18%] aspect-square w-[42%] rotate-[6deg] rounded-full bg-home-sky p-5 shadow-elevated">
-                <span className="text-small font-bold text-home-ink">02</span>
-              </div>
-              <div className="absolute bottom-[8%] left-[29%] aspect-[5/3] w-[55%] rotate-[-2deg] rounded-card bg-home-coral p-5 shadow-elevated">
-                <span className="text-small font-bold text-home-ink">03</span>
-              </div>
+            <div className="grid min-h-[24rem] grid-cols-2 gap-3 bg-home-ink p-5 sm:gap-4 sm:p-7 lg:border-l lg:border-border">
+              {socialPreviewSlots.map((slot) => (
+                <SocialPreview key={slot.number} slot={slot} />
+              ))}
             </div>
           </div>
         </section>
@@ -370,11 +485,11 @@ export default async function Home() {
             <p className="text-small font-bold text-home-sun">함께하기</p>
             <h2
               id="home-together-heading"
-              className="mt-4 max-w-xl text-display font-bold sm:text-display-lg"
+              className="text-safe-wrap mt-4 max-w-xl text-balance text-display font-bold sm:text-display-lg"
             >
               샬롬의 하루에 마음을 더해주세요
             </h2>
-            <p className="mt-5 max-w-xl text-body text-hero-muted">
+            <p className="text-safe-wrap mt-5 max-w-xl text-pretty text-body text-hero-muted">
               자원봉사와 후원 안내, 공개된 운영 자료를 한곳에서 확인할 수
               있습니다.
             </p>
@@ -387,7 +502,7 @@ export default async function Home() {
             >
               <span>
                 <span className="text-small font-bold text-accent">01 함께하기</span>
-                <span className="mt-2 block text-heading font-bold">
+                <span className="text-safe-wrap mt-2 block text-heading font-bold">
                   자원봉사와 후원 안내
                 </span>
               </span>
@@ -404,7 +519,7 @@ export default async function Home() {
             >
               <span>
                 <span className="text-small font-bold text-primary">02 정보공개</span>
-                <span className="mt-2 block text-heading font-bold">
+                <span className="text-safe-wrap mt-2 block text-heading font-bold">
                   운영 및 후원 공개자료
                 </span>
               </span>

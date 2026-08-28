@@ -115,6 +115,11 @@
   }
 }
 
+@utility text-safe-wrap {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 @keyframes hero-enter {
   from {
     opacity: 0;

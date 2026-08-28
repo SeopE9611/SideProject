@@ -1,9 +1,26 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-const heroSlides = [
+type HeroSlide = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  primaryLabel: string;
+  primaryHref: string;
+  secondaryLabel: string;
+  secondaryHref: string;
+  imageSrc: string | null;
+  imageAlt: string;
+  visualWord: string;
+  visualTitle: string;
+  visualCaption: string;
+  visualClassName: string;
+};
+
+const heroSlides: readonly HeroSlide[] = [
   {
     eyebrow: "장애인거주시설 샬롬의 집",
     title: "함께 살아가는 하루",
@@ -13,6 +30,8 @@ const heroSlides = [
     primaryHref: "/about",
     secondaryLabel: "생활이야기 보기",
     secondaryHref: "/life",
+    imageSrc: null,
+    imageAlt: "샬롬의 집에서 함께 일상을 보내는 모습",
     visualWord: "함께",
     visualTitle: "평범한 하루가 가장 소중한 이야기입니다.",
     visualCaption: "일상 · 관계 · 생활",
@@ -27,6 +46,8 @@ const heroSlides = [
     primaryHref: "/life",
     secondaryLabel: "새 소식 보기",
     secondaryHref: "/news",
+    imageSrc: null,
+    imageAlt: "샬롬의 집 나들이와 외부 활동 모습",
     visualWord: "일상",
     visualTitle: "걷고, 만나고, 함께 경험합니다.",
     visualCaption: "나들이 · 지역사회 · 경험",
@@ -41,12 +62,14 @@ const heroSlides = [
     primaryHref: "/support",
     secondaryLabel: "정보공개 보기",
     secondaryHref: "/transparency",
+    imageSrc: null,
+    imageAlt: "샬롬의 집의 안전하고 편안한 생활 공간",
     visualWord: "공간",
     visualTitle: "매일 머무는 곳을 더 편안하게.",
     visualCaption: "안전 · 편안함 · 변화",
     visualClassName: "bg-home-coral text-home-ink",
   },
-] as const;
+];
 
 export function HomeHero() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -79,24 +102,24 @@ export function HomeHero() {
               className="animate-hero-enter max-w-3xl"
               role="group"
             >
-              <p className="inline-flex rounded-full border border-hero-on-dark/30 px-4 py-2 text-small font-bold text-sun-soft">
+              <p className="text-safe-wrap inline-flex rounded-full border border-hero-on-dark/30 px-4 py-2 text-small font-bold text-sun-soft">
                 {activeSlide.eyebrow}
               </p>
-              <h1 className="mt-7 max-w-2xl text-[clamp(2.75rem,6vw,5rem)] font-bold leading-[1.04] tracking-[-0.055em] text-hero-on-dark">
+              <h1 className="text-safe-wrap mt-7 max-w-2xl text-balance text-[clamp(2.75rem,5.3vw,4.5rem)] font-bold leading-[1.06] tracking-[-0.05em] text-hero-on-dark">
                 {activeSlide.title}
               </h1>
-              <p className="mt-6 max-w-2xl text-body text-hero-muted sm:text-xl sm:leading-9">
+              <p className="text-safe-wrap mt-6 max-w-2xl text-pretty text-body text-hero-muted sm:text-xl sm:leading-9">
                 {activeSlide.description}
               </p>
               <div className="mt-9 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <Link
-                  className="inline-flex min-h-12 items-center justify-center rounded-control bg-home-sun px-6 py-3 text-base font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
+                  className="text-safe-wrap inline-flex min-h-12 items-center justify-center rounded-control bg-home-sun px-6 py-3 text-base font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
                   href={activeSlide.primaryHref}
                 >
                   {activeSlide.primaryLabel}
                 </Link>
                 <Link
-                  className="inline-flex min-h-12 items-center gap-2 px-3 py-3 text-base font-bold text-hero-on-dark underline decoration-hero-on-dark/60 underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-home-sun focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                  className="text-safe-wrap inline-flex min-h-12 items-center gap-2 px-3 py-3 text-base font-bold text-hero-on-dark underline decoration-hero-on-dark/60 underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-home-sun focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
                   href={activeSlide.secondaryHref}
                 >
                   {activeSlide.secondaryLabel}
@@ -149,55 +172,75 @@ export function HomeHero() {
           <div
             className={`relative min-h-[27rem] overflow-hidden border-t border-home-ink/20 p-7 sm:p-10 lg:min-h-full lg:border-l lg:border-t-0 ${activeSlide.visualClassName}`}
           >
-            <svg
-              aria-hidden="true"
-              focusable="false"
-              className="absolute inset-0 size-full opacity-30"
-              viewBox="0 0 600 600"
-              fill="none"
-            >
-              <circle
-                cx="492"
-                cy="104"
-                r="136"
-                stroke="currentColor"
-                strokeWidth="46"
-                opacity="0.2"
-              />
-              <path
-                d="M-20 430C120 320 188 520 322 410C426 325 498 365 640 244"
-                stroke="currentColor"
-                strokeWidth="18"
-                strokeLinecap="round"
-                opacity="0.24"
-              />
-              <path
-                d="M-40 492C112 386 202 574 346 470C448 396 532 420 652 334"
-                stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
-                opacity="0.28"
-              />
-            </svg>
+            {activeSlide.imageSrc ? (
+              <>
+                <Image
+                  fill
+                  priority={currentIndex === 0}
+                  sizes="(min-width: 1024px) 42vw, 100vw"
+                  src={activeSlide.imageSrc}
+                  alt={activeSlide.imageAlt}
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-home-ink/75 via-home-ink/15 to-transparent" />
+              </>
+            ) : (
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                className="absolute inset-0 size-full opacity-30"
+                viewBox="0 0 600 600"
+                fill="none"
+              >
+                <circle
+                  cx="492"
+                  cy="104"
+                  r="136"
+                  stroke="currentColor"
+                  strokeWidth="46"
+                  opacity="0.2"
+                />
+                <path
+                  d="M-20 430C120 320 188 520 322 410C426 325 498 365 640 244"
+                  stroke="currentColor"
+                  strokeWidth="18"
+                  strokeLinecap="round"
+                  opacity="0.24"
+                />
+                <path
+                  d="M-40 492C112 386 202 574 346 470C448 396 532 420 652 334"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  opacity="0.28"
+                />
+              </svg>
+            )}
 
             <div className="relative flex h-full min-h-[22rem] flex-col justify-between lg:min-h-full">
-              <div className="flex items-center justify-between gap-4 text-small font-bold">
+              <div
+                className={`flex items-center justify-between gap-4 text-small font-bold ${
+                  activeSlide.imageSrc ? "text-hero-on-dark" : ""
+                }`}
+              >
                 <span>{String(currentIndex + 1).padStart(2, "0")}</span>
                 <span>SHALOM HOUSE</span>
               </div>
 
               <div>
-                <p
-                  aria-hidden="true"
-                  className="text-[clamp(5rem,13vw,9.5rem)] font-bold leading-none tracking-[-0.08em] opacity-15"
-                >
-                  {activeSlide.visualWord}
-                </p>
-                <div className="mt-5 rounded-card border-2 border-home-ink bg-hero-on-dark/80 p-6 shadow-card backdrop-blur-sm sm:p-8">
-                  <p className="text-small font-bold text-accent">
+                {activeSlide.imageSrc ? null : (
+                  <p
+                    aria-hidden="true"
+                    className="text-[clamp(5rem,13vw,9.5rem)] font-bold leading-none tracking-[-0.08em] opacity-15"
+                  >
+                    {activeSlide.visualWord}
+                  </p>
+                )}
+                <div className="mt-5 rounded-card border-2 border-home-ink bg-hero-on-dark/90 p-6 shadow-card backdrop-blur-sm sm:p-8">
+                  <p className="text-safe-wrap text-small font-bold text-accent">
                     {activeSlide.visualCaption}
                   </p>
-                  <p className="mt-3 text-title font-bold leading-snug text-home-ink">
+                  <p className="text-safe-wrap mt-3 text-balance text-title font-bold leading-snug text-home-ink">
                     {activeSlide.visualTitle}
                   </p>
                 </div>
