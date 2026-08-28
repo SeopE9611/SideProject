@@ -78,7 +78,9 @@ export function HomeHeroSlider() {
       "(prefers-reduced-motion: reduce)",
     );
 
-    setIsPlaying(!reducedMotionQuery.matches);
+    const animationFrameId = window.requestAnimationFrame(() => {
+      setIsPlaying(!reducedMotionQuery.matches);
+    });
 
     function handleMotionPreferenceChange(event: MediaQueryListEvent) {
       if (event.matches) {
@@ -89,6 +91,7 @@ export function HomeHeroSlider() {
     reducedMotionQuery.addEventListener("change", handleMotionPreferenceChange);
 
     return () => {
+      window.cancelAnimationFrame(animationFrameId);
       reducedMotionQuery.removeEventListener(
         "change",
         handleMotionPreferenceChange,
