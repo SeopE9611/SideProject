@@ -32,6 +32,12 @@
   --color-on-dark: #ffffff;
   --color-hero-mist: #d9e8e0;
   --color-hero-sun: #f2d39d;
+  --color-home-cream: #f6f0e5;
+  --color-home-ink: #19353d;
+  --color-home-sun: #f3ca66;
+  --color-home-coral: #e88970;
+  --color-home-sky: #a9d8d1;
+  --color-home-lilac: #cfc4e3;
 
   /* 타이포그래피 */
   --text-hero: 2.625rem;
