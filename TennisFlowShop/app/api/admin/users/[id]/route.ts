@@ -49,6 +49,11 @@ type AdminUserDoc = {
   name?: unknown;
   isDeleted?: unknown;
   isSuspended?: unknown;
+  hashedPassword?: unknown;
+  oauth?: {
+    kakao?: { id?: unknown };
+    naver?: { id?: unknown };
+  };
 };
 
 function usersCollection(db: Db) {
@@ -98,8 +103,12 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const parsedParams = parseUserIdParams(await ctx.params);
   if (!parsedParams.ok) return parsedParams.res;
 
-  const [doc, appsInTossIdentity] = await Promise.all([
+  const [doc, passwordState, appsInTossIdentity] = await Promise.all([
     usersCollection(db).findOne({ _id: parsedParams._id }, userProjection),
+    usersCollection(db).findOne(
+      { _id: parsedParams._id },
+      { projection: { hashedPassword: 1 } },
+    ),
     db.collection("apps_in_toss_identities").findOne(
       {
         userId: parsedParams._id,
@@ -112,12 +121,23 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
 
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
+  const oauthProviders = [
+    doc.oauth?.kakao?.id ? "kakao" : null,
+    doc.oauth?.naver?.id ? "naver" : null,
+  ].filter(Boolean) as Array<"kakao" | "naver">;
+  const hasLocalPassword =
+    typeof passwordState?.hashedPassword === "string" &&
+    passwordState.hashedPassword.length > 0;
+
   return NextResponse.json({
     ...doc,
     id: doc._id.toString(),
     isSuspended: !!(doc as any).isSuspended,
     isDeleted: !!(doc as any).isDeleted,
     appsInTossLinked: Boolean(appsInTossIdentity),
+    oauthProviders,
+    hasLocalPassword,
+    hasExternalIdentity: oauthProviders.length > 0 || Boolean(appsInTossIdentity),
     _id: undefined,
   });
 }
@@ -176,9 +196,45 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const current = await usersCollection(db).findOne(
     { _id },
-    { projection: { _id: 1, role: 1, email: 1, name: 1, isDeleted: 1, isSuspended: 1 } },
+    {
+      projection: {
+        _id: 1,
+        role: 1,
+        email: 1,
+        name: 1,
+        isDeleted: 1,
+        isSuspended: 1,
+        "oauth.kakao.id": 1,
+        "oauth.naver.id": 1,
+      },
+    },
   );
   if (!current) return NextResponse.json({ message: "not found" }, { status: 404 });
+
+  if (typeof payload.email === "string") {
+    const normalizedCurrentEmail = String(current.email ?? "").trim().toLowerCase();
+    const normalizedNextEmail = payload.email.trim().toLowerCase();
+    if (normalizedNextEmail !== normalizedCurrentEmail) {
+      const appsInTossIdentity = await db.collection("apps_in_toss_identities").findOne(
+        {
+          userId: _id,
+          appName: APPS_IN_TOSS_APP_NAME,
+          status: "active",
+        },
+        { projection: { _id: 1 } },
+      );
+      const hasOAuthIdentity = Boolean(
+        current.oauth?.kakao?.id || current.oauth?.naver?.id,
+      );
+      if (hasOAuthIdentity || appsInTossIdentity) {
+        return errorJson(
+          409,
+          "EXTERNAL_IDENTITY_EMAIL_IMMUTABLE",
+          "외부 로그인과 연결된 계정의 이메일은 변경할 수 없습니다.",
+        );
+      }
+    }
+  }
 
   const currentRole = normalizeUserRole((current as any).role);
   const nextRole = payload.role;

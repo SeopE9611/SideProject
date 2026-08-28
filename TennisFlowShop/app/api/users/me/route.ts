@@ -61,6 +61,7 @@ export async function GET() {
             addressDetail: 1,
             postalCode: 1,
             pointsBalance: 1,
+            hashedPassword: 1,
             isDeleted: 1,
             isSuspended: 1,
           },
@@ -96,6 +97,8 @@ export async function GET() {
       oauth?.kakao?.id ? "kakao" : null,
       oauth?.naver?.id ? "naver" : null,
     ].filter(Boolean) as Array<"kakao" | "naver">;
+    const hasLocalPassword =
+      typeof user.hashedPassword === "string" && user.hashedPassword.length > 0;
     const response = NextResponse.json({
       id: user._id.toString(),
       name: user.name ?? null,
@@ -109,6 +112,12 @@ export async function GET() {
       pointsBalance:
         typeof (user as any).pointsBalance === "number" ? (user as any).pointsBalance : 0, // 마이페이지(적립금 표시)에서 바로 쓰도록 포함
       socialProviders,
+      accountCapabilities: {
+        hasLocalPassword,
+        canChangeEmail: false,
+        canChangePassword: hasLocalPassword,
+        canResetPassword: hasLocalPassword,
+      },
     });
     perf.log();
     return response;
@@ -157,6 +166,16 @@ export async function PATCH(req: NextRequest) {
 
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "INVALID_BODY" }, { status: 400 });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "email")) {
+    return NextResponse.json(
+      {
+        error: "EMAIL_CHANGE_NOT_SUPPORTED",
+        message: "이메일은 현재 직접 변경할 수 없습니다.",
+      },
+      { status: 400 },
+    );
   }
 
   const { name, phone, postalCode, address, addressDetail /*, marketing*/ } = body;

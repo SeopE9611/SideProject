@@ -40,7 +40,6 @@ import { useEffect, useMemo, useState } from "react";
 import { MdSportsTennis } from "react-icons/md";
 
 // 제출 직전 최종 유효성 가드
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
 const isValidKoreanPhone = (v: string) => {
@@ -53,14 +52,12 @@ const PW_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 // ProfileClient에서 “이탈 경고 기준”으로 삼을 필드만 뽑아 시그니처 문자열로 만듦(비교용)
 const profileDirtySignature = (d: {
   name?: string;
-  email?: string;
   phone?: string;
   address?: { postalCode?: string; address1?: string; address2?: string };
   marketing?: { email?: boolean; sms?: boolean; push?: boolean };
 }) =>
   JSON.stringify({
     name: String(d.name ?? "").trim(),
-    email: String(d.email ?? "").trim(),
     phone: String(d.phone ?? "").trim(),
     address: {
       postalCode: String(d.address?.postalCode ?? "").trim(),
@@ -81,6 +78,13 @@ type Props = {
     email: string;
     role: string;
   };
+};
+
+type AccountCapabilities = {
+  hasLocalPassword: boolean;
+  canChangeEmail: boolean;
+  canChangePassword: boolean;
+  canResetPassword: boolean;
 };
 
 export default function ProfileClient({ user }: Props) {
@@ -111,6 +115,7 @@ export default function ProfileClient({ user }: Props) {
 
   // 소셜 로그인 제공자(표시용): /api/users/me에서 내려주는 oauthProviders
   const [socialProviders, setSocialProviders] = useState<Array<"kakao" | "naver">>([]);
+  const [accountCapabilities, setAccountCapabilities] = useState<AccountCapabilities | null>(null);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -126,9 +131,11 @@ export default function ProfileClient({ user }: Props) {
   const isProfileDirty = Boolean(initialProfileSig) && currentProfileSig !== initialProfileSig;
 
   // 비밀번호 탭: 입력 중이면 dirty (서버 baseline 필요 없음)
-  const isPasswordDirty = Boolean(
-    passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword,
-  );
+  const isPasswordDirty =
+    accountCapabilities?.canChangePassword === true &&
+    Boolean(
+      passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword,
+    );
   const isDirty = isProfileDirty || isPasswordDirty;
 
   // 최종 dirty (프로필/주소/마케팅 변경 OR 비밀번호 입력 중)
@@ -151,14 +158,17 @@ export default function ProfileClient({ user }: Props) {
         setSocialProviders(
           Array.isArray((user as any).oauthProviders) ? (user as any).oauthProviders : [],
         );
+        setAccountCapabilities(user.accountCapabilities ?? null);
 
-        const { address, postalCode, addressDetail, ...rest } = user;
+        const { address, postalCode, addressDetail } = user;
 
         // 최신 state 기반으로 안전하게 병합(closure stale 방지)
         setProfileData((prev) => {
           const next = {
             ...prev,
-            ...rest,
+            name: user.name ?? "",
+            email: user.email ?? "",
+            phone: user.phone ?? "",
             address: {
               address1: address ?? "",
               postalCode: postalCode ?? "",
@@ -207,7 +217,6 @@ export default function ProfileClient({ user }: Props) {
   const handleSave = async () => {
     // 저장 전 최종 유효성 검사
     const nameTrim = String(profileData.name ?? "").trim();
-    const emailTrim = String(profileData.email ?? "").trim();
     const phoneDigits = onlyDigits(profileData.phone ?? "");
 
     // 필수값(화면에도 *로 표시되어 있음)
@@ -220,11 +229,6 @@ export default function ProfileClient({ user }: Props) {
       showErrorToast(reservedNameError);
       return;
     }
-    if (!emailTrim || !EMAIL_RE.test(emailTrim)) {
-      showErrorToast("이메일 형식을 확인해주세요.");
-      return;
-    }
-
     // 전화번호는 UI상 필수 표시는 아니지만, 입력했다면 형식은 맞아야 함
     if (phoneDigits && !isValidKoreanPhone(phoneDigits)) {
       showErrorToast("전화번호는 숫자 10~11자리로 입력해주세요.");
@@ -255,7 +259,6 @@ export default function ProfileClient({ user }: Props) {
         credentials: "include",
         body: JSON.stringify({
           name: nameTrim,
-          email: emailTrim,
           phone: phoneDigits, // 서버에는 정규화된 전화번호(숫자만)를 저장
           postalCode,
           address: basicAddress,
@@ -264,20 +267,27 @@ export default function ProfileClient({ user }: Props) {
         }),
       });
 
-      if (!res.ok) throw new Error("저장 실패");
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => null);
+        throw new Error(errorBody?.message || "저장 실패");
+      }
 
       showSuccessToast("회원 정보가 성공적으로 저장되었습니다.");
       // 저장 성공 → 현재 상태를 baseline으로 갱신(이탈 경고 해제)
       setInitialProfileSig(profileDirtySignature(profileData));
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      showErrorToast("오류가 발생했습니다. 다시 시도해주세요.");
+      showErrorToast(err.message || "오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handlePasswordChange = async () => {
+    if (!accountCapabilities?.canChangePassword) {
+      showErrorToast("이 계정은 비밀번호를 변경할 수 없습니다.");
+      return;
+    }
     // 비밀번호 변경 유효성 검사
     const cur = passwordData.currentPassword;
     const next = passwordData.newPassword;
@@ -482,15 +492,16 @@ export default function ProfileClient({ user }: Props) {
                         id="email"
                         type="email"
                         value={profileData.email ?? ""}
-                        onChange={(e) =>
-                          setProfileData({
-                            ...profileData,
-                            email: e.target.value,
-                          })
-                        }
-                        className="h-12 rounded-control border-border"
+                        readOnly
+                        aria-readonly="true"
+                        className="h-12 cursor-default rounded-control border-border bg-muted text-muted-foreground"
                         placeholder="example@naver.com"
                       />
+                      <p className="text-ui-body-sm text-muted-foreground">
+                        {socialProviders.length
+                          ? "연결된 소셜 로그인에서 제공받은 이메일이며 현재 직접 변경할 수 없습니다."
+                          : "이메일은 로그인 및 주문 식별 정보로 사용되어 현재 직접 변경할 수 없습니다."}
+                      </p>
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="phone" className="flex items-center gap-2 text-foreground">
@@ -545,6 +556,31 @@ export default function ProfileClient({ user }: Props) {
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
+                  {accountCapabilities === null ? (
+                    <p className="text-ui-body-sm text-muted-foreground">계정 정보를 확인 중입니다.</p>
+                  ) : !accountCapabilities.canChangePassword ? (
+                    <div className="space-y-3 text-muted-foreground">
+                      <p className="font-medium text-foreground">
+                        이 계정은 외부 로그인 전용 계정입니다.
+                      </p>
+                      <p>도깨비테니스에 별도의 로그인 비밀번호가 저장되어 있지 않습니다.</p>
+                      {socialProviders.length ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span>연결된 로그인:</span>
+                          {socialProviders.includes("kakao") && (
+                            <IdentityBadge tone="kakao">카카오</IdentityBadge>
+                          )}
+                          {socialProviders.includes("naver") && (
+                            <IdentityBadge tone="naver">네이버</IdentityBadge>
+                          )}
+                        </div>
+                      ) : (
+                        <p>외부 서비스 인증으로 이용하는 계정입니다.</p>
+                      )}
+                      <p>로그인과 계정 보안은 연결된 로그인 서비스에서 관리해주세요.</p>
+                    </div>
+                  ) : (
+                    <>
                   <div className="space-y-2">
                     <Label htmlFor="currentPassword" className="text-foreground">
                       현재 비밀번호 *
@@ -611,6 +647,8 @@ export default function ProfileClient({ user }: Props) {
                       {isLoading ? "변경 중..." : "비밀번호 변경"}
                     </Button>
                   </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

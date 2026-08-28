@@ -141,6 +141,9 @@ interface UserDetail {
   updatedAt?: string;
   lastLoginAt?: string;
   appsInTossLinked: boolean;
+  oauthProviders?: Array<"kakao" | "naver">;
+  hasLocalPassword: boolean;
+  hasExternalIdentity: boolean;
 }
 
 type AuditLog = {
@@ -544,6 +547,10 @@ export default function UserDetailClient({ id }: { id: string }) {
 
   // 비밀번호 초기화
   async function resetPassword() {
+    if (!data?.hasLocalPassword) {
+      showErrorToast("외부 로그인 전용 계정은 비밀번호를 초기화할 수 없습니다.");
+      return;
+    }
     try {
       setPending(true);
       const json = await runAdminActionWithToast<{ tempPassword?: string }>({
@@ -682,7 +689,15 @@ export default function UserDetailClient({ id }: { id: string }) {
                     type="button"
                     variant="secondary"
                     className="whitespace-nowrap shrink-0"
-                    disabled={pending || (isAdminRole(user.role) && !isCurrentSuperAdmin) || isSelf}
+                    disabled={
+                      pending ||
+                      !user.hasLocalPassword ||
+                      (isAdminRole(user.role) && !isCurrentSuperAdmin) ||
+                      isSelf
+                    }
+                    onClick={(event) => {
+                      if (!user.hasLocalPassword) event.preventDefault();
+                    }}
                   >
                     비밀번호 초기화
                   </Button>
@@ -790,6 +805,11 @@ export default function UserDetailClient({ id }: { id: string }) {
                   </AlertDialogContent>
                 </AlertDialog>
               )}
+              {!user.hasLocalPassword ? (
+                <p className="text-xs text-muted-foreground">
+                  외부 로그인 전용 계정은 비밀번호를 초기화할 수 없습니다.
+                </p>
+              ) : null}
 
               {/* 저장 */}
               {hasDirty && <Badge variant="outline">미저장 변경</Badge>}
@@ -1133,6 +1153,28 @@ export default function UserDetailClient({ id }: { id: string }) {
                       value={form.name ?? user.name ?? ""}
                       onChange={(e) => onChange("name", e.target.value)}
                     />
+                  </FormRow>
+
+                  <FormRow label="이메일" htmlFor="email">
+                    <Input
+                      id="email"
+                      type="email"
+                      value={form.email ?? user.email ?? ""}
+                      readOnly={user.hasExternalIdentity}
+                      aria-readonly={user.hasExternalIdentity}
+                      className={cn(
+                        user.hasExternalIdentity &&
+                          "cursor-default bg-muted/40 text-muted-foreground",
+                      )}
+                      onChange={(e) => {
+                        if (!user.hasExternalIdentity) onChange("email", e.target.value);
+                      }}
+                    />
+                    {user.hasExternalIdentity ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        외부 로그인과 연결된 계정의 이메일은 변경할 수 없습니다.
+                      </p>
+                    ) : null}
                   </FormRow>
 
                   <FormRow label="권한" htmlFor="role">
