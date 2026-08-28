@@ -16,6 +16,8 @@
     "typecheck:cypress": "tsc --noEmit -p cypress/tsconfig.json",
     "typecheck": "pnpm run typecheck:app && pnpm run typecheck:cypress",
     "check:next-page-props": "node scripts/check-next-page-props.mjs",
+    "db:audit-legacy-withdrawal-feedback": "node scripts/db/cleanup-legacy-withdrawal-feedback.mjs",
+    "db:cleanup-legacy-withdrawal-feedback": "node scripts/db/cleanup-legacy-withdrawal-feedback.mjs --apply --confirm=REMOVE_LEGACY_WITHDRAWAL_FIELDS",
     "db:ensure-admin-user-indexes": "node scripts/db/ensure-admin-user-indexes.mjs",
     "report:type-debt": "node scripts/report-admin-any-count.mjs",
     "check:admin-any-gate": "node scripts/check-admin-any-gate.mjs",
