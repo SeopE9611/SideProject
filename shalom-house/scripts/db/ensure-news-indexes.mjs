@@ -2,7 +2,8 @@ import { MongoClient } from "mongodb";
 
 const uri = process.env.SHALOM_MONGODB_URI;
 const databaseName = process.env.SHALOM_MONGODB_DB || "shalom_house";
-const collectionName = "news_posts";
+const newsCollectionName = "news_posts";
+const auditCollectionName = "news_audit_events";
 
 if (!uri) {
   console.error("SHALOM_MONGODB_URI가 설정되지 않았습니다.");
@@ -11,26 +12,48 @@ if (!uri) {
   const client = new MongoClient(uri);
 
   try {
-    const collection = client.db(databaseName).collection(collectionName);
-    const indexNames = await Promise.all([
-      collection.createIndex(
+    const database = client.db(databaseName);
+    const newsCollection = database.collection(newsCollectionName);
+    const auditCollection = database.collection(auditCollectionName);
+    const newsIndexNames = await Promise.all([
+      newsCollection.createIndex(
         { slug: 1 },
         { unique: true, name: "news_posts_slug_unique" },
       ),
-      collection.createIndex(
+      newsCollection.createIndex(
         { publicationStatus: 1, approvalStatus: 1, publishedAt: -1 },
         { name: "news_posts_public_list" },
       ),
-      collection.createIndex(
+      newsCollection.createIndex(
         { deletedAt: 1, updatedAt: -1, _id: -1 },
         { name: "news_posts_admin_updated" },
+      ),
+    ]);
+    const auditIndexNames = await Promise.all([
+      auditCollection.createIndex(
+        { newsPostId: 1, toVersionAt: 1 },
+        { unique: true, name: "news_audit_events_post_version_unique" },
+      ),
+      auditCollection.createIndex(
+        { newsPostId: 1, occurredAt: -1, _id: -1 },
+        { name: "news_audit_events_post_timeline" },
+      ),
+      auditCollection.createIndex(
+        { occurredAt: -1, _id: -1 },
+        { name: "news_audit_events_recent" },
+      ),
+      auditCollection.createIndex(
+        { "actor.adminId": 1, occurredAt: -1, _id: -1 },
+        { name: "news_audit_events_actor_timeline" },
       ),
     ]);
 
     console.log("뉴스 인덱스를 확인했습니다.", {
       databaseName,
-      collectionName,
-      indexNames,
+      newsCollectionName,
+      newsIndexNames,
+      auditCollectionName,
+      auditIndexNames,
     });
   } finally {
     await client.close();

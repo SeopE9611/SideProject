@@ -276,10 +276,27 @@ draft + rejected + publishedAt=null
 게시 중단·보관, 게시 중단 후 재게시, 보관 후 공개·수정·재게시 차단,
 `updatedAt` 기반 게시 상태 변경 충돌 감지
 
-1. 수정 이력과 감사 기록
-2. 역할·게시자 정책
-3. 삭제·복구
-4. 이미지와 첨부파일
+### 뉴스 감사 기록
+
+- 관리자 뉴스 변경은 append-only `news_audit_events` 컬렉션에 `draft_created`,
+  `draft_updated`, `review_requested`, `review_approved`, `review_rejected`,
+  `published`, `unpublished`, `archived` action으로 기록한다. 애플리케이션은 감사
+  이벤트의 insert만 제공하며 수정·삭제 기능과 TTL은 제공하지 않는다.
+- 뉴스 변경과 감사 이벤트 insert는 하나의 MongoDB 트랜잭션으로 처리하며 둘 중
+  하나라도 실패하면 둘 다 확정하지 않는다.
+- 감사 주체에는 관리자 ObjectId, 변경 당시 `displayName`, 역할만 기록한다. 관리자
+  이메일, 세션 토큰, IP, User-Agent, 비밀번호는 저장하지 않는다.
+- `before`와 `after`에는 slug, category, title, 게시 상태, 승인 상태, 게시일만
+  기록한다. summary와 body는 `changedFields`에 변경 여부만 기록하고 전체 콘텐츠
+  버전은 다음 수정 이력 작업에서 별도 모델로 설계한다.
+- 감사 기록은 기능 적용 이후 성공한 변경부터 생성한다. 기존 과거 이력을 추정하거나
+  backfill하지 않으며 가상 관리자를 만들지 않는다.
+
+1. 게시물별 감사 기록 조회 화면
+2. 콘텐츠 수정 버전과 전·후 비교
+3. 역할·게시자 정책
+4. 삭제·복구
+5. 이미지와 첨부파일
 
 ## 14. 도깨비테니스 참고 범위
 
