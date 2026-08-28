@@ -1,182 +1,231 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
-import { siteConfig } from "@/config/site";
+export const metadata: Metadata = {
+  title: "시설소개",
+  description:
+    "지체 및 지적 장애인이 서로의 속도와 선택을 존중하며 함께 생활하는 샬롬의 집을 소개합니다.",
+};
 
-type NavigationHref = (typeof siteConfig.mainNavigation)[number]["href"];
-
-const aboutRelatedLinks = [
-  { href: "/life", description: "함께 만드는 일상과 활동을 살펴봅니다." },
-  {
-    href: "/transparency",
-    description: "공개가 승인된 운영 자료를 확인합니다.",
-  },
-] satisfies ReadonlyArray<{ href: NavigationHref; description: string }>;
-
-const everydayScenes = [
+const livingPrinciples = [
   {
     number: "01",
-    title: "매일의 생활",
+    title: "한 사람의 선택",
     description:
-      "식사와 대화, 외출과 휴식처럼 평범하지만 중요한 하루가 안전하게 이어지도록 함께합니다.",
+      "익숙한 생활 방식과 의사를 먼저 살피고, 스스로 선택할 수 있는 일상을 함께 만듭니다.",
   },
   {
     number: "02",
-    title: "이웃과의 관계",
+    title: "필요에 맞는 지원",
     description:
-      "평일 점심 식사 도움처럼 일상에 이웃이 자연스럽게 참여하고 관계를 나누는 시간을 이어 왔습니다.",
+      "모두에게 같은 방법을 적용하지 않고 몸과 마음의 특성에 맞춰 필요한 도움을 나눕니다.",
   },
   {
     number: "03",
-    title: "더 넓은 경험",
+    title: "지역과 잇는 관계",
     description:
-      "나들이 지원과 공간복지 드림하우스 같은 활동을 통해 생활의 반경과 경험을 넓혀 왔습니다.",
+      "식사, 나들이, 이웃과의 만남을 통해 생활의 범위가 집 안에만 머물지 않도록 이어 갑니다.",
   },
 ] as const;
 
-function getNavigationLabel(href: NavigationHref) {
-  const navigationItem = siteConfig.mainNavigation.find(
-    (item) => item.href === href,
-  );
-
-  if (!navigationItem) {
-    throw new Error(`등록되지 않은 홈페이지 경로입니다: ${href}`);
-  }
-
-  return navigationItem.label;
-}
-
-export const metadata: Metadata = {
-  title: "샬롬 소개",
-  description:
-    "30년 넘게 서울 강서구에서 지체 및 지적 장애인과 함께 일상을 이어 온 샬롬의 집을 소개합니다.",
+type LivingScene = {
+  number: string;
+  label: string;
+  title: string;
+  description: string;
+  imageSrc: string | null;
+  imageAlt: string;
+  mediaClassName: string;
 };
+
+const livingScenes: readonly LivingScene[] = [
+  {
+    number: "01",
+    label: "일상",
+    title: "같이 먹고 쉬는 집",
+    description:
+      "식탁을 나누고 대화를 이어 가며 편안하게 쉴 수 있는 평범한 하루를 소중히 여깁니다.",
+    imageSrc: null,
+    imageAlt: "샬롬의 집에서 식사와 휴식을 함께하는 모습",
+    mediaClassName: "bg-home-sun",
+  },
+  {
+    number: "02",
+    label: "경험",
+    title: "집 밖으로 이어지는 생활",
+    description:
+      "외출과 나들이, 지역 활동을 통해 새로운 사람과 장소를 만나는 경험을 지원합니다.",
+    imageSrc: null,
+    imageAlt: "샬롬의 집의 외출과 지역 활동 모습",
+    mediaClassName: "bg-home-sky",
+  },
+  {
+    number: "03",
+    label: "공간",
+    title: "더 안전하고 편안한 환경",
+    description:
+      "매일 머무는 공간을 살피고 생활에 필요한 변화를 이어 가며 집다운 환경을 가꿉니다.",
+    imageSrc: null,
+    imageAlt: "안전하고 편안하게 가꾼 샬롬의 집 생활 공간",
+    mediaClassName: "bg-home-coral",
+  },
+];
+
+const aboutLinks = [
+  {
+    number: "01",
+    label: "생활이야기",
+    description: "함께 보내는 일상과 활동을 살펴봅니다.",
+    href: "/life",
+    borderClassName: "",
+  },
+  {
+    number: "02",
+    label: "함께하기",
+    description: "자원봉사와 후원 참여 방법을 확인합니다.",
+    href: "/support",
+    borderClassName: "border-t border-border sm:border-l sm:border-t-0",
+  },
+  {
+    number: "03",
+    label: "찾아오시는 길",
+    description: "주소와 교통 안내를 별도 페이지에서 확인합니다.",
+    href: "/about/directions",
+    borderClassName: "border-t border-border lg:border-l lg:border-t-0",
+  },
+  {
+    number: "04",
+    label: "정보공개",
+    description: "공개가 승인된 운영 자료를 확인합니다.",
+    href: "/transparency",
+    borderClassName:
+      "border-t border-border sm:border-l lg:border-t-0",
+  },
+] as const;
+
+function LivingSceneMedia({ scene }: { scene: LivingScene }) {
+  return (
+    <div
+      className={`relative grid min-h-56 place-items-center overflow-hidden border-b border-home-ink/15 text-home-ink ${scene.mediaClassName}`}
+    >
+      {scene.imageSrc ? (
+        <Image
+          fill
+          sizes="(min-width: 1024px) 33vw, 100vw"
+          src={scene.imageSrc}
+          alt={scene.imageAlt}
+          className="object-cover"
+        />
+      ) : (
+        <div
+          aria-hidden="true"
+          className="flex size-full flex-col justify-between p-7 sm:p-8"
+        >
+          <span className="text-small font-bold">{scene.number}</span>
+          <span className="text-[clamp(4rem,8vw,6.5rem)] font-bold leading-none tracking-[-0.07em] opacity-20">
+            {scene.label}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AboutPage() {
   return (
     <>
-      <section className="overflow-hidden bg-hero-night text-on-dark">
-        <div className="mx-auto grid w-full max-w-site gap-14 px-page py-section sm:px-page-wide sm:py-section-wide lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)] lg:items-end lg:gap-20">
-          <div>
-            <p className="text-small font-bold text-hero-sun">샬롬 소개</p>
-            <h1 className="mt-5 max-w-3xl text-hero font-bold text-on-dark sm:text-hero-lg">
-              함께 살아온 시간,
-              <span className="block text-hero-mist">
-                앞으로 이어 갈 일상
-              </span>
-            </h1>
-            <p className="mt-8 max-w-content text-body text-hero-muted">
-              샬롬의 집은 서울 강서구에서 지체 및 지적 장애인이 함께 생활하며
-              서로의 하루를 나누는 보금자리입니다. 특별한 순간보다 매일의 삶을
-              지키는 일을 소중히 생각합니다.
-            </p>
-          </div>
-
-          <dl
-            aria-label="샬롬의 집 핵심 정보"
-            className="border-y border-white/35 lg:border-y-0 lg:border-l lg:pl-12"
-          >
-            <div className="py-7 lg:pt-0">
-              <dt className="text-small font-bold text-hero-muted">
-                함께해 온 시간
-              </dt>
-              <dd className="mt-2 text-6xl font-bold tracking-[-0.05em] text-on-dark sm:text-7xl">
-                30년+
-              </dd>
-            </div>
-            <div className="grid grid-cols-2 border-t border-white/25 py-6">
-              <div className="pr-5">
-                <dt className="text-small font-bold text-hero-muted">
-                  자리한 곳
-                </dt>
-                <dd className="mt-2 text-lg font-bold text-on-dark">
-                  서울 강서구
-                </dd>
-              </div>
-              <div className="border-l border-white/25 pl-5">
-                <dt className="text-small font-bold text-hero-muted">
-                  시설 성격
-                </dt>
-                <dd className="mt-2 text-lg font-bold text-on-dark">
-                  장애인거주시설
-                </dd>
-              </div>
-            </div>
-          </dl>
-        </div>
-      </section>
-
-      <section
-        aria-labelledby="about-home-heading"
-        className="bg-background"
-      >
-        <div className="mx-auto grid w-full max-w-site gap-10 px-page py-section sm:px-page-wide sm:py-section-wide lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-20">
-          <div>
-            <p className="text-small font-bold text-primary">함께 사는 집</p>
-            <h2
-              id="about-home-heading"
-              className="mt-4 max-w-xl text-display font-bold text-foreground sm:text-display-lg"
-            >
-              시설보다 먼저,
-              <span className="block text-primary">사람의 하루를 봅니다</span>
-            </h2>
-          </div>
-
-          <div className="max-w-content space-y-6 text-body text-muted-foreground lg:pt-3">
-            <p className="text-xl font-semibold leading-9 text-foreground sm:text-2xl sm:leading-10">
-              한 사람의 속도와 선택을 존중할 때, 집다운 일상이 시작됩니다.
-            </p>
-            <p>
-              샬롬의 집은 누군가를 일방적으로 돕는 공간이 아니라 서로 다른 몸과
-              마음의 속도로 함께 살아가는 곳입니다. 익숙한 사람과 식탁을 나누고,
-              필요한 도움을 주고받으며, 지역사회 안에서 관계를 이어 갑니다.
-            </p>
-            <p>
-              홈페이지도 같은 태도를 따릅니다. 거주인을 홍보의 대상으로 다루지
-              않고, 샬롬의 집을 이루는 평범한 생활과 관계를 차분하고 정확하게
-              전합니다.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section
-        aria-labelledby="about-everyday-heading"
-        className="border-y border-border bg-surface"
-      >
-        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-end lg:gap-16">
+      <section className="bg-home-cream px-page pb-16 pt-7 sm:px-page-wide sm:pb-20 sm:pt-10">
+        <div className="mx-auto grid w-full max-w-site overflow-hidden rounded-panel bg-home-ink shadow-elevated lg:min-h-[35rem] lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="flex flex-col justify-between px-7 py-12 text-hero-on-dark sm:px-12 sm:py-16 lg:px-14">
             <div>
-              <p className="text-small font-bold text-accent">
-                30년을 이어 온 장면
+              <p className="text-small font-bold text-home-sun">시설소개</p>
+              <h1 className="text-safe-wrap mt-5 max-w-3xl text-balance text-[clamp(2.75rem,5.3vw,4.5rem)] font-bold leading-[1.06] tracking-[-0.05em]">
+                서로의 속도를 존중하는 생활 공간
+              </h1>
+              <p className="text-safe-wrap mt-7 max-w-2xl text-pretty text-body text-hero-muted sm:text-xl sm:leading-9">
+                샬롬의 집은 지체 및 지적 장애인이 식사하고, 쉬고, 관계를
+                나누며 함께 생활하는 장애인거주시설입니다.
               </p>
-              <h2
-                id="about-everyday-heading"
-                className="mt-4 text-display font-bold text-foreground sm:text-display-lg"
+            </div>
+
+            <div className="mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <Link
+                className="inline-flex min-h-12 items-center justify-center rounded-control bg-home-sun px-6 py-3 text-base font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
+                href="/life"
               >
-                시간은 매일의 생활로 쌓였습니다
+                생활이야기 보기
+              </Link>
+              <Link
+                className="inline-flex min-h-12 items-center gap-2 px-3 py-3 text-base font-bold text-hero-on-dark underline decoration-hero-on-dark/60 underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-home-sun focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                href="/support"
+              >
+                함께하는 방법
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid gap-3 border-t border-home-ink/15 bg-surface p-5 sm:p-7 lg:border-l lg:border-t-0">
+            <div className="flex min-h-40 flex-col justify-between rounded-card bg-home-sun p-6 text-home-ink sm:p-7">
+              <span className="text-small font-bold">01 생활</span>
+              <p className="text-safe-wrap text-balance text-title font-bold">
+                일상의 선택을 존중합니다
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex min-h-40 flex-col justify-between rounded-card bg-home-sky p-6 text-home-ink sm:p-7">
+                <span className="text-small font-bold">02 지원</span>
+                <p className="text-safe-wrap text-balance text-heading font-bold">
+                  필요한 도움을 나눕니다
+                </p>
+              </div>
+              <div className="flex min-h-40 flex-col justify-between rounded-card bg-home-coral p-6 text-home-ink sm:p-7">
+                <span className="text-small font-bold">03 관계</span>
+                <p className="text-safe-wrap text-balance text-heading font-bold">
+                  지역과 함께 연결됩니다
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="about-principles-heading"
+        className="bg-surface py-20 sm:py-24"
+      >
+        <div className="mx-auto w-full max-w-site px-page sm:px-page-wide">
+          <div className="grid gap-7 lg:grid-cols-[1fr_0.8fr] lg:items-end">
+            <div>
+              <p className="text-small font-bold text-accent">함께 사는 기준</p>
+              <h2
+                id="about-principles-heading"
+                className="text-safe-wrap mt-3 max-w-3xl text-balance text-display font-bold text-foreground sm:text-display-lg"
+              >
+                사람마다 다른 하루를 살핍니다
               </h2>
             </div>
-            <p className="max-w-content text-body text-muted-foreground lg:justify-self-end">
-              오래 이어 온 역사를 숫자로만 설명하기보다, 그 시간을 채운 생활과
-              관계의 모습을 먼저 소개합니다.
+            <p className="text-safe-wrap max-w-xl text-pretty text-body text-muted-foreground lg:justify-self-end">
+              정해진 방식에 사람을 맞추기보다 각자의 의사와 생활 방식에 필요한
+              지원을 함께 찾습니다.
             </p>
           </div>
 
-          <ol className="mt-12 grid border-t border-border-strong lg:grid-cols-3">
-            {everydayScenes.map((scene) => (
+          <ol className="mt-12 grid border-t-2 border-foreground lg:grid-cols-3">
+            {livingPrinciples.map((principle) => (
               <li
-                key={scene.number}
-                className="border-b border-border py-8 lg:border-r lg:border-b-0 lg:px-8 lg:py-10 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0"
+                key={principle.number}
+                className="border-b border-border-strong py-8 lg:border-r lg:px-8 lg:py-10 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0"
               >
                 <p className="text-small font-bold text-accent">
-                  {scene.number}
+                  {principle.number}
                 </p>
-                <h3 className="mt-5 text-heading font-bold text-foreground">
-                  {scene.title}
+                <h3 className="text-safe-wrap mt-5 text-balance text-heading font-bold text-foreground">
+                  {principle.title}
                 </h3>
-                <p className="mt-4 text-body text-muted-foreground">
-                  {scene.description}
+                <p className="text-safe-wrap mt-4 text-pretty text-body text-muted-foreground">
+                  {principle.description}
                 </p>
               </li>
             ))}
@@ -185,126 +234,128 @@ export default function AboutPage() {
       </section>
 
       <section
-        aria-labelledby="about-basic-info-heading"
-        className="bg-primary-soft"
+        aria-labelledby="about-scenes-heading"
+        className="bg-home-cream py-20 sm:py-24"
       >
-        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.65fr)_minmax(0,1.35fr)] lg:gap-16">
-            <div>
-              <p className="text-small font-bold text-primary">기본 정보</p>
-              <h2
-                id="about-basic-info-heading"
-                className="mt-4 text-title font-bold text-foreground"
-              >
-                샬롬의 집을 찾는 데 필요한 정보
-              </h2>
-            </div>
+        <div className="mx-auto w-full max-w-site px-page sm:px-page-wide">
+          <div className="max-w-3xl">
+            <p className="text-small font-bold text-primary">생활의 모습</p>
+            <h2
+              id="about-scenes-heading"
+              className="text-safe-wrap mt-3 text-balance text-display font-bold text-foreground sm:text-display-lg"
+            >
+              집 안과 밖에서 이어지는 일상
+            </h2>
+            <p className="text-safe-wrap mt-5 max-w-2xl text-pretty text-body text-muted-foreground">
+              특별한 행사만이 아니라 매일 반복되는 생활과 관계가 샬롬의 집을
+              이루는 가장 중요한 모습입니다.
+            </p>
+          </div>
 
-            <address className="not-italic">
-              <dl className="border-y border-border-strong">
-                <div className="grid gap-2 border-b border-border py-6 sm:grid-cols-[8rem_1fr] sm:gap-8">
-                  <dt className="text-small font-bold text-foreground">
-                    시설명
-                  </dt>
-                  <dd className="text-body text-muted-foreground">
-                    {siteConfig.name}
-                  </dd>
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            {livingScenes.map((scene) => (
+              <article
+                key={scene.number}
+                className="overflow-hidden rounded-panel border border-border bg-surface shadow-card"
+              >
+                <LivingSceneMedia scene={scene} />
+                <div className="p-7 sm:p-8">
+                  <p className="text-small font-bold text-primary">
+                    {scene.number} {scene.label}
+                  </p>
+                  <h3 className="text-safe-wrap mt-4 text-balance text-title font-bold text-foreground">
+                    {scene.title}
+                  </h3>
+                  <p className="text-safe-wrap mt-4 text-pretty text-body text-muted-foreground">
+                    {scene.description}
+                  </p>
                 </div>
-                <div className="grid gap-2 border-b border-border py-6 sm:grid-cols-[8rem_1fr] sm:gap-8">
-                  <dt className="text-small font-bold text-foreground">주소</dt>
-                  <dd className="break-words text-body text-muted-foreground">
-                    {siteConfig.address}
-                  </dd>
-                </div>
-                <div className="grid gap-1 py-5 sm:grid-cols-[8rem_1fr] sm:items-center sm:gap-8">
-                  <dt className="text-small font-bold text-foreground">
-                    대표 전화
-                  </dt>
-                  <dd>
-                    <a
-                      aria-label={`${siteConfig.name} 대표 전화 ${siteConfig.phone}`}
-                      className="inline-flex min-h-12 items-center text-body font-bold text-primary underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                      href={`tel:${siteConfig.phone}`}
-                    >
-                      {siteConfig.phone}
-                    </a>
-                  </dd>
-                </div>
-              </dl>
-            </address>
+              </article>
+            ))}
           </div>
         </div>
       </section>
 
       <section
-        aria-labelledby="about-information-policy-heading"
-        className="bg-accent-soft"
+        aria-labelledby="about-policy-heading"
+        className="bg-surface py-20 sm:py-24"
       >
-        <div className="mx-auto grid w-full max-w-site gap-8 px-page py-section sm:px-page-wide sm:py-section-wide lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
-          <div>
-            <p className="text-small font-bold text-accent">정확하게 알리기</p>
+        <div className="mx-auto grid w-full max-w-site overflow-hidden rounded-panel border border-border bg-home-ink lg:grid-cols-[1fr_1fr]">
+          <div className="px-7 py-12 text-hero-on-dark sm:px-12 sm:py-16 lg:px-14">
+            <p className="text-small font-bold text-home-sun">공개 원칙</p>
             <h2
-              id="about-information-policy-heading"
-              className="mt-4 max-w-xl text-title font-bold text-foreground"
+              id="about-policy-heading"
+              className="text-safe-wrap mt-4 max-w-xl text-balance text-display font-bold sm:text-display-lg"
             >
-              공개하는 과정도 존중에서 시작합니다
+              소개하는 과정에서도 사람을 먼저 생각합니다
             </h2>
           </div>
-          <div className="max-w-content space-y-5 border-t border-border-strong pt-6 text-body text-muted-foreground lg:border-t-0 lg:pt-0">
-            <p>
-              상세 연혁과 운영 방향, 시설 환경은 담당자 확인과 공개 범위 검토를
-              거쳐 순차적으로 안내합니다. 확인되지 않은 정보로 빈자리를 채우지
-              않습니다.
-            </p>
-            <p>
-              사진과 관계자 정보는 공개 동의와 개인정보 검수를 마친 자료만
-              사용해, 거주인의 존엄과 사생활을 먼저 보호합니다.
-            </p>
-          </div>
-        </div>
-      </section>
 
-      <section
-        aria-labelledby="about-related-heading"
-        className="bg-background"
-      >
-        <div className="mx-auto w-full max-w-site px-page py-section sm:px-page-wide sm:py-section-wide">
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,0.65fr)_minmax(0,1.35fr)] lg:gap-16">
-            <div>
-              <p className="text-small font-bold text-primary">다음으로</p>
-              <h2
-                id="about-related-heading"
-                className="mt-4 text-title font-bold text-foreground"
-              >
-                샬롬의 집을 더 알아보세요
-              </h2>
+          <div className="grid bg-surface sm:grid-cols-2 lg:grid-cols-1">
+            <div className="border-b border-border px-7 py-8 sm:border-b-0 sm:border-r lg:border-b lg:border-r-0 lg:px-10">
+              <p className="text-small font-bold text-accent">01 동의와 보호</p>
+              <p className="text-safe-wrap mt-3 text-pretty text-body text-muted-foreground">
+                사진과 관계자 정보는 공개 동의와 개인정보 검토를 마친 자료만
+                사용합니다.
+              </p>
             </div>
-
-            <ul className="divide-y divide-border border-y border-border-strong">
-              {aboutRelatedLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    className="group flex min-h-11 items-center justify-between gap-5 py-6 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                    href={link.href}
-                  >
-                    <span>
-                      <span className="block text-heading font-bold">
-                        {getNavigationLabel(link.href)}
-                      </span>
-                      <span className="mt-2 block text-small text-muted-foreground group-hover:text-primary">
-                        {link.description}
-                      </span>
-                    </span>
-                    <span aria-hidden="true" className="shrink-0 font-bold">
-                      →
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="px-7 py-8 lg:px-10">
+              <p className="text-small font-bold text-primary">02 정확한 정보</p>
+              <p className="text-safe-wrap mt-3 text-pretty text-body text-muted-foreground">
+                운영 내용과 시설 정보는 담당자 확인을 거친 뒤 공개하고 확인되지
+                않은 내용으로 빈자리를 채우지 않습니다.
+              </p>
+            </div>
           </div>
         </div>
       </section>
+
+      <nav
+        aria-labelledby="about-next-heading"
+        className="bg-home-cream py-20 sm:py-24"
+      >
+        <div className="mx-auto w-full max-w-site px-page sm:px-page-wide">
+          <p className="text-small font-bold text-primary">다음 안내</p>
+          <h2
+            id="about-next-heading"
+            className="text-safe-wrap mt-3 text-balance text-display font-bold text-foreground sm:text-display-lg"
+          >
+            필요한 정보를 이어서 확인하세요
+          </h2>
+
+          <ul className="mt-10 grid overflow-hidden rounded-card border border-border bg-surface shadow-card sm:grid-cols-2 lg:grid-cols-4">
+            {aboutLinks.map((item) => (
+              <li
+                key={item.href}
+                className={item.borderClassName}
+              >
+                <Link
+                  className="group flex min-h-44 flex-col justify-between gap-6 p-6 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-focus-ring"
+                  href={item.href}
+                >
+                  <span className="text-small font-bold text-primary">
+                    {item.number}
+                  </span>
+                  <span>
+                    <span className="text-safe-wrap block text-heading font-bold">
+                      {item.label}
+                    </span>
+                    <span className="text-safe-wrap mt-2 block text-small text-muted-foreground">
+                      {item.description}
+                    </span>
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="self-end text-xl font-bold transition-transform duration-[var(--motion-duration-fast)] ease-standard group-hover:translate-x-1"
+                  >
+                    →
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
     </>
   );
 }
