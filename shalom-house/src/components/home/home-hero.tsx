@@ -1,298 +1,210 @@
 "use client";
 
 import Link from "next/link";
-import { type FocusEvent, useEffect, useState } from "react";
+import { useState } from "react";
 
-const SLIDE_INTERVAL = 8_000;
-
-const quickLinks = [
+const heroSlides = [
   {
-    number: "01",
-    label: "시설소개",
-    description: "샬롬의 집 기본 정보",
-    href: "/about",
+    eyebrow: "장애인거주시설 샬롬의 집",
+    title: "함께 살아가는 하루",
+    description:
+      "서로의 속도를 존중하며 식사하고, 쉬고, 이야기를 나누는 생활 공간입니다.",
+    primaryLabel: "샬롬의 집 소개",
+    primaryHref: "/about",
+    secondaryLabel: "생활이야기 보기",
+    secondaryHref: "/life",
+    visualWord: "함께",
+    visualTitle: "평범한 하루가 가장 소중한 이야기입니다.",
+    visualCaption: "일상 · 관계 · 생활",
+    visualClassName: "bg-home-sun text-home-ink",
   },
   {
-    number: "02",
-    label: "생활이야기",
-    description: "일상과 주요 활동",
-    href: "/life",
+    eyebrow: "지역사회와 잇는 경험",
+    title: "집 밖에서 만나는 새로운 하루",
+    description:
+      "나들이와 외부 활동을 통해 다양한 장소와 사람을 만나고 경험을 넓혀 갑니다.",
+    primaryLabel: "주요 활동 보기",
+    primaryHref: "/life",
+    secondaryLabel: "새 소식 보기",
+    secondaryHref: "/news",
+    visualWord: "일상",
+    visualTitle: "걷고, 만나고, 함께 경험합니다.",
+    visualCaption: "나들이 · 지역사회 · 경험",
+    visualClassName: "bg-home-sky text-home-ink",
   },
   {
-    number: "03",
-    label: "함께하기",
-    description: "자원봉사와 후원 안내",
-    href: "/support",
-  },
-  {
-    number: "04",
-    label: "정보공개",
-    description: "운영 관련 공개자료",
-    href: "/transparency",
+    eyebrow: "더 편안한 생활 공간",
+    title: "생활에 맞춰 가꾸는 공간",
+    description:
+      "안전하고 편안한 일상을 위해 생활 공간을 살피고 필요한 변화를 이어 갑니다.",
+    primaryLabel: "함께하는 방법",
+    primaryHref: "/support",
+    secondaryLabel: "정보공개 보기",
+    secondaryHref: "/transparency",
+    visualWord: "공간",
+    visualTitle: "매일 머무는 곳을 더 편안하게.",
+    visualCaption: "안전 · 편안함 · 변화",
+    visualClassName: "bg-home-coral text-home-ink",
   },
 ] as const;
 
-export type HomeHeroNewsItem = {
-  id: string;
-  categoryLabel: string;
-  publishedAtLabel: string;
-  title: string;
-  summary: string;
-  href: string;
-};
-
-type HomeHeroProps = {
-  newsItems: readonly HomeHeroNewsItem[];
-};
-
-export function HomeHero({ newsItems }: HomeHeroProps) {
-  const hasCarousel = newsItems.length >= 2;
+export function HomeHero() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isPointerInside, setIsPointerInside] = useState(false);
-  const [isFocusInside, setIsFocusInside] = useState(false);
   const [announcement, setAnnouncement] = useState("");
-  const activeNewsItem = hasCarousel
-    ? (newsItems[currentIndex] ?? newsItems[0])
-    : undefined;
-
-  useEffect(() => {
-    if (!hasCarousel) return;
-
-    const reducedMotionQuery = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    );
-    const animationFrameId = window.requestAnimationFrame(() => {
-      setIsPlaying(!reducedMotionQuery.matches);
-    });
-
-    function handleMotionPreferenceChange(event: MediaQueryListEvent) {
-      if (event.matches) setIsPlaying(false);
-    }
-
-    reducedMotionQuery.addEventListener("change", handleMotionPreferenceChange);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrameId);
-      reducedMotionQuery.removeEventListener(
-        "change",
-        handleMotionPreferenceChange,
-      );
-    };
-  }, [hasCarousel]);
-
-  useEffect(() => {
-    if (
-      !hasCarousel ||
-      !isPlaying ||
-      isPointerInside ||
-      isFocusInside
-    ) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      setCurrentIndex((current) => (current + 1) % newsItems.length);
-    }, SLIDE_INTERVAL);
-
-    return () => window.clearInterval(intervalId);
-  }, [hasCarousel, isFocusInside, isPlaying, isPointerInside, newsItems.length]);
+  const activeSlide = heroSlides[currentIndex] ?? heroSlides[0];
 
   function showSlide(index: number) {
-    const normalizedIndex =
-      (index + newsItems.length) % newsItems.length;
-    const nextItem = newsItems[normalizedIndex];
+    const nextIndex = (index + heroSlides.length) % heroSlides.length;
+    const nextSlide = heroSlides[nextIndex];
 
-    setCurrentIndex(normalizedIndex);
-    if (nextItem) {
-      setAnnouncement(
-        `${normalizedIndex + 1}번째 주요 소식: ${nextItem.title}`,
-      );
-    }
-  }
-
-  function handleBlur(event: FocusEvent<HTMLElement>) {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      setIsFocusInside(false);
-    }
-  }
-
-  function toggleAutoPlay() {
-    setIsPlaying((current) => {
-      const next = !current;
-      setAnnouncement(
-        next
-          ? "주요 소식 자동 넘김을 시작했습니다."
-          : "주요 소식 자동 넘김을 멈췄습니다.",
-      );
-      return next;
-    });
+    setCurrentIndex(nextIndex);
+    setAnnouncement(
+      `${nextIndex + 1}번째 이야기: ${nextSlide?.title ?? ""}`,
+    );
   }
 
   return (
     <section
-      aria-labelledby="home-heading"
-      aria-roledescription={hasCarousel ? "캐러셀" : undefined}
-      className="border-b border-hero-on-dark/20 bg-hero-night text-hero-on-dark"
-      onBlur={handleBlur}
-      onFocusCapture={() => setIsFocusInside(true)}
-      onPointerEnter={() => setIsPointerInside(true)}
-      onPointerLeave={() => setIsPointerInside(false)}
+      aria-label="샬롬의 집 주요 이야기"
+      aria-roledescription="캐러셀"
+      className="bg-home-cream px-page pb-16 pt-7 sm:px-page-wide sm:pb-20 sm:pt-10"
     >
-      <div className="mx-auto grid min-h-[34rem] w-full max-w-site lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
-        <div className="flex min-w-0 flex-col justify-between px-page py-12 sm:px-page-wide sm:py-14 lg:py-16">
-          <div className="max-w-3xl">
-            <p className="text-small font-bold text-sun-soft">
-              장애인거주시설
-            </p>
-            <h1
-              id="home-heading"
-              className="mt-4 text-hero font-bold text-hero-on-dark sm:text-hero-lg"
+      <div className="mx-auto w-full max-w-site overflow-hidden rounded-panel bg-home-ink shadow-elevated">
+        <div className="grid lg:min-h-[36rem] lg:grid-cols-[minmax(0,1.08fr)_minmax(24rem,0.92fr)]">
+          <div className="flex min-w-0 flex-col justify-between px-6 py-9 text-hero-on-dark sm:px-10 sm:py-12 lg:px-14 lg:py-14">
+            <article
+              key={activeSlide.title}
+              aria-label={`${currentIndex + 1} / ${heroSlides.length}`}
+              aria-roledescription="슬라이드"
+              className="animate-hero-enter max-w-3xl"
+              role="group"
             >
-              샬롬의 집
-            </h1>
-
-            {activeNewsItem ? (
-              <article
-                key={activeNewsItem.id}
-                aria-label={`${currentIndex + 1} / ${newsItems.length}`}
-                aria-roledescription="슬라이드"
-                className="animate-hero-enter mt-9 border-l-4 border-sun-soft pl-5 sm:pl-7"
-                role="group"
-              >
-                <p className="text-small font-bold text-sun-soft">
-                  {activeNewsItem.categoryLabel} · {activeNewsItem.publishedAtLabel}
-                </p>
-                <h2 className="mt-3 max-w-2xl text-title font-bold text-hero-on-dark sm:text-display">
-                  {activeNewsItem.title}
-                </h2>
-                <p className="mt-4 max-w-2xl text-body text-hero-muted">
-                  {activeNewsItem.summary}
-                </p>
-              </article>
-            ) : (
-              <div className="mt-8 max-w-2xl border-l-4 border-sun-soft pl-5 sm:pl-7">
-                <p className="text-title font-bold leading-snug text-hero-on-dark sm:text-display sm:leading-tight">
-                  함께 생활하고 일상을 나누는 곳
-                </p>
-                <p className="mt-5 max-w-xl text-body text-hero-muted">
-                  샬롬의 집은 지체 및 지적 장애인이 함께 생활하는
-                  장애인거주시설입니다.
-                </p>
+              <p className="inline-flex rounded-full border border-hero-on-dark/30 px-4 py-2 text-small font-bold text-sun-soft">
+                {activeSlide.eyebrow}
+              </p>
+              <h1 className="mt-7 max-w-2xl text-[clamp(2.75rem,6vw,5rem)] font-bold leading-[1.04] tracking-[-0.055em] text-hero-on-dark">
+                {activeSlide.title}
+              </h1>
+              <p className="mt-6 max-w-2xl text-body text-hero-muted sm:text-xl sm:leading-9">
+                {activeSlide.description}
+              </p>
+              <div className="mt-9 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <Link
+                  className="inline-flex min-h-12 items-center justify-center rounded-control bg-home-sun px-6 py-3 text-base font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
+                  href={activeSlide.primaryHref}
+                >
+                  {activeSlide.primaryLabel}
+                </Link>
+                <Link
+                  className="inline-flex min-h-12 items-center gap-2 px-3 py-3 text-base font-bold text-hero-on-dark underline decoration-hero-on-dark/60 underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-home-sun focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                  href={activeSlide.secondaryHref}
+                >
+                  {activeSlide.secondaryLabel}
+                  <span aria-hidden="true">→</span>
+                </Link>
               </div>
-            )}
+            </article>
+
+            <div className="mt-10 flex flex-wrap items-center justify-between gap-5 border-t border-hero-on-dark/25 pt-5">
+              <div aria-label="주요 이야기 선택" className="flex items-center gap-2">
+                {heroSlides.map((slide, index) => (
+                  <button
+                    key={slide.title}
+                    type="button"
+                    aria-label={`${index + 1}번째 이야기 보기: ${slide.title}`}
+                    aria-pressed={currentIndex === index}
+                    className={`min-h-11 rounded-full px-4 text-sm font-bold transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark ${
+                      currentIndex === index
+                        ? "bg-hero-on-dark text-home-ink"
+                        : "border border-hero-on-dark/40 text-hero-on-dark hover:bg-hero-on-dark/10"
+                    }`}
+                    onClick={() => showSlide(index)}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="이전 주요 이야기"
+                  className="grid size-12 place-items-center rounded-full border border-hero-on-dark/45 text-xl font-bold text-hero-on-dark transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark hover:text-home-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                  onClick={() => showSlide(currentIndex - 1)}
+                >
+                  <span aria-hidden="true">←</span>
+                </button>
+                <button
+                  type="button"
+                  aria-label="다음 주요 이야기"
+                  className="grid size-12 place-items-center rounded-full bg-home-sun text-xl font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                  onClick={() => showSlide(currentIndex + 1)}
+                >
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-10">
-            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-5">
-              <Link
-                className="inline-flex min-h-12 items-center justify-center rounded-control bg-hero-on-dark px-6 py-3 text-base font-bold text-hero-night transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-sun-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
-                href={activeNewsItem?.href ?? "/about"}
-              >
-                {activeNewsItem ? "소식 읽기" : "시설소개 보기"}
-              </Link>
-              <Link
-                className="inline-flex min-h-12 items-center gap-2 px-2 py-3 text-base font-bold text-hero-on-dark underline decoration-hero-on-dark/60 underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
-                href={activeNewsItem ? "/news" : "/life"}
-              >
-                {activeNewsItem ? "전체 소식 보기" : "생활이야기 보기"}
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
+          <div
+            className={`relative min-h-[27rem] overflow-hidden border-t border-home-ink/20 p-7 sm:p-10 lg:min-h-full lg:border-l lg:border-t-0 ${activeSlide.visualClassName}`}
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              className="absolute inset-0 size-full opacity-30"
+              viewBox="0 0 600 600"
+              fill="none"
+            >
+              <circle
+                cx="492"
+                cy="104"
+                r="136"
+                stroke="currentColor"
+                strokeWidth="46"
+                opacity="0.2"
+              />
+              <path
+                d="M-20 430C120 320 188 520 322 410C426 325 498 365 640 244"
+                stroke="currentColor"
+                strokeWidth="18"
+                strokeLinecap="round"
+                opacity="0.24"
+              />
+              <path
+                d="M-40 492C112 386 202 574 346 470C448 396 532 420 652 334"
+                stroke="currentColor"
+                strokeWidth="4"
+                strokeLinecap="round"
+                opacity="0.28"
+              />
+            </svg>
 
-            {hasCarousel ? (
-              <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-hero-on-dark/25 pt-5">
-                <div aria-label="주요 소식 선택" className="flex items-center gap-2">
-                  {newsItems.map((item, index) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      aria-label={`${index + 1}번째 주요 소식 보기: ${item.title}`}
-                      aria-pressed={currentIndex === index}
-                      className={`grid min-h-11 min-w-11 place-items-center rounded-full text-sm font-bold transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark ${
-                        currentIndex === index
-                          ? "bg-hero-on-dark text-hero-night"
-                          : "border border-hero-on-dark/50 text-hero-on-dark hover:bg-hero-on-dark/15"
-                      }`}
-                      onClick={() => showSlide(index)}
-                    >
-                      {String(index + 1).padStart(2, "0")}
-                    </button>
-                  ))}
-                </div>
+            <div className="relative flex h-full min-h-[22rem] flex-col justify-between lg:min-h-full">
+              <div className="flex items-center justify-between gap-4 text-small font-bold">
+                <span>{String(currentIndex + 1).padStart(2, "0")}</span>
+                <span>SHALOM HOUSE</span>
+              </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    aria-label="이전 주요 소식"
-                    className="grid min-h-11 min-w-11 place-items-center rounded-full border border-hero-on-dark/50 text-xl font-bold text-hero-on-dark transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark hover:text-hero-night focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
-                    onClick={() => showSlide(currentIndex - 1)}
-                  >
-                    <span aria-hidden="true">←</span>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="다음 주요 소식"
-                    className="grid min-h-11 min-w-11 place-items-center rounded-full border border-hero-on-dark/50 text-xl font-bold text-hero-on-dark transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark hover:text-hero-night focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
-                    onClick={() => showSlide(currentIndex + 1)}
-                  >
-                    <span aria-hidden="true">→</span>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={isPlaying ? "자동 넘김 정지" : "자동 넘김 재생"}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-full border border-hero-on-dark/50 px-4 text-sm font-bold text-hero-on-dark transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark hover:text-hero-night focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
-                    onClick={toggleAutoPlay}
-                  >
-                    <span aria-hidden="true">{isPlaying ? "Ⅱ" : "▶"}</span>
-                    <span>{isPlaying ? "정지" : "재생"}</span>
-                  </button>
+              <div>
+                <p
+                  aria-hidden="true"
+                  className="text-[clamp(5rem,13vw,9.5rem)] font-bold leading-none tracking-[-0.08em] opacity-15"
+                >
+                  {activeSlide.visualWord}
+                </p>
+                <div className="mt-5 rounded-card border-2 border-home-ink bg-hero-on-dark/80 p-6 shadow-card backdrop-blur-sm sm:p-8">
+                  <p className="text-small font-bold text-accent">
+                    {activeSlide.visualCaption}
+                  </p>
+                  <p className="mt-3 text-title font-bold leading-snug text-home-ink">
+                    {activeSlide.visualTitle}
+                  </p>
                 </div>
               </div>
-            ) : null}
+            </div>
           </div>
         </div>
-
-        <aside
-          aria-labelledby="home-quick-links-heading"
-          className="border-t border-hero-night/20 bg-sun-soft px-page py-9 text-hero-night sm:px-page-wide lg:border-l lg:border-t-0 lg:py-12"
-        >
-          <p className="text-small font-bold text-hero-clay">빠른 안내</p>
-          <h2
-            id="home-quick-links-heading"
-            className="mt-3 text-heading font-bold text-hero-night"
-          >
-            필요한 정보를 바로 찾으세요
-          </h2>
-          <ol className="mt-6 border-t border-hero-night/35">
-            {quickLinks.map((item) => (
-              <li key={item.href} className="border-b border-hero-night/35">
-                <Link
-                  className="group grid min-h-20 grid-cols-[2.5rem_1fr_auto] items-center gap-3 py-3 text-hero-night transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-clay"
-                  href={item.href}
-                >
-                  <span className="text-small font-bold text-hero-clay">
-                    {item.number}
-                  </span>
-                  <span>
-                    <span className="block text-base font-bold">
-                      {item.label}
-                    </span>
-                    <span className="mt-1 block text-small text-hero-night/75">
-                      {item.description}
-                    </span>
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className="text-xl font-bold transition-transform duration-[var(--motion-duration-fast)] ease-standard group-hover:translate-x-1"
-                  >
-                    →
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ol>
-        </aside>
       </div>
 
       <p aria-live="polite" className="sr-only">
