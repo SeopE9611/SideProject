@@ -2,6 +2,8 @@
 
 import TennisProfileForm from "@/app/mypage/profile/_components/TennisProfileForm";
 import WithdrawalReasonSelect from "@/app/mypage/profile/_components/WithdrawalReasonSelect";
+import { useAuthStore } from "@/app/store/authStore";
+import { useCartStore } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, PublicSurface } from "@/components/public";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -83,6 +85,8 @@ type Props = {
 
 export default function ProfileClient({ user }: Props) {
   const router = useRouter();
+  const { logout } = useAuthStore();
+  const clearCart = useCartStore((state) => state.clearCart);
 
   // 서버에서 불러온 “초기값(baseline)” 시그니처 (로드 완료 후 1회 세팅)
   const [initialProfileSig, setInitialProfileSig] = useState("");
@@ -819,7 +823,8 @@ export default function ProfileClient({ user }: Props) {
                           회원 탈퇴
                         </CardTitle>
                         <CardDescription>
-                          계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.
+                          회원 정보는 삭제 또는 비식별 처리되며, 법령상 보존 대상인 거래 기록은
+                          정해진 기간 동안 보관됩니다.
                         </CardDescription>
                       </div>
                     </div>
@@ -847,8 +852,20 @@ export default function ProfileClient({ user }: Props) {
                                 .catch(() => ({ error: "알 수 없는 오류" }));
                               throw new Error(errBody.error);
                             }
+                            logout();
+                            clearCart();
+                            try {
+                              window.localStorage.removeItem("saved-email");
+                              window.localStorage.removeItem("cart-storage");
+                              window.localStorage.removeItem("tennisflow.recent-viewed.v1");
+                              window.sessionStorage.clear();
+                            } catch {
+                              // 브라우저 저장소 접근 실패가 탈퇴 완료 흐름을 막지 않도록 한다.
+                            }
 
-                            // 탈퇴 성공 흐름
+                            showSuccessToast("회원 탈퇴가 완료되었습니다.");
+                            router.replace("/");
+                            router.refresh();
                           } catch (error: any) {
                             showErrorToast(error.message || "회원 탈퇴 중 오류가 발생했습니다.");
                           }
@@ -865,7 +882,9 @@ export default function ProfileClient({ user }: Props) {
                             정말로 탈퇴하시겠습니까?
                           </h3>
                           <p className="text-ui-body-sm text-muted-foreground">
-                            탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.
+                            탈퇴 후 계정은 복구할 수 없습니다. 법령상 보존 대상인 주문·결제 기록과
+                            이미 작성한 게시물·리뷰는 남을 수 있으므로 필요한 콘텐츠는 탈퇴 전에
+                            직접 삭제해 주세요.
                           </p>
                         </div>
                         <Button
