@@ -41,14 +41,40 @@ const userPatchSchema = z
   })
   .strict();
 
-const userProjection = { projection: { hashedPassword: 0 } };
+const adminUserDetailProjection = {
+  projection: {
+    _id: 1,
+    email: 1,
+    name: 1,
+    phone: 1,
+    address: 1,
+    addressDetail: 1,
+    postalCode: 1,
+    role: 1,
+    isDeleted: 1,
+    isSuspended: 1,
+    createdAt: 1,
+    updatedAt: 1,
+    lastLoginAt: 1,
+    hashedPassword: 1,
+    "oauth.kakao.id": 1,
+    "oauth.naver.id": 1,
+  },
+} as const;
 
 type AdminUserDoc = {
   email?: unknown;
   role?: unknown;
   name?: unknown;
+  phone?: unknown;
+  address?: unknown;
+  addressDetail?: unknown;
+  postalCode?: unknown;
   isDeleted?: unknown;
   isSuspended?: unknown;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+  lastLoginAt?: unknown;
   hashedPassword?: unknown;
   oauth?: {
     kakao?: { id?: unknown };
@@ -58,6 +84,38 @@ type AdminUserDoc = {
 
 function usersCollection(db: Db) {
   return db.collection<AdminUserDoc>("users");
+}
+
+function serializeAdminUser(
+  doc: AdminUserDoc & { _id: ObjectId },
+  appsInTossLinked: boolean,
+) {
+  const hasLocalPassword =
+    typeof doc.hashedPassword === "string" && doc.hashedPassword.length > 0;
+  const oauthProviders = [
+    doc.oauth?.kakao?.id ? "kakao" : null,
+    doc.oauth?.naver?.id ? "naver" : null,
+  ].filter(Boolean) as Array<"kakao" | "naver">;
+
+  return {
+    id: doc._id.toString(),
+    email: doc.email,
+    name: doc.name,
+    phone: doc.phone,
+    address: doc.address,
+    addressDetail: doc.addressDetail,
+    postalCode: doc.postalCode,
+    role: doc.role,
+    isDeleted: Boolean(doc.isDeleted),
+    isSuspended: Boolean(doc.isSuspended),
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+    lastLoginAt: doc.lastLoginAt,
+    oauthProviders,
+    hasLocalPassword,
+    appsInTossLinked,
+    hasExternalIdentity: oauthProviders.length > 0 || appsInTossLinked,
+  };
 }
 
 function roleConfirmText(before: string, after: string) {
@@ -103,12 +161,8 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const parsedParams = parseUserIdParams(await ctx.params);
   if (!parsedParams.ok) return parsedParams.res;
 
-  const [doc, passwordState, appsInTossIdentity] = await Promise.all([
-    usersCollection(db).findOne({ _id: parsedParams._id }, userProjection),
-    usersCollection(db).findOne(
-      { _id: parsedParams._id },
-      { projection: { hashedPassword: 1 } },
-    ),
+  const [doc, appsInTossIdentity] = await Promise.all([
+    usersCollection(db).findOne({ _id: parsedParams._id }, adminUserDetailProjection),
     db.collection("apps_in_toss_identities").findOne(
       {
         userId: parsedParams._id,
@@ -121,25 +175,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
 
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
-  const oauthProviders = [
-    doc.oauth?.kakao?.id ? "kakao" : null,
-    doc.oauth?.naver?.id ? "naver" : null,
-  ].filter(Boolean) as Array<"kakao" | "naver">;
-  const hasLocalPassword =
-    typeof passwordState?.hashedPassword === "string" &&
-    passwordState.hashedPassword.length > 0;
-
-  return NextResponse.json({
-    ...doc,
-    id: doc._id.toString(),
-    isSuspended: !!(doc as any).isSuspended,
-    isDeleted: !!(doc as any).isDeleted,
-    appsInTossLinked: Boolean(appsInTossIdentity),
-    oauthProviders,
-    hasLocalPassword,
-    hasExternalIdentity: oauthProviders.length > 0 || Boolean(appsInTossIdentity),
-    _id: undefined,
-  });
+  return NextResponse.json(serializeAdminUser(doc, Boolean(appsInTossIdentity)));
 }
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -188,10 +224,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   for (const k of allowed) {
     if (k in payload) $set[k] = payload[k];
   }
-  if (Object.keys($set).length === 0) {
-    return NextResponse.json({ ok: true, noop: true });
-  }
-
   const { _id } = parsedParams;
 
   const current = await usersCollection(db).findOne(
@@ -214,7 +246,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof payload.email === "string") {
     const normalizedCurrentEmail = String(current.email ?? "").trim().toLowerCase();
     const normalizedNextEmail = payload.email.trim().toLowerCase();
-    if (normalizedNextEmail !== normalizedCurrentEmail) {
+    if (normalizedNextEmail === normalizedCurrentEmail) {
+      delete $set.email;
+    } else {
       const appsInTossIdentity = await db.collection("apps_in_toss_identities").findOne(
         {
           userId: _id,
@@ -234,6 +268,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         );
       }
     }
+  }
+
+  if (Object.keys($set).length === 0) {
+    return NextResponse.json({ ok: true, noop: true });
   }
 
   const currentRole = normalizeUserRole((current as any).role);
@@ -323,13 +361,23 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   if (!r.matchedCount) return NextResponse.json({ message: "not found" }, { status: 404 });
 
-  const v = await usersCollection(db).findOne({ _id }, userProjection);
+  const [v, appsInTossIdentity] = await Promise.all([
+    usersCollection(db).findOne({ _id }, adminUserDetailProjection),
+    db.collection("apps_in_toss_identities").findOne(
+      {
+        userId: _id,
+        appName: APPS_IN_TOSS_APP_NAME,
+        status: "active",
+      },
+      { projection: { _id: 1 } },
+    ),
+  ]);
 
   if (!v) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   // PATCH 성공: 감사 로그 추가 (핸들러 내부)
   const detail = allowed.reduce((acc: any, k) => {
-    if (k in payload) acc[k] = payload[k];
+    if (k in $set) acc[k] = $set[k];
     return acc;
   }, {});
   await appendAdminAudit(
@@ -411,11 +459,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     );
   }
 
-  return NextResponse.json({
-    ...v,
-    id: v._id.toString(),
-    _id: undefined,
-  });
+  return NextResponse.json(serializeAdminUser(v, Boolean(appsInTossIdentity)));
 }
 
 export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
