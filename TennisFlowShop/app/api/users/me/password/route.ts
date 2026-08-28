@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"; // 사용자 인증을 위한 auth 함수
 import clientPromise from "@/lib/mongodb"; // MongoDB 연결 클라이언트
 import bcrypt from "bcryptjs"; // 비밀번호 해싱 및 검증을 위한 bcryptjs
 import { NextResponse } from "next/server"; // 쿠키 삭제용 응답 객체
+import { ObjectId } from "mongodb";
 
 //  비밀번호 유효성 검사 함수 (8자 이상, 영문 + 숫자 포함)
 function isPasswordValid(password: string) {
@@ -15,7 +16,8 @@ function isPasswordValid(password: string) {
 export async function PATCH(req: Request) {
   const session = await auth(); // 현재 로그인된 사용자 세션 정보 확인
 
-  if (!session?.user?.email) {
+  const userId = String(session?.user?.sub ?? "");
+  if (!ObjectId.isValid(userId)) {
     return new Response("Unauthorized", { status: 401 }); // 로그인되어 있지 않으면 401 반환
   }
 
@@ -33,7 +35,7 @@ export async function PATCH(req: Request) {
   }
 
   const { currentPassword, newPassword } = body;
-  if (typeof currentPassword !== "string" || typeof newPassword !== "string") {
+  if (typeof newPassword !== "string") {
     return Response.json({ message: "INVALID_INPUT" }, { status: 400 });
   }
 
@@ -49,7 +51,7 @@ export async function PATCH(req: Request) {
   const db = client.db(); // DB 선택
 
   const user = await db.collection("users").findOne(
-    { email: session.user.email },
+    { _id: new ObjectId(userId) },
     {
       projection: {
         _id: 1,
@@ -65,11 +67,23 @@ export async function PATCH(req: Request) {
 
   // 강제 변경 모드: 관리자 초기화 후 passwordMustChange === true
   const forceMode = user.passwordMustChange === true;
+  const hasLocalPassword =
+    typeof user.hashedPassword === "string" && user.hashedPassword.length > 0;
+
+  if (!hasLocalPassword) {
+    return Response.json(
+      {
+        code: "LOCAL_PASSWORD_NOT_SET",
+        message: "외부 로그인 전용 계정은 비밀번호를 변경할 수 없습니다.",
+      },
+      { status: 409 },
+    );
+  }
 
   // 일반 모드에서만 현재 비밀번호 검증
   if (!forceMode) {
-    if (!user.hashedPassword) {
-      return Response.json({ message: "사용자 정보를 찾을 수 없습니다." }, { status: 404 });
+    if (typeof currentPassword !== "string" || !currentPassword) {
+      return Response.json({ message: "현재 비밀번호를 입력해주세요." }, { status: 400 });
     }
     const isMatch = await bcrypt.compare(currentPassword, user.hashedPassword);
     if (!isMatch) {
@@ -82,7 +96,7 @@ export async function PATCH(req: Request) {
 
   // 사용자 문서의 비밀번호를 새 해시값으로 업데이트 + 강제 플래그 해제
   await db.collection("users").updateOne(
-    { email: session.user.email },
+    { _id: new ObjectId(userId) },
     {
       $set: {
         hashedPassword: newHashedPassword,

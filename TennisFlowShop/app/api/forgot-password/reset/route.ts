@@ -111,6 +111,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const hasLocalPassword =
+      typeof user.hashedPassword === "string" && user.hashedPassword.length > 0;
+    if (!hasLocalPassword) {
+      return NextResponse.json(
+        { message: "유효하지 않거나 만료된 비밀번호 재설정 링크입니다." },
+        { status: 400 },
+      );
+    }
+
     // 토큰 payload에 담긴 이메일과 실제 사용자 이메일이 다르면 거부
     // JWT 자체는 유효하더라도 다른 계정에 잘못 적용되는 걸 한 번 더 방지합니다.
     if (String(user.email ?? "").toLowerCase() !== String(payload.email ?? "").toLowerCase()) {

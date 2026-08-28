@@ -39,7 +39,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
     const user = await db
       .collection("users")
-      .findOne({ _id }, { projection: { _id: 1, email: 1, role: 1 } });
+      .findOne({ _id }, { projection: { _id: 1, email: 1, role: 1, hashedPassword: 1 } });
     if (!user) return NextResponse.json({ message: "not found" }, { status: 404 });
     if (String(admin._id) === String(_id)) {
       return NextResponse.json(
@@ -59,6 +59,18 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
           message: "관리자 계정 비밀번호 초기화는 최고 관리자만 가능합니다.",
         },
         { status: 403 },
+      );
+    }
+    const hasLocalPassword =
+      typeof user.hashedPassword === "string" && user.hashedPassword.length > 0;
+    if (!hasLocalPassword) {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "LOCAL_PASSWORD_NOT_SET",
+          message: "외부 로그인 전용 계정은 비밀번호를 초기화할 수 없습니다.",
+        },
+        { status: 409 },
       );
     }
 

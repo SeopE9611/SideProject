@@ -89,7 +89,9 @@ export async function POST(req: Request) {
     });
 
     // 사용자가 없어도 외부에는 성공처럼 보이게 처리
-    if (!user?._id) {
+    const hasLocalPassword =
+      typeof user?.hashedPassword === "string" && user.hashedPassword.length > 0;
+    if (!user?._id || !hasLocalPassword) {
       return NextResponse.json(SAFE_RESPONSE, { status: 200 });
     }
 
