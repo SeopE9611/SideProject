@@ -102,7 +102,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await createAdminNewsDraft(validation.value);
+    const result = await createAdminNewsDraft(validation.value, admin);
     if (!result.ok) {
       return jsonResponse(
         {

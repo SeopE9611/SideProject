@@ -112,6 +112,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       id,
       draft: validation.value.draft,
       expectedUpdatedAt: validation.value.expectedUpdatedAt,
+      actor: admin,
     });
     if (!result.ok) {
       if (result.reason === "slug_conflict") {

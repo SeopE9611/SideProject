@@ -95,6 +95,7 @@ export async function POST(request: Request, context: RouteContext) {
       id,
       action: validation.value.action,
       expectedUpdatedAt: validation.value.expectedUpdatedAt,
+      actor: admin,
     });
     if (!result.ok) {
       if (result.reason === "not_found") {
