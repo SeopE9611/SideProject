@@ -69,13 +69,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="ko" suppressHydrationWarning className="scroll-smooth overflow-x-hidden">
       <body className="bg-background text-foreground">
-        {/* Kakao JavaScript SDK (채널 1:1 문의용) */}
-        <Script
-          id="kakao-jssdk"
-          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
         <Script
           id="resume-debug-listeners"
           strategy="afterInteractive"

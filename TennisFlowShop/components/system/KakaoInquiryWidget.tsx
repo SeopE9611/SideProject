@@ -7,12 +7,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-declare global {
-  interface Window {
-    Kakao?: any;
-  }
-}
-
 const guideLinks = [
   { label: "교체서비스 시작하기", href: "/services#service-start" },
   { label: "새 스트링 고르고 장착 신청", href: "/products?from=apply" },
@@ -37,7 +31,7 @@ function normalizeChannelPublicId(raw: string) {
  * 우측 하단 "문의" 위젯
  * - 버그 제보(오픈채팅) + 카카오 문의(채널 1:1)
  * - 패널은 한 번에 하나만 열림
- * - Kakao SDK 로딩이 늦을 수 있어 간단 폴링으로 init 보장
+ * - 카카오 JavaScript SDK를 전역 로드하지 않고 채널 채팅 URL을 새 탭으로 연다.
  */
 export default function KakaoInquiryWidget() {
   const pathname = usePathname();
@@ -62,8 +56,7 @@ export default function KakaoInquiryWidget() {
   const [liftPx, setLiftPx] = useState(0);
   const [hideForOverlay, setHideForOverlay] = useState(false);
 
-  // 클라이언트 노출 가능한 env만 사용 (NEXT_PUBLIC_*)
-  const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? "";
+  // 클라이언트 노출 가능한 채널 공개 ID만 사용한다.
   const rawChannelPublicId = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_PUBLIC_ID ?? "";
   const channelPublicId = normalizeChannelPublicId(rawChannelPublicId);
 
@@ -72,7 +65,7 @@ export default function KakaoInquiryWidget() {
 
   // 훅 개수 불일치 방지 - "숨김 여부"는 계산만 하고, return은 마지막에만 처리
   const hideAll = pathname?.startsWith("/admin") || hideOnAuthRoute;
-  const canShowInquiry = !!jsKey && !!channelPublicId;
+  const canShowInquiry = !!channelPublicId;
   const canShowBug = !!bugOpenChatUrl;
 
   const canShowGuide = true;
@@ -86,41 +79,8 @@ export default function KakaoInquiryWidget() {
     // 숨김 상태로 전환되면 패널은 닫아줌(UX + 상태 정리)
     if (shouldHide) {
       setPanel(null);
-      return;
     }
-    // 문의 위젯이 비활성화되면 Kakao SDK init도 불필요하므로 여기서 종료
-    if (!canShowInquiry) return;
-
-    let ticks = 0;
-
-    const initOnce = () => {
-      const Kakao = window.Kakao;
-      if (!Kakao) return false;
-
-      try {
-        // 이미 init 된 경우 중복 init 방지
-        if (!Kakao.isInitialized?.()) {
-          Kakao.init(jsKey);
-        }
-      } catch {
-        // init 실패는 여기서 터뜨리지 않음(클릭 시 fallback 있음)
-      }
-      return true;
-    };
-
-    // 즉시 init 시도
-    if (initOnce()) return;
-
-    // SDK 로딩이 늦는 경우 대비: 짧게 폴링
-    const timer = window.setInterval(() => {
-      ticks += 1;
-      if (initOnce() || ticks > 120) {
-        window.clearInterval(timer);
-      }
-    }, 50);
-
-    return () => window.clearInterval(timer);
-  }, [jsKey, shouldHide, canShowInquiry]);
+  }, [shouldHide]);
 
   /**
    * 모바일 하단 고정 CTA(장바구니/상품상세/라켓상세 등)가 있는 페이지에서는
@@ -222,20 +182,6 @@ export default function KakaoInquiryWidget() {
   }, [panel]);
 
   const openKakaoChat = () => {
-    const Kakao = window.Kakao;
-
-    // 1) SDK가 준비되어 있으면 공식 API로 채팅 오픈
-    try {
-      if (Kakao?.Channel?.chat) {
-        Kakao.Channel.chat({ channelPublicId });
-        setPanel(null);
-        return;
-      }
-    } catch {
-      // ignore
-    }
-
-    // 2) fallback: 채널 채팅 URL로 이동(최소 동작 보장)
     window.open(`https://pf.kakao.com/${channelPublicId}/chat`, "_blank", "noopener,noreferrer");
     setPanel(null);
   };
