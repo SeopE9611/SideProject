@@ -7,6 +7,8 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+const WITHDRAWAL_FEEDBACK_RETENTION_MS = 180 * 24 * 60 * 60 * 1000;
+
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
 
@@ -168,8 +170,6 @@ export async function DELETE(req: NextRequest) {
             $set: {
               isDeleted: true,
               deletedAt: now,
-              withdrawalReason: reason,
-              withdrawalDetail: detail,
               name: "(탈퇴한 회원)",
               email: anonymizedEmail,
               phone: null,
@@ -189,6 +189,8 @@ export async function DELETE(req: NextRequest) {
               passwordResetRequestedAt: "",
               passwordMustChange: "",
               lastLoginAt: "",
+              withdrawalReason: "",
+              withdrawalDetail: "",
             },
           },
           { session },
@@ -219,6 +221,19 @@ export async function DELETE(req: NextRequest) {
       throw error;
     } finally {
       await session.endSession();
+    }
+
+    if (reason || detail) {
+      try {
+        await db.collection("withdrawal_feedback").insertOne({
+          reason,
+          detail,
+          createdAt: now,
+          expiresAt: new Date(now.getTime() + WITHDRAWAL_FEEDBACK_RETENTION_MS),
+        });
+      } catch (error) {
+        console.warn("[users/me/leave] withdrawal feedback save failed", error);
+      }
     }
 
     const response = NextResponse.json({ message: "탈퇴 완료" }, { status: 200 });
