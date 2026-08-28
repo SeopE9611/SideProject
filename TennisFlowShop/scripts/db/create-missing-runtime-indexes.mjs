@@ -18,6 +18,18 @@ const indexSpecs = [
     options: {},
   },
   {
+    collection: "user_sessions",
+    name: "user_sessions_at_ttl",
+    keys: { at: 1 },
+    options: { expireAfterSeconds: 60 * 60 * 24 * 90 },
+  },
+  {
+    collection: "withdrawal_feedback",
+    name: "withdrawal_feedback_expiresAt_ttl",
+    keys: { expiresAt: 1 },
+    options: { expireAfterSeconds: 0 },
+  },
+  {
     collection: "reviews",
     name: "user_createdAt",
     keys: { userId: 1, createdAt: -1 },
