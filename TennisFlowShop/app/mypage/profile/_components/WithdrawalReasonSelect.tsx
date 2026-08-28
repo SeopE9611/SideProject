@@ -56,7 +56,12 @@ export default function WithdrawalReasonSelect({ onSubmit }: WithdrawalReasonSel
   return (
     <div className="space-y-4 rounded-control bg-destructive/5 p-4">
       {/* 셀렉트 레이블 */}
-      <Label>탈퇴 사유 (선택)</Label>
+      <div className="space-y-1">
+        <Label>탈퇴 사유 (선택)</Label>
+        <p className="text-ui-caption text-muted-foreground">
+          입력한 사유는 회원 식별정보와 분리하여 180일간 보관한 후 자동 삭제합니다.
+        </p>
+      </div>
 
       {/* 셀렉트 박스 */}
       <Select value={selectedReason} onValueChange={(value) => setSelectedReason(value)}>

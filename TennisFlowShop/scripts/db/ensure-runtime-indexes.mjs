@@ -240,6 +240,18 @@ const INDEX_SPECS = {
       keys: { userId: 1, at: -1 },
       options: {},
     },
+    {
+      name: "user_sessions_at_ttl",
+      keys: { at: 1 },
+      options: { expireAfterSeconds: 60 * 60 * 24 * 90 },
+    },
+  ],
+  withdrawal_feedback: [
+    {
+      name: "withdrawal_feedback_expiresAt_ttl",
+      keys: { expiresAt: 1 },
+      options: { expireAfterSeconds: 0 },
+    },
   ],
   board_posts: [
     {

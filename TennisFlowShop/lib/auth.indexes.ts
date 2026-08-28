@@ -9,6 +9,8 @@ type IndexSpec = {
   readonly name: string;
 };
 
+const LOGIN_SESSION_RETENTION_SECONDS = 60 * 60 * 24 * 90;
+
 const AUTH_INDEX_SPECS: Readonly<Record<string, readonly IndexSpec[]>> = {
   // login-me의 userKey(number)는 양의 safe integer 검증 후 String(userKey)로 저장한다.
   apps_in_toss_identities: [
@@ -61,6 +63,18 @@ const AUTH_INDEX_SPECS: Readonly<Record<string, readonly IndexSpec[]>> = {
     {
       name: "user_sessions_user_at_desc",
       keys: { userId: 1, at: -1 },
+    },
+    {
+      name: "user_sessions_at_ttl",
+      keys: { at: 1 },
+      options: { expireAfterSeconds: LOGIN_SESSION_RETENTION_SECONDS },
+    },
+  ],
+  withdrawal_feedback: [
+    {
+      name: "withdrawal_feedback_expiresAt_ttl",
+      keys: { expiresAt: 1 },
+      options: { expireAfterSeconds: 0 },
     },
   ],
   auth_rate_limit_windows: [
