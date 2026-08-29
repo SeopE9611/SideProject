@@ -136,7 +136,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                     aria-current={
                       isCurrentPage(pathname, item.href) ? "page" : undefined
                     }
-                    className="inline-flex items-center px-3 py-2 text-small font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-4"
+                    className="text-safe-wrap inline-flex min-h-11 items-center px-3 py-2 text-small font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-4"
                     href={item.href}
                   >
                     {item.label}
@@ -152,7 +152,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                       aria-label={`${item.label} 하위 메뉴 ${
                         isSubmenuOpen ? "닫기" : "열기"
                       }`}
-                      className="inline-flex min-w-9 items-center justify-center rounded-r-control border-l border-current/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-r-control border-l border-current/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                       onClick={() =>
                         setOpenDesktopHref((current) =>
                           current === item.href ? null : item.href,
@@ -187,7 +187,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                     hidden={!isSubmenuOpen}
                   >
                     <div className="rounded-card border border-border bg-surface p-2 shadow-elevated">
-                      <p className="px-3 pb-2 pt-1 text-xs font-semibold text-muted-foreground">
+                      <p className="text-safe-wrap px-3 pb-2 pt-1 text-xs font-semibold text-muted-foreground">
                         {item.description}
                       </p>
                       <ul className="space-y-1">
@@ -210,10 +210,10 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                                 }`}
                                 href={child.href}
                               >
-                                <span className="block text-small font-bold">
+                                <span className="text-safe-wrap block text-small font-bold">
                                   {child.label}
                                 </span>
-                                <span className="mt-1 block text-xs text-muted-foreground">
+                                <span className="text-safe-wrap mt-1 block text-xs text-muted-foreground">
                                   {child.description}
                                 </span>
                               </Link>
@@ -301,10 +301,10 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                     onClick={closeMobileMenu}
                   >
                     <span>
-                      <span className="block text-base font-bold">
+                      <span className="text-safe-wrap block text-base font-bold">
                         {item.label}
                       </span>
-                      <span className="mt-1 block text-small text-muted-foreground">
+                      <span className="text-safe-wrap mt-1 block text-small text-muted-foreground">
                         {item.description}
                       </span>
                     </span>
@@ -373,11 +373,11 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                             href={child.href}
                             onClick={closeMobileMenu}
                           >
-                            <span className="block text-small font-bold">
+                            <span className="text-safe-wrap block text-small font-bold">
                               {child.label}
                             </span>
                             <span
-                              className={`mt-1 block text-xs ${
+                              className={`text-safe-wrap mt-1 block text-xs ${
                                 isChildActive
                                   ? "text-primary-foreground"
                                   : "text-muted-foreground"

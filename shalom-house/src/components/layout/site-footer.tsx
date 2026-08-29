@@ -10,13 +10,13 @@ export function SiteFooter() {
           <section aria-labelledby="footer-about-heading">
             <h2 id="footer-about-heading">
               <Link
-                className="inline-flex text-heading font-bold text-hero-on-dark underline decoration-hero-on-dark/70 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
+                className="text-safe-wrap inline-flex min-h-11 items-center text-heading font-bold text-hero-on-dark underline decoration-hero-on-dark/70 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
                 href="/"
               >
                 {siteConfig.name}
               </Link>
             </h2>
-            <p className="mt-3 max-w-xl text-body text-hero-muted">
+            <p className="text-safe-wrap mt-3 max-w-xl text-body text-hero-muted">
               지체 및 지적 장애인이 함께 생활하는 장애인거주시설입니다.
             </p>
           </section>
@@ -27,7 +27,7 @@ export function SiteFooter() {
               {siteConfig.footerNavigation.map((item) => (
                 <li key={item.href}>
                   <Link
-                    className="inline-flex min-h-11 items-center text-small font-semibold text-hero-muted underline decoration-hero-on-dark/50 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                    className="text-safe-wrap inline-flex min-h-11 items-center text-small font-semibold text-hero-muted underline decoration-hero-on-dark/50 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
                     href={item.href}
                   >
                     {item.label}
@@ -36,7 +36,7 @@ export function SiteFooter() {
               ))}
               <li>
                 <a
-                  className="inline-flex min-h-11 items-center text-small font-semibold text-hero-muted underline decoration-hero-on-dark/50 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                  className="text-safe-wrap inline-flex min-h-11 items-center text-small font-semibold text-hero-muted underline decoration-hero-on-dark/50 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
                   href={siteConfig.instagram}
                 >
                   인스타그램
@@ -51,7 +51,7 @@ export function SiteFooter() {
             <p>
               <span className="mr-3 font-bold text-hero-on-dark">주소</span>
               <Link
-                className="underline decoration-hero-on-dark/60 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                className="text-safe-wrap inline-flex min-h-11 items-center underline decoration-hero-on-dark/60 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
                 href="/about/directions"
               >
                 {siteConfig.address}
@@ -62,14 +62,14 @@ export function SiteFooter() {
                 대표 전화
               </span>
               <a
-                className="inline-flex min-h-11 items-center underline decoration-hero-on-dark/60 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                className="text-safe-wrap inline-flex min-h-11 items-center underline decoration-hero-on-dark/60 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
                 href={`tel:${siteConfig.phone}`}
               >
                 {siteConfig.phone}
               </a>
             </p>
           </address>
-          <p>
+          <p className="text-safe-wrap">
             © {new Date().getFullYear()} {siteConfig.name}
           </p>
         </div>
