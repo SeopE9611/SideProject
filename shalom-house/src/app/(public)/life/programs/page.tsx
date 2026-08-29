@@ -9,6 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function ProgramsPage() {
+  const hasOfficialPrograms =
+    (lifeFixture.contentStatus as "fixture" | "official") === "official";
+
   return (
     <>
       <SectionPageHeader
@@ -21,46 +24,53 @@ export default function ProgramsPage() {
           { label: "생활·프로그램", href: "/life" },
           { label: "프로그램" },
         ]}
-        notice="모든 항목은 운영 사실이 아닌 화면 검증용 예시입니다."
+        notice="운영이 확인된 프로그램은 목적과 활동 내용을 확인한 뒤 안내합니다."
       />
       <section className="mx-auto max-w-site px-page py-12 sm:px-page-wide">
-        <h2 className="text-heading font-bold">프로그램 분류 및 목록</h2>
-        <ul className="mt-6 grid gap-x-10 border-t border-foreground lg:grid-cols-2">
-          {lifeFixture.programs.map((program) => (
-            <li key={program.id} className="border-b border-border py-6">
-              <p className="text-small font-bold text-accent">
-                {program.category}
-              </p>
-              <h3 className="text-safe-wrap mt-2 text-heading font-bold">
-                {program.title}
-              </h3>
-              <dl className="mt-4 grid gap-2">
-                <div>
-                  <dt className="font-bold">목적</dt>
-                  <dd className="text-safe-wrap text-muted-foreground">
-                    {program.purpose}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-bold">설명</dt>
-                  <dd className="text-safe-wrap text-muted-foreground">
-                    {program.description}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-bold">상태</dt>
-                  <dd>{program.operatingStatus}</dd>
-                </div>
-              </dl>
-            </li>
-          ))}
-        </ul>
-        <Link
-          className="mt-8 inline-flex font-bold text-primary underline"
-          href="/news/activities"
-        >
-          활동소식 보기
-        </Link>
+        {hasOfficialPrograms ? (
+          <ul className="grid gap-x-10 border-t border-foreground lg:grid-cols-2">
+            {lifeFixture.programs.map((program) => (
+              <li key={program.id} className="border-b border-border py-6">
+                <p className="text-small font-bold text-accent">
+                  {program.category}
+                </p>
+                <h2 className="text-safe-wrap mt-2 text-heading font-bold">
+                  {program.title}
+                </h2>
+                <p className="text-safe-wrap mt-3 text-muted-foreground">
+                  {program.description}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="border-y border-border py-6">
+            <p className="text-small font-bold text-accent">안내 준비 중</p>
+            <h2 className="text-safe-wrap mt-2 text-heading font-bold">
+              프로그램 안내를 준비하고 있습니다.
+            </h2>
+            <p className="text-safe-wrap mt-3 text-muted-foreground">
+              운영이 확인된 프로그램은 목적과 활동 내용을 확인한 뒤 안내합니다.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-5">
+              <Link className="font-bold text-primary underline" href="/life">
+                생활이야기
+              </Link>
+              <Link
+                className="font-bold text-primary underline"
+                href="/news/activities"
+              >
+                활동소식
+              </Link>
+              <Link
+                className="font-bold text-primary underline"
+                href="/support/contact"
+              >
+                문의하기
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
     </>
   );

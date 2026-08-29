@@ -5,8 +5,8 @@ import { siteConfig } from "@/config/site";
 export function SiteFooter() {
   return (
     <footer className="border-t border-hero-night bg-hero-night text-hero-on-dark">
-      <div className="mx-auto w-full max-w-site px-page py-14 sm:px-page-wide sm:py-16">
-        <div className="grid gap-10 border-b border-hero-on-dark/20 pb-12 md:grid-cols-[1.1fr_0.8fr_0.9fr] md:gap-12">
+      <div className="mx-auto w-full max-w-site px-page py-10 sm:px-page-wide sm:py-12">
+        <div className="grid gap-8 border-b border-hero-on-dark/20 pb-8 md:grid-cols-[1.1fr_0.8fr_0.9fr] md:gap-10">
           <section aria-labelledby="footer-about-heading">
             <h2 id="footer-about-heading">
               <Link
@@ -23,7 +23,7 @@ export function SiteFooter() {
 
           <nav aria-label="푸터 이용 안내">
             <h2 className="text-small font-bold text-hero-on-dark">이용 안내</h2>
-            <ul className="mt-4 space-y-1">
+            <ul className="mt-4 grid grid-cols-2 gap-x-6">
               {siteConfig.footerNavigation.map((item) => (
                 <li key={item.href}>
                   <Link
@@ -74,7 +74,7 @@ export function SiteFooter() {
           </section>
         </div>
 
-        <div className="flex flex-col gap-2 pt-7 text-small text-hero-muted sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 pt-5 text-small text-hero-muted sm:flex-row sm:items-center sm:justify-between">
           <p>공식 홈페이지에 공개 승인된 정보만 안내합니다.</p>
           <p className="text-safe-wrap">
             © {new Date().getFullYear()} {siteConfig.name}

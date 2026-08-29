@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { SectionPageHeader } from "@/components/layout/section-page-header";
+import { siteConfig } from "@/config/site";
 import { lifeFixture } from "@/content/fixtures/life.fixture";
 
 export const metadata: Metadata = {
@@ -9,6 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function GalleryPage() {
+  const hasOfficialGallery =
+    (lifeFixture.contentStatus as "fixture" | "official") === "official";
+
   return (
     <>
       <SectionPageHeader
@@ -21,42 +25,50 @@ export default function GalleryPage() {
           { label: "생활·프로그램", href: "/life" },
           { label: "활동사진" },
         ]}
-        notice="현재 실제 이미지는 없으며 중립적인 상태 표시만 제공합니다."
+        notice="활동사진은 사진별 공개 동의와 게시 승인을 마친 범위에서 안내합니다."
       />
       <section className="mx-auto max-w-site px-page py-12 sm:px-page-wide">
-        <h2 className="text-heading font-bold">활동사진 준비 목록</h2>
-        <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {lifeFixture.gallery.map((galleryItem) => (
-            <li key={galleryItem.id} className="border border-border">
-              <div className="flex min-h-40 flex-col justify-center bg-surface-subtle p-5">
-                <strong>{galleryItem.media.label}</strong>
-                <span className="text-safe-wrap mt-2 text-small">
-                  {galleryItem.media.description}
-                </span>
-              </div>
-              <div className="p-5">
-                <p className="text-small text-accent">
-                  {galleryItem.category} · {galleryItem.dateLabel}
+        {hasOfficialGallery ? (
+          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {lifeFixture.gallery.map((item) => (
+              <li key={item.id} className="border-t-4 border-primary py-5">
+                <p className="text-small font-bold text-accent">
+                  {item.category}
                 </p>
-                <h3 className="text-safe-wrap mt-2 font-bold">
-                  {galleryItem.title}
-                </h3>
+                <h2 className="text-safe-wrap mt-2 font-bold">{item.title}</h2>
                 <p className="text-safe-wrap mt-2 text-muted-foreground">
-                  {galleryItem.description}
+                  {item.description}
                 </p>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-8 font-bold">
-          표시할 승인 이미지가 아직 없습니다.
-        </p>
-        <Link
-          className="mt-5 inline-flex font-bold text-primary underline"
-          href="/news/activities"
-        >
-          활동소식 보기
-        </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="border-y border-border py-6">
+            <p className="text-small font-bold text-accent">사진 준비 중</p>
+            <h2 className="text-safe-wrap mt-2 text-heading font-bold">
+              공개 승인된 활동사진이 아직 없습니다.
+            </h2>
+            <p className="text-safe-wrap mt-3 text-muted-foreground">
+              사진별 공개 동의와 게시 승인을 마친 자료가 준비되면 안내합니다.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-5">
+              <Link
+                className="font-bold text-primary underline"
+                href="/news/activities"
+              >
+                활동소식
+              </Link>
+              <a
+                className="font-bold text-primary underline"
+                href={siteConfig.instagram}
+                target="_blank"
+                rel="noreferrer"
+              >
+                인스타그램 보기(새 창)
+              </a>
+            </div>
+          </div>
+        )}
       </section>
     </>
   );

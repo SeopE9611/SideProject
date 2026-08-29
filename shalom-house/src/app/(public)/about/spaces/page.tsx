@@ -9,6 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function SpacesPage() {
+  const hasOfficialSpaces =
+    (aboutFixture.contentStatus as "fixture" | "official") === "official";
+
   return (
     <>
       <SectionPageHeader
@@ -21,34 +24,45 @@ export default function SpacesPage() {
           { label: "시설소개", href: "/about" },
           { label: "생활공간" },
         ]}
-        notice="현재 항목은 실제 공간 정보가 아닌 레이아웃 검증용 예시입니다."
+        notice="공간 정보는 설명과 사진의 공개 승인을 마친 범위에서 안내합니다."
       />
       <section className="mx-auto max-w-site px-page py-12 sm:px-page-wide">
-        <h2 className="text-heading font-bold">공간 안내 준비 상태</h2>
-        <ul className="mt-6 divide-y divide-border border-y">
-          {aboutFixture.spaces.map((space) => (
-            <li
-              className="grid gap-3 py-6 md:grid-cols-[1fr_2fr]"
-              key={space.id}
-            >
-              <h3 className="text-safe-wrap font-bold">{space.title}</h3>
-              <div>
+        {hasOfficialSpaces ? (
+          <ul className="divide-y divide-border border-y">
+            {aboutFixture.spaces.map((space) => (
+              <li
+                className="grid gap-3 py-6 md:grid-cols-[1fr_2fr]"
+                key={space.id}
+              >
+                <h2 className="text-safe-wrap font-bold">{space.title}</h2>
                 <p className="text-safe-wrap text-muted-foreground">
                   {space.description}
                 </p>
-                <p className="mt-3 text-small font-bold text-accent">
-                  공식 사진 준비 중
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <Link
-          className="mt-8 inline-flex font-bold text-primary underline"
-          href="/about/directions"
-        >
-          찾아오시는 길
-        </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="border-y border-border py-6">
+            <p className="text-small font-bold text-accent">안내 준비 중</p>
+            <h2 className="text-safe-wrap mt-2 text-heading font-bold">
+              생활공간 안내를 준비하고 있습니다.
+            </h2>
+            <p className="text-safe-wrap mt-3 text-muted-foreground">
+              승인된 공간 설명과 사진이 준비되면 이 페이지에서 안내합니다.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-5">
+              <Link className="font-bold text-primary underline" href="/about">
+                시설개요
+              </Link>
+              <Link
+                className="font-bold text-primary underline"
+                href="/about/directions"
+              >
+                찾아오시는 길
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
     </>
   );
