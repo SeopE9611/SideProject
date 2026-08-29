@@ -21,13 +21,13 @@ import {
   PROGRAM_COLLECTION_NAME,
   type MongoProgramDocument,
 } from "./program.mongo-schema";
-import type {
-  AdminProgramPublicationAction,
-  AdminProgramReviewDecision,
-  ValidatedAdminProgramDraft,
+import {
+  ADMIN_PROGRAM_SORT_ORDER_MAX,
+  ADMIN_PROGRAM_SORT_ORDER_MIN,
+  type AdminProgramPublicationAction,
+  type AdminProgramReviewDecision,
+  type ValidatedAdminProgramDraft,
 } from "./program.admin-validation";
-const ADMIN_PROGRAM_PAGE_SIZE = 20;
-const ADMIN_PROGRAM_MAXIMUM_PAGE = 10_000;
 import {
   isProgramApprovalStatus,
   isProgramPublicationStatus,
@@ -35,6 +35,9 @@ import {
   type ProgramApprovalStatus,
   type ProgramPublicationStatus,
 } from "./program.types";
+
+const ADMIN_PROGRAM_PAGE_SIZE = 20;
+const ADMIN_PROGRAM_MAXIMUM_PAGE = 10_000;
 
 export type AdminProgramListItem = {
   id: string;
@@ -227,6 +230,12 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function isValidOperationStatusLabel(
+  value: unknown,
+): value is string | null {
+  return value === null || isNonEmptyString(value);
+}
+
 function createNextUpdatedAt(expectedUpdatedAt: Date, now: Date): Date {
   return new Date(
     Math.max(now.getTime(), expectedUpdatedAt.getTime() + 1),
@@ -310,11 +319,16 @@ function toAdminProgramListItem(
 ): AdminProgramListItem | null {
   if (
     !isValidProgramSlug(document.slug) ||
-    !(typeof document.category === "string" && document.category.trim().length > 0) ||
+    !(typeof document.category === "string" &&
+      document.category.trim().length > 0) ||
     !isProgramPublicationStatus(document.publicationStatus) ||
     !isProgramApprovalStatus(document.approvalStatus) ||
     !isNonEmptyString(document.title) ||
     !isNonEmptyString(document.summary) ||
+    !isValidOperationStatusLabel(document.operationStatusLabel) ||
+    !Number.isInteger(document.sortOrder) ||
+    document.sortOrder < ADMIN_PROGRAM_SORT_ORDER_MIN ||
+    document.sortOrder > ADMIN_PROGRAM_SORT_ORDER_MAX ||
     !isValidDate(document.createdAt) ||
     !isValidDate(document.updatedAt) ||
     (document.publishedAt !== null && !isValidDate(document.publishedAt))
@@ -370,7 +384,10 @@ export async function findAdminProgramPostById(
           category: 1,
           title: 1,
           summary: 1,
+          purpose: 1,
           body: 1,
+          operationStatusLabel: 1,
+          sortOrder: 1,
           publicationStatus: 1,
           approvalStatus: 1,
           publishedAt: 1,
@@ -386,6 +403,7 @@ export async function findAdminProgramPostById(
     !listItem ||
     !isNonEmptyString(document.purpose) ||
     !Array.isArray(document.body) ||
+    document.body.length === 0 ||
     !document.body.every(isNonEmptyString)
   ) {
     console.error("관리자 프로그램 상세 문서 검증 실패", {
@@ -441,13 +459,21 @@ async function changeProgramAndInsertAudit(input: {
   toVersionAt: Date;
   filter: Filter<MongoProgramDocument>;
   set: Partial<MongoProgramDocument>;
-  changedFields: readonly ProgramAuditChangedField[] | ((before: MongoProgramDocument) => readonly ProgramAuditChangedField[]);
+  changedFields:
+    | readonly ProgramAuditChangedField[]
+    | ((before: MongoProgramDocument) => readonly ProgramAuditChangedField[]);
 }): Promise<ProgramChange | null> {
-  const collection = input.database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME);
+  const collection = input.database.collection<MongoProgramDocument>(
+    PROGRAM_COLLECTION_NAME,
+  );
   const before = await collection.findOneAndUpdate(
     input.filter,
     { $set: input.set },
-    { session: input.session, returnDocument: "before", includeResultMetadata: false },
+    {
+      session: input.session,
+      returnDocument: "before",
+      includeResultMetadata: false,
+    },
   );
   if (!before) return null;
   const after: MongoProgramDocument = {
@@ -458,11 +484,17 @@ async function changeProgramAndInsertAudit(input: {
     summary: input.set.summary ?? before.summary,
     purpose: input.set.purpose ?? before.purpose,
     body: input.set.body ?? before.body,
-    operationStatusLabel: input.set.operationStatusLabel === undefined ? before.operationStatusLabel : input.set.operationStatusLabel,
+    operationStatusLabel:
+      input.set.operationStatusLabel === undefined
+        ? before.operationStatusLabel
+        : input.set.operationStatusLabel,
     sortOrder: input.set.sortOrder ?? before.sortOrder,
     publicationStatus: input.set.publicationStatus ?? before.publicationStatus,
     approvalStatus: input.set.approvalStatus ?? before.approvalStatus,
-    publishedAt: input.set.publishedAt === undefined ? before.publishedAt : input.set.publishedAt,
+    publishedAt:
+      input.set.publishedAt === undefined
+        ? before.publishedAt
+        : input.set.publishedAt,
     createdAt: before.createdAt,
     updatedAt: input.toVersionAt,
     deletedAt: before.deletedAt,
@@ -479,9 +511,10 @@ async function changeProgramAndInsertAudit(input: {
     toVersionAt: input.toVersionAt,
     before: createProgramAuditSnapshot(before),
     after: createProgramAuditSnapshot(after),
-    changedFields: typeof input.changedFields === "function"
-      ? input.changedFields(before)
-      : input.changedFields,
+    changedFields:
+      typeof input.changedFields === "function"
+        ? input.changedFields(before)
+        : input.changedFields,
   });
   return { before, after };
 }
@@ -506,25 +539,65 @@ export async function changeAdminProgramPublicationState(input: {
       database, session, programId, eventId, actor: input.actor,
       action: input.action === "unpublish" ? "unpublished" : "archived",
       toVersionAt: nextUpdatedAt,
-      filter: { _id: programId, ...activeDocumentFilter, publicationStatus: "published", approvalStatus: "approved", publishedAt: { $ne: null }, updatedAt: input.expectedUpdatedAt },
-      set: input.action === "unpublish"
-        ? { publicationStatus: "review", publishedAt: null, updatedAt: nextUpdatedAt }
+      filter: {
+        _id: programId,
+        ...activeDocumentFilter,
+        publicationStatus: "published",
+        approvalStatus: "approved",
+        publishedAt: { $ne: null },
+        updatedAt: input.expectedUpdatedAt,
+      },
+      set:
+        input.action === "unpublish"
+          ? {
+              publicationStatus: "review",
+              publishedAt: null,
+              updatedAt: nextUpdatedAt,
+            }
         : { publicationStatus: "archived", updatedAt: nextUpdatedAt },
-      changedFields: input.action === "unpublish"
-        ? ["publicationStatus", "publishedAt"]
-        : ["publicationStatus"],
+      changedFields:
+        input.action === "unpublish"
+          ? ["publicationStatus", "publishedAt"]
+          : ["publicationStatus"],
     });
-    if (change) return {
-      ok: true, id: input.id, slug: change.after.slug, action: input.action,
-      publicationStatus: change.after.publicationStatus as "review" | "archived",
-      publishedAt: change.after.publishedAt?.toISOString() ?? null,
-      updatedAt: nextUpdatedAt.toISOString(),
-    };
-    const current = await database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME).findOne(
-      { _id: programId }, { session, projection: { publicationStatus: 1, approvalStatus: 1, publishedAt: 1, updatedAt: 1, deletedAt: 1 } },
-    );
+    if (change) {
+      return {
+        ok: true,
+        id: input.id,
+        slug: change.after.slug,
+        action: input.action,
+        publicationStatus: change.after.publicationStatus as
+          | "review"
+          | "archived",
+        publishedAt: change.after.publishedAt?.toISOString() ?? null,
+        updatedAt: nextUpdatedAt.toISOString(),
+      };
+    }
+    const current = await database
+      .collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME)
+      .findOne(
+        { _id: programId },
+        {
+          session,
+          projection: {
+            publicationStatus: 1,
+            approvalStatus: 1,
+            publishedAt: 1,
+            updatedAt: 1,
+            deletedAt: 1,
+          },
+        },
+      );
     if (!current || current.deletedAt != null) return { ok: false, reason: "not_found" };
-    if (!isPublishedApprovedState(current.publicationStatus, current.approvalStatus, current.publishedAt)) return { ok: false, reason: "not_manageable" };
+    if (
+      !isPublishedApprovedState(
+        current.publicationStatus,
+        current.approvalStatus,
+        current.publishedAt,
+      )
+    ) {
+      return { ok: false, reason: "not_manageable" };
+    }
     return { ok: false, reason: "edit_conflict" };
   });
 }
@@ -543,11 +616,30 @@ export async function publishAdminProgram(input: {
     const change = await changeProgramAndInsertAudit({
       database, session, programId, eventId, actor: input.actor, action: "published",
       toVersionAt: publicationTime,
-      filter: { _id: programId, ...activeDocumentFilter, publicationStatus: "review", approvalStatus: "approved", publishedAt: null, updatedAt: input.expectedUpdatedAt },
-      set: { publicationStatus: "published", publishedAt: publicationTime, updatedAt: publicationTime },
+      filter: {
+        _id: programId,
+        ...activeDocumentFilter,
+        publicationStatus: "review",
+        approvalStatus: "approved",
+        publishedAt: null,
+        updatedAt: input.expectedUpdatedAt,
+      },
+      set: {
+        publicationStatus: "published",
+        publishedAt: publicationTime,
+        updatedAt: publicationTime,
+      },
       changedFields: ["publicationStatus", "publishedAt"],
     });
-    if (change) return { ok: true, id: input.id, slug: change.after.slug, publishedAt: publicationTime.toISOString(), updatedAt: publicationTime.toISOString() };
+    if (change) {
+      return {
+        ok: true,
+        id: input.id,
+        slug: change.after.slug,
+        publishedAt: publicationTime.toISOString(),
+        updatedAt: publicationTime.toISOString(),
+      };
+    }
     const current = await database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME).findOne({ _id: programId }, { session });
     if (!current || current.deletedAt != null) return { ok: false, reason: "not_found" };
     if (!isApprovedReviewState(current.publicationStatus, current.approvalStatus, current.publishedAt)) return { ok: false, reason: "not_publishable" };
@@ -571,8 +663,25 @@ export async function updateAdminProgramDraft(input: {
       const change = await changeProgramAndInsertAudit({
         database, session, programId, eventId, actor: input.actor, action: "draft_updated",
         toVersionAt: nextUpdatedAt,
-        filter: { _id: programId, ...activeDocumentFilter, publicationStatus: "draft", approvalStatus: { $in: ["pending", "rejected"] }, publishedAt: null, updatedAt: input.expectedUpdatedAt },
-        set: { slug: input.draft.slug, category: input.draft.category, title: input.draft.title, summary: input.draft.summary, purpose: input.draft.purpose, body: Array.from(input.draft.body), operationStatusLabel: input.draft.operationStatusLabel, sortOrder: input.draft.sortOrder, updatedAt: nextUpdatedAt },
+        filter: {
+          _id: programId,
+          ...activeDocumentFilter,
+          publicationStatus: "draft",
+          approvalStatus: { $in: ["pending", "rejected"] },
+          publishedAt: null,
+          updatedAt: input.expectedUpdatedAt,
+        },
+        set: {
+          slug: input.draft.slug,
+          category: input.draft.category,
+          title: input.draft.title,
+          summary: input.draft.summary,
+          purpose: input.draft.purpose,
+          body: Array.from(input.draft.body),
+          operationStatusLabel: input.draft.operationStatusLabel,
+          sortOrder: input.draft.sortOrder,
+          updatedAt: nextUpdatedAt,
+        },
         changedFields: (before) => getDraftChangedFields(before, input.draft),
       });
       if (change) return { ok: true, id: input.id, slug: change.after.slug, updatedAt: nextUpdatedAt.toISOString() };
@@ -601,9 +710,23 @@ export async function requestAdminProgramReview(input: {
     const change = await changeProgramAndInsertAudit({
       database, session, programId, eventId, actor: input.actor, action: "review_requested",
       toVersionAt: nextUpdatedAt,
-      filter: { _id: programId, ...activeDocumentFilter, publicationStatus: "draft", approvalStatus: { $in: ["pending", "rejected"] }, publishedAt: null, updatedAt: input.expectedUpdatedAt },
-      set: { publicationStatus: "review", approvalStatus: "pending", updatedAt: nextUpdatedAt },
-      changedFields: (before) => before.approvalStatus === "rejected" ? ["publicationStatus", "approvalStatus"] : ["publicationStatus"],
+      filter: {
+        _id: programId,
+        ...activeDocumentFilter,
+        publicationStatus: "draft",
+        approvalStatus: { $in: ["pending", "rejected"] },
+        publishedAt: null,
+        updatedAt: input.expectedUpdatedAt,
+      },
+      set: {
+        publicationStatus: "review",
+        approvalStatus: "pending",
+        updatedAt: nextUpdatedAt,
+      },
+      changedFields: (before) =>
+        before.approvalStatus === "rejected"
+          ? ["publicationStatus", "approvalStatus"]
+          : ["publicationStatus"],
     });
     if (change) return { ok: true, id: input.id, updatedAt: nextUpdatedAt.toISOString() };
     const current = await database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME).findOne({ _id: programId }, { session });
@@ -630,11 +753,28 @@ export async function decideAdminProgramReview(input: {
       database, session, programId, eventId, actor: input.actor,
       action: approved ? "review_approved" : "review_rejected",
       toVersionAt: nextUpdatedAt,
-      filter: { _id: programId, ...activeDocumentFilter, publicationStatus: "review", approvalStatus: "pending", publishedAt: null, updatedAt: input.expectedUpdatedAt },
+      filter: {
+        _id: programId,
+        ...activeDocumentFilter,
+        publicationStatus: "review",
+        approvalStatus: "pending",
+        publishedAt: null,
+        updatedAt: input.expectedUpdatedAt,
+      },
       set: approved
-        ? { publicationStatus: "review", approvalStatus: "approved", updatedAt: nextUpdatedAt }
-        : { publicationStatus: "draft", approvalStatus: "rejected", updatedAt: nextUpdatedAt },
-      changedFields: approved ? ["approvalStatus"] : ["publicationStatus", "approvalStatus"],
+        ? {
+            publicationStatus: "review",
+            approvalStatus: "approved",
+            updatedAt: nextUpdatedAt,
+          }
+        : {
+            publicationStatus: "draft",
+            approvalStatus: "rejected",
+            updatedAt: nextUpdatedAt,
+          },
+      changedFields: approved
+        ? ["approvalStatus"]
+        : ["publicationStatus", "approvalStatus"],
     });
     if (change) return { ok: true, id: input.id, decision: input.decision, updatedAt: nextUpdatedAt.toISOString() };
     const current = await database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME).findOne({ _id: programId }, { session });
@@ -711,6 +851,12 @@ export async function listAdminProgramPosts(input: {
     totalPages,
   };
 }
-export function normalizeAdminProgramPage(value: unknown): number { return typeof value === "string" && /^[0-9]+$/.test(value) ? Math.min(ADMIN_PROGRAM_MAXIMUM_PAGE, Math.max(1, Number(value))) : 1; }
+export function normalizeAdminProgramPage(value: unknown): number {
+  return typeof value === "string" && /^[0-9]+$/.test(value)
+    ? Math.min(ADMIN_PROGRAM_MAXIMUM_PAGE, Math.max(1, Number(value)))
+    : 1;
+}
+
 export const listAdminPrograms = listAdminProgramPosts;
+
 export const findAdminProgramById = findAdminProgramPostById;
