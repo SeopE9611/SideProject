@@ -33,9 +33,12 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
   const mobileMenuId = useId();
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const navigationRef = useRef<HTMLDivElement>(null);
-  const desktopButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const desktopButtonRefs = useRef<Record<string, HTMLButtonElement | null>>(
+    {},
+  );
   const activeExpandableItem = siteConfig.mainNavigation.find(
-    (item) => item.children.length > 0 && isCurrentNavigationItem(pathname, item),
+    (item) =>
+      item.children.length > 0 && isCurrentNavigationItem(pathname, item),
   );
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openDesktopHref, setOpenDesktopHref] = useState<string | null>(null);
@@ -285,7 +288,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
       <nav
         id={mobileMenuId}
         aria-label="모바일 주요 메뉴"
-        className="absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-border-strong bg-surface shadow-nav lg:hidden"
+        className="absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-border-strong bg-surface shadow-nav sm:max-h-[calc(100dvh-5rem)] lg:hidden"
         hidden={!isMobileOpen}
       >
         <ul className="mx-auto w-full max-w-site divide-y divide-border px-page py-2 sm:px-page-wide">
@@ -395,8 +398,24 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
           })}
         </ul>
         <ul className="mx-auto grid w-full max-w-site grid-cols-2 border-t border-border px-page py-3 sm:px-page-wide">
-          <li><a className="inline-flex min-h-11 w-full items-center justify-center font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring" href={`tel:${siteConfig.phone}`} onClick={closeMobileMenu}>전화하기</a></li>
-          <li><Link className="inline-flex min-h-11 w-full items-center justify-center border-l border-border font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring" href="/about/directions" onClick={closeMobileMenu}>찾아오시는 길</Link></li>
+          <li>
+            <a
+              className="inline-flex min-h-11 w-full items-center justify-center font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring"
+              href={`tel:${siteConfig.phone}`}
+              onClick={closeMobileMenu}
+            >
+              전화하기
+            </a>
+          </li>
+          <li>
+            <Link
+              className="inline-flex min-h-11 w-full items-center justify-center border-l border-border font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring"
+              href="/about/directions"
+              onClick={closeMobileMenu}
+            >
+              찾아오시는 길
+            </Link>
+          </li>
         </ul>
       </nav>
     </div>

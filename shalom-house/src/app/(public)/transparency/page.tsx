@@ -54,14 +54,174 @@ const publicationPrinciples = [
   },
 ] as const;
 
-export const metadata: Metadata = { title: "자료공개", description: "샬롬의 집의 운영 보고, 예산·결산, 후원금 관련 공개 자료를 확인합니다." };
+export const metadata: Metadata = {
+  title: "자료공개",
+  description:
+    "샬롬의 집의 운영 보고, 예산·결산, 후원금 관련 공개 자료를 확인합니다.",
+};
 
 export default function TransparencyPage() {
-  return <>
-    <SectionPageHeader sectionHref="/news" eyebrow="소식" title="자료공개" description="운영 보고, 예산·결산, 후원금 관련 자료를 분류와 기준 기간에 맞춰 안내합니다. 담당자 확인과 개인정보 검토를 마친 최종 자료만 게시합니다." breadcrumbs={[{ label: "홈", href: "/" }, { label: "소식", href: "/news" }, { label: "자료공개" }]} />
-    <section className="bg-surface py-12 sm:py-16" aria-labelledby="transparency-summary-heading"><div className="mx-auto max-w-site px-page sm:px-page-wide"><h2 id="transparency-summary-heading" className="sr-only">자료 현황</h2><dl className="grid border-y border-border sm:grid-cols-3">{[{ label: "공개 범위", value: "운영 보고 · 예산과 결산 · 후원금 · 기타 공시" }, { label: "표시 정보", value: "자료명 · 기준 기간 · 게시일 · 파일 형식" }, { label: "현재 자료", value: `${transparencyDocuments.length}건` }].map((item) => <div key={item.label} className="border-b border-border py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:px-6 sm:first:pl-0 sm:last:border-r-0"><dt className="text-small font-bold text-primary">{item.label}</dt><dd className="mt-2 text-safe-wrap">{item.value}</dd></div>)}</dl></div></section>
-    <section id="public-documents" aria-labelledby="documents-heading" className="bg-surface-subtle py-12 sm:py-16"><div className="mx-auto max-w-site px-page sm:px-page-wide"><p className="text-small font-bold text-accent">공개 자료</p><h2 id="documents-heading" className="mt-3 text-display font-bold">필요한 운영 자료를 확인하세요</h2>{transparencyDocuments.length > 0 ? <ul className="mt-8 border-t-2 border-foreground">{transparencyDocuments.map((document) => <li key={document.href} className="border-b border-border py-5"><a className="font-bold text-primary underline" href={document.href}>{document.title} · {document.fileType}</a></li>)}</ul> : <div className="mt-8 border-y border-border py-6"><p className="text-small font-bold text-accent">등록된 자료 0건</p><h3 className="mt-2 text-heading font-bold">현재 공개된 운영 자료가 없습니다.</h3><p className="mt-3 text-muted-foreground">확인을 마친 자료가 게시되면 이 목록에서 안내합니다.</p></div>}</div></section>
-    <section aria-labelledby="categories-heading" className="bg-surface py-12 sm:py-16"><div className="mx-auto max-w-site px-page sm:px-page-wide"><p className="text-small font-bold text-accent">자료 분류</p><h2 id="categories-heading" className="mt-3 text-display font-bold">다음과 같은 자료를 안내합니다</h2><div className="mt-8 grid border-t-2 border-foreground sm:grid-cols-2 lg:grid-cols-4">{disclosureCategories.map((item) => <article key={item.number} className="border-b border-border py-6 sm:px-5 sm:first:pl-0 sm:last:pr-0"><p className="text-small font-bold text-accent">{item.number}</p><h3 className="mt-3 text-heading font-bold">{item.title}</h3><p className="mt-3 text-muted-foreground">{item.description}</p></article>)}</div></div></section>
-    <section aria-labelledby="principles-heading" className="bg-surface-subtle py-12 sm:py-16"><div className="mx-auto max-w-site px-page sm:px-page-wide"><p className="text-small font-bold text-primary">게시 원칙</p><h2 id="principles-heading" className="mt-3 text-display font-bold">확인하기 쉬운 자료를 제공합니다</h2><ol className="mt-8 border-t-4 border-primary">{publicationPrinciples.map((item) => <li key={item.number} className="grid gap-3 border-b border-border py-5 sm:grid-cols-[3rem_0.8fr_1.2fr]"><span className="text-small font-bold text-accent">{item.number}</span><h3 className="font-bold">{item.title}</h3><p className="text-muted-foreground">{item.description}</p></li>)}</ol></div></section>
-  </>;
+  return (
+    <>
+      <SectionPageHeader
+        sectionHref="/news"
+        eyebrow="소식"
+        title="자료공개"
+        description="운영 보고, 예산·결산, 후원금 관련 자료를 분류와 기준 기간에 맞춰 안내합니다. 담당자 확인과 개인정보 검토를 마친 최종 자료만 게시합니다."
+        breadcrumbs={[
+          { label: "홈", href: "/" },
+          { label: "소식", href: "/news" },
+          { label: "자료공개" },
+        ]}
+      />
+      <section
+        className="bg-surface py-12 sm:py-16"
+        aria-labelledby="transparency-summary-heading"
+      >
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <h2
+            id="transparency-summary-heading"
+            className="text-safe-wrap sr-only"
+          >
+            자료 현황
+          </h2>
+          <dl className="grid border-y border-border sm:grid-cols-3">
+            {[
+              {
+                label: "공개 범위",
+                value: "운영 보고 · 예산과 결산 · 후원금 · 기타 공시",
+              },
+              {
+                label: "표시 정보",
+                value: "자료명 · 기준 기간 · 게시일 · 파일 형식",
+              },
+              {
+                label: "현재 자료",
+                value: `${transparencyDocuments.length}건`,
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="border-b border-border py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:px-6 sm:first:pl-0 sm:last:border-r-0"
+              >
+                <dt className="text-safe-wrap text-small font-bold text-primary">
+                  {item.label}
+                </dt>
+                <dd className="mt-2 text-safe-wrap">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+      <section
+        id="public-documents"
+        aria-labelledby="documents-heading"
+        className="bg-surface-subtle py-12 sm:py-16"
+      >
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <p className="text-safe-wrap text-small font-bold text-accent">
+            공개 자료
+          </p>
+          <h2
+            id="documents-heading"
+            className="text-safe-wrap mt-3 text-display font-bold"
+          >
+            필요한 운영 자료를 확인하세요
+          </h2>
+          {transparencyDocuments.length > 0 ? (
+            <ul className="mt-8 border-t-2 border-foreground">
+              {transparencyDocuments.map((document) => (
+                <li key={document.href} className="border-b border-border py-5">
+                  <a
+                    className="text-safe-wrap font-bold text-primary underline"
+                    href={document.href}
+                  >
+                    {document.title} · {document.fileType}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="mt-8 border-y border-border py-6">
+              <p className="text-safe-wrap text-small font-bold text-accent">
+                등록된 자료 0건
+              </p>
+              <h3 className="text-safe-wrap mt-2 text-heading font-bold">
+                현재 공개된 운영 자료가 없습니다.
+              </h3>
+              <p className="text-safe-wrap mt-3 text-muted-foreground">
+                확인을 마친 자료가 게시되면 이 목록에서 안내합니다.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+      <section
+        aria-labelledby="categories-heading"
+        className="bg-surface py-12 sm:py-16"
+      >
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <p className="text-safe-wrap text-small font-bold text-accent">
+            자료 분류
+          </p>
+          <h2
+            id="categories-heading"
+            className="text-safe-wrap mt-3 text-display font-bold"
+          >
+            다음과 같은 자료를 안내합니다
+          </h2>
+          <div className="mt-8 grid border-t-2 border-foreground sm:grid-cols-2 lg:grid-cols-4">
+            {disclosureCategories.map((item) => (
+              <article
+                key={item.number}
+                className="border-b border-border py-6 sm:px-5 sm:first:pl-0 sm:last:pr-0"
+              >
+                <p className="text-small font-bold text-accent">
+                  {item.number}
+                </p>
+                <h3 className="text-safe-wrap mt-3 text-heading font-bold">
+                  {item.title}
+                </h3>
+                <p className="text-safe-wrap mt-3 text-muted-foreground">
+                  {item.description}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section
+        aria-labelledby="principles-heading"
+        className="bg-surface-subtle py-12 sm:py-16"
+      >
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <p className="text-safe-wrap text-small font-bold text-primary">
+            게시 원칙
+          </p>
+          <h2
+            id="principles-heading"
+            className="text-safe-wrap mt-3 text-display font-bold"
+          >
+            확인하기 쉬운 자료를 제공합니다
+          </h2>
+          <ol className="mt-8 border-t-4 border-primary">
+            {publicationPrinciples.map((item) => (
+              <li
+                key={item.number}
+                className="grid gap-3 border-b border-border py-5 sm:grid-cols-[3rem_0.8fr_1.2fr]"
+              >
+                <span className="text-small font-bold text-accent">
+                  {item.number}
+                </span>
+                <h3 className="text-safe-wrap font-bold">{item.title}</h3>
+                <p className="text-safe-wrap text-muted-foreground">
+                  {item.description}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    </>
+  );
 }
