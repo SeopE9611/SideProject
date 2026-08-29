@@ -28,7 +28,7 @@ export default function DirectionsPage() {
             <ol className="flex flex-wrap items-center gap-2">
               <li>
                 <Link
-                  className="underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                  className="text-safe-wrap inline-flex min-h-11 items-center underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                   href="/"
                 >
                   홈
@@ -37,14 +37,17 @@ export default function DirectionsPage() {
               <li aria-hidden="true">/</li>
               <li>
                 <Link
-                  className="underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                  className="text-safe-wrap inline-flex min-h-11 items-center underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                   href="/about"
                 >
                   시설소개
                 </Link>
               </li>
               <li aria-hidden="true">/</li>
-              <li aria-current="page" className="font-bold text-foreground">
+              <li
+                aria-current="page"
+                className="text-safe-wrap font-bold text-foreground"
+              >
                 찾아오시는 길
               </li>
             </ol>
@@ -52,10 +55,10 @@ export default function DirectionsPage() {
 
           <div className="mt-8 max-w-content">
             <p className="text-small font-bold text-primary">방문 안내</p>
-            <h1 className="mt-3 text-display font-bold text-foreground sm:text-display-lg">
+            <h1 className="text-safe-wrap mt-3 text-display font-bold text-foreground sm:text-display-lg">
               찾아오시는 길
             </h1>
-            <p className="mt-5 text-body text-muted-foreground">
+            <p className="text-safe-wrap mt-5 text-body text-muted-foreground">
               샬롬의 집 방문에 필요한 주소와 연락처를 안내합니다.
             </p>
           </div>
@@ -84,18 +87,18 @@ export default function DirectionsPage() {
             </div>
             <h2
               id="directions-address-heading"
-              className="mt-6 text-heading font-bold text-foreground"
+              className="text-safe-wrap mt-6 text-heading font-bold text-foreground"
             >
               주소
             </h2>
-            <address className="mt-3 text-body font-semibold not-italic text-foreground">
+            <address className="text-safe-wrap mt-3 text-body font-semibold not-italic text-foreground">
               {siteConfig.address}
             </address>
             <ul className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               {mapLinks.map((link) => (
                 <li key={link.href}>
                   <a
-                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-border-strong bg-surface px-5 py-2 text-small font-bold text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:border-primary hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:w-auto"
+                    className="text-safe-wrap inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-control border border-border-strong bg-surface px-5 py-2 text-small font-bold text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:border-primary hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:w-auto"
                     href={link.href}
                   >
                     {link.label}
@@ -110,20 +113,20 @@ export default function DirectionsPage() {
             aria-labelledby="directions-contact-heading"
             className="rounded-panel bg-primary p-6 text-primary-foreground sm:p-8"
           >
-            <p className="text-small font-bold text-primary-foreground">
+            <p className="text-safe-wrap text-small font-bold text-primary-foreground">
               방문 전 확인
             </p>
             <h2
               id="directions-contact-heading"
-              className="mt-3 text-heading font-bold text-primary-foreground"
+              className="text-safe-wrap mt-3 text-heading font-bold text-primary-foreground"
             >
               대표 전화로 문의해 주세요
             </h2>
-            <p className="mt-4 text-body text-primary-foreground">
+            <p className="text-safe-wrap mt-4 text-body text-primary-foreground">
               방문 일정과 시설 출입 안내는 대표 전화로 확인할 수 있습니다.
             </p>
             <a
-              className="mt-7 inline-flex min-h-11 items-center justify-center rounded-control bg-surface px-5 py-2 text-small font-bold text-primary transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-foreground"
+              className="text-safe-wrap mt-7 inline-flex min-h-11 items-center justify-center rounded-control bg-surface px-5 py-2 text-small font-bold text-primary transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-foreground"
               href={`tel:${siteConfig.phone}`}
             >
               대표 전화 {siteConfig.phone}
