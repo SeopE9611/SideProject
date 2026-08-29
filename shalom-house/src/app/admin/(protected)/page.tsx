@@ -6,6 +6,7 @@ const preparedItems = [
   "뉴스 초안 작성·수정",
   "검토 요청·승인·반려",
   "게시·게시 중단·보관",
+  "프로그램 작성·검토·공개 관리",
 ] as const;
 
 const nextItems = [
@@ -41,6 +42,9 @@ export default function AdminDashboardPage() {
       <div className="flex flex-wrap gap-3">
         <Link href="/admin/news" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           뉴스 관리 열기
+        </Link>
+        <Link href="/admin/programs" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+          프로그램 관리 열기
         </Link>
         <Link href="/" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           공개 홈페이지 보기

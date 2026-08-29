@@ -314,3 +314,9 @@ draft + rejected + publishedAt=null
 공개 상태와 비공개 상태의 분리, 목록과 상세 조회 책임의 분리라는 구조적 원칙만
 참고했다. 댓글, 좋아요, 조회수, 신고, 일반 사용자 게시, 비밀글, 중고거래와
 커뮤니티 기능은 포함하지 않는다.
+
+## 프로그램 콘텐츠 저장과 공개
+
+프로그램은 뉴스와 분리된 `program_posts` 컬렉션과 repository를 사용한다. 공개 목록과 상세는 `SHALOM_CONTENT_SOURCE=mongodb`일 때만 MongoDB에서 조회하며, `fixture`와 `empty`에서는 준비 상태를 표시한다. 공개 조건은 승인 완료, 게시 상태, 유효한 게시 시각과 비삭제 상태를 모두 충족하는 것이다.
+
+관리 흐름은 초안 → 검토 요청 → 승인 또는 반려 → 게시 → 게시 중단 또는 보관 순서다. 수정과 모든 상태 전이는 `expectedUpdatedAt`을 이용한 optimistic locking을 적용하고, 변경 및 `program_audit_events` 감사 이벤트 삽입을 같은 transaction에서 처리한다. 이 단계에는 프로그램 이미지와 활동사진 연결 기능이 없다.
