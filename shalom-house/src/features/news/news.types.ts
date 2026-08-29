@@ -2,6 +2,14 @@ export const newsCategories = ["notice", "activity"] as const;
 
 export type NewsCategory = (typeof newsCategories)[number];
 
+export const PUBLIC_NEWS_RESERVED_SLUGS = [
+  "notices",
+  "activities",
+] as const;
+
+export type PublicNewsReservedSlug =
+  (typeof PUBLIC_NEWS_RESERVED_SLUGS)[number];
+
 export const newsPublicationStatuses = [
   "draft",
   "review",
@@ -112,4 +120,10 @@ export function isValidNewsSlug(value: unknown): value is string {
     typeof value === "string" &&
     /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)
   );
+}
+
+export function isPublicNewsReservedSlug(
+  value: string,
+): value is PublicNewsReservedSlug {
+  return PUBLIC_NEWS_RESERVED_SLUGS.includes(value as PublicNewsReservedSlug);
 }

@@ -13,6 +13,7 @@ import {
   type AdminNewsDraftField,
   type AdminNewsDraftFieldErrors,
 } from "@/features/news/news.admin-validation";
+import { PUBLIC_NEWS_RESERVED_SLUGS } from "@/features/news/news.types";
 
 const fieldErrorIds: Record<AdminNewsDraftField, string> = {
   category: "admin-news-category-error",
@@ -233,9 +234,38 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       </div>
 
       <div className="grid gap-2">
-        <label htmlFor="admin-news-slug" className="font-semibold">슬러그</label>
-        <input id="admin-news-slug" name="slug" type="text" required defaultValue={props.mode === "edit" ? props.initialValues.slug : ""} maxLength={ADMIN_NEWS_SLUG_MAX_LENGTH} autoComplete="off" autoCapitalize="none" spellCheck={false} aria-invalid={fieldErrors.slug ? true : undefined} aria-describedby={describedBy("slug", fieldErrors, "admin-news-slug-help")} className={`min-h-11 ${controlClass}`} />
-        <p id="admin-news-slug-help" className="text-small text-muted-foreground">영문 소문자, 숫자와 하이픈만 사용할 수 있습니다.<br />공개 주소는 /news/입력한-슬러그 형태가 됩니다.</p>
+        <label htmlFor="admin-news-slug" className="font-semibold">
+          슬러그
+        </label>
+        <input
+          id="admin-news-slug"
+          name="slug"
+          type="text"
+          required
+          defaultValue={props.mode === "edit" ? props.initialValues.slug : ""}
+          maxLength={ADMIN_NEWS_SLUG_MAX_LENGTH}
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          aria-invalid={fieldErrors.slug ? true : undefined}
+          aria-describedby={describedBy(
+            "slug",
+            fieldErrors,
+            "admin-news-slug-help",
+          )}
+          className={`min-h-11 ${controlClass}`}
+        />
+        <p
+          id="admin-news-slug-help"
+          className="text-small text-muted-foreground"
+        >
+          영문 소문자, 숫자와 하이픈만 사용할 수 있습니다.
+          <br />
+          공개 주소는 /news/입력한-슬러그 형태가 됩니다.
+          <br />
+          {PUBLIC_NEWS_RESERVED_SLUGS.join(", ")}는 분류 페이지 주소이므로 사용할 수
+          없습니다.
+        </p>
         <FieldError field="slug" errors={fieldErrors} />
       </div>
 

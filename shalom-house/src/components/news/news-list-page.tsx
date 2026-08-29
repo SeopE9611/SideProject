@@ -3,6 +3,7 @@ import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { getNewsRepository } from "@/features/news/news.repository";
 import {
+  getPublicNewsPaginationItems,
   normalizePublicNewsPage,
   normalizePublicNewsSearchQuery,
 } from "@/features/news/news.pagination";
@@ -34,13 +35,16 @@ type NewsListPageProps = {
   searchParams: Promise<NewsSearchParams>;
 };
 
-
-
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function queryHref(basePath: NewsListPageProps["basePath"], page: number, q: string, category?: NewsCategory) {
+function queryHref(
+  basePath: NewsListPageProps["basePath"],
+  page: number,
+  q: string,
+  category?: NewsCategory,
+) {
   const params = new URLSearchParams();
   if (q) params.set("q", q);
   if (category) params.set("category", category);
@@ -50,7 +54,13 @@ function queryHref(basePath: NewsListPageProps["basePath"], page: number, q: str
   return query ? `${basePath}?${query}` : basePath;
 }
 
-export async function NewsListPage({ basePath, title, description, fixedCategory, searchParams }: NewsListPageProps) {
+export async function NewsListPage({
+  basePath,
+  title,
+  description,
+  fixedCategory,
+  searchParams,
+}: NewsListPageProps) {
   const raw = await searchParams;
   const q = normalizePublicNewsSearchQuery(first(raw.q));
   const categoryValue = first(raw.category);
@@ -65,6 +75,11 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
   const { items: posts, total, totalPages, page: currentPage } = result;
   const hasFixture = posts.some((post) => post.isDemo);
   const categoryLabel = category ? getNewsCategoryLabel(category) : "전체";
+  const hasUserFilter = Boolean(q) || (!fixedCategory && Boolean(category));
+  const paginationItems = getPublicNewsPaginationItems(
+    currentPage,
+    totalPages,
+  );
 
   return (
     <div className="bg-surface">
@@ -74,8 +89,17 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             <Link
               className="text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               href="/"
-            >홈</Link>
-            {basePath !== "/news" ? <Link className="text-primary underline underline-offset-4" href="/news">소식</Link> : null}
+            >
+              홈
+            </Link>
+            {basePath !== "/news" ? (
+              <Link
+                className="text-primary underline underline-offset-4"
+                href="/news"
+              >
+                소식
+              </Link>
+            ) : null}
             <span aria-current="page">{title}</span>
           </nav>
           <p className="mt-7 text-small font-bold text-accent">소식</p>
@@ -102,7 +126,11 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
         <form
           action={basePath}
           method="get"
-          className="grid gap-5 border border-border bg-surface-subtle p-5 md:grid-cols-[minmax(0,1fr)_14rem_auto] md:items-end"
+          className={`grid gap-5 border border-border bg-surface-subtle p-5 md:items-end ${
+            fixedCategory
+              ? "md:grid-cols-[minmax(0,1fr)_auto]"
+              : "md:grid-cols-[minmax(0,1fr)_14rem_auto]"
+          }`}
         >
           <div>
             <label className="block text-small font-bold" htmlFor="news-query">
@@ -118,21 +146,24 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             />
           </div>
           {!fixedCategory ? (
-          <div>
-            <label className="block text-small font-bold" htmlFor="news-category">
-              분류
-            </label>
-            <select
-              className="mt-2 min-h-12 w-full rounded-control border border-border-strong bg-surface px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              id="news-category"
-              name="category"
-              defaultValue={category ?? ""}
-            >
-              <option value="">전체</option>
-              <option value="notice">공지사항</option>
-              <option value="activity">활동 소식</option>
-            </select>
-          </div>
+            <div>
+              <label
+                className="block text-small font-bold"
+                htmlFor="news-category"
+              >
+                분류
+              </label>
+              <select
+                className="mt-2 min-h-12 w-full rounded-control border border-border-strong bg-surface px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                id="news-category"
+                name="category"
+                defaultValue={category ?? ""}
+              >
+                <option value="">전체</option>
+                <option value="notice">공지사항</option>
+                <option value="activity">활동 소식</option>
+              </select>
+            </div>
           ) : null}
           <button
             className="min-h-12 bg-primary px-6 py-3 font-bold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
@@ -166,10 +197,22 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
               아닙니다.
             </aside>
           ) : null}
-          {!q && !fixedCategory && !category && total === 0 ? (
+          {!hasUserFilter && total === 0 ? (
             <div className="border-b border-border py-10">
-              <h3 className="text-heading font-bold">전체 게시물을 준비하고 있습니다.</h3>
-              <p className="mt-3 text-muted-foreground">공개된 게시물이 아직 없습니다.</p>
+              <h3 className="text-safe-wrap text-heading font-bold">
+                {fixedCategory === "notice"
+                  ? "공지사항을 준비하고 있습니다."
+                  : fixedCategory === "activity"
+                    ? "활동소식을 준비하고 있습니다."
+                    : "전체 게시물을 준비하고 있습니다."}
+              </h3>
+              <p className="text-safe-wrap mt-3 text-muted-foreground">
+                {fixedCategory === "notice"
+                  ? "공개된 공지사항이 아직 없습니다."
+                  : fixedCategory === "activity"
+                    ? "공개된 활동소식이 아직 없습니다."
+                    : "공개된 게시물이 아직 없습니다."}
+              </p>
               <div className="mt-5 flex flex-wrap gap-5">
                 <a
                   className="font-bold text-primary underline underline-offset-4"
@@ -250,27 +293,47 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                 <li>
                   <Link
                     className="inline-flex min-h-11 items-center border border-border px-4 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                    href={queryHref(basePath, currentPage - 1, q, fixedCategory ? undefined : category)}
+                    href={queryHref(
+                      basePath,
+                      currentPage - 1,
+                      q,
+                      fixedCategory ? undefined : category,
+                    )}
                   >
                     이전 페이지
                   </Link>
                 </li>
               ) : null}
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-                (number) => (
-                  <li key={number}>
-                    <Link
-                      aria-current={number === currentPage ? "page" : undefined}
-                      className={`inline-flex min-h-11 min-w-11 items-center justify-center border px-3 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
-                        number === currentPage
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border"
-                      }`}
-                      href={queryHref(basePath, number, q, fixedCategory ? undefined : category)}
-                      aria-label={`${number}페이지`}
-                    >
-                      {number}
-                    </Link>
+              {paginationItems.map((item) =>
+                item.type === "ellipsis" ? (
+                  <li key={`ellipsis-${item.position}`} aria-hidden="true">
+                    <span className="inline-flex min-h-11 min-w-6 items-center justify-center">
+                      …
+                    </span>
+                  </li>
+                ) : (
+                  <li key={item.page}>
+                    {item.page === currentPage ? (
+                      <span
+                        aria-current="page"
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center border border-primary bg-primary px-3 font-bold text-primary-foreground"
+                      >
+                        {item.page}
+                      </span>
+                    ) : (
+                      <Link
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center border border-border px-3 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                        href={queryHref(
+                          basePath,
+                          item.page,
+                          q,
+                          fixedCategory ? undefined : category,
+                        )}
+                        aria-label={`${item.page}페이지`}
+                      >
+                        {item.page}
+                      </Link>
+                    )}
                   </li>
                 ),
               )}
@@ -278,7 +341,12 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                 <li>
                   <Link
                     className="inline-flex min-h-11 items-center border border-border px-4 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                    href={queryHref(basePath, currentPage + 1, q, fixedCategory ? undefined : category)}
+                    href={queryHref(
+                      basePath,
+                      currentPage + 1,
+                      q,
+                      fixedCategory ? undefined : category,
+                    )}
                   >
                     다음 페이지
                   </Link>

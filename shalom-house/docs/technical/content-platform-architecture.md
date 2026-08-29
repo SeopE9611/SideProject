@@ -131,6 +131,11 @@ pnpm --dir shalom-house admin:create-user
   결과 수 조회와 `skip`·`limit` 페이지네이션을 수행하며 상세 읽기도 담당한다.
 - `news.admin-repository.ts`: 관리자 전용 뉴스 목록·상세 읽기를 담당한다.
 
+공개 뉴스에서 `/news/notices`와 `/news/activities`는 정적 분류 route이고, 게시물
+상세는 `/news/[slug]`를 사용한다. 따라서 `notices`, `activities`는 게시물 slug
+예약어이며 관리자 작성·수정 검증에서 차단한다. 새로운 정적 뉴스 하위 route를
+추가할 때는 예약어 목록도 함께 갱신한다.
+
 자료공개는 뉴스 category에 포함하지 않으며, 문서 메타데이터와 첨부파일을 위한
 별도 repository 및 관리자 관리 구조로 구현할 예정이다.
 
