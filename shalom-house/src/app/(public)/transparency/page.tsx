@@ -190,7 +190,10 @@ export default function TransparencyPage() {
             <div className="mt-12 overflow-hidden rounded-panel border border-border bg-home-cream shadow-card">
               <div className="grid lg:grid-cols-[0.7fr_1.3fr]">
                 <div className="flex min-h-56 items-end bg-home-coral p-7 text-home-ink sm:p-9">
-                  <p className="text-[clamp(4rem,9vw,7rem)] font-bold leading-none tracking-[-0.08em] opacity-25">
+                  <p
+                    aria-hidden="true"
+                    className="text-[clamp(4rem,9vw,7rem)] font-bold leading-none tracking-[-0.08em] opacity-25"
+                  >
                     00
                   </p>
                 </div>
