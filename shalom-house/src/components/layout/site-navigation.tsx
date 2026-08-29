@@ -99,8 +99,8 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
             const isSubmenuOpen = openDesktopHref === item.href;
             const submenuId = `${mobileMenuId}-desktop-${index}`;
             const inactiveClassName = item.emphasis
-              ? "bg-accent-soft text-accent-hover hover:bg-accent hover:text-primary-foreground"
-              : "text-foreground hover:bg-surface hover:text-primary";
+              ? "border-accent bg-accent text-primary-foreground hover:border-accent-hover hover:bg-accent-hover"
+              : "border-transparent text-foreground hover:border-primary hover:text-primary";
 
             return (
               <li
@@ -126,17 +126,19 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                 }}
               >
                 <div
-                  className={`flex min-h-11 items-stretch rounded-control border transition-colors duration-[var(--motion-duration-fast)] ease-standard ${
+                  className={`flex min-h-12 items-stretch border-b-2 transition-colors duration-[var(--motion-duration-fast)] ease-standard ${
                     isActive
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : `border-transparent ${inactiveClassName}`
+                      ? item.emphasis
+                        ? "rounded-control border-accent bg-accent text-primary-foreground"
+                        : "border-primary text-primary"
+                      : `${item.emphasis ? "ml-2 rounded-control border" : ""} ${inactiveClassName}`
                   }`}
                 >
                   <Link
                     aria-current={
                       isCurrentPage(pathname, item.href) ? "page" : undefined
                     }
-                    className="text-safe-wrap inline-flex min-h-11 items-center px-3 py-2 text-small font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-4"
+                    className="text-safe-wrap inline-flex min-h-12 items-center px-3 py-2 text-small font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-4"
                     href={item.href}
                   >
                     {item.label}
@@ -152,7 +154,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                       aria-label={`${item.label} 하위 메뉴 ${
                         isSubmenuOpen ? "닫기" : "열기"
                       }`}
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-r-control border-l border-current/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                      className="inline-flex min-h-12 min-w-10 items-center justify-center border-l border-current/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                       onClick={() =>
                         setOpenDesktopHref((current) =>
                           current === item.href ? null : item.href,
@@ -186,8 +188,8 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                     className="absolute left-0 top-full w-72 pt-3"
                     hidden={!isSubmenuOpen}
                   >
-                    <div className="rounded-card border border-border bg-surface p-2 shadow-elevated">
-                      <p className="text-safe-wrap px-3 pb-2 pt-1 text-xs font-semibold text-muted-foreground">
+                    <div className="border border-border bg-surface p-3 shadow-elevated">
+                      <p className="text-safe-wrap border-b border-border px-3 pb-3 pt-1 text-xs font-semibold text-muted-foreground">
                         {item.description}
                       </p>
                       <ul className="space-y-1">
@@ -203,10 +205,10 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                                 aria-current={
                                   isChildActive ? "page" : undefined
                                 }
-                                className={`block rounded-control px-3 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+                                className={`block border-l-2 px-3 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
                                   isChildActive
-                                    ? "bg-primary-soft text-primary"
-                                    : "text-foreground hover:bg-primary-soft hover:text-primary"
+                                    ? "border-primary bg-primary-soft text-primary"
+                                    : "border-transparent text-foreground hover:border-primary hover:bg-primary-soft hover:text-primary"
                                 }`}
                                 href={child.href}
                               >

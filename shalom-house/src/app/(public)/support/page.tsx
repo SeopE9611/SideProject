@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { PageHero } from "@/components/layout/page-hero";
 import { siteConfig } from "@/config/site";
 
 const participationGuides = [
@@ -10,7 +11,6 @@ const participationGuides = [
     title: "생활을 이어 가는 마음",
     description:
       "가능한 후원 방식과 공식 정보를 담당자에게 확인한 뒤 참여할 수 있습니다.",
-    colorClassName: "bg-home-sun",
     steps: [
       {
         title: "후원 방식 생각하기",
@@ -35,7 +35,6 @@ const participationGuides = [
     title: "시간과 경험을 나누는 일",
     description:
       "가능한 일정과 관심 활동을 정리한 뒤 담당자와 참여 조건을 확인할 수 있습니다.",
-    colorClassName: "bg-home-sky",
     steps: [
       {
         title: "가능한 일정 정리하기",
@@ -80,50 +79,22 @@ export const metadata: Metadata = {
 export default function SupportPage() {
   return (
     <>
-      <section className="bg-home-cream px-page pb-16 pt-7 sm:px-page-wide sm:pb-20 sm:pt-10">
-        <div className="mx-auto grid w-full max-w-site overflow-hidden rounded-panel bg-home-ink shadow-elevated lg:min-h-[34rem] lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="flex flex-col justify-between px-7 py-12 text-hero-on-dark sm:px-12 sm:py-16 lg:px-14">
-            <div>
-              <p className="text-small font-bold text-home-sun">함께하기</p>
-              <h1 className="text-safe-wrap mt-5 max-w-3xl text-balance text-[clamp(2.75rem,5.1vw,4.35rem)] font-bold leading-[1.06] tracking-[-0.05em]">
-                마음을 보태는 방법은 서로 다를 수 있습니다
-              </h1>
-              <p className="text-safe-wrap mt-7 max-w-2xl text-pretty text-body text-hero-muted sm:text-xl sm:leading-9">
-                후원과 자원봉사는 샬롬의 집의 일상과 활동에 함께하는 두 가지
-                방법입니다. 가능한 참여 방법은 담당자에게 확인해 주세요.
-              </p>
-            </div>
-
-            <a
-              className="mt-10 inline-flex min-h-12 w-fit items-center justify-center rounded-control bg-home-sun px-6 py-3 text-base font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
-              href={`tel:${siteConfig.phone}`}
-            >
-              대표 전화로 문의하기
-            </a>
-          </div>
-
-          <div className="grid gap-3 border-t border-home-ink/15 bg-surface p-5 sm:p-7 lg:border-l lg:border-t-0">
-            {participationGuides.map((guide) => (
-              <div
-                key={guide.number}
-                className={`flex min-h-44 flex-col justify-between rounded-card p-6 text-home-ink sm:p-7 ${guide.colorClassName}`}
-              >
-                <p className="text-small font-bold">
-                  {guide.number} {guide.label}
-                </p>
-                <div>
-                  <p className="text-safe-wrap text-balance text-title font-bold">
-                    {guide.title}
-                  </p>
-                  <p className="text-safe-wrap mt-2 text-pretty text-small">
-                    {guide.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="함께하기"
+        title="후원과 자원봉사 참여 방법을 안내합니다"
+        description="참여를 서두르게 하거나 감정에 기대지 않습니다. 가능한 방식과 준비 사항을 살펴본 뒤 대표 전화로 담당자에게 정확한 절차를 확인해 주세요."
+        asideTitle="참여 전 확인"
+        items={[
+          { label: "후원", value: "정기·일시·물품 후원 방식 문의" },
+          { label: "자원봉사", value: "가능한 일정과 관심 활동 협의" },
+          { label: "문의", value: `대표 전화 ${siteConfig.phone}` },
+        ]}
+        primaryAction={{
+          label: "대표 전화로 문의하기",
+          href: `tel:${siteConfig.phone}`,
+        }}
+        secondaryAction={{ label: "정보공개 보기", href: "/transparency" }}
+      />
 
       <section
         aria-labelledby="participation-heading"
@@ -152,22 +123,18 @@ export default function SupportPage() {
             {participationGuides.map((guide) => (
               <article
                 key={guide.number}
-                className="overflow-hidden rounded-panel border border-border bg-surface shadow-card"
+                className="border-t-4 border-primary bg-surface shadow-card"
               >
-                <div
-                  className={`flex min-h-40 flex-col justify-between p-7 text-home-ink sm:p-8 ${guide.colorClassName}`}
-                >
+                <div className="border-b border-border p-7 text-foreground sm:p-8">
                   <p className="text-small font-bold">
                     {guide.number} {guide.label}
                   </p>
-                  <div>
-                    <h3 className="text-safe-wrap text-balance text-title font-bold">
-                      {guide.title}
-                    </h3>
-                    <p className="text-safe-wrap mt-3 max-w-xl text-pretty text-body">
-                      {guide.description}
-                    </p>
-                  </div>
+                  <h3 className="text-safe-wrap mt-4 text-balance text-title font-bold">
+                    {guide.title}
+                  </h3>
+                  <p className="text-safe-wrap mt-3 max-w-xl text-pretty text-body text-muted-foreground">
+                    {guide.description}
+                  </p>
                 </div>
 
                 <ol className="px-7 py-3 sm:px-8">
@@ -217,17 +184,17 @@ export default function SupportPage() {
             </p>
           </div>
 
-          <div className="flex flex-col justify-between gap-8 bg-home-sun p-7 text-home-ink sm:p-10 lg:p-12">
+          <div className="flex flex-col justify-between gap-8 border-t border-border bg-surface-subtle p-7 text-foreground sm:p-10 lg:border-l lg:border-t-0 lg:p-12">
             <div>
               <p className="text-small font-bold">시설 대표 전화</p>
               <a
                 href={`tel:${siteConfig.phone}`}
-                className="text-safe-wrap mt-4 inline-block text-balance text-[clamp(2.1rem,4vw,3.5rem)] font-bold leading-tight tracking-[-0.04em] underline decoration-home-ink/40 underline-offset-8 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-home-ink"
+                className="text-safe-wrap mt-4 inline-block text-balance text-[clamp(2.1rem,4vw,3.5rem)] font-bold leading-tight tracking-[-0.04em] text-primary underline decoration-border-strong underline-offset-8 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
               >
                 {siteConfig.phone}
               </a>
             </div>
-            <div className="rounded-card border border-home-ink/20 bg-surface/70 p-5">
+            <div className="border-l-4 border-accent bg-surface p-5">
               <p className="text-safe-wrap font-bold">
                 후원 정보는 한 번 더 확인해 주세요
               </p>

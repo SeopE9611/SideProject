@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { PageHero } from "@/components/layout/page-hero";
 import { getNewsRepository } from "@/features/news/news.repository";
-import {
-  getNewsCategoryLabel,
-  type NewsCategory,
-} from "@/features/news/news.types";
+import { getNewsCategoryLabel } from "@/features/news/news.types";
 
 export const dynamic = "force-dynamic";
 
@@ -20,10 +18,6 @@ const publishedDateFormatter = new Intl.DateTimeFormat("ko-KR", {
   day: "numeric",
   timeZone: "UTC",
 });
-
-function getCategoryColorClassName(category: NewsCategory) {
-  return category === "notice" ? "bg-home-sun" : "bg-home-sky";
-}
 
 async function getPost(params: NewsPostPageProps["params"]) {
   const { slug } = await params;
@@ -54,42 +48,27 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
 
   return (
     <article className="bg-surface">
-      <header className="bg-home-cream px-page pb-16 pt-7 sm:px-page-wide sm:pb-20 sm:pt-10">
-        <div className="mx-auto grid w-full max-w-site overflow-hidden rounded-panel bg-home-ink shadow-elevated lg:min-h-[30rem] lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="flex flex-col justify-between px-7 py-12 text-hero-on-dark sm:px-12 sm:py-16 lg:px-14">
-            <div>
-              <p className="text-small font-bold text-home-sun">소식</p>
-              <p className="mt-5 w-fit rounded-full border border-hero-on-dark/30 px-4 py-2 text-small font-bold text-hero-muted">
-                {getNewsCategoryLabel(post.category)}
-              </p>
-              <h1 className="text-safe-wrap mt-5 max-w-4xl text-balance text-[clamp(2.5rem,4.8vw,4.1rem)] font-bold leading-[1.08] tracking-[-0.05em]">
-                {post.title}
-              </h1>
-            </div>
-
-            <time
-              dateTime={post.publishedAt}
-              className="mt-10 block text-small font-bold text-hero-muted"
-            >
-              {publishedDateFormatter.format(new Date(post.publishedAt))}
-            </time>
-          </div>
-
-          <div
-            className={`flex min-h-64 flex-col justify-between border-t border-home-ink/15 p-7 text-home-ink sm:p-10 lg:border-l lg:border-t-0 ${getCategoryColorClassName(post.category)}`}
-          >
-            <p className="text-small font-bold">
-              {post.isDemo ? "개발용 예시" : "샬롬의 집 소식"}
-            </p>
-            <p
-              aria-hidden="true"
-              className="self-end text-[clamp(4.5rem,10vw,8rem)] font-bold leading-none tracking-[-0.08em] opacity-20"
-            >
-              {post.category === "notice" ? "공지" : "활동"}
-            </p>
-          </div>
-        </div>
-      </header>
+      <PageHero
+        eyebrow={post.isDemo ? "소식 · 개발용 예시" : "샬롬의 집 소식"}
+        title={post.title}
+        description={post.summary}
+        asideTitle="게시 정보"
+        items={[
+          {
+            label: "분류",
+            value: getNewsCategoryLabel(post.category),
+          },
+          {
+            label: "게시일",
+            value: publishedDateFormatter.format(new Date(post.publishedAt)),
+          },
+          {
+            label: "상태",
+            value: post.isDemo ? "공식 소식이 아닌 개발용 예시" : "공개 게시물",
+          },
+        ]}
+        primaryAction={{ label: "소식 목록으로", href: "/news" }}
+      />
 
       <div className="mx-auto grid w-full max-w-site gap-8 px-page py-20 sm:px-page-wide sm:py-24 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-12">
         <section
@@ -165,7 +144,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
           </h2>
           <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:gap-5">
             <Link
-              className="inline-flex min-h-12 items-center justify-center rounded-control bg-home-sun px-6 py-3 text-base font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+              className="inline-flex min-h-12 items-center justify-center bg-primary px-6 py-3 text-base font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
               href="/life"
             >
               생활이야기 보기

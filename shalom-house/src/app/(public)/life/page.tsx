@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+
+import { PageHero } from "@/components/layout/page-hero";
 
 export const metadata: Metadata = {
   title: "생활이야기",
@@ -13,25 +14,21 @@ const dailyRhythms = [
     number: "01",
     label: "식사",
     title: "한 식탁에 둘러앉는 시간",
-    colorClassName: "bg-home-sun",
   },
   {
     number: "02",
     label: "관계",
     title: "서로의 안부를 묻는 시간",
-    colorClassName: "bg-home-sky",
   },
   {
     number: "03",
     label: "경험",
     title: "집 밖의 세상을 만나는 시간",
-    colorClassName: "bg-home-coral",
   },
   {
     number: "04",
     label: "휴식",
     title: "각자의 속도로 쉬는 시간",
-    colorClassName: "bg-home-lilac",
   },
 ] as const;
 
@@ -40,10 +37,6 @@ type LifeScene = {
   label: string;
   title: string;
   description: string;
-  imageSrc: string | null;
-  imageAlt: string;
-  mediaClassName: string;
-  cardClassName: string;
 };
 
 const lifeScenes: readonly LifeScene[] = [
@@ -53,10 +46,6 @@ const lifeScenes: readonly LifeScene[] = [
     title: "익숙한 일상을 편안하게 이어 갑니다",
     description:
       "식사와 휴식, 대화처럼 매일 반복되는 시간이 안정적으로 이어지도록 생활을 함께 살핍니다.",
-    imageSrc: null,
-    imageAlt: "샬롬의 집에서 식사와 휴식을 함께하는 생활 모습",
-    mediaClassName: "bg-home-sun",
-    cardClassName: "lg:col-span-7",
   },
   {
     number: "02",
@@ -64,10 +53,6 @@ const lifeScenes: readonly LifeScene[] = [
     title: "생활의 반경을 넓혀 갑니다",
     description:
       "외출과 나들이, 지역 활동을 통해 새로운 사람과 장소를 만나는 경험을 이어 갑니다.",
-    imageSrc: null,
-    imageAlt: "샬롬의 집에서 외출과 지역 활동을 하는 모습",
-    mediaClassName: "bg-home-sky",
-    cardClassName: "lg:col-span-5",
   },
   {
     number: "03",
@@ -75,10 +60,6 @@ const lifeScenes: readonly LifeScene[] = [
     title: "도움을 주고받는 이웃이 됩니다",
     description:
       "한쪽이 일방적으로 돕는 관계보다 식탁과 활동을 나누며 서로의 일상에 곁을 내어 줍니다.",
-    imageSrc: null,
-    imageAlt: "샬롬의 집과 지역사회 이웃이 함께하는 모습",
-    mediaClassName: "bg-home-coral",
-    cardClassName: "lg:col-span-5",
   },
   {
     number: "04",
@@ -86,10 +67,6 @@ const lifeScenes: readonly LifeScene[] = [
     title: "집다운 환경을 함께 가꿉니다",
     description:
       "매일 머무는 공간을 더 안전하고 편안하게 살피며 생활에 필요한 변화를 이어 갑니다.",
-    imageSrc: null,
-    imageAlt: "안전하고 편안하게 가꾼 샬롬의 집 생활 공간",
-    mediaClassName: "bg-home-lilac",
-    cardClassName: "lg:col-span-7",
   },
 ];
 
@@ -100,7 +77,6 @@ const activityStories = [
     title: "평일 점심 식사 도움",
     description:
       "식사를 준비하고 나누는 일상에 지역사회가 함께해 온 활동입니다.",
-    colorClassName: "bg-home-sun",
   },
   {
     number: "02",
@@ -108,7 +84,6 @@ const activityStories = [
     title: "나들이 지원",
     description:
       "익숙한 공간을 벗어나 계절과 지역의 다양한 모습을 경험해 온 활동입니다.",
-    colorClassName: "bg-home-sky",
   },
   {
     number: "03",
@@ -116,7 +91,6 @@ const activityStories = [
     title: "공간복지 드림하우스",
     description:
       "생활 공간을 더 안전하고 편안하게 가꾸기 위해 함께해 온 활동입니다.",
-    colorClassName: "bg-home-coral",
   },
 ] as const;
 
@@ -156,83 +130,21 @@ const nextLinks = [
   },
 ] as const;
 
-function LifeSceneMedia({ scene }: { scene: LifeScene }) {
-  return (
-    <div
-      className={`relative grid min-h-64 place-items-center overflow-hidden border-b border-home-ink/15 text-home-ink sm:min-h-72 ${scene.mediaClassName}`}
-    >
-      {scene.imageSrc ? (
-        <Image
-          fill
-          alt={scene.imageAlt}
-          className="object-cover"
-          sizes="(min-width: 1024px) 58vw, 100vw"
-          src={scene.imageSrc}
-        />
-      ) : (
-        <div
-          aria-hidden="true"
-          className="flex size-full flex-col justify-between p-7 sm:p-9"
-        >
-          <span className="text-small font-bold">
-            {scene.number} {scene.label}
-          </span>
-          <span className="text-[clamp(4.5rem,10vw,8rem)] font-bold leading-none tracking-[-0.08em] opacity-20">
-            {scene.label.slice(0, 2)}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function LifePage() {
   return (
     <>
-      <section className="bg-home-cream px-page pb-16 pt-7 sm:px-page-wide sm:pb-20 sm:pt-10">
-        <div className="mx-auto grid w-full max-w-site overflow-hidden rounded-panel bg-home-ink shadow-elevated lg:min-h-[37rem] lg:grid-cols-[1fr_0.9fr]">
-          <div className="flex flex-col justify-between px-7 py-12 text-hero-on-dark sm:px-12 sm:py-16 lg:px-14">
-            <div>
-              <p className="text-small font-bold text-home-sun">
-                생활이야기
-              </p>
-              <h1 className="text-safe-wrap mt-5 max-w-3xl text-balance text-[clamp(2.75rem,5.1vw,4.35rem)] font-bold leading-[1.06] tracking-[-0.05em]">
-                서로 다른 하루가 함께 이어집니다
-              </h1>
-              <p className="text-safe-wrap mt-7 max-w-2xl text-pretty text-body text-hero-muted sm:text-xl sm:leading-9">
-                식사를 나누고, 안부를 묻고, 바깥세상을 경험하고, 편안히 쉬는
-                평범한 시간이 샬롬의 집의 하루를 만듭니다.
-              </p>
-            </div>
-
-            <Link
-              className="mt-10 inline-flex min-h-12 w-fit items-center justify-center rounded-control bg-home-sun px-6 py-3 text-base font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
-              href="#life-scenes"
-            >
-              생활 장면 살펴보기
-            </Link>
-          </div>
-
-          <ol
-            aria-label="샬롬의 집의 하루를 이루는 시간"
-            className="grid gap-3 border-t border-home-ink/15 bg-surface p-5 sm:grid-cols-2 sm:p-7 lg:border-l lg:border-t-0"
-          >
-            {dailyRhythms.map((rhythm) => (
-              <li
-                key={rhythm.number}
-                className={`flex min-h-40 flex-col justify-between rounded-card p-6 text-home-ink sm:p-7 ${rhythm.colorClassName}`}
-              >
-                <span className="text-small font-bold">
-                  {rhythm.number} {rhythm.label}
-                </span>
-                <span className="text-safe-wrap text-balance text-heading font-bold">
-                  {rhythm.title}
-                </span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="생활이야기"
+        title="평범한 하루를 함께 이어 갑니다"
+        description="식사를 나누고 안부를 묻고 바깥세상을 경험하며 각자의 속도로 쉬는 시간까지, 샬롬의 집에서 이어지는 생활과 활동을 소개합니다."
+        asideTitle="생활이야기 안내"
+        items={dailyRhythms.map((rhythm) => ({
+          label: rhythm.label,
+          value: rhythm.title,
+        }))}
+        primaryAction={{ label: "생활 장면 살펴보기", href: "#life-scenes" }}
+        secondaryAction={{ label: "최근 소식 보기", href: "/news" }}
+      />
 
       <section
         id="life-scenes"
@@ -256,27 +168,29 @@ export default function LifePage() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-5 lg:grid-cols-12">
+          <ol className="mt-12 grid border-t-2 border-foreground lg:grid-cols-2">
             {lifeScenes.map((scene) => (
-              <article
+              <li
                 key={scene.number}
-                className={`overflow-hidden rounded-panel border border-border bg-surface shadow-card ${scene.cardClassName}`}
+                className="grid gap-5 border-b border-border-strong py-8 lg:grid-cols-[3.5rem_minmax(0,1fr)] lg:gap-7 lg:px-8 lg:py-10 lg:odd:border-r lg:odd:pl-0 lg:even:pr-0"
               >
-                <LifeSceneMedia scene={scene} />
-                <div className="p-7 sm:p-8">
+                <span className="text-small font-bold text-accent">
+                  {scene.number}
+                </span>
+                <article>
                   <p className="text-small font-bold text-primary">
-                    {scene.number} {scene.label}
+                    {scene.label}
                   </p>
-                  <h3 className="text-safe-wrap mt-4 text-balance text-title font-bold text-foreground">
+                  <h3 className="text-safe-wrap mt-3 text-balance text-title font-bold text-foreground">
                     {scene.title}
                   </h3>
                   <p className="text-safe-wrap mt-4 max-w-2xl text-pretty text-body text-muted-foreground">
                     {scene.description}
                   </p>
-                </div>
-              </article>
+                </article>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
@@ -299,33 +213,21 @@ export default function LifePage() {
             </p>
           </div>
 
-          <ol className="mt-12 grid gap-5 lg:grid-cols-3">
+          <ol className="mt-12 grid border-t-2 border-foreground lg:grid-cols-3">
             {activityStories.map((activity) => (
               <li
                 key={activity.number}
-                className="overflow-hidden rounded-panel border border-border bg-surface shadow-card"
+                className="border-b border-border-strong py-8 lg:border-r lg:px-8 lg:py-10 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0"
               >
-                <div
-                  className={`flex min-h-32 items-start justify-between p-7 text-home-ink ${activity.colorClassName}`}
-                >
-                  <span className="text-small font-bold">
-                    {activity.number} {activity.label}
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className="text-5xl font-bold leading-none opacity-20"
-                  >
-                    {activity.number}
-                  </span>
-                </div>
-                <div className="p-7 sm:p-8">
-                  <h3 className="text-safe-wrap text-balance text-title font-bold text-foreground">
-                    {activity.title}
-                  </h3>
-                  <p className="text-safe-wrap mt-4 text-pretty text-body text-muted-foreground">
-                    {activity.description}
-                  </p>
-                </div>
+                <p className="text-small font-bold text-accent">
+                  {activity.number} · {activity.label}
+                </p>
+                <h3 className="text-safe-wrap mt-5 text-balance text-title font-bold text-foreground">
+                  {activity.title}
+                </h3>
+                <p className="text-safe-wrap mt-4 text-pretty text-body text-muted-foreground">
+                  {activity.description}
+                </p>
               </li>
             ))}
           </ol>
