@@ -68,29 +68,34 @@ export const homeFixture: HomeFixture = {
   },
   quickLinks: [
     {
-      label: "시설소개",
-      description: "시설 기본 정보 화면으로 이동합니다.",
-      href: "/about",
-    },
-    {
       label: "찾아오시는 길",
       description: "주소와 방문 문의 정보를 확인합니다.",
       href: "/about/directions",
     },
     {
-      label: "소식",
-      description: "공지사항과 활동 소식을 찾아봅니다.",
-      href: "/news",
+      label: "공지사항",
+      description: "새로운 공지와 안내를 확인합니다.",
+      href: "/news/notices",
     },
     {
-      label: "자료공개",
-      description: "운영 관련 공개자료 화면으로 이동합니다.",
-      href: "/transparency",
+      label: "프로그램",
+      description: "프로그램 분류와 안내를 확인합니다.",
+      href: "/life/programs",
     },
     {
-      label: "함께하기",
-      description: "후원과 자원봉사 안내를 확인합니다.",
-      href: "/support",
+      label: "활동사진",
+      description: "공개 승인된 활동 기록을 살펴봅니다.",
+      href: "/life/gallery",
+    },
+    {
+      label: "후원하기",
+      description: "후원 문의와 확인 절차를 알아봅니다.",
+      href: "/support/donation",
+    },
+    {
+      label: "자원봉사",
+      description: "자원봉사 참여 절차를 확인합니다.",
+      href: "/support/volunteer",
     },
   ],
   supportAreas: [
