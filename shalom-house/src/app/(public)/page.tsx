@@ -185,7 +185,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section aria-labelledby="participation-heading" className="bg-surface-subtle py-10 sm:py-12">
+      <section aria-labelledby="participation-heading" className="bg-surface py-10 sm:py-12">
         <div className="mx-auto grid max-w-site gap-6 px-page sm:px-page-wide md:grid-cols-2 md:items-start">
           <div>
             <h2 id="participation-heading" className="text-title font-bold">
@@ -216,7 +216,7 @@ export default async function Home() {
 
       <section
         aria-labelledby="documents-heading"
-        className="border-y border-border bg-surface py-10 sm:py-12"
+        className="border-y border-border bg-surface-subtle py-10 sm:py-12"
       >
         <div className="mx-auto max-w-site px-page sm:px-page-wide">
           <h2 id="documents-heading" className="text-title font-bold">
@@ -225,7 +225,7 @@ export default async function Home() {
           <p className="text-safe-wrap mt-3 text-body text-muted-foreground">
             확인을 마친 운영 자료를 안내합니다.
           </p>
-          <div className="mt-6 border-y border-border bg-surface-subtle py-5">
+          <div className="mt-6 border-y border-border bg-surface py-5">
             <h3 className="font-bold">현재 공개된 자료가 없습니다.</h3>
             <p className="text-safe-wrap mt-2 text-muted-foreground">
               자료가 게시되면 자료공개 페이지에서 확인할 수 있습니다.
