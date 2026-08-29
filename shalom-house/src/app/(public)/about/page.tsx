@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+
+import { PageHero } from "@/components/layout/page-hero";
 
 export const metadata: Metadata = {
   title: "시설소개",
@@ -34,9 +35,6 @@ type LivingScene = {
   label: string;
   title: string;
   description: string;
-  imageSrc: string | null;
-  imageAlt: string;
-  mediaClassName: string;
 };
 
 const livingScenes: readonly LivingScene[] = [
@@ -46,9 +44,6 @@ const livingScenes: readonly LivingScene[] = [
     title: "같이 먹고 쉬는 집",
     description:
       "식탁을 나누고 대화를 이어 가며 편안하게 쉴 수 있는 평범한 하루를 소중히 여깁니다.",
-    imageSrc: null,
-    imageAlt: "샬롬의 집에서 식사와 휴식을 함께하는 모습",
-    mediaClassName: "bg-home-sun",
   },
   {
     number: "02",
@@ -56,9 +51,6 @@ const livingScenes: readonly LivingScene[] = [
     title: "집 밖으로 이어지는 생활",
     description:
       "외출과 나들이, 지역 활동을 통해 새로운 사람과 장소를 만나는 경험을 지원합니다.",
-    imageSrc: null,
-    imageAlt: "샬롬의 집의 외출과 지역 활동 모습",
-    mediaClassName: "bg-home-sky",
   },
   {
     number: "03",
@@ -66,9 +58,6 @@ const livingScenes: readonly LivingScene[] = [
     title: "더 안전하고 편안한 환경",
     description:
       "매일 머무는 공간을 살피고 생활에 필요한 변화를 이어 가며 집다운 환경을 가꿉니다.",
-    imageSrc: null,
-    imageAlt: "안전하고 편안하게 가꾼 샬롬의 집 생활 공간",
-    mediaClassName: "bg-home-coral",
   },
 ];
 
@@ -104,92 +93,22 @@ const aboutLinks = [
   },
 ] as const;
 
-function LivingSceneMedia({ scene }: { scene: LivingScene }) {
-  return (
-    <div
-      className={`relative grid min-h-56 place-items-center overflow-hidden border-b border-home-ink/15 text-home-ink ${scene.mediaClassName}`}
-    >
-      {scene.imageSrc ? (
-        <Image
-          fill
-          sizes="(min-width: 1024px) 33vw, 100vw"
-          src={scene.imageSrc}
-          alt={scene.imageAlt}
-          className="object-cover"
-        />
-      ) : (
-        <div
-          aria-hidden="true"
-          className="flex size-full flex-col justify-between p-7 sm:p-8"
-        >
-          <span className="text-small font-bold">{scene.number}</span>
-          <span className="text-[clamp(4rem,8vw,6.5rem)] font-bold leading-none tracking-[-0.07em] opacity-20">
-            {scene.label}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function AboutPage() {
   return (
     <>
-      <section className="bg-home-cream px-page pb-16 pt-7 sm:px-page-wide sm:pb-20 sm:pt-10">
-        <div className="mx-auto grid w-full max-w-site overflow-hidden rounded-panel bg-home-ink shadow-elevated lg:min-h-[35rem] lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="flex flex-col justify-between px-7 py-12 text-hero-on-dark sm:px-12 sm:py-16 lg:px-14">
-            <div>
-              <p className="text-small font-bold text-home-sun">시설소개</p>
-              <h1 className="text-safe-wrap mt-5 max-w-3xl text-balance text-[clamp(2.75rem,5.3vw,4.5rem)] font-bold leading-[1.06] tracking-[-0.05em]">
-                서로의 속도를 존중하는 생활 공간
-              </h1>
-              <p className="text-safe-wrap mt-7 max-w-2xl text-pretty text-body text-hero-muted sm:text-xl sm:leading-9">
-                샬롬의 집은 지체 및 지적 장애인이 식사하고, 쉬고, 관계를
-                나누며 함께 생활하는 장애인거주시설입니다.
-              </p>
-            </div>
-
-            <div className="mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <Link
-                className="inline-flex min-h-12 items-center justify-center rounded-control bg-home-sun px-6 py-3 text-base font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
-                href="/life"
-              >
-                생활이야기 보기
-              </Link>
-              <Link
-                className="inline-flex min-h-12 items-center gap-2 px-3 py-3 text-base font-bold text-hero-on-dark underline decoration-hero-on-dark/60 underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-home-sun focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
-                href="/support"
-              >
-                함께하는 방법
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid gap-3 border-t border-home-ink/15 bg-surface p-5 sm:p-7 lg:border-l lg:border-t-0">
-            <div className="flex min-h-40 flex-col justify-between rounded-card bg-home-sun p-6 text-home-ink sm:p-7">
-              <span className="text-small font-bold">01 생활</span>
-              <p className="text-safe-wrap text-balance text-title font-bold">
-                일상의 선택을 존중합니다
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex min-h-40 flex-col justify-between rounded-card bg-home-sky p-6 text-home-ink sm:p-7">
-                <span className="text-small font-bold">02 지원</span>
-                <p className="text-safe-wrap text-balance text-heading font-bold">
-                  필요한 도움을 나눕니다
-                </p>
-              </div>
-              <div className="flex min-h-40 flex-col justify-between rounded-card bg-home-coral p-6 text-home-ink sm:p-7">
-                <span className="text-small font-bold">03 관계</span>
-                <p className="text-safe-wrap text-balance text-heading font-bold">
-                  지역과 함께 연결됩니다
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="시설소개"
+        title="서로의 생활을 존중하는 집, 샬롬의 집입니다"
+        description="샬롬의 집은 지체 및 지적 장애인이 식사하고 쉬며 관계를 나누는 장애인거주시설입니다. 확인된 시설 정보와 생활의 기준을 분명한 순서로 안내합니다."
+        asideTitle="시설 기본 안내"
+        items={[
+          { label: "시설 유형", value: "장애인거주시설" },
+          { label: "생활", value: "지체 및 지적 장애인이 함께 생활합니다" },
+          { label: "지역", value: "서울특별시 강서구" },
+        ]}
+        primaryAction={{ label: "찾아오시는 길", href: "/about/directions" }}
+        secondaryAction={{ label: "생활이야기 보기", href: "/life" }}
+      />
 
       <section
         aria-labelledby="about-principles-heading"
@@ -252,27 +171,24 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+          <ol className="mt-12 grid border-t-2 border-foreground lg:grid-cols-3">
             {livingScenes.map((scene) => (
-              <article
+              <li
                 key={scene.number}
-                className="overflow-hidden rounded-panel border border-border bg-surface shadow-card"
+                className="border-b border-border-strong py-8 lg:border-r lg:px-8 lg:py-10 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0"
               >
-                <LivingSceneMedia scene={scene} />
-                <div className="p-7 sm:p-8">
-                  <p className="text-small font-bold text-primary">
-                    {scene.number} {scene.label}
-                  </p>
-                  <h3 className="text-safe-wrap mt-4 text-balance text-title font-bold text-foreground">
-                    {scene.title}
-                  </h3>
-                  <p className="text-safe-wrap mt-4 text-pretty text-body text-muted-foreground">
-                    {scene.description}
-                  </p>
-                </div>
-              </article>
+                <p className="text-small font-bold text-accent">
+                  {scene.number} · {scene.label}
+                </p>
+                <h3 className="text-safe-wrap mt-5 text-balance text-title font-bold text-foreground">
+                  {scene.title}
+                </h3>
+                <p className="text-safe-wrap mt-4 text-pretty text-body text-muted-foreground">
+                  {scene.description}
+                </p>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 

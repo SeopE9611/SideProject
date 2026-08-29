@@ -1,26 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { PageHero } from "@/components/layout/page-hero";
 import { siteConfig } from "@/config/site";
 import { getNewsRepository } from "@/features/news/news.repository";
 import {
   getNewsCategoryLabel,
-  type NewsCategory,
   type PublicNewsPostSummary,
 } from "@/features/news/news.types";
 
 const newsCategories = [
   {
-    number: "01",
     title: "공지사항",
     description: "시설에서 전하는 중요한 안내를 확인합니다.",
-    colorClassName: "bg-home-sun",
   },
   {
-    number: "02",
     title: "활동 소식",
     description: "함께한 일상과 활동의 장면을 전합니다.",
-    colorClassName: "bg-home-sky",
   },
 ] as const;
 
@@ -56,10 +52,6 @@ const publishedDateFormatter = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "UTC",
 });
 
-function getCategoryColorClassName(category: NewsCategory) {
-  return category === "notice" ? "bg-home-sun" : "bg-home-sky";
-}
-
 function NewsPostCard({
   post,
   featured = false,
@@ -73,15 +65,14 @@ function NewsPostCard({
         featured ? "lg:grid lg:grid-cols-[0.75fr_1.25fr]" : ""
       }`}
     >
-      <div
-        className={`flex min-h-40 flex-col justify-between p-7 text-home-ink sm:p-8 ${getCategoryColorClassName(post.category)} ${
-          featured ? "lg:min-h-full" : ""
-        }`}
-      >
-        <p className="text-small font-bold">
+      <div className="flex min-h-36 flex-col justify-between border-b border-border bg-surface-subtle p-7 text-foreground sm:p-8 lg:border-b-0 lg:border-r">
+        <p className="text-small font-bold text-primary">
           {getNewsCategoryLabel(post.category)}
         </p>
-        <time dateTime={post.publishedAt} className="text-small font-bold">
+        <time
+          dateTime={post.publishedAt}
+          className="mt-8 text-small text-muted-foreground"
+        >
           {publishedDateFormatter.format(new Date(post.publishedAt))}
         </time>
       </div>
@@ -128,57 +119,27 @@ export default async function NewsPage() {
 
   return (
     <>
-      <section className="bg-home-cream px-page pb-16 pt-7 sm:px-page-wide sm:pb-20 sm:pt-10">
-        <div className="mx-auto grid w-full max-w-site overflow-hidden rounded-panel bg-home-ink shadow-elevated lg:min-h-[32rem] lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="flex flex-col justify-between px-7 py-12 text-hero-on-dark sm:px-12 sm:py-16 lg:px-14">
-            <div>
-              <p className="text-small font-bold text-home-sun">소식</p>
-              <h1 className="text-safe-wrap mt-5 max-w-3xl text-balance text-[clamp(2.75rem,5.1vw,4.35rem)] font-bold leading-[1.06] tracking-[-0.05em]">
-                새로운 안내와 함께한 이야기를 전합니다
-              </h1>
-              <p className="text-safe-wrap mt-7 max-w-2xl text-pretty text-body text-hero-muted sm:text-xl sm:leading-9">
-                샬롬의 집에서 전하는 공지사항과 생활 속 활동 이야기를 한곳에서
-                확인할 수 있습니다.
-              </p>
-            </div>
-
-            <a
-              className="mt-10 inline-flex min-h-12 w-fit items-center gap-2 rounded-control bg-home-sun px-6 py-3 text-base font-bold text-home-ink transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-hero-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hero-on-dark"
-              href={siteConfig.instagram}
-              rel="noreferrer"
-              target="_blank"
-            >
-              인스타그램 소식 보기
-              <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-
-          <div className="grid gap-3 border-t border-home-ink/15 bg-surface p-5 sm:p-7 lg:border-l lg:border-t-0">
-            {newsCategories.map((category) => (
-              <div
-                key={category.number}
-                className={`flex min-h-44 flex-col justify-between rounded-card p-6 text-home-ink sm:p-7 ${category.colorClassName}`}
-              >
-                <p className="text-small font-bold">
-                  {category.number} {category.title}
-                </p>
-                <div>
-                  <p className="text-safe-wrap text-balance text-title font-bold">
-                    {category.title}
-                  </p>
-                  <p className="text-safe-wrap mt-2 text-pretty text-small">
-                    {category.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="소식"
+        title="중요한 안내와 활동 소식을 정확하게 전합니다"
+        description="공지사항과 생활 속 활동 이야기를 제목, 분류, 게시일 순서로 확인할 수 있습니다. 공개 전 사실관계와 개인정보를 검토한 내용만 게시합니다."
+        asideTitle="소식 구성"
+        items={newsCategories.map((category) => ({
+          label: category.title,
+          value: category.description,
+        }))}
+        primaryAction={{ label: "최근 소식 확인하기", href: "#news-list" }}
+        secondaryAction={{
+          label: "인스타그램 소식 보기",
+          href: siteConfig.instagram,
+          external: true,
+        }}
+      />
 
       <section
+        id="news-list"
         aria-labelledby="news-list-heading"
-        className="bg-surface py-20 sm:py-24"
+        className="scroll-mt-28 bg-surface py-20 sm:py-24"
       >
         <div className="mx-auto w-full max-w-site px-page sm:px-page-wide">
           <div className="grid gap-7 lg:grid-cols-[1fr_0.8fr] lg:items-end">
@@ -238,16 +199,11 @@ export default async function NewsPage() {
                 </div>
               </div>
 
-              <div
-                aria-hidden="true"
-                className="grid grid-cols-2 gap-3 border-t border-border bg-surface p-5 sm:p-7 lg:border-l lg:border-t-0"
-              >
-                <div className="rounded-card bg-home-sun" />
-                <div className="rounded-card bg-home-sky" />
-                <div className="col-span-2 flex min-h-40 items-end rounded-card bg-home-coral p-7 text-[clamp(3.5rem,8vw,6rem)] font-bold leading-none tracking-[-0.08em] text-home-ink/20">
-                  소식
-                </div>
-              </div>
+            <div className="flex min-h-64 items-end border-t border-border bg-home-ink p-7 text-hero-on-dark sm:p-10 lg:min-h-full lg:border-l lg:border-t-0">
+              <p className="text-safe-wrap max-w-sm text-balance text-title font-bold">
+                확인된 소식부터 차분히 채워 가겠습니다.
+              </p>
+            </div>
             </div>
           ) : (
             <div className="mt-12">

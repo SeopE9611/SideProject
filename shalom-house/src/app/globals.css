@@ -2,42 +2,42 @@
 
 @theme {
   /* 색상 */
-  --color-background: #f8f5ef;
+  --color-background: #f7f4ed;
   --color-surface: #ffffff;
-  --color-surface-subtle: #f1f5f2;
-  --color-foreground: #24323a;
-  --color-muted-foreground: #5f6b66;
-  --color-border: #d8ded9;
-  --color-border-strong: #74827b;
-  --color-primary: #355c4a;
-  --color-primary-hover: #2e4f40;
-  --color-primary-soft: #eaf1ec;
+  --color-surface-subtle: #eef2ee;
+  --color-foreground: #202f35;
+  --color-muted-foreground: #58655f;
+  --color-border: #d7ddd7;
+  --color-border-strong: #6f7d76;
+  --color-primary: #245246;
+  --color-primary-hover: #193f36;
+  --color-primary-soft: #e6efea;
   --color-primary-foreground: #ffffff;
-  --color-accent: #a85c3a;
-  --color-accent-hover: #8f4c30;
-  --color-accent-soft: #f7ede8;
-  --color-focus-ring: #a85c3a;
+  --color-accent: #a95336;
+  --color-accent-hover: #874027;
+  --color-accent-soft: #f4e9e3;
+  --color-focus-ring: #a95336;
   --color-success: #2f6b4f;
   --color-success-soft: #eaf4ee;
   --color-warning: #7a520f;
   --color-warning-soft: #fff4d9;
   --color-danger: #a23b3b;
   --color-danger-soft: #fbecec;
-  --color-hero-forest: #25483b;
-  --color-hero-clay: #88482f;
-  --color-hero-night: #22343b;
+  --color-hero-forest: #1f493f;
+  --color-hero-clay: #85452f;
+  --color-hero-night: #19363a;
   --color-hero-on-dark: #ffffff;
   --color-hero-muted: #edf3ef;
-  --color-sun-soft: #f2d39d;
+  --color-sun-soft: #ead39b;
   --color-on-dark: #ffffff;
-  --color-hero-mist: #d9e8e0;
-  --color-hero-sun: #f2d39d;
-  --color-home-cream: #f6f0e5;
-  --color-home-ink: #19353d;
-  --color-home-sun: #f3ca66;
-  --color-home-coral: #e88970;
-  --color-home-sky: #a9d8d1;
-  --color-home-lilac: #cfc4e3;
+  --color-hero-mist: #d9e5df;
+  --color-hero-sun: #ead39b;
+  --color-home-cream: #f1ece2;
+  --color-home-ink: #183b3b;
+  --color-home-sun: #e6d7aa;
+  --color-home-coral: #d9a08c;
+  --color-home-sky: #b9d2c8;
+  --color-home-lilac: #c9c5cf;
 
   /* 타이포그래피 */
   --text-hero: 2.625rem;
@@ -71,16 +71,16 @@
   --spacing-section-wide: 7rem;
 
   /* 모서리 */
-  --radius-control: 0.75rem;
-  --radius-card: 1.25rem;
-  --radius-panel: 2rem;
+  --radius-control: 0.5rem;
+  --radius-card: 0.875rem;
+  --radius-panel: 1.25rem;
 
   /* 그림자 */
   --shadow-card:
-    0 1px 2px rgb(36 50 58 / 0.05),
-    0 14px 34px rgb(36 50 58 / 0.08);
-  --shadow-nav: 0 12px 30px rgb(36 50 58 / 0.1);
-  --shadow-elevated: 0 24px 60px rgb(20 37 32 / 0.2);
+    0 1px 2px rgb(32 47 53 / 0.04),
+    0 10px 28px rgb(32 47 53 / 0.06);
+  --shadow-nav: 0 8px 24px rgb(32 47 53 / 0.07);
+  --shadow-elevated: 0 22px 54px rgb(24 59 59 / 0.14);
 
   /* easing */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -132,8 +132,24 @@
   }
 }
 
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @utility animate-hero-enter {
   animation: hero-enter 520ms var(--ease-standard) both;
+}
+
+@utility animate-page-enter {
+  animation: page-enter 640ms var(--ease-standard) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
