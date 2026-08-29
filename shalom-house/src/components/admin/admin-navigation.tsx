@@ -7,6 +7,7 @@ const items = [
   { label: "대시보드", href: "/admin" },
   { label: "뉴스 관리", href: "/admin/news" },
   { label: "프로그램 관리", href: "/admin/programs" },
+  { label: "활동사진 관리", href: "/admin/gallery" },
 ] as const;
 
 export function AdminNavigation() {

@@ -320,3 +320,9 @@ draft + rejected + publishedAt=null
 프로그램은 뉴스와 분리된 `program_posts` 컬렉션과 repository를 사용한다. 공개 목록과 상세는 `SHALOM_CONTENT_SOURCE=mongodb`일 때만 MongoDB에서 조회하며, `fixture`와 `empty`에서는 준비 상태를 표시한다. 공개 조건은 승인 완료, 게시 상태, 유효한 게시 시각과 비삭제 상태를 모두 충족하는 것이다.
 
 관리 흐름은 초안 → 검토 요청 → 승인 또는 반려 → 게시 → 게시 중단 또는 보관 순서다. 수정과 모든 상태 전이는 `expectedUpdatedAt`을 이용한 optimistic locking을 적용하고, 변경 및 `program_audit_events` 감사 이벤트 삽입을 같은 transaction에서 처리한다. 이 단계에는 프로그램 이미지와 활동사진 연결 기능이 없다.
+
+## 활동사진 비공개 관리 기반
+
+활동사진 binary는 Supabase Storage의 private bucket `shalom-gallery-private`에 저장하고, MongoDB에는 `gallery_items` 메타데이터·상태·bucket·object path와 `gallery_audit_events` 감사 기록만 저장한다. service role client는 `SHALOM_SUPABASE_URL`, `SHALOM_SUPABASE_SERVICE_ROLE_KEY`, `SHALOM_SUPABASE_GALLERY_PRIVATE_BUCKET`을 사용하는 서버 전용 구성이다.
+
+브라우저에서 긴 변 1920px 이하, quality 0.82의 WebP로 변환한 뒤 서버가 MIME, RIFF/WEBP magic bytes, 실제 용량·크기와 SHA-256을 다시 검증한다. Storage 업로드 뒤 MongoDB metadata와 audit를 transaction으로 저장하며 실패하면 업로드 object를 보상 삭제한다. public bucket, 공개 URL과 공개 갤러리 연결은 후속 단계다.
