@@ -10,24 +10,27 @@
 
 ## 목표 상위 메뉴
 
+상단 메뉴는 `시설소개`, `생활이야기`, `소식·자료`, `함께하기` 순서로 제공한다.
+`자료공개`는 `소식·자료`의 하위 메뉴로 제공하되 기존 `/transparency` route를
+유지한다. 구현되지 않은 미래 route는 메뉴에 노출하지 않는다.
+
 ```text
 /
 ├─ /about
-│  ├─ /about/greeting
-│  ├─ /about/history
 │  └─ /about/directions
 ├─ /life
-│  ├─ /life/activities
-│  └─ /life/spaces
 ├─ /news
 │  └─ /news/[slug]
-├─ /support
-│  ├─ /support/volunteer
-│  └─ /support/donation
-└─ /transparency
+├─ /transparency
+└─ /support
 ```
 
-하위 페이지는 실제 콘텐츠 또는 fixture 기반 레이아웃 작업 때 구현할 수 있다. 현재 공개 라우트를 최종 구조처럼 보존하지 않는다.
+### 향후 검토 경로
+
+인사말·연혁, 생활 세부, 후원·자원봉사 하위 페이지는 공식 콘텐츠 확보 후
+구현 여부와 경로를 결정한다. `/about/greeting`, `/about/history`,
+`/life/activities`, `/life/spaces`, `/support/volunteer`, `/support/donation`은
+현재 공개 route나 메뉴로 표현하지 않는다.
 
 ## 메인 페이지 필수 모듈
 
@@ -37,7 +40,7 @@
 4. 최근 활동소식
 5. 주요 생활·지원 영역
 6. 생활 이야기
-7. 정보공개
+7. 자료공개
 8. 위치와 연락
 
 공식 콘텐츠가 없는 모듈은 명확히 구분된 fixture로 레이아웃을 검증할 수 있다.
@@ -55,7 +58,7 @@
 | 생활이야기 | 사진·기록형 |
 | 소식 | 검색·분류·목록형 |
 | 함께하기 | 절차 안내형 |
-| 정보공개 | 문서 라이브러리형 |
+| 자료공개 | 문서 라이브러리형 |
 | 찾아오시는 길 | 지도·방문 정보형 |
 
 같은 히어로와 같은 레이아웃을 모든 페이지에 적용하지 않는다. 각 유형의 구체적인 구조는 `page-patterns.md`가 소유한다.

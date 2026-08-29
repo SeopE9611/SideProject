@@ -125,9 +125,14 @@ pnpm --dir shalom-house admin:create-user
 ### 뉴스 저장소 구조
 
 - `news.mongo-schema.ts`: 컬렉션명과 MongoDB 문서 타입을 공유한다.
-- `news.pagination.ts`: 공개 목록 limit와 관리자 page를 정규화한다.
-- `news.mongo-repository.ts`: 공개 뉴스 목록과 상세 읽기만 담당한다.
+- `news.pagination.ts`: 공개 목록 검색어·page·pageSize와 기존 목록 limit, 관리자
+  page를 각각 정규화한다.
+- `news.mongo-repository.ts`: 공개 뉴스 목록에서 서버 검색, `countDocuments` 전체
+  결과 수 조회와 `skip`·`limit` 페이지네이션을 수행하며 상세 읽기도 담당한다.
 - `news.admin-repository.ts`: 관리자 전용 뉴스 목록·상세 읽기를 담당한다.
+
+자료공개는 뉴스 category에 포함하지 않으며, 문서 메타데이터와 첨부파일을 위한
+별도 repository 및 관리자 관리 구조로 구현할 예정이다.
 
 ## 8. 관리자 뉴스 초안 작성
 

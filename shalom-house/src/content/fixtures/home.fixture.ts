@@ -83,14 +83,14 @@ export const homeFixture: HomeFixture = {
       href: "/news",
     },
     {
+      label: "자료공개",
+      description: "운영 관련 공개자료 화면으로 이동합니다.",
+      href: "/transparency",
+    },
+    {
       label: "함께하기",
       description: "후원과 자원봉사 안내를 확인합니다.",
       href: "/support",
-    },
-    {
-      label: "정보공개",
-      description: "운영 관련 공개자료 화면으로 이동합니다.",
-      href: "/transparency",
     },
   ],
   supportAreas: [

@@ -1,12 +1,25 @@
 import { getPublishedFixtureNewsPosts } from "@/content/fixtures/news.fixture";
 import { MongoNewsRepository } from "./news.mongo-repository";
-import { normalizePublicNewsLimit } from "./news.pagination";
-import type { PublicNewsPost, PublicNewsPostSummary } from "./news.types";
+import {
+  normalizePublicNewsLimit,
+  normalizePublicNewsPage,
+  normalizePublicNewsPageSize,
+  normalizePublicNewsSearchQuery,
+  resolvePublicNewsPage,
+} from "./news.pagination";
+import type {
+  PublicNewsPost,
+  PublicNewsPostSummary,
+  PublicNewsSearchOptions,
+  PublicNewsSearchResult,
+} from "./news.types";
 
 export interface NewsRepository {
   listPublished(options?: {
     limit?: number;
   }): Promise<readonly PublicNewsPostSummary[]>;
+
+  searchPublished(options?: PublicNewsSearchOptions): Promise<PublicNewsSearchResult>;
 
   findPublishedBySlug(slug: string): Promise<PublicNewsPost | null>;
 }
@@ -14,6 +27,15 @@ export interface NewsRepository {
 const emptyNewsRepository: NewsRepository = {
   async listPublished() {
     return [];
+  },
+  async searchPublished(options) {
+    return {
+      items: [],
+      total: 0,
+      page: normalizePublicNewsPage(options?.page),
+      pageSize: normalizePublicNewsPageSize(options?.pageSize),
+      totalPages: 0,
+    };
   },
   async findPublishedBySlug() {
     return null;
@@ -35,6 +57,30 @@ const fixtureNewsRepository: NewsRepository = {
         updatedAt: post.updatedAt,
         isDemo: post.isDemo,
       }));
+  },
+  async searchPublished(options) {
+    const q = normalizePublicNewsSearchQuery(options?.q);
+    const normalizedQuery = q.toLocaleLowerCase("ko-KR");
+    const pageSize = normalizePublicNewsPageSize(options?.pageSize);
+    const filtered = getPublishedFixtureNewsPosts().filter(
+      (post) =>
+        (!options?.category || post.category === options.category) &&
+        (!normalizedQuery ||
+          `${post.title} ${post.summary}`
+            .toLocaleLowerCase("ko-KR")
+            .includes(normalizedQuery)),
+    );
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / pageSize);
+    const page = resolvePublicNewsPage(
+      normalizePublicNewsPage(options?.page),
+      totalPages,
+    );
+    const items = filtered
+      .slice((page - 1) * pageSize, page * pageSize)
+      .map(({ body: _body, ...summary }) => summary);
+
+    return { items, total, page, pageSize, totalPages };
   },
   async findPublishedBySlug(slug) {
     return getPublishedFixtureNewsPosts().find((post) => post.slug === slug) ?? null;

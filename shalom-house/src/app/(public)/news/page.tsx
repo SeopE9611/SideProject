@@ -4,6 +4,10 @@ import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { getNewsRepository } from "@/features/news/news.repository";
 import {
+  normalizePublicNewsPage,
+  normalizePublicNewsSearchQuery,
+} from "@/features/news/news.pagination";
+import {
   getNewsCategoryLabel,
   isNewsCategory,
   type NewsCategory,
@@ -35,13 +39,6 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function pageNumber(value: string | undefined) {
-  if (!value || !/^\d+$/.test(value)) return 1;
-
-  const number = Number(value);
-  return Number.isSafeInteger(number) && number > 0 ? number : 1;
-}
-
 function queryHref(page: number, q: string, category?: NewsCategory) {
   const params = new URLSearchParams();
   if (q) params.set("q", q);
@@ -54,26 +51,17 @@ function queryHref(page: number, q: string, category?: NewsCategory) {
 
 export default async function NewsPage({ searchParams }: NewsPageProps) {
   const raw = await searchParams;
-  const q = (first(raw.q) ?? "").trim();
+  const q = normalizePublicNewsSearchQuery(first(raw.q));
   const categoryValue = first(raw.category);
   const category = isNewsCategory(categoryValue) ? categoryValue : undefined;
-  const allPosts = await getNewsRepository().listPublished({ limit: 50 });
-  const normalizedQuery = q.toLocaleLowerCase("ko-KR");
-  const filtered = allPosts.filter(
-    (post) =>
-      (!category || post.category === category) &&
-      (!normalizedQuery ||
-        `${post.title} ${post.summary}`
-          .toLocaleLowerCase("ko-KR")
-          .includes(normalizedQuery)),
-  );
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const currentPage =
-    totalPages === 0 ? 1 : Math.min(pageNumber(first(raw.page)), totalPages);
-  const posts = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
+  const parsedPage = Number(first(raw.page));
+  const result = await getNewsRepository().searchPublished({
+    q,
+    category,
+    page: normalizePublicNewsPage(parsedPage),
+    pageSize: PAGE_SIZE,
+  });
+  const { items: posts, total, totalPages, page: currentPage } = result;
   const hasFixture = posts.some((post) => post.isDemo);
   const categoryLabel = category ? getNewsCategoryLabel(category) : "전체";
 
@@ -161,7 +149,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
               </h2>
               <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
                 적용 분류: {categoryLabel}
-                {q ? ` · 검색어: “${q}”` : " · 검색어 없음"} · 전체 {filtered.length}건
+                {q ? ` · 검색어: “${q}”` : " · 검색어 없음"} · 전체 {total}건
               </p>
             </div>
             <Link
@@ -177,7 +165,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
               아닙니다.
             </aside>
           ) : null}
-          {allPosts.length === 0 ? (
+          {!q && !category && total === 0 ? (
             <div className="border-b border-border py-10">
               <h3 className="text-heading font-bold">전체 게시물을 준비하고 있습니다.</h3>
               <p className="mt-3 text-muted-foreground">공개된 게시물이 아직 없습니다.</p>
@@ -198,7 +186,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
                 </Link>
               </div>
             </div>
-          ) : filtered.length === 0 ? (
+          ) : total === 0 ? (
             <div className="border-b border-border py-10">
               <h3 className="text-heading font-bold">
                 현재 조건에 맞는 소식이 없습니다.

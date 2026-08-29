@@ -32,11 +32,22 @@ export const siteConfig = {
       children: [],
     },
     {
-      label: "소식",
-      description: "공지사항과 활동소식",
+      label: "소식·자료",
+      description: "공지사항, 활동소식과 공개자료",
       href: "/news",
       emphasis: false,
-      children: [],
+      children: [
+        {
+          label: "소식",
+          description: "공지사항과 활동 소식",
+          href: "/news",
+        },
+        {
+          label: "자료공개",
+          description: "운영 및 후원 공개자료",
+          href: "/transparency",
+        },
+      ],
     },
     {
       label: "함께하기",
@@ -45,15 +56,16 @@ export const siteConfig = {
       emphasis: true,
       children: [],
     },
-    {
-      label: "정보공개",
-      description: "운영 및 후원 공개자료",
-      href: "/transparency",
-      emphasis: false,
-      children: [],
-    },
   ],
   footerNavigation: [
+    {
+      label: "소식",
+      href: "/news",
+    },
+    {
+      label: "자료공개",
+      href: "/transparency",
+    },
     {
       label: "찾아오시는 길",
       href: "/about/directions",
@@ -61,10 +73,6 @@ export const siteConfig = {
     {
       label: "함께하기",
       href: "/support",
-    },
-    {
-      label: "정보공개",
-      href: "/transparency",
     },
   ],
 } as const;
