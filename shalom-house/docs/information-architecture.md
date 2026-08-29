@@ -10,27 +10,32 @@
 
 ## 목표 상위 메뉴
 
-상단 메뉴는 `시설소개`, `생활이야기`, `소식·자료`, `함께하기` 순서로 제공한다.
-`자료공개`는 `소식·자료`의 하위 메뉴로 제공하되 기존 `/transparency` route를
+상단 메뉴는 `시설소개`, `생활·프로그램`, `소식`, `함께하기` 순서로 제공한다.
+`자료공개`는 `소식`의 하위 메뉴로 제공하되 기존 `/transparency` route를
 유지한다. 구현되지 않은 미래 route는 메뉴에 노출하지 않는다.
 
 ```text
 /
 ├─ /about
+│  ├─ /about/greeting
+│  ├─ /about/people
+│  ├─ /about/spaces
 │  └─ /about/directions
 ├─ /life
+│  ├─ /life/programs
+│  └─ /life/gallery
 ├─ /news
-│  └─ /news/[slug]
-├─ /transparency
+│  ├─ /news/notices
+│  ├─ /news/activities
+│  ├─ /news/[slug]
+│  └─ /transparency
 └─ /support
+   ├─ /support/donation
+   ├─ /support/volunteer
+   └─ /support/contact
 ```
 
-### 향후 검토 경로
-
-인사말·연혁, 생활 세부, 후원·자원봉사 하위 페이지는 공식 콘텐츠 확보 후
-구현 여부와 경로를 결정한다. `/about/greeting`, `/about/history`,
-`/life/activities`, `/life/spaces`, `/support/volunteer`, `/support/donation`은
-현재 공개 route나 메뉴로 표현하지 않는다.
+`/transparency`는 URL상 `/news` 하위가 아니지만 메뉴와 탐색 구조에서는 `소식`의 하위인 `자료공개`로 제공한다.
 
 ## 메인 페이지 필수 모듈
 

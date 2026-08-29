@@ -66,7 +66,7 @@ export default async function Home() {
           <h2 id="quick-heading" className="text-heading font-bold">
             자주 찾는 업무
           </h2>
-          <ul className="mt-5 divide-y divide-border border-y border-border lg:grid lg:grid-cols-5 lg:divide-x lg:divide-y-0">
+          <ul className="mt-5 grid divide-y divide-border border-y border-border sm:grid-cols-2 sm:divide-x lg:grid-cols-3">
             {homeFixture.quickLinks.map((item) => (
               <li key={item.href}>
                 <Link

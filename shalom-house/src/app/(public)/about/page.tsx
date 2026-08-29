@@ -85,7 +85,7 @@ const aboutLinks = [
   },
   {
     number: "04",
-    label: "정보공개",
+    label: "자료공개",
     description: "공개가 승인된 운영 자료를 확인합니다.",
     href: "/transparency",
     borderClassName:
