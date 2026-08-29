@@ -23,7 +23,7 @@ export default function GreetingPage() {
           { label: "시설소개", href: "/about" },
           { label: "인사말" },
         ]}
-        notice="현재 내용은 공식 인사말이 아닌 화면 구성 검증용 예시입니다."
+        notice="공식 인사말은 운영 책임자의 확인과 공개 승인을 마친 뒤 게시합니다."
       />
       <section className="mx-auto max-w-site px-page py-12 sm:px-page-wide">
         <p className="font-bold text-accent">{greeting.statusLabel}</p>
@@ -38,12 +38,7 @@ export default function GreetingPage() {
             {paragraph}
           </p>
         ))}
-        <h2 className="mt-10 text-heading font-bold">공식 콘텐츠 확인 항목</h2>
-        <ul className="mt-4 list-disc space-y-2 pl-6">
-          <li>작성 주체와 최종 승인 상태</li>
-          <li>게시 시점과 수정 책임</li>
-        </ul>
-        <div className="mt-10 flex flex-wrap gap-5">
+        <div className="mt-8 flex flex-wrap gap-5">
           <Link className="font-bold text-primary underline" href="/about">
             시설개요
           </Link>

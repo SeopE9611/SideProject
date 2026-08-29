@@ -104,21 +104,11 @@ export async function NewsListPage({
             <span aria-current="page">{title}</span>
           </nav>
           <p className="mt-7 text-small font-bold text-accent">소식</p>
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-5">
-            <div>
-              <h1 className="text-safe-wrap text-title font-bold sm:text-[2.5rem]">{title}</h1>
-              <p className="text-safe-wrap mt-3 max-w-2xl text-body text-muted-foreground">
-                {description}
-              </p>
-            </div>
-            <a
-              className="inline-flex min-h-11 items-center text-small font-bold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              href={siteConfig.instagram}
-              target="_blank"
-              rel="noreferrer"
-            >
-              인스타그램 보기(새 창)
-            </a>
+          <div className="mt-2">
+            <h1 className="text-safe-wrap text-title font-bold sm:text-[2.5rem]">{title}</h1>
+            <p className="text-safe-wrap mt-3 max-w-2xl text-body text-muted-foreground">
+              {description}
+            </p>
           </div>
         </div>
         <SectionLocalNavigation sectionHref="/news" />
@@ -186,17 +176,18 @@ export async function NewsListPage({
                 {q ? ` · 검색어: “${q}”` : " · 검색어 없음"} · 전체 {total}건
               </p>
             </div>
-            <Link
-              className="inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              href={basePath}
-            >
-              조건 초기화
-            </Link>
+            {hasUserFilter ? (
+              <Link
+                className="inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                href={basePath}
+              >
+                조건 초기화
+              </Link>
+            ) : null}
           </div>
           {hasFixture ? (
             <aside className="mt-5 border-l-4 border-primary bg-primary-soft px-4 py-3 text-small">
-              현재 표시된 게시물은 목록과 상세 화면 검증용 예시이며 공식 시설 소식이
-              아닙니다.
+              현재 표시된 게시물은 공식 시설 소식이 아닙니다.
             </aside>
           ) : null}
           {!hasUserFilter && total === 0 ? (
@@ -260,7 +251,7 @@ export async function NewsListPage({
                         {getNewsCategoryLabel(post.category)}
                       </p>
                       {post.isDemo ? (
-                        <p className="mt-1 text-xs text-muted-foreground">개발용 예시</p>
+                        <p className="mt-1 text-xs text-muted-foreground">시연 콘텐츠</p>
                       ) : null}
                     </div>
                     <div>

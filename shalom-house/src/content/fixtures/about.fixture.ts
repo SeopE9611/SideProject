@@ -25,8 +25,7 @@ export const aboutFixture = {
     statusLabel: "공식 인사말 준비 중",
     title: "확인된 인사말을 준비하고 있습니다",
     paragraphs: [
-      "운영 책임자의 확인을 마친 인사말이 등록되면 표시됩니다.",
-      "작성자와 게시 승인 상태를 확인한 콘텐츠만 공개합니다.",
+      "운영 책임자의 확인을 마친 내용이 등록되면 이 페이지에서 안내합니다.",
     ],
   },
   staffProfiles: [
@@ -66,7 +65,7 @@ export const aboutFixture = {
         description: "승인된 자료가 있을 때만 표시합니다.",
       },
     },
-  ] satisfies readonly StaffProfile[],
+  ] as readonly StaffProfile[],
   spaces: [
     {
       id: "space-common",
