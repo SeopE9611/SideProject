@@ -16,6 +16,15 @@ function isCurrentPage(pathname: string, href: string) {
   return pathname === href;
 }
 
+type NavigationItem = (typeof siteConfig.mainNavigation)[number];
+
+function isCurrentNavigationItem(pathname: string, item: NavigationItem) {
+  return (
+    isCurrentSection(pathname, item.href) ||
+    item.children.some((child) => isCurrentSection(pathname, child.href))
+  );
+}
+
 type SiteNavigationContentProps = {
   pathname: string;
 };
@@ -26,7 +35,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
   const navigationRef = useRef<HTMLDivElement>(null);
   const desktopButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const activeExpandableItem = siteConfig.mainNavigation.find(
-    (item) => item.children.length > 0 && isCurrentSection(pathname, item.href),
+    (item) => item.children.length > 0 && isCurrentNavigationItem(pathname, item),
   );
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openDesktopHref, setOpenDesktopHref] = useState<string | null>(null);
@@ -95,7 +104,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
         <ul className="flex items-center gap-1">
           {siteConfig.mainNavigation.map((item, index) => {
             const hasChildren = item.children.length > 0;
-            const isActive = isCurrentSection(pathname, item.href);
+            const isActive = isCurrentNavigationItem(pathname, item);
             const isSubmenuOpen = openDesktopHref === item.href;
             const submenuId = `${mobileMenuId}-desktop-${index}`;
             const inactiveClassName = item.emphasis
@@ -282,7 +291,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
         <ul className="mx-auto w-full max-w-site divide-y divide-border px-page py-2 sm:px-page-wide">
           {siteConfig.mainNavigation.map((item, index) => {
             const hasChildren = item.children.length > 0;
-            const isActive = isCurrentSection(pathname, item.href);
+            const isActive = isCurrentNavigationItem(pathname, item);
             const isSubmenuOpen = openMobileHref === item.href;
             const submenuId = `${mobileMenuId}-mobile-${index}`;
             const activeClassName = isActive

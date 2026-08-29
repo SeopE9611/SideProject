@@ -72,7 +72,7 @@ const relatedLinks = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "정보공개",
+  title: "자료공개",
   description:
     "샬롬의 집의 운영 보고, 예산·결산, 후원금 관련 공개 자료를 확인합니다.",
 };
@@ -81,7 +81,7 @@ export default function TransparencyPage() {
   return (
     <>
       <PageHero
-        eyebrow="정보공개"
+        eyebrow="자료공개"
         title="운영 자료를 찾기 쉬운 기준으로 공개합니다"
         description="운영 보고, 예산·결산, 후원금 관련 자료를 분류와 기준 기간에 맞춰 안내합니다. 담당자 확인과 개인정보 검토를 마친 최종 자료만 게시합니다."
         asideTitle="자료 안내 현황"

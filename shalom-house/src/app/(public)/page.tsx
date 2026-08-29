@@ -247,10 +247,10 @@ export default async function Home() {
         <div className="mx-auto max-w-site px-page sm:px-page-wide">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <h2 id="documents-heading" className="text-title font-bold">
-              정보공개
+              자료공개
             </h2>
             <Link className={sectionLink} href="/transparency">
-              정보공개 전체 보기
+              자료공개 전체 보기
             </Link>
           </div>
           <ul className="mt-6 divide-y divide-border border-y border-border bg-surface">

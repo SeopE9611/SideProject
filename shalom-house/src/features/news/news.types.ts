@@ -34,6 +34,21 @@ export type PublicNewsPost = {
 
 export type PublicNewsPostSummary = Omit<PublicNewsPost, "body">;
 
+export type PublicNewsSearchOptions = {
+  q?: string;
+  category?: NewsCategory;
+  page?: number;
+  pageSize?: number;
+};
+
+export type PublicNewsSearchResult = {
+  items: readonly PublicNewsPostSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
 const categoryLabels: Record<NewsCategory, string> = {
   notice: "공지사항",
   activity: "활동 소식",
