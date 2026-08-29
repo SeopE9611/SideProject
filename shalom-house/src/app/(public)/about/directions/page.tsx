@@ -28,7 +28,7 @@ export default function DirectionsPage() {
             <ol className="flex flex-wrap items-center gap-2">
               <li>
                 <Link
-                  className="text-safe-wrap inline-flex min-h-11 items-center underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                  className="text-safe-wrap inline-flex min-h-11 min-w-11 items-center justify-center px-2 underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                   href="/"
                 >
                   홈
@@ -37,7 +37,7 @@ export default function DirectionsPage() {
               <li aria-hidden="true">/</li>
               <li>
                 <Link
-                  className="text-safe-wrap inline-flex min-h-11 items-center underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                  className="text-safe-wrap inline-flex min-h-11 min-w-11 items-center justify-center px-2 underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                   href="/about"
                 >
                   시설소개
