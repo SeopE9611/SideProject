@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SectionLocalNavigation } from "@/components/layout/section-local-navigation";
 import { siteConfig } from "@/config/site";
 import { getNewsRepository } from "@/features/news/news.repository";
 import {
@@ -120,6 +121,7 @@ export async function NewsListPage({
             </a>
           </div>
         </div>
+        <SectionLocalNavigation sectionHref="/news" />
       </header>
 
       <div className="mx-auto max-w-site px-page py-10 sm:px-page-wide sm:py-14">

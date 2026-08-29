@@ -135,7 +135,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                 }}
               >
                 <div
-                  className={`flex min-h-12 items-stretch border-b-2 transition-colors duration-[var(--motion-duration-fast)] ease-standard ${
+                  className={`flex min-h-11 items-stretch border-b-2 transition-colors duration-[var(--motion-duration-fast)] ease-standard ${
                     isActive
                       ? item.emphasis
                         ? "rounded-control border-accent bg-accent text-primary-foreground"
@@ -147,7 +147,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                     aria-current={
                       isCurrentPage(pathname, item.href) ? "page" : undefined
                     }
-                    className="text-safe-wrap inline-flex min-h-12 items-center px-3 py-2 text-small font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-4"
+                    className="text-safe-wrap inline-flex min-h-11 items-center whitespace-nowrap px-2 py-2 text-small font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3"
                     href={item.href}
                   >
                     {item.label}
@@ -163,7 +163,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                       aria-label={`${item.label} 하위 메뉴 ${
                         isSubmenuOpen ? "닫기" : "열기"
                       }`}
-                      className="inline-flex min-h-12 min-w-10 items-center justify-center border-l border-current/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                      className="inline-flex min-h-11 min-w-9 items-center justify-center border-l border-current/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                       onClick={() =>
                         setOpenDesktopHref((current) =>
                           current === item.href ? null : item.href,
@@ -285,7 +285,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
       <nav
         id={mobileMenuId}
         aria-label="모바일 주요 메뉴"
-        className="absolute inset-x-0 top-full max-h-[calc(100dvh-5rem)] overflow-y-auto border-b border-border-strong bg-surface shadow-nav lg:hidden"
+        className="absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-border-strong bg-surface shadow-nav lg:hidden"
         hidden={!isMobileOpen}
       >
         <ul className="mx-auto w-full max-w-site divide-y divide-border px-page py-2 sm:px-page-wide">
@@ -307,16 +307,13 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                     aria-current={
                       isCurrentPage(pathname, item.href) ? "page" : undefined
                     }
-                    className="flex min-h-16 min-w-0 flex-1 items-center px-4 py-3 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                    className="flex min-h-14 min-w-0 flex-1 items-center px-4 py-3 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                     href={item.href}
                     onClick={closeMobileMenu}
                   >
                     <span>
                       <span className="text-safe-wrap block text-base font-bold">
                         {item.label}
-                      </span>
-                      <span className="text-safe-wrap mt-1 block text-small text-muted-foreground">
-                        {item.description}
                       </span>
                     </span>
                   </Link>
@@ -328,7 +325,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                       aria-label={`${item.label} 하위 메뉴 ${
                         isSubmenuOpen ? "닫기" : "열기"
                       }`}
-                      className="inline-flex min-h-16 min-w-14 items-center justify-center border-l border-border text-foreground hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                      className="inline-flex min-h-14 min-w-12 items-center justify-center border-l border-border text-foreground hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                       onClick={() =>
                         setOpenMobileHref((current) =>
                           current === item.href ? null : item.href,
@@ -376,7 +373,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                         <li key={child.href}>
                           <Link
                             aria-current={isChildActive ? "page" : undefined}
-                            className={`block min-h-14 rounded-control px-4 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+                            className={`flex min-h-12 items-center px-4 py-2 transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
                               isChildActive
                                 ? "bg-primary text-primary-foreground"
                                 : "text-foreground hover:bg-primary-soft hover:text-primary"
@@ -387,15 +384,6 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                             <span className="text-safe-wrap block text-small font-bold">
                               {child.label}
                             </span>
-                            <span
-                              className={`text-safe-wrap mt-1 block text-xs ${
-                                isChildActive
-                                  ? "text-primary-foreground"
-                                  : "text-muted-foreground"
-                              }`}
-                            >
-                              {child.description}
-                            </span>
                           </Link>
                         </li>
                       );
@@ -405,6 +393,10 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
               </li>
             );
           })}
+        </ul>
+        <ul className="mx-auto grid w-full max-w-site grid-cols-2 border-t border-border px-page py-3 sm:px-page-wide">
+          <li><a className="inline-flex min-h-11 w-full items-center justify-center font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring" href={`tel:${siteConfig.phone}`} onClick={closeMobileMenu}>전화하기</a></li>
+          <li><Link className="inline-flex min-h-11 w-full items-center justify-center border-l border-border font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring" href="/about/directions" onClick={closeMobileMenu}>찾아오시는 길</Link></li>
         </ul>
       </nav>
     </div>

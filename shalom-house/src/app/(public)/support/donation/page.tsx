@@ -13,6 +13,7 @@ export default function DonationPage() {
   return (
     <>
       <SectionPageHeader
+        sectionHref="/support"
         eyebrow="함께하기"
         title="후원하기"
         description="확인 가능한 후원 방식과 문의 절차를 안내합니다."

@@ -15,6 +15,7 @@ export default function PeoplePage() {
   return (
     <>
       <SectionPageHeader
+        sectionHref="/about"
         eyebrow="시설소개"
         title="함께하는 사람들"
         description="직원과 운영 역할을 승인된 범위에서 소개합니다."

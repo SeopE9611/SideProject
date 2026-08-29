@@ -12,6 +12,7 @@ export default function SpacesPage() {
   return (
     <>
       <SectionPageHeader
+        sectionHref="/about"
         eyebrow="시설소개"
         title="생활공간"
         description="승인된 설명과 사진으로 생활공간을 안내하기 위한 페이지입니다."

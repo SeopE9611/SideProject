@@ -12,6 +12,7 @@ export default function GalleryPage() {
   return (
     <>
       <SectionPageHeader
+        sectionHref="/life"
         eyebrow="생활·프로그램"
         title="활동사진"
         description="사진별 공개 동의와 승인을 확인한 활동 기록을 위한 페이지입니다."

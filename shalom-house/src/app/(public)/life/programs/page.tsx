@@ -12,6 +12,7 @@ export default function ProgramsPage() {
   return (
     <>
       <SectionPageHeader
+        sectionHref="/life"
         eyebrow="생활·프로그램"
         title="프로그램"
         description="확인된 프로그램을 분류와 목적 중심으로 안내하기 위한 페이지입니다."

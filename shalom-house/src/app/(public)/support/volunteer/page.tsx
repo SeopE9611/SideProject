@@ -12,6 +12,7 @@ export default function VolunteerPage() {
   return (
     <>
       <SectionPageHeader
+        sectionHref="/support"
         eyebrow="함께하기"
         title="자원봉사"
         description="참여 가능 여부부터 방문 전 준비까지 확인하는 절차입니다."

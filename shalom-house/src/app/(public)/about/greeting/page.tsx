@@ -14,6 +14,7 @@ export default function GreetingPage() {
   return (
     <>
       <SectionPageHeader
+        sectionHref="/about"
         eyebrow="시설소개"
         title="인사말"
         description="운영 책임자의 확인을 거친 공식 메시지를 안내하는 페이지입니다."
