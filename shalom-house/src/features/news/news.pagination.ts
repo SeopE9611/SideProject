@@ -17,6 +17,64 @@ export const PUBLIC_NEWS_SEARCH_DEFAULT_PAGE_SIZE = 8;
 export const PUBLIC_NEWS_SEARCH_MAXIMUM_PAGE_SIZE = 20;
 export const PUBLIC_NEWS_SEARCH_QUERY_MAX_LENGTH = 100;
 
+export type PublicNewsPaginationItem =
+  | {
+      type: "page";
+      page: number;
+    }
+  | {
+      type: "ellipsis";
+      position: "start" | "end";
+    };
+
+export function getPublicNewsPaginationItems(
+  currentPage: number,
+  totalPages: number,
+): readonly PublicNewsPaginationItem[] {
+  const safeTotalPages =
+    Number.isSafeInteger(totalPages) && totalPages > 0 ? totalPages : 1;
+  const safeCurrentPage =
+    Number.isSafeInteger(currentPage) && currentPage > 0
+      ? Math.min(currentPage, safeTotalPages)
+      : 1;
+  const page = (value: number): PublicNewsPaginationItem => ({
+    type: "page",
+    page: value,
+  });
+
+  if (safeTotalPages <= 7) {
+    return Array.from({ length: safeTotalPages }, (_, index) => page(index + 1));
+  }
+
+  if (safeCurrentPage <= 4) {
+    return [
+      ...[1, 2, 3, 4, 5].map(page),
+      { type: "ellipsis", position: "end" },
+      page(safeTotalPages),
+    ];
+  }
+
+  if (safeCurrentPage >= safeTotalPages - 3) {
+    return [
+      page(1),
+      { type: "ellipsis", position: "start" },
+      ...Array.from({ length: 5 }, (_, index) =>
+        page(safeTotalPages - 4 + index),
+      ),
+    ];
+  }
+
+  return [
+    page(1),
+    { type: "ellipsis", position: "start" },
+    page(safeCurrentPage - 1),
+    page(safeCurrentPage),
+    page(safeCurrentPage + 1),
+    { type: "ellipsis", position: "end" },
+    page(safeTotalPages),
+  ];
+}
+
 export function normalizePublicNewsSearchQuery(value?: string): string {
   return typeof value === "string"
     ? value.trim().slice(0, PUBLIC_NEWS_SEARCH_QUERY_MAX_LENGTH)

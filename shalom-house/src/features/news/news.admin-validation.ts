@@ -1,5 +1,6 @@
 import {
   isNewsCategory,
+  isPublicNewsReservedSlug,
   isValidNewsSlug,
   type NewsCategory,
 } from "./news.types";
@@ -243,6 +244,9 @@ export function validateAdminNewsDraftInput(
     fieldErrors.slug = "슬러그는 80자 이하여야 합니다.";
   } else if (!isValidNewsSlug(slug)) {
     fieldErrors.slug = "슬러그는 영문 소문자, 숫자와 하이픈만 사용할 수 있습니다.";
+  } else if (isPublicNewsReservedSlug(slug)) {
+    fieldErrors.slug =
+      "이 주소는 소식 분류 페이지에서 사용 중입니다. 다른 슬러그를 입력해 주세요.";
   }
 
   const title = typeof value.title === "string" ? value.title.trim() : "";
