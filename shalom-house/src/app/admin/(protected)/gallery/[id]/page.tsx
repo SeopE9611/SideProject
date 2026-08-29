@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminGalleryReviewForm } from "@/components/admin/admin-gallery-review-form";
+import { AdminGalleryReviewDecisionForm } from "@/components/admin/admin-gallery-review-decision-form";
+import { AdminGalleryPublishForm } from "@/components/admin/admin-gallery-publish-form";
+import { AdminGalleryPublicationStateForm } from "@/components/admin/admin-gallery-publication-state-form";
+import { AdminGalleryConsentWithdrawalForm } from "@/components/admin/admin-gallery-consent-withdrawal-form";
 import { AdminGalleryArchiveForm } from "@/components/admin/admin-gallery-archive-form";
 import { findAdminGalleryItemById } from "@/features/gallery/gallery.admin-repository";
 import {
@@ -41,10 +46,7 @@ export default async function GalleryDetail({
     ["생성일", item.createdAt],
     ["수정일", item.updatedAt],
   ];
-  const editable =
-    item.publicationStatus === "draft" &&
-    (item.approvalStatus === "pending" || item.approvalStatus === "rejected") &&
-    !item.archivedAt;
+  const editable = item.isEditable;
   return (
     <div className="space-y-8">
       <header>
@@ -88,6 +90,14 @@ export default async function GalleryDetail({
             </div>
           ))}
         </dl>
+      </section>
+      <section className="grid gap-5" aria-labelledby="gallery-actions"><h2 id="gallery-actions" className="text-heading font-bold">상태 변경</h2>
+        {item.canRequestReview ? <AdminGalleryReviewForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
+        {item.canDecideReview ? <AdminGalleryReviewDecisionForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
+        {item.canPublish ? <AdminGalleryPublishForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
+        {item.canManagePublicationState ? <AdminGalleryPublicationStateForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
+        {item.canWithdrawConsent ? <AdminGalleryConsentWithdrawalForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
+        <p><strong>현재 공개 여부:</strong> {item.isPubliclyVisible ? <>공개 중 · <Link className="underline" href={`/life/gallery/${item.slug}`}>공개 상세 보기</Link></> : "공개되지 않음"}</p>
       </section>
       {editable ? (
         <section className="rounded-card border p-5">

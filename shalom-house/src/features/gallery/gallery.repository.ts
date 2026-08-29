@@ -1,0 +1,10 @@
+import { MongoGalleryRepository } from "./gallery.mongo-repository";
+export type PublicGallerySummary = { slug:string; title:string; category:string; description:string; altText:string; activityDate:string; width:number; height:number };
+export type PublicGalleryItem = PublicGallerySummary & { publishedAt:string };
+export type PublicGalleryMedia = { bucket:string; objectPath:string; mimeType:"image/webp"; byteSize:number };
+export interface GalleryRepository { listPublished():Promise<readonly PublicGallerySummary[]>; findPublishedBySlug(slug:string):Promise<PublicGalleryItem|null>; findMediaBySlug(slug:string):Promise<PublicGalleryMedia|null> }
+const empty: GalleryRepository = { async listPublished(){return[]}, async findPublishedBySlug(){return null}, async findMediaBySlug(){return null} };
+export function getGalleryRepository(): GalleryRepository { const configured=process.env.SHALOM_CONTENT_SOURCE; const source=configured || (process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview" ? "fixture" : "empty"); if(source==="mongodb") return new MongoGalleryRepository(); if(source==="empty"||source==="fixture") return empty; throw new Error(`지원하지 않는 SHALOM_CONTENT_SOURCE 설정입니다: ${source}`); }
+export const findPublicGalleryItems=()=>getGalleryRepository().listPublished();
+export const findPublicGalleryBySlug=(slug:string)=>getGalleryRepository().findPublishedBySlug(slug);
+export const findPublicGalleryMediaBySlug=(slug:string)=>getGalleryRepository().findMediaBySlug(slug);

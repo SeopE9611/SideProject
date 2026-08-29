@@ -207,6 +207,16 @@ export function validateAdminGalleryArchiveInput(input: unknown) {
     ? { ok: true as const, value: { expectedUpdatedAt: date } }
     : { ok: false as const };
 }
+const transition = (input: unknown, extra?: (v: Record<string, unknown>) => boolean) => {
+  const v = typeof input === "object" && input !== null ? input as Record<string, unknown> : {};
+  const date = typeof v.expectedUpdatedAt === "string" ? new Date(v.expectedUpdatedAt) : null;
+  return date && !Number.isNaN(date.getTime()) && date.toISOString() === v.expectedUpdatedAt && (!extra || extra(v)) ? { ok: true as const, value: { expectedUpdatedAt: date } } : { ok: false as const };
+};
+export const validateAdminGalleryReviewInput = (v: unknown) => transition(v, x => x.reviewConfirmed === true);
+export function validateAdminGalleryDecisionInput(v: unknown) { const r = transition(v, x => x.decision === "approve" || x.decision === "reject"); return r.ok ? { ...r, value: { ...r.value, decision: (v as {decision:"approve"|"reject"}).decision } } : r; }
+export const validateAdminGalleryPublishInput = (v: unknown) => transition(v, x => x.publishConfirmed === true);
+export function validateAdminGalleryPublicationInput(v: unknown) { const r = transition(v, x => x.action === "unpublish"); return r.ok ? { ...r, value: { ...r.value, action: "unpublish" as const } } : r; }
+export const validateAdminGalleryConsentWithdrawalInput = (v: unknown) => transition(v, x => x.withdrawalConfirmed === true);
 function webpDimensions(
   buffer: Buffer,
 ): { width: number; height: number } | null {

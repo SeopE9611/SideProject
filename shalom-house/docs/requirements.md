@@ -79,3 +79,6 @@
 운영 환경은 실제 값을 문서에 기록하지 않고 서버 전용
 `SHALOM_SUPABASE_URL`, `SHALOM_SUPABASE_SECRET_KEY`,
 `SHALOM_SUPABASE_GALLERY_PRIVATE_BUCKET`을 설정한다.
+
+## 활동사진 검토·공개
+활동사진은 초안, 검토 요청, 승인 또는 반려, 게시, 게시 중단 순서로 운영한다. 식별 가능한 인물은 확인일과 참조 코드가 있는 공개 동의 확인 상태여야 하며, 동의 철회 시 게시를 즉시 중단하고 현재 단계에서는 복구하지 않는다. 공개 기간은 Asia/Seoul의 날짜를 기준으로 판정한다.

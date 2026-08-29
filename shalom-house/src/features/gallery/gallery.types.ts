@@ -76,3 +76,24 @@ export const getGalleryConsentStatusLabel = (v: GalleryConsentStatus) =>
   consentLabels[v];
 export const isValidGallerySlug = (v: unknown): v is string =>
   typeof v === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v);
+
+type ConsentFields = {
+  subjectPresence: GallerySubjectPresence;
+  consentStatus: GalleryConsentStatus;
+  consentCheckedOn: string | null;
+  consentReferenceCode: string | null;
+  consentWithdrawnAt: Date | null;
+};
+const canonicalDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && new Date(`${value}T00:00:00.000Z`).toISOString().slice(0, 10) === value;
+export function isGalleryConsentReadyForPublication(item: ConsentFields): boolean {
+  if (item.consentWithdrawnAt !== null) return false;
+  if (item.subjectPresence === "identifiable") return item.consentStatus === "confirmed" && item.consentCheckedOn !== null && canonicalDate(item.consentCheckedOn) && Boolean(item.consentReferenceCode?.trim());
+  return (item.subjectPresence === "none" || item.subjectPresence === "non_identifiable") && item.consentStatus === "not_required" && item.consentCheckedOn === null && item.consentReferenceCode === null;
+}
+export function getSeoulCalendarDate(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}
+export function isGalleryPubliclyVisible(item: ConsentFields & { publicationStatus: GalleryPublicationStatus; approvalStatus: GalleryApprovalStatus; publishedAt: Date | null; archivedAt: Date | null; deletedAt?: Date | null; displayStartOn: string | null; displayEndOn: string | null }, now = new Date()): boolean {
+  const today = getSeoulCalendarDate(now);
+  return item.publicationStatus === "published" && item.approvalStatus === "approved" && item.publishedAt !== null && item.publishedAt <= now && item.archivedAt === null && item.deletedAt == null && isGalleryConsentReadyForPublication(item) && (item.displayStartOn === null || item.displayStartOn <= today) && (item.displayEndOn === null || item.displayEndOn >= today);
+}

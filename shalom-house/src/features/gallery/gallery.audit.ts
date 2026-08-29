@@ -4,6 +4,12 @@ import type { MongoGalleryItemDocument } from "./gallery.mongo-schema";
 export const galleryAuditActions = [
   "draft_created",
   "draft_updated",
+  "review_requested",
+  "review_approved",
+  "review_rejected",
+  "published",
+  "unpublished",
+  "consent_withdrawn",
   "archived",
 ] as const;
 export type GalleryAuditAction = (typeof galleryAuditActions)[number];
