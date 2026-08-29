@@ -1,0 +1,5 @@
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
+import { findAdminGalleryItemById } from "@/features/gallery/gallery.admin-repository";
+import { downloadPrivateGalleryImage } from "@/features/gallery/gallery.storage";
+export const runtime="nodejs";type Context={params:Promise<{id:string}>};const privateHeaders={"Cache-Control":"private, no-store","Content-Type":"image/webp","X-Content-Type-Options":"nosniff","Content-Disposition":"inline; filename=\"gallery-preview.webp\""};
+export async function GET(_:Request,{params}:Context){const admin=await getCurrentAdmin();if(!admin)return new Response(null,{status:401,headers:{"Cache-Control":"private, no-store"}});const{id}=await params,item=await findAdminGalleryItemById(id);if(!item)return new Response(null,{status:404,headers:{"Cache-Control":"private, no-store"}});try{const blob=await downloadPrivateGalleryImage(item.media.bucket,item.media.objectPath);return new Response(await blob.arrayBuffer(),{status:200,headers:privateHeaders});}catch{return new Response(null,{status:503,headers:{"Cache-Control":"private, no-store"}});}}

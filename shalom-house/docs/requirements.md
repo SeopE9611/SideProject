@@ -71,3 +71,7 @@
 ## 프로그램 콘텐츠 관리
 
 프로그램은 독립 콘텐츠로 작성·검토·승인·게시하며 공개 목록과 상세에서 확인할 수 있어야 한다. 공개 정보는 분류, 제목, 요약, 목적, 본문, 선택 운영 상태 문구와 정렬 순서로 제한하고 이미지 기능은 후속 범위로 둔다.
+
+## 활동사진 비공개 관리 1차
+
+관리자는 JPEG·PNG·WebP 원본을 브라우저에서 WebP로 변환해 private bucket `shalom-gallery-private`에 업로드할 수 있다. binary는 Supabase Storage, 메타데이터·인물 식별 가능성·홈페이지 공개 동의·게시 기간·작성 및 승인 상태와 감사 기록은 MongoDB에 저장한다. 서버는 MIME·magic bytes·크기·SHA-256을 검증하고 MongoDB 저장 실패 시 Storage object를 보상 삭제한다. service role은 서버 전용이며 public bucket과 공개 기능은 이 단계에 포함하지 않는다.
