@@ -1,2 +1,157 @@
-import Link from "next/link";import { listAdminGalleryItems,normalizeAdminGalleryPage } from "@/features/gallery/gallery.admin-repository";import { getGalleryApprovalStatusLabel,getGalleryConsentStatusLabel,getGalleryPublicationStatusLabel,getGallerySubjectPresenceLabel,isGalleryConsentStatus,isGalleryPublicationStatus,isGallerySubjectPresence } from "@/features/gallery/gallery.types";
-export default async function AdminGalleryPage({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){const q=await searchParams,page=normalizeAdminGalleryPage(q.page),subjectPresence=isGallerySubjectPresence(q.subjectPresence)?q.subjectPresence:undefined,consentStatus=isGalleryConsentStatus(q.consentStatus)?q.consentStatus:undefined,publicationStatus=isGalleryPublicationStatus(q.publicationStatus)?q.publicationStatus:undefined,result=await listAdminGalleryItems({page,subjectPresence,consentStatus,publicationStatus});return <div className="space-y-8"><header className="flex flex-wrap items-end justify-between gap-4"><div><h1 className="text-title font-bold">활동사진 관리</h1><p className="mt-2 text-muted-foreground">비공개 초안과 인물·홈페이지 공개 동의 상태를 관리합니다.</p></div><Link href="/admin/gallery/new" className="min-h-11 rounded-control bg-primary px-4 py-3 font-semibold text-primary-foreground">새 활동사진 초안</Link></header><form className="grid gap-3 sm:grid-cols-4"><label>인물 상태<select name="subjectPresence" defaultValue={subjectPresence??""} className="block min-h-11 w-full border"><option value="">전체</option><option value="none">인물 없음</option><option value="non_identifiable">개인 식별 불가</option><option value="identifiable">개인 식별 가능</option></select></label><label>동의 상태<select name="consentStatus" defaultValue={consentStatus??""} className="block min-h-11 w-full border"><option value="">전체</option><option value="not_required">별도 동의 불필요</option><option value="pending">동의 확인 중</option><option value="confirmed">공개 동의 확인</option><option value="withdrawn">공개 동의 철회</option></select></label><label>게시 상태<select name="publicationStatus" defaultValue={publicationStatus??""} className="block min-h-11 w-full border"><option value="">전체</option><option value="draft">작성 중</option><option value="review">검토 중</option><option value="published">게시</option><option value="archived">보관</option></select></label><button className="min-h-11 self-end border font-semibold">필터 적용</button></form><div className="grid gap-4">{result.items.length?result.items.map(item=><article key={item.id} className="min-w-0 rounded-card border p-5"><h2 className="font-bold"><Link className="underline" href={`/admin/gallery/${item.id}`}>{item.title}</Link></h2><dl className="mt-3 grid gap-2 text-small sm:grid-cols-4"><div><dt className="font-semibold">분류</dt><dd>{item.category}</dd></div><div><dt className="font-semibold">활동일</dt><dd>{item.activityDate}</dd></div><div><dt className="font-semibold">인물 / 동의</dt><dd>{getGallerySubjectPresenceLabel(item.subjectPresence)} / {getGalleryConsentStatusLabel(item.consentStatus)}</dd></div><div><dt className="font-semibold">게시 / 승인</dt><dd>{getGalleryPublicationStatusLabel(item.publicationStatus)} / {getGalleryApprovalStatusLabel(item.approvalStatus)}</dd></div><div><dt className="font-semibold">수정일</dt><dd>{item.updatedAt}</dd></div></dl></article>):<p className="rounded-card border p-5">조건에 맞는 활동사진 초안이 없습니다.</p>}</div><nav aria-label="활동사진 목록 페이지" className="flex gap-4">{result.page>1?<Link href={`?page=${result.page-1}`}>이전</Link>:null}<span>{result.page} / {result.totalPages}</span>{result.page<result.totalPages?<Link href={`?page=${result.page+1}`}>다음</Link>:null}</nav></div>}
+import Link from "next/link";
+import {
+  listAdminGalleryItems,
+  normalizeAdminGalleryPage,
+} from "@/features/gallery/gallery.admin-repository";
+import {
+  getGalleryApprovalStatusLabel,
+  getGalleryConsentStatusLabel,
+  getGalleryPublicationStatusLabel,
+  getGallerySubjectPresenceLabel,
+  isGalleryConsentStatus,
+  isGalleryPublicationStatus,
+  isGallerySubjectPresence,
+} from "@/features/gallery/gallery.types";
+export default async function AdminGalleryPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const q = await searchParams,
+    page = normalizeAdminGalleryPage(q.page),
+    subjectPresence = isGallerySubjectPresence(q.subjectPresence)
+      ? q.subjectPresence
+      : undefined,
+    consentStatus = isGalleryConsentStatus(q.consentStatus)
+      ? q.consentStatus
+      : undefined,
+    publicationStatus = isGalleryPublicationStatus(q.publicationStatus)
+      ? q.publicationStatus
+      : undefined,
+    result = await listAdminGalleryItems({
+      page,
+      subjectPresence,
+      consentStatus,
+      publicationStatus,
+    });
+  return (
+    <div className="space-y-8">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-title font-bold">활동사진 관리</h1>
+          <p className="mt-2 text-muted-foreground">
+            비공개 초안과 인물·홈페이지 공개 동의 상태를 관리합니다.
+          </p>
+        </div>
+        <Link
+          href="/admin/gallery/new"
+          className="min-h-11 rounded-control bg-primary px-4 py-3 font-semibold text-primary-foreground"
+        >
+          새 활동사진 초안
+        </Link>
+      </header>
+      <form className="grid gap-3 sm:grid-cols-4">
+        <label>
+          인물 상태
+          <select
+            name="subjectPresence"
+            defaultValue={subjectPresence ?? ""}
+            className="block min-h-11 w-full border"
+          >
+            <option value="">전체</option>
+            <option value="none">인물 없음</option>
+            <option value="non_identifiable">개인 식별 불가</option>
+            <option value="identifiable">개인 식별 가능</option>
+          </select>
+        </label>
+        <label>
+          동의 상태
+          <select
+            name="consentStatus"
+            defaultValue={consentStatus ?? ""}
+            className="block min-h-11 w-full border"
+          >
+            <option value="">전체</option>
+            <option value="not_required">별도 동의 불필요</option>
+            <option value="pending">동의 확인 중</option>
+            <option value="confirmed">공개 동의 확인</option>
+            <option value="withdrawn">공개 동의 철회</option>
+          </select>
+        </label>
+        <label>
+          게시 상태
+          <select
+            name="publicationStatus"
+            defaultValue={publicationStatus ?? ""}
+            className="block min-h-11 w-full border"
+          >
+            <option value="">전체</option>
+            <option value="draft">작성 중</option>
+            <option value="review">검토 중</option>
+            <option value="published">게시</option>
+            <option value="archived">보관</option>
+          </select>
+        </label>
+        <button className="min-h-11 self-end border font-semibold">
+          필터 적용
+        </button>
+      </form>
+      <div className="grid gap-4">
+        {result.items.length ? (
+          result.items.map((item) => (
+            <article key={item.id} className="min-w-0 rounded-card border p-5">
+              <h2 className="font-bold">
+                <Link className="underline" href={`/admin/gallery/${item.id}`}>
+                  {item.title}
+                </Link>
+              </h2>
+              <dl className="mt-3 grid gap-2 text-small sm:grid-cols-4">
+                <div>
+                  <dt className="font-semibold">분류</dt>
+                  <dd>{item.category}</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold">활동일</dt>
+                  <dd>{item.activityDate}</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold">인물 / 동의</dt>
+                  <dd>
+                    {getGallerySubjectPresenceLabel(item.subjectPresence)} /{" "}
+                    {getGalleryConsentStatusLabel(item.consentStatus)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-semibold">게시 / 승인</dt>
+                  <dd>
+                    {getGalleryPublicationStatusLabel(item.publicationStatus)} /{" "}
+                    {getGalleryApprovalStatusLabel(item.approvalStatus)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-semibold">수정일</dt>
+                  <dd>{item.updatedAt}</dd>
+                </div>
+              </dl>
+            </article>
+          ))
+        ) : (
+          <p className="rounded-card border p-5">
+            조건에 맞는 활동사진 초안이 없습니다.
+          </p>
+        )}
+      </div>
+      <nav aria-label="활동사진 목록 페이지" className="flex gap-4">
+        {result.page > 1 ? (
+          <Link href={`?page=${result.page - 1}`}>이전</Link>
+        ) : null}
+        <span>
+          {result.page} / {result.totalPages}
+        </span>
+        {result.page < result.totalPages ? (
+          <Link href={`?page=${result.page + 1}`}>다음</Link>
+        ) : null}
+      </nav>
+    </div>
+  );
+}

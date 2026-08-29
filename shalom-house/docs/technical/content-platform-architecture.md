@@ -248,7 +248,7 @@ draft + rejected + publishedAt=null
 - 게시 조건은 삭제되지 않은 `review + approved + publishedAt=null` 게시물이며,
   `updatedAt`가 form이 읽은 값과 일치해야 한다.
 - 상태 전환은 `review + approved + publishedAt=null → published + approved +
-  publishedAt=<server time>`이다. 서버가 만든 같은 시각을 `publishedAt`과
+publishedAt=<server time>`이다. 서버가 만든 같은 시각을 `publishedAt`과
   `updatedAt`에 기록한다.
 - 하나의 `findOneAndUpdate`가 `publicationStatus`, `publishedAt`, `updatedAt`만
   변경한다. `approvalStatus`, `createdAt`, `deletedAt`, `slug`, `category`, `title`,
@@ -262,11 +262,11 @@ draft + rejected + publishedAt=null
 ### 게시 상태 변경
 
 - 게시 중단은 `published + approved + publishedAt=Date → review + approved +
-  publishedAt=null`로 전환한다. `publicationStatus`, `publishedAt`, `updatedAt`만
+publishedAt=null`로 전환한다. `publicationStatus`, `publishedAt`, `updatedAt`만
   변경하므로 즉시 비공개되고 승인은 유지되며 기존 게시 기능으로 재게시할 수 있다.
   이전 게시 시각은 현재 문서에서 보존하지 않는다.
 - 보관은 `published + approved + publishedAt=Date → archived + approved +
-  publishedAt=기존 Date`로 전환한다. `publicationStatus`, `updatedAt`만 변경해
+publishedAt=기존 Date`로 전환한다. `publicationStatus`, `updatedAt`만 변경해
   즉시 비공개하되 기존 게시일은 유지하며 현재는 복구·재게시할 수 없다.
 - 두 전환 모두 삭제되지 않은 `published+approved` 문서와 설정된 `publishedAt`,
   일치하는 `expectedUpdatedAt`을 filter에서 확인하고 `findOneAndUpdate` 하나로
@@ -323,6 +323,6 @@ draft + rejected + publishedAt=null
 
 ## 활동사진 비공개 관리 기반
 
-활동사진 binary는 Supabase Storage의 private bucket `shalom-gallery-private`에 저장하고, MongoDB에는 `gallery_items` 메타데이터·상태·bucket·object path와 `gallery_audit_events` 감사 기록만 저장한다. service role client는 `SHALOM_SUPABASE_URL`, `SHALOM_SUPABASE_SERVICE_ROLE_KEY`, `SHALOM_SUPABASE_GALLERY_PRIVATE_BUCKET`을 사용하는 서버 전용 구성이다.
+활동사진 binary는 Supabase Storage의 private bucket `shalom-gallery-private`에 저장하고, MongoDB에는 `gallery_items` 메타데이터·상태·bucket·object path와 `gallery_audit_events` 감사 기록만 저장한다. server client는 `SHALOM_SUPABASE_URL`, `SHALOM_SUPABASE_SECRET_KEY`, `SHALOM_SUPABASE_GALLERY_PRIVATE_BUCKET`을 사용하는 서버 전용 구성이며 실제 비밀 값은 문서에 기록하지 않는다.
 
 브라우저에서 긴 변 1920px 이하, quality 0.82의 WebP로 변환한 뒤 서버가 MIME, RIFF/WEBP magic bytes, 실제 용량·크기와 SHA-256을 다시 검증한다. Storage 업로드 뒤 MongoDB metadata와 audit를 transaction으로 저장하며 실패하면 업로드 object를 보상 삭제한다. public bucket, 공개 URL과 공개 갤러리 연결은 후속 단계다.
