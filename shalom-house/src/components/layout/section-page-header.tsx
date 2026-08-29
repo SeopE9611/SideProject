@@ -1,6 +1,9 @@
 import Link from "next/link";
 
+import { SectionLocalNavigation, type SectionHref } from "@/components/layout/section-local-navigation";
+
 type SectionPageHeaderProps = {
+  sectionHref: SectionHref;
   eyebrow: string;
   title: string;
   description: string;
@@ -9,6 +12,7 @@ type SectionPageHeaderProps = {
 };
 
 export function SectionPageHeader({
+  sectionHref,
   eyebrow,
   title,
   description,
@@ -17,14 +21,15 @@ export function SectionPageHeader({
 }: SectionPageHeaderProps) {
   return (
     <header className="border-b border-border bg-surface">
-      <div className="mx-auto max-w-site px-page py-10 sm:px-page-wide sm:py-14">
+      <div className="mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-12">
         <nav aria-label="breadcrumb">
           <ol className="flex flex-wrap gap-x-3 gap-y-1 text-small">
             {breadcrumbs.map((item, index) => (
-              <li key={`${item.label}-${index}`} className="text-safe-wrap">
+              <li key={`${item.label}-${index}`} className="text-safe-wrap flex items-center gap-3">
+                {index > 0 ? <span aria-hidden="true">/</span> : null}
                 {item.href ? (
                   <Link
-                    className="text-primary underline underline-offset-4"
+                    className="text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                     href={item.href}
                   >
                     {item.label}
@@ -44,11 +49,12 @@ export function SectionPageHeader({
           {description}
         </p>
         {notice ? (
-          <p className="text-safe-wrap mt-6 border-l-4 border-primary bg-primary-soft px-4 py-3 text-small">
+          <p className="text-safe-wrap mt-5 border-l-2 border-primary bg-primary-soft px-3 py-2 text-small">
             {notice}
           </p>
         ) : null}
       </div>
+      <SectionLocalNavigation sectionHref={sectionHref} />
     </header>
   );
 }

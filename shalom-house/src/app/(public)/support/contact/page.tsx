@@ -13,6 +13,7 @@ export default function ContactPage() {
   return (
     <>
       <SectionPageHeader
+        sectionHref="/support"
         eyebrow="함께하기"
         title="문의하기"
         description="현재 공식 설정에서 확인된 연락 경로만 안내합니다."
