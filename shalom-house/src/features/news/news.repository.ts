@@ -1,4 +1,4 @@
-import { getPublishedFixtureNewsPosts } from "./news.fixtures";
+import { getPublishedFixtureNewsPosts } from "@/content/fixtures/news.fixture";
 import { MongoNewsRepository } from "./news.mongo-repository";
 import { normalizePublicNewsLimit } from "./news.pagination";
 import type { PublicNewsPost, PublicNewsPostSummary } from "./news.types";
@@ -45,7 +45,9 @@ export function getNewsRepository(): NewsRepository {
   const configuredSource = process.env.SHALOM_CONTENT_SOURCE;
   const source =
     configuredSource ||
-    (process.env.NODE_ENV === "development" ? "fixture" : "empty");
+    (process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview"
+      ? "fixture"
+      : "empty");
 
   switch (source) {
     case "empty":

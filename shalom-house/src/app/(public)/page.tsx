@@ -1,318 +1,44 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { HomeHero } from "@/components/home/home-hero";
 import { siteConfig } from "@/config/site";
+import { homeFixture } from "@/content/fixtures/home.fixture";
 import { getNewsRepository } from "@/features/news/news.repository";
-import { getNewsCategoryLabel } from "@/features/news/news.types";
-import type { PublicNewsPostSummary } from "@/features/news/news.types";
+import { getNewsCategoryLabel, type PublicNewsPostSummary } from "@/features/news/news.types";
 
-export const metadata: Metadata = {
-  title: siteConfig.name,
-  description: siteConfig.description,
-};
-
+export const metadata: Metadata = { title: siteConfig.name, description: siteConfig.description };
 export const dynamic = "force-dynamic";
-
-const quickLinks = [
-  {
-    label: "시설 안내",
-    description: "시설의 기본 정보와 찾아오시는 길",
-    href: "/about",
-  },
-  {
-    label: "생활 이야기",
-    description: "샬롬의 집에서 이어지는 일상과 활동",
-    href: "/life",
-  },
-  {
-    label: "함께하기",
-    description: "후원과 자원봉사 참여 전 확인 사항",
-    href: "/support",
-  },
-  {
-    label: "정보공개",
-    description: "운영과 후원 관련 공개 자료",
-    href: "/transparency",
-  },
-] as const;
-
-const dailyStories = [
-  {
-    label: "식탁",
-    title: "함께 준비하고 나누는 한 끼",
-    description:
-      "식사를 준비하고 한 식탁에 둘러앉는 평범한 시간이 하루의 리듬을 만듭니다.",
-  },
-  {
-    label: "외부 활동",
-    title: "집 밖에서 만나는 사람과 장소",
-    description:
-      "나들이와 지역 활동을 통해 새로운 경험을 나누고 생활의 범위를 넓혀 갑니다.",
-  },
-  {
-    label: "생활 공간",
-    title: "매일 머무는 곳을 더 편안하게",
-    description:
-      "생활 공간을 안전하고 편안하게 살피며 필요한 변화를 이어 갑니다.",
-  },
-] as const;
-
-const publishedDateFormatter = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  timeZone: "UTC",
-});
+const dateFormatter = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 
 async function getHomeNewsPosts(): Promise<readonly PublicNewsPostSummary[]> {
   try {
     const posts = await getNewsRepository().listPublished({ limit: 6 });
-    return posts.filter((post) => !post.isDemo).slice(0, 3);
-  } catch (error) {
-    console.error("홈 최근 소식을 불러오지 못했습니다.", error);
-    return [];
-  }
+    const official = posts.filter((post) => !post.isDemo);
+    return (official.length > 0 ? official : posts.filter((post) => post.isDemo)).slice(0, 3);
+  } catch (error) { console.error("홈 최근 소식을 불러오지 못했습니다.", error); return []; }
 }
+
+const sectionLink = "inline-flex min-h-11 items-center font-bold text-primary underline decoration-border-strong underline-offset-4 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
 
 export default async function Home() {
   const newsPosts = await getHomeNewsPosts();
+  const showsFixtureNews = newsPosts.some((post) => post.isDemo);
+  return <>
+    <HomeHero siteName={siteConfig.name} facilityType="장애인거주시설" description={siteConfig.description} image={homeFixture.heroImage} />
+    <aside className="border-b border-border bg-surface-subtle"><p className="text-safe-wrap mx-auto max-w-site px-page py-4 text-small text-muted-foreground sm:px-page-wide">현재 일부 이미지와 문구는 화면 구성 검증용 예시이며 공식 시설 콘텐츠가 아닙니다.</p></aside>
 
-  return (
-    <>
-      <HomeHero />
+    <nav aria-labelledby="quick-heading" className="border-b border-border bg-surface"><div className="mx-auto max-w-site px-page py-10 sm:px-page-wide"><h2 id="quick-heading" className="text-heading font-bold">자주 찾는 업무</h2><ul className="mt-5 divide-y divide-border border-y border-border lg:grid lg:grid-cols-5 lg:divide-x lg:divide-y-0">{homeFixture.quickLinks.map((item)=><li key={item.href}><Link className="group block min-h-28 px-4 py-5 hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring" href={item.href}><strong className="text-safe-wrap block">{item.label}</strong><span className="text-safe-wrap mt-2 block text-small text-muted-foreground">{item.description}</span></Link></li>)}</ul></div></nav>
 
-      <nav
-        aria-labelledby="home-quick-links-heading"
-        className="border-b border-border bg-surface"
-      >
-        <div className="mx-auto w-full max-w-site px-page sm:px-page-wide">
-          <h2 id="home-quick-links-heading" className="sr-only">
-            자주 찾는 안내
-          </h2>
-          <ul className="grid sm:grid-cols-2 lg:grid-cols-4">
-            {quickLinks.map((item, index) => (
-              <li
-                key={item.href}
-                className={`${index > 0 ? "border-t border-border sm:border-t-0" : ""} ${index % 2 === 1 ? "sm:border-l" : ""} ${index > 0 ? "lg:border-l" : ""}`}
-              >
-                <Link
-                  className="group flex min-h-36 flex-col justify-between gap-6 px-5 py-7 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-focus-ring sm:px-6"
-                  href={item.href}
-                >
-                  <span className="text-safe-wrap text-lg font-bold">
-                    {item.label}
-                  </span>
-                  <span className="flex items-end justify-between gap-4">
-                    <span className="text-safe-wrap text-small text-muted-foreground">
-                      {item.description}
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className="text-xl font-bold text-primary transition-transform duration-[var(--motion-duration-fast)] ease-standard group-hover:translate-x-1"
-                    >
-                      →
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
+    <section aria-labelledby="news-heading" className="bg-surface py-14 sm:py-20"><div className="mx-auto max-w-site px-page sm:px-page-wide"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-small font-bold text-accent">최근 소식</p><h2 id="news-heading" className="mt-2 text-title font-bold">공지와 활동 소식</h2></div><Link className={sectionLink} href="/news">전체 소식 보기</Link></div>{showsFixtureNews && <p className="mt-6 border-l-4 border-primary bg-primary-soft px-4 py-3 text-small">개발용 예시 게시물이며 공식 시설 소식이 아닙니다.</p>}{newsPosts.length ? <ul className="mt-7 border-t-2 border-foreground">{newsPosts.map((post)=><li key={post.id} className="border-b border-border"><article className="grid gap-3 py-6 md:grid-cols-[7rem_minmax(0,1fr)_9rem]"><p className="text-small font-bold text-primary">{getNewsCategoryLabel(post.category)}</p><div><h3 className="text-heading font-bold"><Link className="text-safe-wrap underline decoration-border-strong underline-offset-4 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}>{post.title}</Link></h3><p className="text-safe-wrap mt-2 text-body text-muted-foreground">{post.summary}</p></div><time className="text-small text-muted-foreground md:text-right" dateTime={post.publishedAt}>{dateFormatter.format(new Date(post.publishedAt))}</time></article></li>)}</ul>:<div className="mt-7 border-y border-border py-7"><h3 className="font-bold">홈페이지 소식을 준비하고 있습니다.</h3><p className="mt-2 text-muted-foreground">새 게시물이 공개되면 이 영역에서 확인할 수 있습니다.</p></div>}</div></section>
 
-      <section
-        aria-labelledby="home-life-heading"
-        className="bg-surface py-20 sm:py-28"
-      >
-        <div className="mx-auto w-full max-w-site px-page sm:px-page-wide">
-          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-            <div className="lg:sticky lg:top-40 lg:self-start">
-              <p className="text-small font-bold tracking-[0.08em] text-accent">
-                샬롬의 일상
-              </p>
-              <h2
-                id="home-life-heading"
-                className="text-safe-wrap mt-4 max-w-2xl text-balance text-display font-bold text-foreground sm:text-display-lg"
-              >
-                같이 먹고, 걷고, 쉬는 하루
-              </h2>
-              <p className="text-safe-wrap mt-6 max-w-xl text-pretty text-body text-muted-foreground">
-                특별한 행사가 아니어도 괜찮습니다. 함께 보내는 평범한 시간이
-                샬롬의 집의 가장 중요한 이야기가 됩니다.
-              </p>
-              <Link
-                className="mt-7 inline-flex min-h-11 items-center gap-2 text-base font-bold text-primary underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                href="/life"
-              >
-                생활이야기 전체 보기
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
+    <section aria-labelledby="support-heading" className="border-y border-border bg-surface-subtle py-14 sm:py-18"><div className="mx-auto max-w-site px-page sm:px-page-wide"><h2 id="support-heading" className="text-title font-bold">생활·지원 영역</h2><ul className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-4">{homeFixture.supportAreas.map((item)=><li key={item.id}><Link className="block h-full rounded-card border border-border bg-surface p-6 hover:border-border-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={item.href}><span className="text-small font-bold text-accent">{item.label}</span><h3 className="text-safe-wrap mt-3 text-heading font-bold">{item.title}</h3><p className="text-safe-wrap mt-3 text-small text-muted-foreground">{item.description}</p></Link></li>)}</ul></div></section>
 
-            <ol className="border-t-2 border-foreground">
-              {dailyStories.map((story, index) => (
-                <li
-                  key={story.label}
-                  className="grid gap-5 border-b border-border-strong py-8 sm:grid-cols-[3rem_minmax(0,1fr)] sm:gap-7 sm:py-10"
-                >
-                  <span className="text-small font-bold text-accent">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <article>
-                    <p className="text-small font-bold text-primary">
-                      {story.label}
-                    </p>
-                    <h3 className="text-safe-wrap mt-3 text-balance text-title font-bold text-foreground">
-                      {story.title}
-                    </h3>
-                    <p className="text-safe-wrap mt-4 max-w-2xl text-pretty text-body text-muted-foreground">
-                      {story.description}
-                    </p>
-                  </article>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-      </section>
+    <section aria-labelledby="stories-heading" className="bg-surface py-14 sm:py-20"><div className="mx-auto max-w-site px-page sm:px-page-wide"><div className="flex flex-wrap items-end justify-between gap-4"><h2 id="stories-heading" className="text-title font-bold">생활 기록</h2><Link className={sectionLink} href="/life">생활이야기 보기</Link></div><ul className="mt-7 grid gap-8 lg:grid-cols-3">{homeFixture.stories.map((story)=><li key={story.id}><article>{story.image && <Image className="aspect-3/2 w-full border border-border object-cover" src={story.image.src} alt={story.image.alt} width={story.image.width} height={story.image.height}/>}<div className={story.image ? "pt-5" : "border-t-4 border-primary pt-5"}><p className="text-small text-muted-foreground"><span className="font-bold text-primary">{story.category}</span> · {story.dateLabel}</p><h3 className="text-safe-wrap mt-3 text-heading font-bold"><Link className="underline decoration-border-strong underline-offset-4 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={story.href}>{story.title}</Link></h3><p className="text-safe-wrap mt-3 text-body text-muted-foreground">{story.description}</p></div></article></li>)}</ul></div></section>
 
-      <section
-        aria-labelledby="home-news-heading"
-        className="border-y border-border bg-home-cream py-20 sm:py-24"
-      >
-        <div className="mx-auto grid w-full max-w-site gap-12 px-page sm:px-page-wide lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
-          <div>
-            <p className="text-small font-bold tracking-[0.08em] text-accent">
-              최근 소식
-            </p>
-            <h2
-              id="home-news-heading"
-              className="text-safe-wrap mt-4 text-balance text-display font-bold text-foreground sm:text-display-lg"
-            >
-              새로운 안내와 활동 기록
-            </h2>
-            <Link
-              className="mt-7 inline-flex min-h-11 items-center gap-2 text-base font-bold text-primary underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              href="/news"
-            >
-              전체 소식 보기
-              <span aria-hidden="true">→</span>
-            </Link>
-          </div>
+    <section aria-labelledby="documents-heading" className="border-y border-border bg-surface-subtle py-12"><div className="mx-auto max-w-site px-page sm:px-page-wide"><div className="flex flex-wrap items-end justify-between gap-4"><h2 id="documents-heading" className="text-title font-bold">정보공개</h2><Link className={sectionLink} href="/transparency">정보공개 전체 보기</Link></div><ul className="mt-6 divide-y divide-border border-y border-border bg-surface">{homeFixture.documents.map((doc)=><li key={doc.id}><Link className="grid min-h-24 gap-2 px-5 py-5 hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring md:grid-cols-[minmax(0,1fr)_10rem_9rem_10rem] md:items-center" href={doc.href}><strong className="text-safe-wrap">{doc.title}</strong><span className="text-small text-muted-foreground">{doc.period}</span><span className="text-small text-muted-foreground">{doc.format}</span><span className="text-small font-bold text-primary">{doc.statusLabel}</span></Link></li>)}</ul></div></section>
 
-          {newsPosts.length > 0 ? (
-            <ul className="border-t-2 border-foreground">
-              {newsPosts.map((post) => (
-                <li key={post.id} className="border-b border-border-strong">
-                  <article className="grid gap-4 py-7 sm:grid-cols-[7rem_minmax(0,1fr)_auto] sm:items-start sm:gap-6">
-                    <p className="text-small font-bold text-primary">
-                      {getNewsCategoryLabel(post.category)}
-                    </p>
-                    <div>
-                      <h3 className="text-heading font-bold text-foreground">
-                        <Link
-                          className="text-safe-wrap underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                          href={`/news/${post.slug}`}
-                        >
-                          {post.title}
-                        </Link>
-                      </h3>
-                      <p className="text-safe-wrap mt-2 max-w-2xl text-pretty text-body text-muted-foreground">
-                        {post.summary}
-                      </p>
-                    </div>
-                    <time
-                      dateTime={post.publishedAt}
-                      className="text-small text-muted-foreground sm:text-right"
-                    >
-                      {publishedDateFormatter.format(new Date(post.publishedAt))}
-                    </time>
-                  </article>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="border-t-2 border-foreground py-8 sm:py-10">
-              <p className="text-small font-bold text-accent">공식 채널 안내</p>
-              <h3 className="text-safe-wrap mt-3 text-balance text-title font-bold text-foreground">
-                홈페이지의 첫 소식을 준비하고 있습니다
-              </h3>
-              <p className="text-safe-wrap mt-4 max-w-2xl text-pretty text-body text-muted-foreground">
-                새로운 게시물이 등록되기 전까지 공식 인스타그램에서 최근
-                활동을 확인할 수 있습니다.
-              </p>
-              <a
-                className="mt-6 inline-flex min-h-11 items-center gap-2 text-base font-bold text-primary underline decoration-border-strong underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                href={siteConfig.instagram}
-                rel="noreferrer"
-                target="_blank"
-              >
-                공식 인스타그램 보기
-                <span aria-hidden="true">↗</span>
-              </a>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section
-        aria-labelledby="home-together-heading"
-        className="bg-surface py-20 sm:py-28"
-      >
-        <div className="mx-auto grid w-full max-w-site overflow-hidden border border-border bg-home-ink lg:grid-cols-[1fr_1fr]">
-          <div className="px-7 py-12 text-hero-on-dark sm:px-12 sm:py-16 lg:px-14">
-            <p className="text-small font-bold tracking-[0.08em] text-sun-soft">
-              함께하기
-            </p>
-            <h2
-              id="home-together-heading"
-              className="text-safe-wrap mt-4 max-w-xl text-balance text-display font-bold sm:text-display-lg"
-            >
-              마음을 더하는 방법도 정확하게 안내합니다
-            </h2>
-            <p className="text-safe-wrap mt-5 max-w-xl text-pretty text-body text-hero-muted">
-              자원봉사와 후원 절차를 확인하고, 운영과 후원 관련 공개 자료를
-              함께 살펴볼 수 있습니다.
-            </p>
-          </div>
-
-          <div className="grid bg-surface">
-            <Link
-              className="group flex min-h-40 items-center justify-between gap-6 border-b border-border px-7 py-7 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-focus-ring sm:px-10"
-              href="/support"
-            >
-              <span>
-                <span className="text-small font-bold text-accent">
-                  참여 안내
-                </span>
-                <span className="text-safe-wrap mt-2 block text-heading font-bold">
-                  자원봉사와 후원 문의 방법
-                </span>
-              </span>
-              <span aria-hidden="true" className="text-2xl font-bold transition-transform group-hover:translate-x-1">
-                →
-              </span>
-            </Link>
-            <Link
-              className="group flex min-h-40 items-center justify-between gap-6 px-7 py-7 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-focus-ring sm:px-10"
-              href="/transparency"
-            >
-              <span>
-                <span className="text-small font-bold text-primary">
-                  정보공개
-                </span>
-                <span className="text-safe-wrap mt-2 block text-heading font-bold">
-                  운영 및 후원 공개 자료
-                </span>
-              </span>
-              <span aria-hidden="true" className="text-2xl font-bold transition-transform group-hover:translate-x-1">
-                →
-              </span>
-            </Link>
-          </div>
-        </div>
-      </section>
-    </>
-  );
+    <section aria-labelledby="contact-heading" className="bg-surface py-14"><div className="mx-auto grid max-w-site gap-7 border-l-4 border-primary px-page sm:px-page-wide lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="text-small font-bold text-accent">위치와 연락</p><h2 id="contact-heading" className="mt-2 text-title font-bold">샬롬의 집 연락처</h2><address className="mt-5 space-y-2 not-italic"><p className="text-safe-wrap"><strong>주소</strong> {siteConfig.address}</p><p><strong>대표 전화</strong> {siteConfig.phone}</p></address></div><div className="flex flex-col gap-3 sm:flex-row"><a className="inline-flex min-h-12 items-center justify-center bg-primary px-5 py-3 font-bold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring" href={`tel:${siteConfig.phone}`}>전화 연결</a><Link className="inline-flex min-h-12 items-center justify-center border border-border-strong px-5 py-3 font-bold hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href="/about/directions">찾아오시는 길</Link></div></div></section>
+  </>;
 }
