@@ -297,20 +297,24 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
             const isActive = isCurrentNavigationItem(pathname, item);
             const isSubmenuOpen = openMobileHref === item.href;
             const submenuId = `${mobileMenuId}-mobile-${index}`;
-            const activeClassName = isActive
-              ? "border-primary bg-primary-soft"
-              : item.emphasis
+            const mobileItemContainerClassName = isActive
+              ? item.emphasis
                 ? "border-accent bg-accent-soft"
-                : "border-transparent";
+                : "border-primary bg-primary-soft"
+              : "border-transparent bg-transparent";
+            const mobileItemTextClassName =
+              item.emphasis && !isActive ? "text-accent" : "text-foreground";
 
             return (
               <li key={item.href} className="py-1">
-                <div className={`flex border-l-4 ${activeClassName}`}>
+                <div
+                  className={`flex border-l-4 ${mobileItemContainerClassName}`}
+                >
                   <Link
                     aria-current={
                       isCurrentPage(pathname, item.href) ? "page" : undefined
                     }
-                    className="flex min-h-14 min-w-0 flex-1 items-center px-4 py-3 text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                    className={`flex min-h-14 min-w-0 flex-1 items-center px-4 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${mobileItemTextClassName}`}
                     href={item.href}
                     onClick={closeMobileMenu}
                   >
@@ -328,7 +332,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                       aria-label={`${item.label} 하위 메뉴 ${
                         isSubmenuOpen ? "닫기" : "열기"
                       }`}
-                      className="inline-flex min-h-14 min-w-12 items-center justify-center border-l border-border text-foreground hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                      className={`inline-flex min-h-14 min-w-12 items-center justify-center border-l border-border hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${mobileItemTextClassName}`}
                       onClick={() =>
                         setOpenMobileHref((current) =>
                           current === item.href ? null : item.href,
