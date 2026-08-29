@@ -30,6 +30,10 @@ if (!uri) {
         { name: "gallery_items_admin_status" },
       ),
       items.createIndex(
+        { publicationStatus: 1, approvalStatus: 1, consentStatus: 1, consentWithdrawnAt: 1, displayStartOn: 1, displayEndOn: 1, activityDate: -1, publishedAt: -1, _id: -1 },
+        { name: "gallery_items_public_visibility" },
+      ),
+      items.createIndex(
         { deletedAt: 1, updatedAt: -1, _id: -1 },
         { name: "gallery_items_admin_updated" },
       ),

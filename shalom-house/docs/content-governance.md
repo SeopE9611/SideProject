@@ -104,3 +104,6 @@ CMS 구현 여부와 관계없이 공개 전 검수를 생략하지 않는다. �
 Supabase 비공개 보관소의 운영 환경 변수는
 `SHALOM_SUPABASE_URL`, `SHALOM_SUPABASE_SECRET_KEY`,
 `SHALOM_SUPABASE_GALLERY_PRIVATE_BUCKET`이며 비밀 값은 코드와 문서에 기록하지 않는다.
+
+## 활동사진 공개와 동의 철회
+승인된 활동사진도 private Storage의 단일 원본으로 유지한다. 공개 페이지에는 동의·승인 상태, 참조 코드, 원본 파일명 및 Storage 위치를 노출하지 않는다. 공개 미디어 API는 매 요청마다 게시·승인·동의·철회·게시 기간을 다시 확인하며 public URL과 signed URL을 사용하지 않고 `Cache-Control: no-store`로 응답한다. 동의 철회는 게시 중인 사진을 즉시 비공개로 전환하며 철회 복구는 현재 지원하지 않는다.

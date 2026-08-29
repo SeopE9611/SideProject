@@ -326,3 +326,6 @@ publishedAt=기존 Date`로 전환한다. `publicationStatus`, `updatedAt`만 �
 활동사진 binary는 Supabase Storage의 private bucket `shalom-gallery-private`에 저장하고, MongoDB에는 `gallery_items` 메타데이터·상태·bucket·object path와 `gallery_audit_events` 감사 기록만 저장한다. server client는 `SHALOM_SUPABASE_URL`, `SHALOM_SUPABASE_SECRET_KEY`, `SHALOM_SUPABASE_GALLERY_PRIVATE_BUCKET`을 사용하는 서버 전용 구성이며 실제 비밀 값은 문서에 기록하지 않는다.
 
 브라우저에서 긴 변 1920px 이하, quality 0.82의 WebP로 변환한 뒤 서버가 MIME, RIFF/WEBP magic bytes, 실제 용량·크기와 SHA-256을 다시 검증한다. Storage 업로드 뒤 MongoDB metadata와 audit를 transaction으로 저장하며 실패하면 업로드 object를 보상 삭제한다. public bucket, 공개 URL과 공개 갤러리 연결은 후속 단계다.
+
+## 활동사진 공개 미디어 경로
+공개 승인된 WebP도 Supabase private bucket에 한 번만 저장한다. 서버 공개 미디어 API가 MongoDB의 게시·승인 상태, 게시 시각, 동의 준비 상태, 철회 여부와 Asia/Seoul 기준 게시 시작·종료일을 매 요청 확인한 뒤 private Storage에서 다운로드해 전달한다. public bucket, `getPublicUrl()`, `createSignedUrl()`은 사용하지 않으며 철회와 게시 중단을 다음 요청부터 반영하도록 `Cache-Control: no-store`를 적용한다.

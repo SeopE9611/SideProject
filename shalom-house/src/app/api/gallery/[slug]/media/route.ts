@@ -1,0 +1,4 @@
+import { findPublicGalleryMediaBySlug } from "@/features/gallery/gallery.repository";
+import { downloadPrivateGalleryImage } from "@/features/gallery/gallery.storage";
+export const runtime="nodejs"; type Context={params:Promise<{slug:string}>}; const missing=()=>new Response(null,{status:404,headers:{"Cache-Control":"no-store"}});
+export async function GET(_:Request,{params}:Context){const{slug}=await params;let media;try{media=await findPublicGalleryMediaBySlug(slug)}catch{return new Response(null,{status:503,headers:{"Cache-Control":"no-store"}})}if(!media)return missing();try{const blob=await downloadPrivateGalleryImage(media.bucket,media.objectPath);return new Response(await blob.arrayBuffer(),{headers:{"Content-Type":"image/webp","Content-Disposition":'inline; filename="shalom-gallery.webp"',"X-Content-Type-Options":"nosniff","Cache-Control":"no-store"}})}catch{return new Response(null,{status:503,headers:{"Cache-Control":"no-store"}})}}
