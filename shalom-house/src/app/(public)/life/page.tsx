@@ -114,11 +114,156 @@ const contentPrinciples = [
 ] as const;
 
 export default function LifePage() {
-  return <>
-    <SectionPageHeader sectionHref="/life" eyebrow="생활·프로그램" title="생활이야기" description="식사를 나누고 안부를 묻고 바깥세상을 경험하며 각자의 속도로 쉬는 시간까지, 샬롬의 집에서 이어지는 생활과 활동을 소개합니다." breadcrumbs={[{ label: "홈", href: "/" }, { label: "생활·프로그램", href: "/life" }, { label: "생활이야기" }]} />
-    <section className="bg-surface py-12 sm:py-16" aria-labelledby="daily-rhythms-heading"><div className="mx-auto max-w-site px-page sm:px-page-wide"><h2 id="daily-rhythms-heading" className="text-heading font-bold">하루의 흐름</h2><ol className="mt-6 grid grid-cols-2 border-y border-border md:grid-cols-4">{dailyRhythms.map((item) => <li key={item.number} className="border-b border-border py-5 odd:pr-4 even:border-l even:pl-4 md:border-b-0 md:border-l md:px-5 md:first:border-l-0 md:first:pl-0"><p className="text-small font-bold text-primary">{item.label}</p><p className="text-safe-wrap mt-2 text-small text-muted-foreground">{item.title}</p></li>)}</ol></div></section>
-    <section id="life-scenes" aria-labelledby="life-scenes-heading" className="bg-surface-subtle py-12 sm:py-16"><div className="mx-auto max-w-site px-page sm:px-page-wide"><p className="text-small font-bold text-accent">하루의 장면</p><h2 id="life-scenes-heading" className="mt-3 text-display font-bold">특별한 행사보다 매일의 생활을 소중히 봅니다</h2><p className="mt-4 max-w-3xl text-muted-foreground">사람마다 좋아하는 것과 편안한 속도가 다르기에, 같은 공간에서도 각자의 선택과 생활 방식을 존중합니다.</p><ol className="mt-8 grid border-t-2 border-foreground lg:grid-cols-2">{lifeScenes.map((item) => <li key={item.number} className="border-b border-border py-6 lg:px-6 lg:odd:pl-0"><p className="text-small font-bold text-accent">{item.number} · {item.label}</p><h3 className="mt-3 text-heading font-bold">{item.title}</h3><p className="mt-3 text-muted-foreground">{item.description}</p></li>)}</ol></div></section>
-    <section aria-labelledby="life-activities-heading" className="bg-surface py-12 sm:py-16"><div className="mx-auto max-w-site px-page sm:px-page-wide"><p className="text-small font-bold text-primary">함께한 활동</p><h2 id="life-activities-heading" className="mt-3 text-display font-bold">생활에서 시작해 이웃과 이어집니다</h2><p className="mt-4 max-w-3xl text-muted-foreground">아래 내용은 지역사회와 함께해 온 활동 사례입니다. 현재 일정과 참여 방법은 확인된 소식에서 별도로 안내합니다.</p><ol className="mt-8 grid border-t-2 border-foreground lg:grid-cols-3">{activityStories.map((item) => <li key={item.number} className="border-b border-border py-6 lg:px-6 lg:first:pl-0 lg:last:pr-0"><p className="text-small font-bold text-accent">{item.number} · {item.label}</p><h3 className="mt-3 text-heading font-bold">{item.title}</h3><p className="mt-3 text-muted-foreground">{item.description}</p></li>)}</ol></div></section>
-    <section aria-labelledby="life-principles-heading" className="bg-surface-subtle py-12 sm:py-16"><div className="mx-auto max-w-site px-page sm:px-page-wide"><p className="text-small font-bold text-primary">기록의 원칙</p><h2 id="life-principles-heading" className="mt-3 text-display font-bold">생활을 전할 때도 사람을 먼저 생각합니다</h2><ol className="mt-8 border-t-4 border-primary">{contentPrinciples.map((item) => <li key={item.number} className="grid gap-3 border-b border-border py-5 sm:grid-cols-[3rem_0.8fr_1.2fr]"><span className="text-small font-bold text-accent">{item.number}</span><h3 className="font-bold">{item.title}</h3><p className="text-muted-foreground">{item.description}</p></li>)}</ol></div></section>
-  </>;
+  return (
+    <>
+      <SectionPageHeader
+        sectionHref="/life"
+        eyebrow="생활·프로그램"
+        title="생활이야기"
+        description="식사를 나누고 안부를 묻고 바깥세상을 경험하며 각자의 속도로 쉬는 시간까지, 샬롬의 집에서 이어지는 생활과 활동을 소개합니다."
+        breadcrumbs={[
+          { label: "홈", href: "/" },
+          { label: "생활·프로그램", href: "/life" },
+          { label: "생활이야기" },
+        ]}
+      />
+      <section
+        className="bg-surface py-12 sm:py-16"
+        aria-labelledby="daily-rhythms-heading"
+      >
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <h2
+            id="daily-rhythms-heading"
+            className="text-safe-wrap text-heading font-bold"
+          >
+            하루의 흐름
+          </h2>
+          <ol className="mt-6 grid grid-cols-2 border-y border-border md:grid-cols-4">
+            {dailyRhythms.map((item) => (
+              <li
+                key={item.number}
+                className="border-b border-border py-5 odd:pr-4 even:border-l even:pl-4 md:border-b-0 md:border-l md:px-5 md:first:border-l-0 md:first:pl-0"
+              >
+                <p className="text-safe-wrap text-small font-bold text-primary">
+                  {item.label}
+                </p>
+                <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
+                  {item.title}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+      <section
+        id="life-scenes"
+        aria-labelledby="life-scenes-heading"
+        className="bg-surface-subtle py-12 sm:py-16"
+      >
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <p className="text-safe-wrap text-small font-bold text-accent">
+            하루의 장면
+          </p>
+          <h2
+            id="life-scenes-heading"
+            className="text-safe-wrap mt-3 text-display font-bold"
+          >
+            특별한 행사보다 매일의 생활을 소중히 봅니다
+          </h2>
+          <p className="text-safe-wrap mt-4 max-w-3xl text-muted-foreground">
+            사람마다 좋아하는 것과 편안한 속도가 다르기에, 같은 공간에서도
+            각자의 선택과 생활 방식을 존중합니다.
+          </p>
+          <ol className="mt-8 grid border-t-2 border-foreground lg:grid-cols-2">
+            {lifeScenes.map((item) => (
+              <li
+                key={item.number}
+                className="border-b border-border py-6 lg:px-6 lg:odd:pl-0"
+              >
+                <p className="text-safe-wrap text-small font-bold text-accent">
+                  {item.number} · {item.label}
+                </p>
+                <h3 className="text-safe-wrap mt-3 text-heading font-bold">
+                  {item.title}
+                </h3>
+                <p className="text-safe-wrap mt-3 text-muted-foreground">
+                  {item.description}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+      <section
+        aria-labelledby="life-activities-heading"
+        className="bg-surface py-12 sm:py-16"
+      >
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <p className="text-safe-wrap text-small font-bold text-primary">
+            함께한 활동
+          </p>
+          <h2
+            id="life-activities-heading"
+            className="text-safe-wrap mt-3 text-display font-bold"
+          >
+            생활에서 시작해 이웃과 이어집니다
+          </h2>
+          <p className="text-safe-wrap mt-4 max-w-3xl text-muted-foreground">
+            아래 내용은 지역사회와 함께해 온 활동 사례입니다. 현재 일정과 참여
+            방법은 확인된 소식에서 별도로 안내합니다.
+          </p>
+          <ol className="mt-8 grid border-t-2 border-foreground lg:grid-cols-3">
+            {activityStories.map((item) => (
+              <li
+                key={item.number}
+                className="border-b border-border py-6 lg:px-6 lg:first:pl-0 lg:last:pr-0"
+              >
+                <p className="text-safe-wrap text-small font-bold text-accent">
+                  {item.number} · {item.label}
+                </p>
+                <h3 className="text-safe-wrap mt-3 text-heading font-bold">
+                  {item.title}
+                </h3>
+                <p className="text-safe-wrap mt-3 text-muted-foreground">
+                  {item.description}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+      <section
+        aria-labelledby="life-principles-heading"
+        className="bg-surface-subtle py-12 sm:py-16"
+      >
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <p className="text-safe-wrap text-small font-bold text-primary">
+            기록의 원칙
+          </p>
+          <h2
+            id="life-principles-heading"
+            className="text-safe-wrap mt-3 text-display font-bold"
+          >
+            생활을 전할 때도 사람을 먼저 생각합니다
+          </h2>
+          <ol className="mt-8 border-t-4 border-primary">
+            {contentPrinciples.map((item) => (
+              <li
+                key={item.number}
+                className="grid gap-3 border-b border-border py-5 sm:grid-cols-[3rem_0.8fr_1.2fr]"
+              >
+                <span className="text-safe-wrap text-small font-bold text-accent">
+                  {item.number}
+                </span>
+                <h3 className="text-safe-wrap font-bold">{item.title}</h3>
+                <p className="text-safe-wrap text-muted-foreground">
+                  {item.description}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    </>
+  );
 }

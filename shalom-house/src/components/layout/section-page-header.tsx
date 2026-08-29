@@ -1,6 +1,9 @@
 import Link from "next/link";
 
-import { SectionLocalNavigation, type SectionHref } from "@/components/layout/section-local-navigation";
+import {
+  SectionLocalNavigation,
+  type SectionHref,
+} from "@/components/layout/section-local-navigation";
 
 type SectionPageHeaderProps = {
   sectionHref: SectionHref;
@@ -25,7 +28,10 @@ export function SectionPageHeader({
         <nav aria-label="breadcrumb">
           <ol className="flex flex-wrap gap-x-3 gap-y-1 text-small">
             {breadcrumbs.map((item, index) => (
-              <li key={`${item.label}-${index}`} className="text-safe-wrap flex items-center gap-3">
+              <li
+                key={`${item.label}-${index}`}
+                className="text-safe-wrap flex items-center gap-3"
+              >
                 {index > 0 ? <span aria-hidden="true">/</span> : null}
                 {item.href ? (
                   <Link
