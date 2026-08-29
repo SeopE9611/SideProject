@@ -1,1 +1,52 @@
-import Link from "next/link";import { notFound } from "next/navigation";import { AdminGalleryDraftForm } from "@/components/admin/admin-gallery-draft-form";import { findAdminGalleryItemById } from "@/features/gallery/gallery.admin-repository";export default async function EditGallery({params}:{params:Promise<{id:string}>}){const{id}=await params,item=await findAdminGalleryItemById(id);if(!item)notFound();const editable=item.publicationStatus==="draft"&&(item.approvalStatus==="pending"||item.approvalStatus==="rejected")&&!item.archivedAt;return <div className="space-y-8"><header><Link href={`/admin/gallery/${id}`} className="font-semibold underline">← 활동사진 상세로 돌아가기</Link><h1 className="mt-4 text-title font-bold">활동사진 메타데이터 수정</h1></header>{editable?<AdminGalleryDraftForm mode="edit" galleryItemId={id} expectedUpdatedAt={item.updatedAt} initialValue={{slug:item.slug,title:item.title,category:item.category,description:item.description,altText:item.altText,activityDate:item.activityDate,subjectPresence:item.subjectPresence,consentStatus:item.consentStatus,consentCheckedOn:item.consentCheckedOn??"",consentReferenceCode:item.consentReferenceCode??"",displayStartOn:item.displayStartOn??"",displayEndOn:item.displayEndOn??""}}/>:<p className="rounded-card border p-5">현재 상태에서는 수정할 수 없습니다.</p>}</div>}
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { AdminGalleryDraftForm } from "@/components/admin/admin-gallery-draft-form";
+import { findAdminGalleryItemById } from "@/features/gallery/gallery.admin-repository";
+export default async function EditGallery({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params,
+    item = await findAdminGalleryItemById(id);
+  if (!item) notFound();
+  const editable =
+    item.publicationStatus === "draft" &&
+    (item.approvalStatus === "pending" || item.approvalStatus === "rejected") &&
+    !item.archivedAt;
+  return (
+    <div className="space-y-8">
+      <header>
+        <Link href={`/admin/gallery/${id}`} className="font-semibold underline">
+          ← 활동사진 상세로 돌아가기
+        </Link>
+        <h1 className="mt-4 text-title font-bold">활동사진 메타데이터 수정</h1>
+      </header>
+      {editable ? (
+        <AdminGalleryDraftForm
+          mode="edit"
+          galleryItemId={id}
+          expectedUpdatedAt={item.updatedAt}
+          initialValue={{
+            slug: item.slug,
+            title: item.title,
+            category: item.category,
+            description: item.description,
+            altText: item.altText,
+            activityDate: item.activityDate,
+            subjectPresence: item.subjectPresence,
+            consentStatus: item.consentStatus,
+            consentCheckedOn: item.consentCheckedOn ?? "",
+            consentReferenceCode: item.consentReferenceCode ?? "",
+            displayStartOn: item.displayStartOn ?? "",
+            displayEndOn: item.displayEndOn ?? "",
+          }}
+        />
+      ) : (
+        <p className="rounded-card border p-5">
+          현재 상태에서는 수정할 수 없습니다.
+        </p>
+      )}
+    </div>
+  );
+}

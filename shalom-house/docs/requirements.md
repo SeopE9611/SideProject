@@ -75,3 +75,7 @@
 ## 활동사진 비공개 관리 1차
 
 관리자는 JPEG·PNG·WebP 원본을 브라우저에서 WebP로 변환해 private bucket `shalom-gallery-private`에 업로드할 수 있다. binary는 Supabase Storage, 메타데이터·인물 식별 가능성·홈페이지 공개 동의·게시 기간·작성 및 승인 상태와 감사 기록은 MongoDB에 저장한다. 서버는 MIME·magic bytes·크기·SHA-256을 검증하고 MongoDB 저장 실패 시 Storage object를 보상 삭제한다. service role은 서버 전용이며 public bucket과 공개 기능은 이 단계에 포함하지 않는다.
+
+운영 환경은 실제 값을 문서에 기록하지 않고 서버 전용
+`SHALOM_SUPABASE_URL`, `SHALOM_SUPABASE_SECRET_KEY`,
+`SHALOM_SUPABASE_GALLERY_PRIVATE_BUCKET`을 설정한다.

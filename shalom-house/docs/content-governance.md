@@ -100,3 +100,7 @@ CMS 구현 여부와 관계없이 공개 전 검수를 생략하지 않는다. �
 ## 활동사진 1차 보관 정책
 
 활동사진 초안은 홈페이지 공개 동의 상태와 게시 가능 기간을 기록하되 private Supabase Storage에만 보관한다. 보관 처리는 Storage object 영구 삭제가 아니며 공개, 이미지 교체·영구 삭제와 동의 철회 처리는 후속 단계에서 운영 절차와 함께 구현한다. 동의 원본이나 실명은 저장하지 않고 내부 참조 코드만 기록한다.
+
+Supabase 비공개 보관소의 운영 환경 변수는
+`SHALOM_SUPABASE_URL`, `SHALOM_SUPABASE_SECRET_KEY`,
+`SHALOM_SUPABASE_GALLERY_PRIVATE_BUCKET`이며 비밀 값은 코드와 문서에 기록하지 않는다.
