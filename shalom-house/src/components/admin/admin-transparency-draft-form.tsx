@@ -28,9 +28,18 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
       const result = (await response.json().catch(() => null)) as TransparencyFormResponse | null;
       if (!result) throw new Error("invalid_json_response");
       if (response.ok && typeof result.redirectTo === "string" && result.redirectTo) { router.push(result.redirectTo); router.refresh(); return; }
-      if (result.error === "edit_conflict") setFormError("다른 관리자가 수정했습니다. 새로고침 후 다시 시도해 주세요.");
-      else if (result.error === "slug_conflict" || result.error === "document_duplicate") setErrors(result.fieldErrors ?? {});
-      else setFormError("저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      const nextFieldErrors =
+        result.fieldErrors ?? {};
+
+      setErrors(nextFieldErrors);
+
+      if (result.error === "edit_conflict") {
+        setFormError("다른 관리자가 수정했습니다. 새로고침 후 다시 시도해 주세요.");
+      } else if (Object.keys(nextFieldErrors).length > 0) {
+        setFormError("입력 내용을 확인해 주세요.");
+      } else {
+        setFormError("저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      }
     } catch {
       setFormError("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
     } finally {

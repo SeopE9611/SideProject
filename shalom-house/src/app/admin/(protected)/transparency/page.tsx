@@ -1,9 +1,44 @@
 import Link from "next/link";
 import { listAdminTransparencyDocuments, normalizeAdminTransparencyPage } from "@/features/transparency/transparency.admin-repository";
 import { isTransparencyCategory, isTransparencyFinalDocumentStatus, isTransparencyPrivacyReviewStatus, isTransparencyPublicationStatus, transparencyCategoryLabels } from "@/features/transparency/transparency.types";
-function buildTransparencyPageHref(page: number, filters: { category?: string; privacyReviewStatus?: string; finalDocumentStatus?: string; publicationStatus?: string }): string {
-  const query = new URLSearchParams({ page: String(page) });
-  for (const [name, value] of Object.entries(filters)) { if (value) query.set(name, value); }
+function buildTransparencyPageHref(
+  page: number,
+  filters: {
+    category?: string;
+    privacyReviewStatus?: string;
+    finalDocumentStatus?: string;
+    publicationStatus?: string;
+  },
+): string {
+  const query = new URLSearchParams({
+    page: String(page),
+  });
+
+  if (filters.category) {
+    query.set("category", filters.category);
+  }
+
+  if (filters.privacyReviewStatus) {
+    query.set(
+      "privacyReviewStatus",
+      filters.privacyReviewStatus,
+    );
+  }
+
+  if (filters.finalDocumentStatus) {
+    query.set(
+      "finalDocumentStatus",
+      filters.finalDocumentStatus,
+    );
+  }
+
+  if (filters.publicationStatus) {
+    query.set(
+      "publicationStatus",
+      filters.publicationStatus,
+    );
+  }
+
   return `/admin/transparency?${query.toString()}`;
 }
 export default async function AdminTransparencyPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
