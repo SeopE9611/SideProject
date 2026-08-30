@@ -7,7 +7,7 @@ import { createTransparencyAuditSnapshot } from "./transparency.audit";
 import { insertTransparencyAuditEvent } from "./transparency.audit-repository";
 import { TRANSPARENCY_DOCUMENT_COLLECTION_NAME, type MongoTransparencyDocument } from "./transparency.mongo-schema";
 import { removePrivateTransparencyDocument, uploadPrivateTransparencyDocument } from "./transparency.storage";
-import type { TransparencyCategory, TransparencyFinalDocumentStatus, TransparencyPrivacyReviewStatus, TransparencyPublicationStatus } from "./transparency.types";
+import { isTransparencyReadyForPublication, type TransparencyCategory, type TransparencyFinalDocumentStatus, type TransparencyPrivacyReviewStatus, type TransparencyPublicationStatus } from "./transparency.types";
 const PAGE_SIZE = 20;
 export const isValidAdminTransparencyDocumentId = (id: unknown): id is string => typeof id === "string" && /^[a-f0-9]{24}$/.test(id) && ObjectId.isValid(id);
 export const normalizeAdminTransparencyPage = (value: unknown) => typeof value === "string" && /^\d+$/.test(value) ? Math.min(10000, Math.max(1, Number(value))) : 1;
@@ -61,7 +61,11 @@ export async function findAdminTransparencyDocumentById(id: string) {
   if (!isValidAdminTransparencyDocumentId(id)) return null;
   const document = await (await getMongoDatabase()).collection<MongoTransparencyDocument>(TRANSPARENCY_DOCUMENT_COLLECTION_NAME).findOne({ _id: new ObjectId(id), deletedAt: null });
   if (!document) return null;
-  return { ...serialize(document), isEditable: document.publicationStatus === "draft" && (document.approvalStatus === "pending" || document.approvalStatus === "rejected") && document.publishedAt === null && document.archivedAt === null, isArchivable: document.publicationStatus === "draft" && document.publishedAt === null && document.archivedAt === null };
+  const requestable = isRequestable(document);
+  const now = new Date();
+  const isPubliclyVisible = isManageable(document) && document.publishedAt!.getTime() <= now.getTime() && isTransparencyReadyForPublication(document);
+  const publicVisibilityReason = isPubliclyVisible ? null : document.privacyReviewStatus !== "confirmed" ? "개인정보 검토 미완료" : document.finalDocumentStatus !== "final" ? "최종본 미확정" : document.approvalStatus === "rejected" ? "반려됨" : document.approvalStatus === "pending" && document.publicationStatus === "review" ? "승인 대기" : document.publicationStatus === "draft" ? "초안 작성 중" : document.publicationStatus === "review" && document.approvalStatus === "approved" ? "게시 중단됨" : "현재 공개되지 않음";
+  return { ...serialize(document), isEditable: requestable, isArchivable: document.publicationStatus === "draft" && document.publishedAt === null && document.archivedAt === null, canRequestReview: requestable && isTransparencyReadyForPublication(document), canDecideReview: isDecidable(document), canPublish: isPublishable(document) && isTransparencyReadyForPublication(document), canManagePublicationState: isManageable(document), isPubliclyVisible, publicVisibilityReason };
 }
 export async function listAdminTransparencyDocuments(input: { page: number; category?: TransparencyCategory; privacyReviewStatus?: TransparencyPrivacyReviewStatus; finalDocumentStatus?: TransparencyFinalDocumentStatus; publicationStatus?: TransparencyPublicationStatus }) {
   const filter: Filter<MongoTransparencyDocument> = { deletedAt: null };
@@ -100,4 +104,54 @@ export async function archiveAdminTransparencyDraft(input: { id: string; expecte
     await insertTransparencyAuditEvent({ database, session, documentId: before._id, action: "archived", actor: input.actor, occurredAt: updatedAt, fromVersionAt: before.updatedAt, toVersionAt: updatedAt, before: createTransparencyAuditSnapshot(before), after: createTransparencyAuditSnapshot(result), changedFields: ["publicationStatus", "archivedAt"] });
     return { ok: true as const };
   });
+}
+
+const isValidDate = (value: unknown): value is Date => value instanceof Date && !Number.isNaN(value.getTime());
+const isRequestable = (document: MongoTransparencyDocument) => document.publicationStatus === "draft" && (document.approvalStatus === "pending" || document.approvalStatus === "rejected") && document.publishedAt === null && document.archivedAt === null && document.deletedAt === null;
+const isDecidable = (document: MongoTransparencyDocument) => document.publicationStatus === "review" && document.approvalStatus === "pending" && document.publishedAt === null && document.archivedAt === null && document.deletedAt === null;
+const isPublishable = (document: MongoTransparencyDocument) => document.publicationStatus === "review" && document.approvalStatus === "approved" && document.publishedAt === null && document.archivedAt === null && document.deletedAt === null;
+const isManageable = (document: MongoTransparencyDocument) => document.publicationStatus === "published" && document.approvalStatus === "approved" && isValidDate(document.publishedAt) && document.archivedAt === null && document.deletedAt === null;
+type TransitionReason = "not_requestable" | "not_decidable" | "not_publishable" | "not_manageable";
+async function transitionDocument(input: {
+  id: string; expectedUpdatedAt: Date; actor: AdminPrincipal;
+  predicate: (document: MongoTransparencyDocument) => boolean;
+  stateReason: TransitionReason;
+  readinessReason?: "not_ready_for_review" | "not_ready_for_publication";
+  action: "review_requested" | "review_approved" | "review_rejected" | "published" | "unpublished";
+  filter: Filter<MongoTransparencyDocument>;
+  set: (nextUpdatedAt: Date) => Partial<MongoTransparencyDocument>;
+  changedFields: string[];
+}) {
+  return transaction(async (database, session) => {
+    const collection = database.collection<MongoTransparencyDocument>(TRANSPARENCY_DOCUMENT_COLLECTION_NAME);
+    const id = new ObjectId(input.id);
+    const before = await collection.findOne({ _id: id, deletedAt: null }, { session });
+    if (!before) return { ok: false as const, reason: "not_found" as const };
+    if (!input.predicate(before)) return { ok: false as const, reason: input.stateReason };
+    if (input.readinessReason && !isTransparencyReadyForPublication(before)) return { ok: false as const, reason: input.readinessReason };
+    const nextUpdatedAt = nextDate(input.expectedUpdatedAt);
+    const result = await collection.findOneAndUpdate({ _id: id, ...input.filter, updatedAt: input.expectedUpdatedAt }, { $set: input.set(nextUpdatedAt) }, { session, returnDocument: "after" });
+    if (!result) {
+      const current = await collection.findOne({ _id: id, deletedAt: null }, { session });
+      if (!current) return { ok: false as const, reason: "not_found" as const };
+      if (!input.predicate(current)) return { ok: false as const, reason: input.stateReason };
+      if (input.readinessReason && !isTransparencyReadyForPublication(current)) return { ok: false as const, reason: input.readinessReason };
+      if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false as const, reason: "edit_conflict" as const };
+      return { ok: false as const, reason: "edit_conflict" as const };
+    }
+    await insertTransparencyAuditEvent({ database, session, documentId: id, action: input.action, actor: input.actor, occurredAt: nextUpdatedAt, fromVersionAt: before.updatedAt, toVersionAt: nextUpdatedAt, before: createTransparencyAuditSnapshot(before), after: createTransparencyAuditSnapshot(result), changedFields: input.changedFields });
+    return { ok: true as const };
+  });
+}
+export function requestAdminTransparencyReview(input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) {
+  return transitionDocument({ ...input, predicate: isRequestable, stateReason: "not_requestable", readinessReason: "not_ready_for_review", action: "review_requested", filter: { publicationStatus: "draft", approvalStatus: { $in: ["pending", "rejected"] }, publishedAt: null, archivedAt: null, deletedAt: null, privacyReviewStatus: "confirmed", finalDocumentStatus: "final" }, set: (updatedAt) => ({ publicationStatus: "review", approvalStatus: "pending", updatedAt }), changedFields: ["publicationStatus", "approvalStatus"] });
+}
+export function decideAdminTransparencyReview(input: { id: string; expectedUpdatedAt: Date; decision: "approve" | "reject"; actor: AdminPrincipal }) {
+  return transitionDocument({ ...input, predicate: isDecidable, stateReason: "not_decidable", action: input.decision === "approve" ? "review_approved" : "review_rejected", filter: { publicationStatus: "review", approvalStatus: "pending", publishedAt: null, archivedAt: null, deletedAt: null }, set: (updatedAt) => input.decision === "approve" ? { approvalStatus: "approved", updatedAt } : { publicationStatus: "draft", approvalStatus: "rejected", updatedAt }, changedFields: input.decision === "approve" ? ["approvalStatus"] : ["publicationStatus", "approvalStatus"] });
+}
+export function publishAdminTransparencyDocument(input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) {
+  return transitionDocument({ ...input, predicate: isPublishable, stateReason: "not_publishable", readinessReason: "not_ready_for_publication", action: "published", filter: { publicationStatus: "review", approvalStatus: "approved", publishedAt: null, archivedAt: null, deletedAt: null, privacyReviewStatus: "confirmed", finalDocumentStatus: "final" }, set: (now) => ({ publicationStatus: "published", publishedAt: now, updatedAt: now }), changedFields: ["publicationStatus", "publishedAt"] });
+}
+export function changeAdminTransparencyPublicationState(input: { id: string; expectedUpdatedAt: Date; action: "unpublish"; actor: AdminPrincipal }) {
+  return transitionDocument({ ...input, predicate: isManageable, stateReason: "not_manageable", action: "unpublished", filter: { publicationStatus: "published", approvalStatus: "approved", publishedAt: { $type: "date" }, archivedAt: null, deletedAt: null }, set: (updatedAt) => ({ publicationStatus: "review", publishedAt: null, updatedAt }), changedFields: ["publicationStatus", "publishedAt"] });
 }

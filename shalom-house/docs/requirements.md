@@ -85,4 +85,4 @@
 
 ## 자료공개 PDF 비공개 초안 관리
 
-자료공개 PDF binary는 Supabase private Storage의 `shalom-documents-private` bucket에 최대 3MB로 저장하고, MongoDB에는 메타데이터·상태·감사 이벤트만 저장한다. 서버는 `application/pdf` MIME, `%PDF-` magic bytes와 SHA-256을 검사한다. 개인정보 검토 상태와 최종본 상태를 관리하며 MongoDB transaction 실패 시 업로드 object를 보상 삭제한다. 이번 단계는 관리자 비공개 초안 관리만 포함하고 공개 `/transparency` 연결은 후속 단계로 둔다.
+자료공개 PDF binary는 Supabase private Storage의 `shalom-documents-private` bucket에 최대 3MB로 한 번만 저장하고, MongoDB에는 메타데이터·상태·감사 이벤트만 저장한다. 서버는 `application/pdf` MIME, `%PDF-` magic bytes와 SHA-256을 검사한다. 문서는 초안 → 검토 요청 → 승인 또는 반려 → 게시 순서로 관리하며 개인정보 검토 완료(`confirmed`), 최종본(`final`), 미보관·미삭제가 검토 요청과 게시의 필수 조건이다. 공개 `/transparency`는 게시된 자료만 표시하고 공개 PDF API는 매 요청마다 공개 조건을 재검증해 private Storage 단일 원본을 `Cache-Control: no-store`로 전달한다. 게시 중단은 Storage 원본을 유지하면서 목록과 PDF API에서 즉시 제외해 404로 응답한다. public URL과 signed URL은 사용하지 않으며 공개 화면에는 Storage·감사·검토 내부 정보를 노출하지 않는다.

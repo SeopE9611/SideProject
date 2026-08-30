@@ -1,5 +1,5 @@
 import type { MongoTransparencyDocument } from "./transparency.mongo-schema";
-export const transparencyAuditActions = ["draft_created", "draft_updated", "archived"] as const;
+export const transparencyAuditActions = ["draft_created", "draft_updated", "review_requested", "review_approved", "review_rejected", "published", "unpublished", "archived"] as const;
 export type TransparencyAuditAction = (typeof transparencyAuditActions)[number];
 export type TransparencyAuditSnapshot = ReturnType<typeof createTransparencyAuditSnapshot>;
 export function createTransparencyAuditSnapshot(document: MongoTransparencyDocument) {

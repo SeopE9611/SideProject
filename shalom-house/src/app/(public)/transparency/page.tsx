@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
-
-type TransparencyDocument = {
-  title: string;
-  category: string;
-  period: string;
-  publishedAt: string;
-  publishedLabel: string;
-  fileType: string;
-  href: string;
-};
-
-const transparencyDocuments: ReadonlyArray<TransparencyDocument> = [];
+import { findPublicTransparencyDocuments } from "@/features/transparency/transparency.repository";
+import { transparencyCategoryLabels } from "@/features/transparency/transparency.types";
 
 const disclosureCategories = [
   {
@@ -60,7 +50,13 @@ export const metadata: Metadata = {
     "샬롬의 집의 운영 보고, 예산·결산, 후원금 관련 공개 자료를 확인합니다.",
 };
 
-export default function TransparencyPage() {
+const canonicalDateLabel = (value: string) => value.replace(/-/g, ".");
+const publishedDateLabel = (value: string) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "-" : `${date.getUTCFullYear()}.${String(date.getUTCMonth() + 1).padStart(2, "0")}.${String(date.getUTCDate()).padStart(2, "0")}`;
+};
+export default async function TransparencyPage() {
+  const transparencyDocuments = await findPublicTransparencyDocuments();
   return (
     <>
       <SectionPageHeader
@@ -131,13 +127,12 @@ export default function TransparencyPage() {
           {transparencyDocuments.length > 0 ? (
             <ul className="mt-8 border-t-2 border-foreground">
               {transparencyDocuments.map((document) => (
-                <li key={document.href} className="border-b border-border py-5">
-                  <a
-                    className="text-safe-wrap font-bold text-primary underline"
-                    href={document.href}
-                  >
-                    {document.title} · {document.fileType}
-                  </a>
+                <li key={document.slug} className="border-b border-border py-5">
+                  <article className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                    <div><p className="text-small font-bold text-accent">{transparencyCategoryLabels[document.category]}</p><h3 className="text-safe-wrap mt-1 text-heading font-bold">{document.title}</h3>{document.summary ? <p className="text-safe-wrap mt-2 text-muted-foreground">{document.summary}</p> : null}</div>
+                    <dl className="grid gap-x-5 gap-y-2 text-small sm:grid-cols-2"><div><dt className="font-semibold">기준 기간</dt><dd>{document.periodLabel}</dd></div><div><dt className="font-semibold">문서일</dt><dd>{canonicalDateLabel(document.documentDate)}</dd></div><div><dt className="font-semibold">게시일</dt><dd>{publishedDateLabel(document.publishedAt)}</dd></div><div><dt className="font-semibold">파일</dt><dd>{document.fileType} · {document.byteSize.toLocaleString()} bytes</dd></div></dl>
+                    <a className="text-safe-wrap font-bold text-primary underline sm:col-span-2" href={`/api/transparency/${document.slug}/document`} target="_blank" rel="noreferrer">{document.title} PDF 열기</a>
+                  </article>
                 </li>
               ))}
             </ul>

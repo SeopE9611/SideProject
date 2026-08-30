@@ -23,3 +23,14 @@ export const isTransparencyPrivacyReviewStatus = (value: unknown): value is Tran
   value === "pending" || value === "confirmed";
 export const isTransparencyFinalDocumentStatus = (value: unknown): value is TransparencyFinalDocumentStatus =>
   value === "draft" || value === "final";
+export function isTransparencyReadyForPublication(document: {
+  privacyReviewStatus: TransparencyPrivacyReviewStatus;
+  finalDocumentStatus: TransparencyFinalDocumentStatus;
+  archivedAt: Date | null;
+  deletedAt: Date | null;
+}): boolean {
+  return document.privacyReviewStatus === "confirmed" &&
+    document.finalDocumentStatus === "final" &&
+    document.archivedAt === null &&
+    document.deletedAt === null;
+}
