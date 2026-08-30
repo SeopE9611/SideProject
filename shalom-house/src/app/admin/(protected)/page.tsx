@@ -8,6 +8,7 @@ const preparedItems = [
   "게시·게시 중단·보관",
   "프로그램 작성·검토·공개 관리",
   "활동사진 비공개 업로드와 동의 상태 관리",
+  "자료공개 PDF 비공개 초안 관리",
 ] as const;
 
 const nextItems = [
@@ -49,6 +50,9 @@ export default function AdminDashboardPage() {
         </Link>
         <Link href="/admin/gallery" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           활동사진 관리 열기
+        </Link>
+        <Link href="/admin/transparency" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+          자료공개 관리 열기
         </Link>
         <Link href="/" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           공개 홈페이지 보기

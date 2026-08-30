@@ -107,3 +107,7 @@ Supabase 비공개 보관소의 운영 환경 변수는
 
 ## 활동사진 공개와 동의 철회
 승인된 활동사진도 private Storage의 단일 원본으로 유지한다. 공개 페이지에는 동의·승인 상태, 참조 코드, 원본 파일명 및 Storage 위치를 노출하지 않는다. 공개 미디어 API는 매 요청마다 게시·승인·동의·철회·게시 기간을 다시 확인하며 public URL과 signed URL을 사용하지 않고 `Cache-Control: no-store`로 응답한다. 동의 철회는 게시 중인 사진을 즉시 비공개로 전환하며 철회 복구는 현재 지원하지 않는다.
+
+## 자료공개 초안 거버넌스
+
+자료공개 문서는 개인정보 검토 상태(`pending`/`confirmed`)와 최종본 상태(`draft`/`final`)를 명시한다. PDF는 private bucket에 보관하고 public URL과 signed URL을 사용하지 않는다. 관리자 업로드·수정·보관은 MongoDB 감사 이벤트로 남기며, 보관 시 Storage 원본은 유지한다. 이번 단계에서는 검토 요청, 승인, 게시와 공개 다운로드를 제공하지 않는다.

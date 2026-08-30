@@ -329,3 +329,7 @@ publishedAt=기존 Date`로 전환한다. `publicationStatus`, `updatedAt`만 �
 
 ## 활동사진 공개 미디어 경로
 공개 승인된 WebP도 Supabase private bucket에 한 번만 저장한다. 서버 공개 미디어 API가 MongoDB의 게시·승인 상태, 게시 시각, 동의 준비 상태, 철회 여부와 Asia/Seoul 기준 게시 시작·종료일을 매 요청 확인한 뒤 private Storage에서 다운로드해 전달한다. public bucket, `getPublicUrl()`, `createSignedUrl()`은 사용하지 않으며 철회와 게시 중단을 다음 요청부터 반영하도록 `Cache-Control: no-store`를 적용한다.
+
+## 자료공개 PDF 저장 구조
+
+PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/document.pdf` 경로로 저장하며 최대 3MB, `application/pdf`, `%PDF-` magic bytes와 SHA-256을 서버에서 검증한다. MongoDB의 `transparency_documents`와 `transparency_audit_events`에는 메타데이터·상태·감사만 저장한다. public URL과 signed URL은 생성하지 않고 인증된 관리자 media route가 private object를 전달한다. MongoDB transaction 실패 시 Storage object를 보상 삭제한다. 공개 페이지 데이터 연결은 후속 단계다.
