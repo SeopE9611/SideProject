@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 type Values = { slug: string; title: string; category: string; periodLabel: string; summary: string; documentDate: string; privacyReviewStatus: string; finalDocumentStatus: string };
 type Props = { mode: "create" | "edit"; id?: string; initial?: Values & { updatedAt: string } };
+type TransparencyFormResponse = { error?: string; redirectTo?: string; fieldErrors?: Record<string, string> };
 const fields = [
   ["slug", "슬러그"], ["title", "제목"], ["periodLabel", "기준 기간"], ["documentDate", "문서일"],
 ] as const;
@@ -15,17 +16,26 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true); setErrors({}); setFormError("");
-    const form = new FormData(event.currentTarget);
-    let response: Response;
-    if (mode === "create") {
-      response = await fetch("/api/admin/transparency", { method: "POST", body: form });
-    } else {
-      const body = Object.fromEntries(form.entries());
-      response = await fetch(`/api/admin/transparency/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, expectedUpdatedAt: initial?.updatedAt }) });
+    try {
+      const form = new FormData(event.currentTarget);
+      let response: Response;
+      if (mode === "create") {
+        response = await fetch("/api/admin/transparency", { method: "POST", body: form });
+      } else {
+        const body = Object.fromEntries(form.entries());
+        response = await fetch(`/api/admin/transparency/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, expectedUpdatedAt: initial?.updatedAt }) });
+      }
+      const result = (await response.json().catch(() => null)) as TransparencyFormResponse | null;
+      if (!result) throw new Error("invalid_json_response");
+      if (response.ok && typeof result.redirectTo === "string" && result.redirectTo) { router.push(result.redirectTo); router.refresh(); return; }
+      if (result.error === "edit_conflict") setFormError("다른 관리자가 수정했습니다. 새로고침 후 다시 시도해 주세요.");
+      else if (result.error === "slug_conflict" || result.error === "document_duplicate") setErrors(result.fieldErrors ?? {});
+      else setFormError("저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    } catch {
+      setFormError("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
+    } finally {
+      setBusy(false);
     }
-    const result = await response.json();
-    if (!response.ok) { setErrors(result.fieldErrors ?? {}); setFormError(result.error === "edit_conflict" ? "다른 관리자가 수정했습니다. 새로고침 후 다시 시도해 주세요." : "입력 내용을 확인해 주세요."); setBusy(false); return; }
-    router.push(result.redirectTo); router.refresh();
   }
   const described = (name: string) => `${name}-help${errors[name] ? ` ${name}-error` : ""}`;
   return (
