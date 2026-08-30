@@ -110,4 +110,4 @@ Supabase 비공개 보관소의 운영 환경 변수는
 
 ## 자료공개 초안 거버넌스
 
-자료공개 문서는 개인정보 검토 상태(`pending`/`confirmed`)와 최종본 상태(`draft`/`final`)를 명시한다. PDF는 private bucket에 보관하고 public URL과 signed URL을 사용하지 않는다. 관리자 업로드·수정·보관은 MongoDB 감사 이벤트로 남기며, 보관 시 Storage 원본은 유지한다. 이번 단계에서는 검토 요청, 승인, 게시와 공개 다운로드를 제공하지 않는다.
+자료공개 문서는 개인정보 검토 상태(`pending`/`confirmed`)와 최종본 상태(`draft`/`final`)를 명시하고 초안 → 검토 요청 → 승인 또는 반려 → 게시 흐름으로 관리한다. 검토 요청과 게시 전에는 개인정보 검토 완료, 최종본, 미보관·미삭제 조건을 모두 확인한다. PDF는 private bucket의 단일 원본으로 유지하며 public URL과 signed URL을 사용하지 않는다. 모든 관리자 상태 전이는 optimistic locking과 MongoDB transaction 안의 감사 이벤트로 기록한다. 공개 PDF API는 매 요청마다 게시·승인·준비 상태를 재검증하고 `Cache-Control: no-store`로 전달하므로 게시 중단 직후 목록에서 제외되며 PDF 경로도 404가 된다. 공개 화면에는 Storage 위치, 원본 파일명, SHA-256, 감사·검토·승인 내부 정보를 노출하지 않는다.

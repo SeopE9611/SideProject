@@ -63,6 +63,27 @@ export function validateAdminTransparencyArchiveInput(input: unknown) {
   const expected = typeof raw?.expectedUpdatedAt === "string" ? new Date(raw.expectedUpdatedAt) : null;
   return expected && !Number.isNaN(expected.getTime()) && expected.toISOString() === raw.expectedUpdatedAt && raw.archiveConfirmed === true ? { ok: true as const, value: { expectedUpdatedAt: expected } } : { ok: false as const };
 }
+function transitionVersion(input: unknown): { raw: Record<string, unknown>; expectedUpdatedAt: Date | null } {
+  const raw = typeof input === "object" && input !== null ? input as Record<string, unknown> : {};
+  const expectedUpdatedAt = typeof raw.expectedUpdatedAt === "string" ? new Date(raw.expectedUpdatedAt) : null;
+  return { raw, expectedUpdatedAt: expectedUpdatedAt && !Number.isNaN(expectedUpdatedAt.getTime()) && expectedUpdatedAt.toISOString() === raw.expectedUpdatedAt ? expectedUpdatedAt : null };
+}
+export function validateAdminTransparencyReviewInput(input: unknown) {
+  const { raw, expectedUpdatedAt } = transitionVersion(input);
+  return expectedUpdatedAt && raw.reviewConfirmed === true ? { ok: true as const, value: { expectedUpdatedAt } } : { ok: false as const };
+}
+export function validateAdminTransparencyDecisionInput(input: unknown) {
+  const { raw, expectedUpdatedAt } = transitionVersion(input);
+  return expectedUpdatedAt && (raw.decision === "approve" || raw.decision === "reject") ? { ok: true as const, value: { expectedUpdatedAt, decision: raw.decision as "approve" | "reject" } } : { ok: false as const };
+}
+export function validateAdminTransparencyPublishInput(input: unknown) {
+  const { raw, expectedUpdatedAt } = transitionVersion(input);
+  return expectedUpdatedAt && raw.publishConfirmed === true ? { ok: true as const, value: { expectedUpdatedAt } } : { ok: false as const };
+}
+export function validateAdminTransparencyPublicationInput(input: unknown) {
+  const { raw, expectedUpdatedAt } = transitionVersion(input);
+  return expectedUpdatedAt && raw.action === "unpublish" ? { ok: true as const, value: { expectedUpdatedAt, action: "unpublish" as const } } : { ok: false as const };
+}
 export async function validateAdminTransparencyPdf(file: File) {
   if (!(file instanceof File)) return { ok: false as const, error: "PDF 파일을 선택해 주세요." };
   if (file.size < 1 || file.size > ADMIN_TRANSPARENCY_PDF_MAX_BYTES) return { ok: false as const, error: "PDF는 1 byte 이상 3MB 이하여야 합니다." };

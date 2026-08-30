@@ -18,6 +18,7 @@ if (!uri) {
       documents.createIndex({ publicationStatus: 1, updatedAt: -1 }, { name: "transparency_documents_publication_updated" }),
       documents.createIndex({ privacyReviewStatus: 1, updatedAt: -1 }, { name: "transparency_documents_privacy_updated" }),
       documents.createIndex({ finalDocumentStatus: 1, updatedAt: -1 }, { name: "transparency_documents_final_updated" }),
+      documents.createIndex({ publicationStatus: 1, approvalStatus: 1, privacyReviewStatus: 1, finalDocumentStatus: 1, publishedAt: -1, documentDate: -1, _id: -1 }, { name: "transparency_documents_public_visibility" }),
     ]);
     console.log("자료공개 인덱스를 확인했습니다.", { databaseName, indexNames });
   } finally {
