@@ -91,13 +91,56 @@ export default async function GalleryDetail({
           ))}
         </dl>
       </section>
-      <section className="grid gap-5" aria-labelledby="gallery-actions"><h2 id="gallery-actions" className="text-heading font-bold">상태 변경</h2>
-        {item.canRequestReview ? <AdminGalleryReviewForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
-        {item.canDecideReview ? <AdminGalleryReviewDecisionForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
-        {item.canPublish ? <AdminGalleryPublishForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
-        {item.canManagePublicationState ? <AdminGalleryPublicationStateForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
-        {item.canWithdrawConsent ? <AdminGalleryConsentWithdrawalForm id={id} expectedUpdatedAt={item.updatedAt}/> : null}
-        <p><strong>현재 공개 여부:</strong> {item.isPubliclyVisible ? <>공개 중 · <Link className="underline" href={`/life/gallery/${item.slug}`}>공개 상세 보기</Link></> : "공개되지 않음"}</p>
+      <section className="grid gap-5" aria-labelledby="gallery-actions">
+        <h2 id="gallery-actions" className="text-heading font-bold">
+          상태 변경
+        </h2>
+        {item.canRequestReview ? (
+          <AdminGalleryReviewForm
+            id={id}
+            expectedUpdatedAt={item.updatedAt}
+          />
+        ) : null}
+        {item.canDecideReview ? (
+          <AdminGalleryReviewDecisionForm
+            id={id}
+            expectedUpdatedAt={item.updatedAt}
+          />
+        ) : null}
+        {item.canPublish ? (
+          <AdminGalleryPublishForm
+            id={id}
+            expectedUpdatedAt={item.updatedAt}
+          />
+        ) : null}
+        {item.canManagePublicationState ? (
+          <AdminGalleryPublicationStateForm
+            id={id}
+            expectedUpdatedAt={item.updatedAt}
+          />
+        ) : null}
+        {item.canWithdrawConsent ? (
+          <AdminGalleryConsentWithdrawalForm
+            id={id}
+            expectedUpdatedAt={item.updatedAt}
+          />
+        ) : null}
+        <p>
+          <strong>현재 공개 여부:</strong>{" "}
+          {item.isPubliclyVisible ? (
+            <>
+              공개 중 ·{" "}
+              <Link
+                className="underline"
+                href={`/life/gallery/${item.slug}`}
+              >
+                공개 상세 보기
+              </Link>
+            </>
+          ) : (
+            "공개되지 않음"
+          )}
+        </p>
       </section>
       {editable ? (
         <section className="rounded-card border p-5">

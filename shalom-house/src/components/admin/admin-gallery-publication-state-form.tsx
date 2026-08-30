@@ -1,1 +1,19 @@
-"use client"; import { AdminGalleryTransitionForm } from "./admin-gallery-review-form"; export function AdminGalleryPublicationStateForm(p:{id:string;expectedUpdatedAt:string}){return <AdminGalleryTransitionForm {...p} endpoint="publication" label="게시 중단" description="Storage 원본은 유지하고 홈페이지 공개를 즉시 중단합니다." confirmationField="confirmed" extra={{action:"unpublish"}}/>}
+"use client";
+
+import { AdminGalleryTransitionForm } from "./admin-gallery-review-form";
+
+export function AdminGalleryPublicationStateForm(p: {
+  id: string;
+  expectedUpdatedAt: string;
+}) {
+  return (
+    <AdminGalleryTransitionForm
+      {...p}
+      endpoint="publication"
+      label="게시 중단"
+      description="Storage 원본은 유지하고 홈페이지 공개를 즉시 중단합니다."
+      confirmationField="confirmed"
+      extra={{ action: "unpublish" }}
+    />
+  );
+}
