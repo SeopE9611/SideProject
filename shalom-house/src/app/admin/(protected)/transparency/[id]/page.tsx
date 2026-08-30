@@ -1,0 +1,11 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { AdminTransparencyArchiveForm } from "@/components/admin/admin-transparency-archive-form";
+import { findAdminTransparencyDocumentById } from "@/features/transparency/transparency.admin-repository";
+import { transparencyCategoryLabels } from "@/features/transparency/transparency.types";
+export default async function TransparencyDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const document = await findAdminTransparencyDocumentById((await params).id);
+  if (!document) notFound();
+  const rows = [["제목", document.title], ["분류", transparencyCategoryLabels[document.category]], ["기준 기간", document.periodLabel], ["문서일", document.documentDate], ["요약", document.summary || "없음"], ["개인정보 검토 상태", document.privacyReviewStatus], ["최종본 상태", document.finalDocumentStatus], ["게시 상태", document.publicationStatus], ["승인 상태", document.approvalStatus], ["생성일", document.createdAt], ["수정일", document.updatedAt]];
+  return <div className="min-w-0 space-y-8"><header><Link href="/admin/transparency" className="underline">← 자료공개 관리로 돌아가기</Link><h1 className="mt-4 text-safe-wrap text-title font-bold">{document.title}</h1></header><div className="flex flex-wrap gap-3"><a href={`/api/admin/transparency/${document.id}/media`} target="_blank" rel="noreferrer" className="min-h-11 border px-4 py-3">문서 미리보기</a>{document.isEditable ? <Link href={`/admin/transparency/${document.id}/edit`} className="min-h-11 border px-4 py-3">메타데이터 수정</Link> : null}</div><section className="rounded-card border p-5"><h2 className="font-bold">파일</h2><dl className="mt-3"><dt>원본 파일명</dt><dd className="text-safe-wrap break-all">{document.file.originalFileName}</dd><dt>파일 크기</dt><dd>{document.file.byteSize.toLocaleString()} bytes</dd></dl></section><dl className="grid gap-4 rounded-card border p-5 sm:grid-cols-2">{rows.map(([label, value]) => <div key={label}><dt className="font-semibold">{label}</dt><dd className="text-safe-wrap">{value}</dd></div>)}</dl>{document.isArchivable ? <AdminTransparencyArchiveForm id={document.id} expectedUpdatedAt={document.updatedAt} /> : null}</div>;
+}
