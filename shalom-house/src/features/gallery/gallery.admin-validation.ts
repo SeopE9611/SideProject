@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import {
+  isCanonicalGalleryDate,
   isGalleryConsentStatus,
   isGallerySubjectPresence,
   isValidGallerySlug,
@@ -38,18 +39,6 @@ export type AdminGalleryFieldErrors = Partial<
     string
   >
 >;
-function isCanonicalCalendarDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return false;
-  }
-
-  const date = new Date(`${value}T00:00:00.000Z`);
-
-  return (
-    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
-  );
-}
-
 export function normalizeAdminGalleryOriginalFileName(
   value: unknown,
 ): string | null {
@@ -105,15 +94,15 @@ export function validateAdminGalleryDraftInput(
     e.description = "설명을 1자 이상 500자 이하로 입력해 주세요.";
   if (!altText || altText.length > ADMIN_GALLERY_ALT_TEXT_MAX_LENGTH)
     e.altText = "대체 텍스트를 1자 이상 300자 이하로 입력해 주세요.";
-  if (!isCanonicalCalendarDate(activityDate))
+  if (!isCanonicalGalleryDate(activityDate))
     e.activityDate = "올바른 활동일을 입력해 주세요.";
   if (!isGallerySubjectPresence(subjectPresence))
     e.subjectPresence = "사진 속 인물 상태를 선택해 주세요.";
   if (!isGalleryConsentStatus(consentStatus) || consentStatus === "withdrawn")
     e.consentStatus = "초안에서 선택할 수 있는 동의 상태를 선택해 주세요.";
-  if (start && !isCanonicalCalendarDate(start))
+  if (start && !isCanonicalGalleryDate(start))
     e.displayStartOn = "올바른 게시 시작일을 입력해 주세요.";
-  if (end && !isCanonicalCalendarDate(end))
+  if (end && !isCanonicalGalleryDate(end))
     e.displayEndOn = "올바른 게시 종료일을 입력해 주세요.";
   if (start && end && start > end)
     e.displayEndOn = "게시 종료일은 시작일 이후여야 합니다.";
@@ -125,7 +114,7 @@ export function validateAdminGalleryDraftInput(
     e.consentReferenceCode =
       "영문, 숫자, 하이픈과 밑줄만 사용해 80자 이하로 입력해 주세요.";
   if (subjectPresence === "identifiable" && consentStatus === "confirmed") {
-    if (!isCanonicalCalendarDate(checked))
+    if (!isCanonicalGalleryDate(checked))
       e.consentCheckedOn = "동의 확인일을 입력해 주세요.";
     if (!reference) e.consentReferenceCode = "동의 참조 코드를 입력해 주세요.";
   } else if (checked || reference) {
@@ -207,16 +196,64 @@ export function validateAdminGalleryArchiveInput(input: unknown) {
     ? { ok: true as const, value: { expectedUpdatedAt: date } }
     : { ok: false as const };
 }
-const transition = (input: unknown, extra?: (v: Record<string, unknown>) => boolean) => {
-  const v = typeof input === "object" && input !== null ? input as Record<string, unknown> : {};
-  const date = typeof v.expectedUpdatedAt === "string" ? new Date(v.expectedUpdatedAt) : null;
-  return date && !Number.isNaN(date.getTime()) && date.toISOString() === v.expectedUpdatedAt && (!extra || extra(v)) ? { ok: true as const, value: { expectedUpdatedAt: date } } : { ok: false as const };
+const transition = (
+  input: unknown,
+  extra?: (value: Record<string, unknown>) => boolean,
+) => {
+  const value =
+    typeof input === "object" && input !== null
+      ? (input as Record<string, unknown>)
+      : {};
+  const date =
+    typeof value.expectedUpdatedAt === "string"
+      ? new Date(value.expectedUpdatedAt)
+      : null;
+  const valid =
+    date !== null &&
+    !Number.isNaN(date.getTime()) &&
+    date.toISOString() === value.expectedUpdatedAt &&
+    (!extra || extra(value));
+
+  return valid
+    ? { ok: true as const, value: { expectedUpdatedAt: date } }
+    : { ok: false as const };
 };
-export const validateAdminGalleryReviewInput = (v: unknown) => transition(v, x => x.reviewConfirmed === true);
-export function validateAdminGalleryDecisionInput(v: unknown) { const r = transition(v, x => x.decision === "approve" || x.decision === "reject"); return r.ok ? { ...r, value: { ...r.value, decision: (v as {decision:"approve"|"reject"}).decision } } : r; }
-export const validateAdminGalleryPublishInput = (v: unknown) => transition(v, x => x.publishConfirmed === true);
-export function validateAdminGalleryPublicationInput(v: unknown) { const r = transition(v, x => x.action === "unpublish"); return r.ok ? { ...r, value: { ...r.value, action: "unpublish" as const } } : r; }
-export const validateAdminGalleryConsentWithdrawalInput = (v: unknown) => transition(v, x => x.withdrawalConfirmed === true);
+
+export const validateAdminGalleryReviewInput = (value: unknown) =>
+  transition(value, (input) => input.reviewConfirmed === true);
+
+export function validateAdminGalleryDecisionInput(value: unknown) {
+  const result = transition(
+    value,
+    (input) => input.decision === "approve" || input.decision === "reject",
+  );
+  return result.ok
+    ? {
+        ...result,
+        value: {
+          ...result.value,
+          decision: (value as { decision: "approve" | "reject" }).decision,
+        },
+      }
+    : result;
+}
+
+export const validateAdminGalleryPublishInput = (value: unknown) =>
+  transition(value, (input) => input.publishConfirmed === true);
+
+export function validateAdminGalleryPublicationInput(value: unknown) {
+  const result = transition(value, (input) => input.action === "unpublish");
+  return result.ok
+    ? {
+        ...result,
+        value: { ...result.value, action: "unpublish" as const },
+      }
+    : result;
+}
+
+export const validateAdminGalleryConsentWithdrawalInput = (value: unknown) =>
+  transition(value, (input) => input.withdrawalConfirmed === true);
+
 function webpDimensions(
   buffer: Buffer,
 ): { width: number; height: number } | null {
