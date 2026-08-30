@@ -3,7 +3,10 @@ import { MongoServerError, ObjectId, type Filter } from "mongodb";
 import type { AdminPrincipal } from "../admin-auth/admin-auth.types";
 import { getMongoClient, getMongoDatabase } from "@/lib/mongodb";
 import type { ValidatedAdminGalleryDraft } from "./gallery.admin-validation";
-import { createGalleryAuditSnapshot } from "./gallery.audit";
+import {
+  createGalleryAuditSnapshot,
+  type GalleryAuditAction,
+} from "./gallery.audit";
 import { insertGalleryAuditEvent } from "./gallery.audit-repository";
 import {
   GALLERY_ITEM_COLLECTION_NAME,
@@ -21,6 +24,7 @@ import {
   type GalleryPublicationStatus,
   type GallerySubjectPresence,
   isGalleryConsentReadyForPublication,
+  isGalleryConsentWithdrawable,
   isGalleryPubliclyVisible,
 } from "./gallery.types";
 const PAGE_SIZE = 20;
@@ -188,7 +192,30 @@ export async function findAdminGalleryItemById(id: string) {
     .findOne({ _id: new ObjectId(id), deletedAt: { $in: [null, undefined] } });
   if (!d) return null;
   const editable = d.publicationStatus === "draft" && (d.approvalStatus === "pending" || d.approvalStatus === "rejected") && d.publishedAt === null && d.archivedAt === null;
-  return { ...serialize(d), isEditable: editable, canRequestReview: editable, canDecideReview: d.publicationStatus === "review" && d.approvalStatus === "pending" && d.publishedAt === null && d.archivedAt === null, canPublish: d.publicationStatus === "review" && d.approvalStatus === "approved" && d.publishedAt === null && d.archivedAt === null && isGalleryConsentReadyForPublication(d), canManagePublicationState: d.publicationStatus === "published" && d.approvalStatus === "approved" && d.publishedAt !== null && d.archivedAt === null, canWithdrawConsent: d.subjectPresence === "identifiable" && d.consentStatus === "confirmed" && Boolean(d.consentCheckedOn) && Boolean(d.consentReferenceCode) && d.consentWithdrawnAt === null && d.archivedAt === null, isPubliclyVisible: isGalleryPubliclyVisible(d) };
+  return {
+    ...serialize(d),
+    isEditable: editable,
+    canRequestReview: editable,
+    canDecideReview:
+      d.publicationStatus === "review" &&
+      d.approvalStatus === "pending" &&
+      d.publishedAt === null &&
+      d.archivedAt === null,
+    canPublish:
+      d.publicationStatus === "review" &&
+      d.approvalStatus === "approved" &&
+      d.publishedAt === null &&
+      d.archivedAt === null &&
+      isGalleryConsentReadyForPublication(d),
+    canManagePublicationState:
+      d.publicationStatus === "published" &&
+      d.approvalStatus === "approved" &&
+      d.publishedAt instanceof Date &&
+      !Number.isNaN(d.publishedAt.getTime()) &&
+      d.archivedAt === null,
+    canWithdrawConsent: isGalleryConsentWithdrawable(d),
+    isPubliclyVisible: isGalleryPubliclyVisible(d),
+  };
 }
 export async function listAdminGalleryItems(input: {
   page: number;
@@ -338,48 +365,334 @@ export async function archiveAdminGalleryDraft(input: {
   });
 }
 
-type TransitionInput = { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal };
-type TransitionSpec = { action: import("./gallery.audit").GalleryAuditAction; stateFilter: Filter<MongoGalleryItemDocument>; set: Partial<MongoGalleryItemDocument>; changedFields: string[]; invalid: "not_requestable"|"not_decidable"|"not_publishable"|"not_manageable"|"consent_not_withdrawable" };
-async function galleryTransition(input: TransitionInput, make: (now: Date) => TransitionSpec) {
-  if (!isValidAdminGalleryItemId(input.id)) return { ok: false as const, reason: "not_found" as const };
-  const id = new ObjectId(input.id), now = nextDate(input.expectedUpdatedAt), spec = make(now);
+type TransitionInput = {
+  id: string;
+  expectedUpdatedAt: Date;
+  actor: AdminPrincipal;
+};
+
+type TransitionSpec = {
+  action: GalleryAuditAction;
+  stateFilter: Filter<MongoGalleryItemDocument>;
+  isEligible: (document: MongoGalleryItemDocument) => boolean;
+  set: Partial<MongoGalleryItemDocument>;
+  changedFields: readonly string[];
+  invalid:
+    | "not_requestable"
+    | "not_decidable"
+    | "not_publishable"
+    | "not_manageable";
+};
+
+async function galleryTransition(
+  input: TransitionInput,
+  make: (now: Date) => TransitionSpec,
+) {
+  if (!isValidAdminGalleryItemId(input.id)) {
+    return { ok: false as const, reason: "not_found" as const };
+  }
+
+  const id = new ObjectId(input.id);
+  const now = nextDate(input.expectedUpdatedAt);
+  const spec = make(now);
+
   return transaction(async (db, session) => {
-    const collection = db.collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME);
-    const before = await collection.findOneAndUpdate({ _id: id, deletedAt: { $in: [null, undefined] }, archivedAt: null, updatedAt: input.expectedUpdatedAt, ...spec.stateFilter }, { $set: { ...spec.set, updatedAt: now } }, { returnDocument: "before", session });
+    const collection = db.collection<MongoGalleryItemDocument>(
+      GALLERY_ITEM_COLLECTION_NAME,
+    );
+    const before = await collection.findOneAndUpdate(
+      {
+        _id: id,
+        deletedAt: { $in: [null, undefined] },
+        archivedAt: null,
+        updatedAt: input.expectedUpdatedAt,
+        ...spec.stateFilter,
+      },
+      { $set: { ...spec.set, updatedAt: now } },
+      { returnDocument: "before", session },
+    );
+
     if (before) {
-      const after = { ...before, ...spec.set, updatedAt: now } as MongoGalleryItemDocument;
-      await insertGalleryAuditEvent({ database: db, session, galleryItemId: id, action: spec.action, actor: input.actor, occurredAt: now, fromVersionAt: before.updatedAt, toVersionAt: now, before: createGalleryAuditSnapshot(before), after: createGalleryAuditSnapshot(after), changedFields: spec.changedFields });
-      return { ok: true as const, id: input.id, updatedAt: now.toISOString(), slug: after.slug };
+      const after = {
+        ...before,
+        ...spec.set,
+        updatedAt: now,
+      } as MongoGalleryItemDocument;
+      await insertGalleryAuditEvent({
+        database: db,
+        session,
+        galleryItemId: id,
+        action: spec.action,
+        actor: input.actor,
+        occurredAt: now,
+        fromVersionAt: before.updatedAt,
+        toVersionAt: now,
+        before: createGalleryAuditSnapshot(before),
+        after: createGalleryAuditSnapshot(after),
+        changedFields: [...spec.changedFields],
+      });
+      return {
+        ok: true as const,
+        id: input.id,
+        updatedAt: now.toISOString(),
+        slug: after.slug,
+      };
     }
-    const current = await collection.findOne({ _id: id, deletedAt: { $in: [null, undefined] } }, { session });
-    if (!current) return { ok: false as const, reason: "not_found" as const };
-    const stateMatches = Object.entries(spec.stateFilter).every(([key, wanted]) => { const actual = current[key as keyof MongoGalleryItemDocument]; return wanted && typeof wanted === "object" && "$in" in wanted ? (wanted.$in as unknown[]).includes(actual) : wanted && typeof wanted === "object" && "$ne" in wanted ? actual !== wanted.$ne : actual === wanted; });
-    return { ok: false as const, reason: stateMatches ? "edit_conflict" as const : spec.invalid };
+
+    const current = await collection.findOne(
+      { _id: id, deletedAt: { $in: [null, undefined] } },
+      { session },
+    );
+    if (!current) {
+      return { ok: false as const, reason: "not_found" as const };
+    }
+    if (!spec.isEligible(current)) {
+      return { ok: false as const, reason: spec.invalid };
+    }
+
+    const versionMatches =
+      current.updatedAt.getTime() === input.expectedUpdatedAt.getTime();
+    return {
+      ok: false as const,
+      reason: "edit_conflict" as const,
+      versionMatches,
+    };
   });
 }
-export const requestAdminGalleryReview = (input: TransitionInput) => galleryTransition(input, () => ({ action: "review_requested", stateFilter: { publicationStatus: "draft", approvalStatus: { $in: ["pending", "rejected"] }, publishedAt: null }, set: { publicationStatus: "review", approvalStatus: "pending" }, changedFields: ["publicationStatus", "approvalStatus"], invalid: "not_requestable" }));
-export const decideAdminGalleryReview = (input: TransitionInput & { decision: "approve"|"reject" }) => galleryTransition(input, () => input.decision === "approve" ? ({ action: "review_approved", stateFilter: { publicationStatus: "review", approvalStatus: "pending", publishedAt: null }, set: { approvalStatus: "approved" }, changedFields: ["approvalStatus"], invalid: "not_decidable" }) : ({ action: "review_rejected", stateFilter: { publicationStatus: "review", approvalStatus: "pending", publishedAt: null }, set: { publicationStatus: "draft", approvalStatus: "rejected" }, changedFields: ["publicationStatus", "approvalStatus"], invalid: "not_decidable" }));
+
+const isReviewRequestable = (document: MongoGalleryItemDocument) =>
+  document.publicationStatus === "draft" &&
+  (document.approvalStatus === "pending" ||
+    document.approvalStatus === "rejected") &&
+  document.publishedAt === null &&
+  document.archivedAt === null;
+
+const isReviewDecidable = (document: MongoGalleryItemDocument) =>
+  document.publicationStatus === "review" &&
+  document.approvalStatus === "pending" &&
+  document.publishedAt === null &&
+  document.archivedAt === null;
+
+const isPublishableState = (document: MongoGalleryItemDocument) =>
+  document.publicationStatus === "review" &&
+  document.approvalStatus === "approved" &&
+  document.publishedAt === null &&
+  document.archivedAt === null;
+
+const isPublicationManageable = (document: MongoGalleryItemDocument) =>
+  document.publicationStatus === "published" &&
+  document.approvalStatus === "approved" &&
+  document.publishedAt instanceof Date &&
+  !Number.isNaN(document.publishedAt.getTime()) &&
+  document.archivedAt === null;
+
+export const requestAdminGalleryReview = (input: TransitionInput) =>
+  galleryTransition(input, () => ({
+    action: "review_requested",
+    stateFilter: {
+      publicationStatus: "draft",
+      approvalStatus: { $in: ["pending", "rejected"] },
+      publishedAt: null,
+    },
+    isEligible: isReviewRequestable,
+    set: {
+      publicationStatus: "review",
+      approvalStatus: "pending",
+    },
+    changedFields: ["publicationStatus", "approvalStatus"],
+    invalid: "not_requestable",
+  }));
+
+export const decideAdminGalleryReview = (
+  input: TransitionInput & { decision: "approve" | "reject" },
+) =>
+  galleryTransition(input, () => ({
+    action: input.decision === "approve" ? "review_approved" : "review_rejected",
+    stateFilter: {
+      publicationStatus: "review",
+      approvalStatus: "pending",
+      publishedAt: null,
+    },
+    isEligible: isReviewDecidable,
+    set:
+      input.decision === "approve"
+        ? { approvalStatus: "approved" }
+        : { publicationStatus: "draft", approvalStatus: "rejected" },
+    changedFields:
+      input.decision === "approve"
+        ? ["approvalStatus"]
+        : ["publicationStatus", "approvalStatus"],
+    invalid: "not_decidable",
+  }));
+
 export async function publishAdminGalleryItem(input: TransitionInput) {
-  const item = await findAdminGalleryItemById(input.id);
-  if (item && item.publicationStatus === "review" && item.approvalStatus === "approved" && !isGalleryConsentReadyForPublication({ ...item, consentWithdrawnAt: item.consentWithdrawnAt ? new Date(item.consentWithdrawnAt) : null })) return { ok: false as const, reason: "consent_not_ready" as const };
-  return galleryTransition(input, now => ({ action: "published", stateFilter: { publicationStatus: "review", approvalStatus: "approved", publishedAt: null, consentWithdrawnAt: null, $or: [{ subjectPresence:{ $in:["none","non_identifiable"] }, consentStatus:"not_required", consentCheckedOn:null, consentReferenceCode:null }, { subjectPresence:"identifiable", consentStatus:"confirmed", consentCheckedOn:{ $ne:null }, consentReferenceCode:{ $ne:null } }] }, set: { publicationStatus: "published", publishedAt: now }, changedFields: ["publicationStatus", "publishedAt"], invalid: "not_publishable" }));
-}
-export const changeAdminGalleryPublicationState = (input: TransitionInput & { action: "unpublish" }) => galleryTransition(input, () => ({ action: "unpublished", stateFilter: { publicationStatus: "published", approvalStatus: "approved", publishedAt: { $ne: null } }, set: { publicationStatus: "review", publishedAt: null }, changedFields: ["publicationStatus", "publishedAt"], invalid: "not_manageable" }));
-export async function withdrawAdminGalleryConsent(input: TransitionInput) {
-  if (!isValidAdminGalleryItemId(input.id)) return { ok: false as const, reason: "not_found" as const };
-  const id = new ObjectId(input.id), now = nextDate(input.expectedUpdatedAt);
+  if (!isValidAdminGalleryItemId(input.id)) {
+    return { ok: false as const, reason: "not_found" as const };
+  }
+
+  const id = new ObjectId(input.id);
+  const now = nextDate(input.expectedUpdatedAt);
   return transaction(async (db, session) => {
-    const c = db.collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME);
-    const current = await c.findOne({ _id:id, deletedAt:{ $in:[null,undefined] } }, { session });
-    if (!current) return { ok:false as const, reason:"not_found" as const };
-    const withdrawable = current.subjectPresence === "identifiable" && current.consentStatus === "confirmed" && Boolean(current.consentCheckedOn) && Boolean(current.consentReferenceCode) && current.consentWithdrawnAt === null && current.archivedAt === null;
-    if (!withdrawable) return { ok:false as const, reason:"consent_not_withdrawable" as const };
+    const collection = db.collection<MongoGalleryItemDocument>(
+      GALLERY_ITEM_COLLECTION_NAME,
+    );
+    const before = await collection.findOne(
+      { _id: id, deletedAt: { $in: [null, undefined] } },
+      { session },
+    );
+    if (!before) {
+      return { ok: false as const, reason: "not_found" as const };
+    }
+    if (!isPublishableState(before)) {
+      return { ok: false as const, reason: "not_publishable" as const };
+    }
+    if (!isGalleryConsentReadyForPublication(before)) {
+      return { ok: false as const, reason: "consent_not_ready" as const };
+    }
+
+    const updated = await collection.findOneAndUpdate(
+      {
+        _id: id,
+        deletedAt: { $in: [null, undefined] },
+        archivedAt: null,
+        publicationStatus: "review",
+        approvalStatus: "approved",
+        publishedAt: null,
+        updatedAt: input.expectedUpdatedAt,
+      },
+      {
+        $set: {
+          publicationStatus: "published",
+          publishedAt: now,
+          updatedAt: now,
+        },
+      },
+      { returnDocument: "after", session },
+    );
+    if (!updated) {
+      return { ok: false as const, reason: "edit_conflict" as const };
+    }
+
+    await insertGalleryAuditEvent({
+      database: db,
+      session,
+      galleryItemId: id,
+      action: "published",
+      actor: input.actor,
+      occurredAt: now,
+      fromVersionAt: before.updatedAt,
+      toVersionAt: now,
+      before: createGalleryAuditSnapshot(before),
+      after: createGalleryAuditSnapshot(updated),
+      changedFields: ["publicationStatus", "publishedAt"],
+    });
+    return {
+      ok: true as const,
+      id: input.id,
+      updatedAt: now.toISOString(),
+      slug: updated.slug,
+    };
+  });
+}
+
+export const changeAdminGalleryPublicationState = (
+  input: TransitionInput & { action: "unpublish" },
+) =>
+  galleryTransition(input, () => ({
+    action: "unpublished",
+    stateFilter: {
+      publicationStatus: "published",
+      approvalStatus: "approved",
+      publishedAt: { $type: "date" },
+    },
+    isEligible: isPublicationManageable,
+    set: {
+      publicationStatus: "review",
+      publishedAt: null,
+    },
+    changedFields: ["publicationStatus", "publishedAt"],
+    invalid: "not_manageable",
+  }));
+
+export async function withdrawAdminGalleryConsent(input: TransitionInput) {
+  if (!isValidAdminGalleryItemId(input.id)) {
+    return { ok: false as const, reason: "not_found" as const };
+  }
+
+  const id = new ObjectId(input.id);
+  const now = nextDate(input.expectedUpdatedAt);
+  return transaction(async (db, session) => {
+    const collection = db.collection<MongoGalleryItemDocument>(
+      GALLERY_ITEM_COLLECTION_NAME,
+    );
+    const current = await collection.findOne(
+      { _id: id, deletedAt: { $in: [null, undefined] } },
+      { session },
+    );
+    if (!current) {
+      return { ok: false as const, reason: "not_found" as const };
+    }
+    if (!isGalleryConsentWithdrawable(current)) {
+      return {
+        ok: false as const,
+        reason: "consent_not_withdrawable" as const,
+      };
+    }
+
     const published = current.publicationStatus === "published";
-    const set: Partial<MongoGalleryItemDocument> = { consentStatus:"withdrawn", consentWithdrawnAt:now, updatedAt:now, ...(published ? { publicationStatus:"review", publishedAt:null } : {}) };
-    const before = await c.findOneAndUpdate({ _id:id, deletedAt:{ $in:[null,undefined] }, archivedAt:null, subjectPresence:"identifiable", consentStatus:"confirmed", consentCheckedOn:current.consentCheckedOn, consentReferenceCode:current.consentReferenceCode, consentWithdrawnAt:null, publicationStatus:current.publicationStatus, approvalStatus:current.approvalStatus, publishedAt:current.publishedAt, updatedAt:input.expectedUpdatedAt }, { $set:set }, { returnDocument:"before", session });
-    if (!before) return { ok:false as const, reason:"edit_conflict" as const };
+    const set: Partial<MongoGalleryItemDocument> = {
+      consentStatus: "withdrawn",
+      consentWithdrawnAt: now,
+      updatedAt: now,
+      ...(published
+        ? { publicationStatus: "review", publishedAt: null }
+        : {}),
+    };
+    const before = await collection.findOneAndUpdate(
+      {
+        _id: id,
+        deletedAt: { $in: [null, undefined] },
+        archivedAt: null,
+        subjectPresence: "identifiable",
+        consentStatus: "confirmed",
+        consentCheckedOn: current.consentCheckedOn,
+        consentReferenceCode: current.consentReferenceCode,
+        consentWithdrawnAt: null,
+        publicationStatus: current.publicationStatus,
+        approvalStatus: current.approvalStatus,
+        publishedAt: current.publishedAt,
+        updatedAt: input.expectedUpdatedAt,
+      },
+      { $set: set },
+      { returnDocument: "before", session },
+    );
+    if (!before) {
+      return { ok: false as const, reason: "edit_conflict" as const };
+    }
+
     const after = { ...before, ...set } as MongoGalleryItemDocument;
-    await insertGalleryAuditEvent({ database:db, session, galleryItemId:id, action:"consent_withdrawn", actor:input.actor, occurredAt:now, fromVersionAt:before.updatedAt, toVersionAt:now, before:createGalleryAuditSnapshot(before), after:createGalleryAuditSnapshot(after), changedFields:["consentStatus","consentWithdrawnAt",...(published ? ["publicationStatus","publishedAt"] : [])] });
-    return { ok:true as const, id:input.id, slug:after.slug, updatedAt:now.toISOString() };
+    await insertGalleryAuditEvent({
+      database: db,
+      session,
+      galleryItemId: id,
+      action: "consent_withdrawn",
+      actor: input.actor,
+      occurredAt: now,
+      fromVersionAt: before.updatedAt,
+      toVersionAt: now,
+      before: createGalleryAuditSnapshot(before),
+      after: createGalleryAuditSnapshot(after),
+      changedFields: [
+        "consentStatus",
+        "consentWithdrawnAt",
+        ...(published ? ["publicationStatus", "publishedAt"] : []),
+      ],
+    });
+    return {
+      ok: true as const,
+      id: input.id,
+      slug: after.slug,
+      updatedAt: now.toISOString(),
+    };
   });
 }
