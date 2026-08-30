@@ -7,20 +7,26 @@ export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) return json({ ok: false, error: "forbidden" }, 403);
   const admin = await getCurrentAdmin();
   if (!admin) return json({ ok: false, error: "unauthorized" }, 401);
-  if (Number(request.headers.get("content-length") ?? 0) > ADMIN_TRANSPARENCY_REQUEST_MAX_BYTES) return json({ ok: false, error: "payload_too_large" }, 413);
-  if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data;")) return json({ ok: false, error: "unsupported_media_type" }, 415);
+  const contentType = request.headers.get("content-type");
+  if (!contentType?.toLowerCase().startsWith("multipart/form-data;")) return json({ ok: false, error: "unsupported_media_type" }, 415);
+  const declaredLength = Number(request.headers.get("content-length") ?? 0);
+  if (Number.isFinite(declaredLength) && declaredLength > ADMIN_TRANSPARENCY_REQUEST_MAX_BYTES) return json({ ok: false, error: "payload_too_large" }, 413);
+  const rawBody = await request.arrayBuffer();
+  if (rawBody.byteLength > ADMIN_TRANSPARENCY_REQUEST_MAX_BYTES) return json({ ok: false, error: "payload_too_large" }, 413);
+  let form: FormData;
   try {
-    const form = await request.formData();
+    form = await new Response(rawBody, { headers: { "Content-Type": contentType } }).formData();
+  } catch {
+    return json({ ok: false, error: "invalid_form_data" }, 400);
+  }
+  try {
     const document = form.get("document");
     if (!(document instanceof File)) return json({ ok: false, error: "validation", fieldErrors: { document: "PDF 파일을 선택해 주세요." } }, 400);
-    let actualBytes = document.size;
     const raw: Record<string, unknown> = {};
     for (const key of ["slug", "title", "category", "periodLabel", "summary", "documentDate", "privacyReviewStatus", "finalDocumentStatus"]) {
       const value = form.get(key);
       raw[key] = value;
-      if (typeof value === "string") actualBytes += new TextEncoder().encode(value).byteLength;
     }
-    if (actualBytes > ADMIN_TRANSPARENCY_REQUEST_MAX_BYTES) return json({ ok: false, error: "payload_too_large" }, 413);
     const draft = validateAdminTransparencyDraftInput(raw);
     if (!draft.ok) return json({ ok: false, error: "validation", fieldErrors: draft.fieldErrors }, 400);
     const pdf = await validateAdminTransparencyPdf(document);
