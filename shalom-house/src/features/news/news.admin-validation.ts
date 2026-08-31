@@ -30,6 +30,20 @@ export type AdminNewsReviewRequestInput = {
   reviewReadinessConfirmed: unknown;
 };
 
+export type AdminNewsDirectPublishInput = {
+  expectedUpdatedAt: unknown;
+  publishConfirmed: unknown;
+};
+
+export type AdminNewsDirectPublishFieldErrors = {
+  expectedUpdatedAt?: string;
+  publishConfirmed?: string;
+};
+
+export type AdminNewsDirectPublishValidationResult =
+  | { ok: true; value: { expectedUpdatedAt: Date } }
+  | { ok: false; fieldErrors: AdminNewsDirectPublishFieldErrors };
+
 export type AdminNewsPublishInput = {
   expectedUpdatedAt: unknown;
   publicationConfirmed: unknown;
@@ -417,5 +431,24 @@ export function validateAdminNewsPublishInput(
     };
   }
 
+  return { ok: true, value: { expectedUpdatedAt } };
+}
+
+
+export function validateAdminNewsDirectPublishInput(
+  input: unknown,
+): AdminNewsDirectPublishValidationResult {
+  const value = typeof input === "object" && input !== null
+    ? input as Record<string, unknown>
+    : {};
+  const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
+  const fieldErrors: AdminNewsDirectPublishFieldErrors = {};
+  if (!expectedUpdatedAt) fieldErrors.expectedUpdatedAt = "게시 기준 시각을 확인할 수 없습니다.";
+  if (value.publishConfirmed !== true) {
+    fieldErrors.publishConfirmed = "현재 내용과 공개 가능 여부를 확인해 주세요.";
+  }
+  if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
+    return { ok: false, fieldErrors };
+  }
   return { ok: true, value: { expectedUpdatedAt } };
 }

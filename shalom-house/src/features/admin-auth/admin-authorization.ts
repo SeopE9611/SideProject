@@ -11,6 +11,7 @@ export const adminPermissions = [
   "content.request_review",
   "content.decide_review",
   "content.publish",
+  "content.direct_publish",
   "gallery.withdraw_consent",
   "admin_users.manage",
 ] as const;
