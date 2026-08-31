@@ -45,7 +45,7 @@ if (!uri) {
       ),
       audits.createIndex(
         { galleryItemId: 1, occurredAt: -1, _id: -1 },
-        { name: "gallery_audit_events_item_timeline" },
+        { name: "gallery_audit_events_content_occurred" },
       ),
       audits.createIndex(
         { occurredAt: -1, _id: -1 },

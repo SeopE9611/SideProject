@@ -9,6 +9,7 @@ if (!uri) {
   try {
     const database = client.db(databaseName);
     const documents = database.collection("transparency_documents");
+    const audits = database.collection("transparency_audit_events");
     const active = { deletedAt: null };
     const indexNames = await Promise.all([
       documents.createIndex({ slug: 1 }, { unique: true, partialFilterExpression: active, name: "transparency_documents_slug_unique" }),
@@ -20,7 +21,8 @@ if (!uri) {
       documents.createIndex({ finalDocumentStatus: 1, updatedAt: -1 }, { name: "transparency_documents_final_updated" }),
       documents.createIndex({ publicationStatus: 1, approvalStatus: 1, privacyReviewStatus: 1, finalDocumentStatus: 1, publishedAt: -1, documentDate: -1, _id: -1 }, { name: "transparency_documents_public_visibility" }),
     ]);
-    console.log("자료공개 인덱스를 확인했습니다.", { databaseName, indexNames });
+    const auditIndexName = await audits.createIndex({ transparencyDocumentId: 1, occurredAt: -1, _id: -1 }, { name: "transparency_audit_events_content_occurred" });
+    console.log("자료공개 인덱스를 확인했습니다.", { databaseName, indexNames, auditIndexName });
   } finally {
     await client.close();
   }
