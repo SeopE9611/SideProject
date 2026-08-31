@@ -33,6 +33,20 @@ export type AdminProgramReviewRequestInput = {
   reviewReadinessConfirmed: unknown;
 };
 
+export type AdminProgramDirectPublishInput = {
+  expectedUpdatedAt: unknown;
+  publishConfirmed: unknown;
+};
+
+export type AdminProgramDirectPublishFieldErrors = {
+  expectedUpdatedAt?: string;
+  publishConfirmed?: string;
+};
+
+export type AdminProgramDirectPublishValidationResult =
+  | { ok: true; value: { expectedUpdatedAt: Date } }
+  | { ok: false; fieldErrors: AdminProgramDirectPublishFieldErrors };
+
 export type AdminProgramPublishInput = {
   expectedUpdatedAt: unknown;
   publicationConfirmed: unknown;
@@ -368,5 +382,24 @@ export function validateAdminProgramPublishInput(
     };
   }
 
+  return { ok: true, value: { expectedUpdatedAt } };
+}
+
+
+export function validateAdminProgramDirectPublishInput(
+  input: unknown,
+): AdminProgramDirectPublishValidationResult {
+  const value = typeof input === "object" && input !== null
+    ? input as Record<string, unknown>
+    : {};
+  const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
+  const fieldErrors: AdminProgramDirectPublishFieldErrors = {};
+  if (!expectedUpdatedAt) fieldErrors.expectedUpdatedAt = "게시 기준 시각을 확인할 수 없습니다.";
+  if (value.publishConfirmed !== true) {
+    fieldErrors.publishConfirmed = "현재 내용과 공개 가능 여부를 확인해 주세요.";
+  }
+  if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
+    return { ok: false, fieldErrors };
+  }
   return { ok: true, value: { expectedUpdatedAt } };
 }

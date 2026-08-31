@@ -60,6 +60,7 @@ export type AdminProgramDetail = AdminProgramListItem & {
   body: readonly string[];
   isEditable: boolean;
   canRequestReview: boolean;
+  canDirectPublish: boolean;
   canDecideReview: boolean;
   canPublish: boolean;
   canManagePublicationState: boolean;
@@ -112,6 +113,10 @@ export type DecideAdminProgramReviewResult =
       ok: false;
       reason: "not_found" | "not_decidable" | "edit_conflict";
     };
+
+export type DirectPublishAdminProgramResult =
+  | { ok: true; id: string; slug: string; publishedAt: string; updatedAt: string }
+  | { ok: false; reason: "not_found" | "not_direct_publishable" | "edit_conflict" };
 
 export type PublishAdminProgramResult =
   | {
@@ -421,6 +426,11 @@ export async function findAdminProgramPostById(
       document.approvalStatus,
       document.publishedAt,
     ),
+    canDirectPublish: isEditableDraftState(
+      document.publicationStatus,
+      document.approvalStatus,
+      document.publishedAt,
+    ),
     canRequestReview: isEditableDraftState(
       document.publicationStatus,
       document.approvalStatus,
@@ -598,6 +608,33 @@ export async function changeAdminProgramPublicationState(input: {
     ) {
       return { ok: false, reason: "not_manageable" };
     }
+    return { ok: false, reason: "edit_conflict" };
+  });
+}
+
+export async function directPublishAdminProgramPost(input: {
+  id: string;
+  expectedUpdatedAt: Date;
+  actor: AdminPrincipal;
+  now?: Date;
+}): Promise<DirectPublishAdminProgramResult> {
+  if (!isValidAdminProgramId(input.id)) return { ok: false, reason: "not_found" };
+  const programId = new ObjectId(input.id);
+  const eventId = new ObjectId();
+  const transitionAt = createNextUpdatedAt(input.expectedUpdatedAt, input.now ?? new Date());
+  return runProgramAdminTransaction(async ({ database, session }) => {
+    const change = await changeProgramAndInsertAudit({
+      database, session, programId, eventId, actor: input.actor, action: "direct_published",
+      toVersionAt: transitionAt,
+      filter: { _id: programId, ...activeDocumentFilter, publicationStatus: "draft", approvalStatus: { $in: ["pending", "rejected"] }, publishedAt: null, updatedAt: input.expectedUpdatedAt },
+      set: { publicationStatus: "published", approvalStatus: "approved", publishedAt: transitionAt, updatedAt: transitionAt },
+      changedFields: ["publicationStatus", "approvalStatus", "publishedAt"],
+    });
+    if (change) return { ok: true, id: input.id, slug: change.after.slug, publishedAt: transitionAt.toISOString(), updatedAt: transitionAt.toISOString() };
+    const current = await database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME).findOne({ _id: programId }, { session });
+    if (!current || current.deletedAt != null) return { ok: false, reason: "not_found" };
+    if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt)) return { ok: false, reason: "not_direct_publishable" };
+    if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" };
     return { ok: false, reason: "edit_conflict" };
   });
 }

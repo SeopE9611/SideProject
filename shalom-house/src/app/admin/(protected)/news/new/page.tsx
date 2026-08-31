@@ -8,7 +8,7 @@ import Link from "next/link";
 import { AdminNewsDraftForm } from "@/components/admin/admin-news-draft-form";
 
 export const metadata: Metadata = {
-  title: "뉴스 작성",
+  title: "소식 작성",
   robots: { index: false, follow: false },
 };
 
@@ -19,9 +19,9 @@ export default async function AdminNewsCreatePage() {
     <div className="space-y-8">
       <header>
         <Link href="/admin/news" className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-          ← 뉴스 관리로 돌아가기
+          ← 소식 관리로 돌아가기
         </Link>
-        <h1 className="mt-4 text-title font-bold">뉴스 작성</h1>
+        <h1 className="mt-4 text-title font-bold">소식 작성</h1>
         <p className="mt-3 text-body text-muted-foreground">
           공지사항 또는 활동 소식의 초안을 작성합니다.
           <br />
@@ -41,7 +41,7 @@ export default async function AdminNewsCreatePage() {
       </aside>
 
       <section aria-labelledby="admin-news-form-heading">
-        <h2 id="admin-news-form-heading" className="sr-only">뉴스 초안 입력</h2>
+        <h2 id="admin-news-form-heading" className="sr-only">소식 초안 입력</h2>
         <AdminNewsDraftForm mode="create" />
       </section>
     </div>

@@ -2,9 +2,9 @@ import Link from "next/link";
 
 const preparedItems = [
   "관리자 로그인과 세션",
-  "뉴스 목록·상세 관리",
-  "뉴스 초안 작성·수정",
-  "검토 요청·승인·반려",
+  "소식 목록·상세 관리",
+  "소식 초안 작성·수정",
+  "시스템 관리자의 일반 콘텐츠 바로 게시와 역할 분리형 검토 요청·승인·반려",
   "게시·게시 중단·보관",
   "프로그램 작성·검토·공개 관리",
   "활동사진 비공개 업로드와 동의 상태 관리",
@@ -53,7 +53,7 @@ export default async function AdminDashboardPage({
       </div>
       <div className="flex flex-wrap gap-3">
         <Link href="/admin/news" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-          뉴스 관리 열기
+          소식 관리 열기
         </Link>
         <Link href="/admin/programs" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           프로그램 관리 열기

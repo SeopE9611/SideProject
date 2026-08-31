@@ -9,7 +9,7 @@ import { findAdminNewsPostById } from "@/features/news/news.admin-repository";
 import { getNewsPublicationStatusLabel } from "@/features/news/news.types";
 
 export const metadata: Metadata = {
-  title: "뉴스 수정",
+  title: "소식 수정",
   robots: { index: false, follow: false },
 };
 
@@ -34,7 +34,7 @@ export default async function AdminNewsEditPage({
         <Link href={`/admin/news/${post.id}`} className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           ← 게시물 상세로 돌아가기
         </Link>
-        <h1 className="mt-4 text-title font-bold">뉴스 수정</h1>
+        <h1 className="mt-4 text-title font-bold">소식 수정</h1>
         <p className="mt-3 text-body text-muted-foreground">
           현재 게시 상태는 {getNewsPublicationStatusLabel(post.publicationStatus)}이며, 저장 후에도 자동 공개되지 않습니다.
         </p>
@@ -72,7 +72,7 @@ export default async function AdminNewsEditPage({
             </ul>
           </aside>
           <section aria-labelledby="admin-news-edit-form-heading">
-            <h2 id="admin-news-edit-form-heading" className="sr-only">뉴스 초안 수정</h2>
+            <h2 id="admin-news-edit-form-heading" className="sr-only">소식 초안 수정</h2>
             <AdminNewsDraftForm
               mode="edit"
               postId={post.id}

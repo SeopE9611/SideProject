@@ -87,7 +87,7 @@ export default async function AdminNewsPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-title font-bold">뉴스 관리</h1>
+        <h1 className="text-title font-bold">소식 관리</h1>
         <p className="mt-3 text-body text-muted-foreground">
           공지사항과 활동 소식의 게시 상태와 승인 상태를 확인합니다.
         </p>

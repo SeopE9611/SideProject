@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
+import { AdminDirectPublishForm } from "@/components/admin/admin-direct-publish-form";
 import { AdminContentDeleteForm } from "@/components/admin/admin-content-delete-form";
 import { notFound } from "next/navigation";
 
@@ -19,7 +20,7 @@ import {
 } from "@/features/news/news.types";
 
 export const metadata: Metadata = {
-  title: "뉴스 상세 관리",
+  title: "소식 상세 관리",
   robots: { index: false, follow: false },
 };
 
@@ -50,6 +51,7 @@ export default async function AdminNewsDetailPage({
     reviewRequested?: string | string[];
     decision?: string | string[];
     published?: string | string[];
+    directPublished?: string | string[];
     publication?: string | string[];
   }>;
 }) {
@@ -62,6 +64,7 @@ export default async function AdminNewsDetailPage({
   const canRequestReview = Boolean(admin && hasAdminPermission(admin, "content.request_review"));
   const canDecideReview = Boolean(admin && hasAdminPermission(admin, "content.decide_review"));
   const canPublish = Boolean(admin && hasAdminPermission(admin, "content.publish"));
+  const canDirectPublish = Boolean(admin && hasAdminPermission(admin, "content.direct_publish"));
   const auditHistory = await listAdminNewsAuditHistory({ contentId: post.id });
   const wasUpdated = typeof query.updated === "string" && query.updated === "1";
   const wasReviewRequested =
@@ -80,6 +83,7 @@ export default async function AdminNewsDetailPage({
   const decision = typeof query.decision === "string" ? query.decision : null;
   const wasPublished =
     typeof query.published === "string" && query.published === "1";
+  const wasDirectPublished = typeof query.directPublished === "string" && query.directPublished === "1";
   const publication =
     typeof query.publication === "string" ? query.publication : null;
   const isArchived =
@@ -96,7 +100,7 @@ export default async function AdminNewsDetailPage({
     <div className="space-y-8">
       <header>
         <Link href="/admin/news" className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-          ← 뉴스 관리로 돌아가기
+          ← 소식 관리로 돌아가기
         </Link>
         <p className="mt-4 text-small font-semibold text-primary">{getNewsCategoryLabel(post.category)}</p>
         <h1 className="mt-1 text-title font-bold">게시물 상세 관리</h1>
@@ -124,6 +128,12 @@ export default async function AdminNewsDetailPage({
       {decision === "rejected" ? (
         <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
           게시물을 반려해 수정 가능한 초안으로 되돌렸습니다.
+        </p>
+      ) : null}
+
+      {wasDirectPublished ? (
+        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
+          게시물을 승인과 동시에 바로 공개했습니다.
         </p>
       ) : null}
 
@@ -219,6 +229,17 @@ export default async function AdminNewsDetailPage({
         <div><h3 className="font-bold">요약</h3><p className="mt-2 whitespace-pre-wrap break-words">{post.summary}</p></div>
         <div><h3 className="font-bold">본문</h3><div className="mt-2 space-y-4">{post.body.map((paragraph, index) => <p key={index} className="whitespace-pre-wrap break-words">{paragraph}</p>)}</div></div>
       </section>
+
+      {post.canDirectPublish && canDirectPublish ? (
+        <section aria-labelledby="admin-news-direct-publish-heading" className="rounded-card border border-border-strong bg-surface p-5">
+          <h2 id="admin-news-direct-publish-heading" className="text-heading font-bold">바로 게시</h2>
+          <p className="mt-3 text-small text-muted-foreground">
+            시스템 관리자는 별도의 검토·승인 단계를 거치지 않고 현재 게시물을 즉시 공개할 수 있습니다.<br />
+            역할을 나눠 검토하려면 아래의 검토 요청 절차를 사용해 주세요.
+          </p>
+          <AdminDirectPublishForm id={post.id} endpoint={`/api/admin/news/${post.id}/direct-publish`} expectedUpdatedAt={post.updatedAt} contentLabel="게시물" />
+        </section>
+      ) : null}
 
       {post.canRequestReview && canRequestReview ? (
         <section aria-labelledby="admin-news-review-heading" className="rounded-card border border-border-strong bg-surface p-5">

@@ -16,6 +16,7 @@ export const newsAuditActions = [
   "review_approved",
   "review_rejected",
   "published",
+  "direct_published",
   "unpublished",
   "archived",
   "soft_deleted",
