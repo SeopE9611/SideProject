@@ -333,3 +333,7 @@ publishedAt=기존 Date`로 전환한다. `publicationStatus`, `updatedAt`만 �
 ## 자료공개 PDF 저장 구조
 
 PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/document.pdf` 경로의 단일 원본으로 저장하며 최대 3MB, `application/pdf`, `%PDF-` magic bytes와 SHA-256을 서버에서 검증한다. MongoDB의 `transparency_documents`와 `transparency_audit_events`에는 메타데이터·초안 → 검토 → 승인·반려 → 게시 상태와 감사만 저장한다. 개인정보 검토 완료와 최종본, 미보관·미삭제가 검토 요청 및 게시의 필수 조건이다. 공개 목록 repository와 공개 PDF API는 게시·승인·게시 시각·준비 조건을 확인하며, PDF API는 매 요청마다 조건을 다시 검사한 뒤 private object를 `Cache-Control: no-store`로 전달한다. 게시 중단 시 object는 삭제하지 않지만 다음 요청부터 404로 처리한다. public URL과 signed URL은 생성하지 않으며 공개 반환값과 화면에 Storage·감사·검토 내부 정보를 포함하지 않는다. MongoDB transaction 실패 시 최초 업로드 object를 보상 삭제한다.
+
+## 관리자 역할 기반 권한 적용
+
+관리자 역할은 `admin`, `editor`, `reviewer`, `publisher`로 구분한다. `admin`은 전체 권한, `editor`는 초안 작성·수정·보관·검토 요청, `reviewer`는 승인·반려 및 활동사진 동의 철회, `publisher`는 게시·게시 중단 및 활동사진 동의 철회 권한을 가진다. 모든 쓰기 API는 중앙 권한 매트릭스를 통해 권한을 서버에서 강제하고, UI의 버튼 숨김은 보조 수단으로만 사용한다. 기존 `admin` 계정의 동작은 유지한다.

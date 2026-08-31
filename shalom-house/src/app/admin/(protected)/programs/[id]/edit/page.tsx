@@ -1,6 +1,8 @@
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { AdminProgramDraftForm } from "@/components/admin/admin-program-draft-form";
 import { findAdminProgramPostById } from "@/features/programs/program.admin-repository";
@@ -19,6 +21,8 @@ export default async function AdminProgramEditPage({
   const { id } = await params;
   const post = await findAdminProgramPostById(id);
   if (!post) notFound();
+  const admin = await getCurrentAdmin();
+  if (!admin || !hasAdminPermission(admin, "content.update")) redirect("/admin?forbidden=1");
   const isPendingReview =
     post.publicationStatus === "review" && post.approvalStatus === "pending";
   const isRejectedDraft =

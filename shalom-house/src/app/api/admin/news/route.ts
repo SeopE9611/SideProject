@@ -1,7 +1,5 @@
-import {
-  getCurrentAdmin,
-  isSameOriginRequest,
-} from "@/features/admin-auth/admin-auth.service";
+import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
+import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
 import { createAdminNewsDraft } from "@/features/news/news.admin-repository";
 import { validateAdminNewsDraftInput } from "@/features/news/news.admin-validation";
 
@@ -44,17 +42,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const admin = await getCurrentAdmin();
-    if (!admin) {
+    const authorization = await authorizeCurrentAdmin("content.create");
+    if (!authorization.ok) {
       return jsonResponse(
-        {
-          ok: false,
-          error: "unauthorized",
-          message: "관리자 로그인이 필요합니다.",
-        },
-        401,
+        { ok: false, error: authorization.reason },
+        authorization.reason === "unauthorized" ? 401 : 403,
       );
     }
+    const admin = authorization.admin;
+
 
     if (!isJsonContentType(request)) {
       return jsonResponse(

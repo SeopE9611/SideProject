@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { AdminNavigation } from "@/components/admin/admin-navigation";
 import { SkipLink } from "@/components/layout/skip-link";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
+import { adminRoleLabels } from "@/features/admin-auth/admin-auth.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +41,7 @@ export default async function ProtectedAdminLayout({
             <div className="min-w-0">
               <p className="font-semibold">{admin.displayName}</p>
               <p className="break-all text-small text-muted-foreground">{admin.email}</p>
+              <p className="text-small text-muted-foreground">{adminRoleLabels[admin.role]}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Link

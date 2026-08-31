@@ -1,7 +1,5 @@
-import {
-  getCurrentAdmin,
-  isSameOriginRequest,
-} from "@/features/admin-auth/admin-auth.service";
+import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
+import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
 import { createAdminGalleryDraft } from "@/features/gallery/gallery.admin-repository";
 import {
   ADMIN_GALLERY_REQUEST_MAX_BYTES,
@@ -19,8 +17,14 @@ const json = (body: unknown, status: number) =>
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request))
     return json({ ok: false, error: "forbidden" }, 403);
-  const admin = await getCurrentAdmin();
-  if (!admin) return json({ ok: false, error: "unauthorized" }, 401);
+  const authorization = await authorizeCurrentAdmin("content.create");
+  if (!authorization.ok) {
+    return json(
+      { ok: false, error: authorization.reason },
+      authorization.reason === "unauthorized" ? 401 : 403,
+    );
+  }
+  const admin = authorization.admin;
   const length = Number(request.headers.get("content-length") ?? 0);
   if (length > ADMIN_GALLERY_REQUEST_MAX_BYTES)
     return json({ ok: false, error: "payload_too_large" }, 413);

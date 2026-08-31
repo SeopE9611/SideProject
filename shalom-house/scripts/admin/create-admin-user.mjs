@@ -9,6 +9,8 @@ const databaseName = process.env.SHALOM_MONGODB_DB || "shalom_house";
 const email = process.env.SHALOM_ADMIN_EMAIL?.trim();
 const password = process.env.SHALOM_ADMIN_PASSWORD;
 const displayName = process.env.SHALOM_ADMIN_NAME?.trim();
+const role = process.env.SHALOM_ADMIN_ROLE?.trim() || "admin";
+const adminRoles = ["admin", "editor", "reviewer", "publisher"];
 
 function fail(message) {
   console.error(message);
@@ -17,6 +19,8 @@ function fail(message) {
 
 if (!uri || !email || !password || !displayName) {
   fail("필수 관리자 생성 환경변수가 설정되지 않았습니다.");
+} else if (!adminRoles.includes(role)) {
+  fail("관리자 역할은 admin, editor, reviewer, publisher 중 하나여야 합니다.");
 } else if (email.length > 254 || !email.includes("@")) {
   fail("관리자 이메일 형식을 확인해 주세요.");
 } else if (displayName.length < 2 || displayName.length > 50) {
@@ -49,7 +53,7 @@ if (!uri || !email || !password || !displayName) {
         normalizedEmail,
         displayName,
         passwordHash,
-        role: "admin",
+        role,
         status: "active",
         createdAt: now,
         updatedAt: now,

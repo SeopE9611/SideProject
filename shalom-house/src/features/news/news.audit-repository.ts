@@ -2,7 +2,7 @@ import { getMongoDatabase } from "@/lib/mongodb";
 import type { AdminAuditHistoryItem } from "../admin-audit/admin-audit.types";
 import { ObjectId, type ClientSession, type Db } from "mongodb";
 
-import type { AdminPrincipal } from "../admin-auth/admin-auth.types";
+import { isAdminRole, type AdminPrincipal } from "../admin-auth/admin-auth.types";
 import {
   newsAuditActions,
   newsAuditChangedFields,
@@ -70,7 +70,7 @@ function createActor(actor: AdminPrincipal): NewsAuditActor {
     !ObjectId.isValid(actor.id) ||
     new ObjectId(actor.id).toHexString() !== actor.id.toLowerCase() ||
     actor.displayName.trim().length === 0 ||
-    actor.role !== "admin"
+    !isAdminRole(actor.role)
   ) {
     throw new Error("감사 이벤트 관리자 정보가 유효하지 않습니다.");
   }

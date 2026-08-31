@@ -1,3 +1,5 @@
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
 import {
   listAdminGalleryItems,
@@ -17,6 +19,7 @@ export default async function AdminGalleryPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
+  const admin = await getCurrentAdmin();const canCreate=Boolean(admin&&hasAdminPermission(admin,"content.create"));
   const q = await searchParams,
     page = normalizeAdminGalleryPage(q.page),
     subjectPresence = isGallerySubjectPresence(q.subjectPresence)
@@ -43,12 +46,12 @@ export default async function AdminGalleryPage({
             비공개 초안과 인물·홈페이지 공개 동의 상태를 관리합니다.
           </p>
         </div>
-        <Link
+        {canCreate?(<Link
           href="/admin/gallery/new"
           className="min-h-11 rounded-control bg-primary px-4 py-3 font-semibold text-primary-foreground"
         >
           새 활동사진 초안
-        </Link>
+        </Link>):null}
       </header>
       <form className="grid gap-3 sm:grid-cols-4">
         <label>

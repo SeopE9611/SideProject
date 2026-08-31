@@ -1,5 +1,7 @@
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AdminGalleryDraftForm } from "@/components/admin/admin-gallery-draft-form";
 import { findAdminGalleryItemById } from "@/features/gallery/gallery.admin-repository";
 export default async function EditGallery({
@@ -10,10 +12,9 @@ export default async function EditGallery({
   const { id } = await params,
     item = await findAdminGalleryItemById(id);
   if (!item) notFound();
-  const editable =
-    item.publicationStatus === "draft" &&
-    (item.approvalStatus === "pending" || item.approvalStatus === "rejected") &&
-    !item.archivedAt;
+  const admin = await getCurrentAdmin();
+  if (!admin || !hasAdminPermission(admin, "content.update")) redirect("/admin?forbidden=1");
+  const editable = item.isEditable;
   return (
     <div className="space-y-8">
       <header>

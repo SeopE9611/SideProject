@@ -1,3 +1,5 @@
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
 
 import {
@@ -56,6 +58,8 @@ export default async function AdminNewsPage({
 }: {
   searchParams: Promise<AdminNewsSearchParams>;
 }) {
+  const admin = await getCurrentAdmin();
+  const canCreate = Boolean(admin && hasAdminPermission(admin, "content.create"));
   const query = await searchParams;
   const wasCreated =
     typeof query.created === "string" && query.created === "1";
@@ -93,12 +97,12 @@ export default async function AdminNewsPage({
           수정과 검토·승인·공개 상태 변경은 다음 작업에서 연결합니다.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link
+          {canCreate ? (<Link
             href="/admin/news/new"
             className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           >
             새 게시물 작성
-          </Link>
+          </Link>) : null}
           <Link
             href="/news"
             className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"

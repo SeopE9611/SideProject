@@ -1,3 +1,7 @@
+import { redirect } from "next/navigation";
+
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -8,7 +12,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminProgramCreatePage() {
+export default async function AdminProgramCreatePage() {
+  const admin = await getCurrentAdmin();
+  if (!admin || !hasAdminPermission(admin, "content.create")) redirect("/admin?forbidden=1");
   return (
     <div className="space-y-8">
       <header>
