@@ -1,6 +1,12 @@
+import { redirect } from "next/navigation";
+
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
 import { AdminGalleryDraftForm } from "@/components/admin/admin-gallery-draft-form";
-export default function NewGalleryPage() {
+export default async function NewGalleryPage() {
+  const admin = await getCurrentAdmin();
+  if (!admin || !hasAdminPermission(admin, "content.create")) redirect("/admin?forbidden=1");
   return (
     <div className="space-y-8">
       <header>

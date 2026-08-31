@@ -2,7 +2,7 @@ import { type Filter, ObjectId } from "mongodb";
 
 import { getMongoDatabase } from "@/lib/mongodb";
 
-import type { AdminRole, AdminUserStatus } from "./admin-auth.types";
+import { isAdminRole, type AdminRole, type AdminUserStatus } from "./admin-auth.types";
 
 const usersCollectionName = "admin_users";
 const sessionsCollectionName = "admin_sessions";
@@ -44,11 +44,11 @@ export async function findActiveAdminByNormalizedEmail(
   normalizedEmail: string,
 ): Promise<AdminUserDocument | null> {
   const database = await getMongoDatabase();
-  return database.collection<AdminUserDocument>(usersCollectionName).findOne({
+  const admin = await database.collection<AdminUserDocument>(usersCollectionName).findOne({
     normalizedEmail,
     status: "active",
-    role: "admin",
   });
+  return admin && isAdminRole(admin.role) ? admin : null;
 }
 
 export async function updateAdminLastLoginAt(userId: ObjectId, now: Date) {
@@ -87,11 +87,11 @@ export async function findActiveAdminBySessionHash(
     .findOne(sessionFilter);
   if (!session) return null;
 
-  return database.collection<AdminUserDocument>(usersCollectionName).findOne({
+  const admin = await database.collection<AdminUserDocument>(usersCollectionName).findOne({
     _id: session.userId,
     status: "active",
-    role: "admin",
   });
+  return admin && isAdminRole(admin.role) ? admin : null;
 }
 
 export async function revokeAdminSession(tokenHash: string, now: Date) {

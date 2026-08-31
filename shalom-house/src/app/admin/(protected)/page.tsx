@@ -10,17 +10,27 @@ const preparedItems = [
   "활동사진 비공개 업로드와 동의 상태 관리",
   "자료공개 PDF 비공개 초안 관리",
   "콘텐츠 상세별 수정 이력과 감사 기록 조회",
+  "관리자 역할별 작성·검토·게시 권한 정책",
 ] as const;
 
 const nextItems = [
-  "역할·게시자 정책",
   "삭제·복구",
   "이미지·첨부파일 공개 절차",
 ] as const;
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ forbidden?: string | string[] }>;
+}) {
+  const forbidden = (await searchParams).forbidden === "1";
   return (
     <div className="space-y-8">
+      {forbidden ? (
+        <p role="alert" className="rounded-card border border-border-strong bg-surface p-4 font-semibold">
+          현재 계정에는 해당 작업 권한이 없습니다.
+        </p>
+      ) : null}
       <div>
         <h1 className="text-title font-bold">관리자 대시보드</h1>
         <p className="mt-3 text-body text-muted-foreground">

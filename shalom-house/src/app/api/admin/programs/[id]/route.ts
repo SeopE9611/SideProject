@@ -1,7 +1,5 @@
-import {
-  getCurrentAdmin,
-  isSameOriginRequest,
-} from "@/features/admin-auth/admin-auth.service";
+import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
+import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
 import {
   isValidAdminProgramId,
   updateAdminProgramDraft,
@@ -48,13 +46,15 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   try {
-    const admin = await getCurrentAdmin();
-    if (!admin) {
+    const authorization = await authorizeCurrentAdmin("content.update");
+    if (!authorization.ok) {
       return jsonResponse(
-        { ok: false, error: "unauthorized", message: "관리자 로그인이 필요합니다." },
-        401,
+        { ok: false, error: authorization.reason },
+        authorization.reason === "unauthorized" ? 401 : 403,
       );
     }
+    const admin = authorization.admin;
+
 
     const { id } = await context.params;
     if (!isValidAdminProgramId(id)) {

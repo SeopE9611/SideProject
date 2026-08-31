@@ -1,7 +1,7 @@
 import { getMongoDatabase } from "@/lib/mongodb";
 import type { AdminAuditHistoryItem } from "../admin-audit/admin-audit.types";
 import { ObjectId, type ClientSession, type Db } from "mongodb";
-import type { AdminPrincipal } from "../admin-auth/admin-auth.types";
+import { isAdminRole, type AdminPrincipal, type AdminRole } from "../admin-auth/admin-auth.types";
 import { galleryAuditActions, type GalleryAuditAction, type GalleryAuditSnapshot } from "./gallery.audit";
 export const GALLERY_AUDIT_COLLECTION_NAME = "gallery_audit_events";
 type Event = {
@@ -9,7 +9,7 @@ type Event = {
   schemaVersion: 1;
   galleryItemId: ObjectId;
   action: GalleryAuditAction;
-  actor: { adminId: ObjectId; displayName: string; role: "admin" };
+  actor: { adminId: ObjectId; displayName: string; role: AdminRole };
   occurredAt: Date;
   fromVersionAt: Date | null;
   toVersionAt: Date;
@@ -30,7 +30,7 @@ export async function insertGalleryAuditEvent(input: {
   after: GalleryAuditSnapshot;
   changedFields: string[];
 }) {
-  if (!ObjectId.isValid(input.actor.id))
+  if (!ObjectId.isValid(input.actor.id) || !input.actor.displayName.trim() || !isAdminRole(input.actor.role))
     throw new Error("감사 이벤트 관리자 정보가 유효하지 않습니다.");
   await input.database
     .collection<Event>(GALLERY_AUDIT_COLLECTION_NAME)
@@ -43,7 +43,7 @@ export async function insertGalleryAuditEvent(input: {
         actor: {
           adminId: new ObjectId(input.actor.id),
           displayName: input.actor.displayName,
-          role: "admin",
+          role: input.actor.role,
         },
         occurredAt: input.occurredAt,
         fromVersionAt: input.fromVersionAt,

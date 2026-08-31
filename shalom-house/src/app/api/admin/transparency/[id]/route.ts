@@ -1,4 +1,5 @@
-import { getCurrentAdmin, isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
+import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
+import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
 import { isValidAdminTransparencyDocumentId, updateAdminTransparencyDraft } from "@/features/transparency/transparency.admin-repository";
 import { validateAdminTransparencyDraftUpdateInput } from "@/features/transparency/transparency.admin-validation";
 export const runtime = "nodejs";
@@ -7,8 +8,14 @@ const MAX = 64 * 1024;
 const json = (body: unknown, status: number) => new Response(JSON.stringify(body), { status, headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } });
 export async function PATCH(request: Request, { params }: Context) {
   if (!isSameOriginRequest(request)) return json({ ok: false, error: "forbidden" }, 403);
-  const admin = await getCurrentAdmin();
-  if (!admin) return json({ ok: false, error: "unauthorized" }, 401);
+  const authorization = await authorizeCurrentAdmin("content.update");
+  if (!authorization.ok) {
+    return json(
+      { ok: false, error: authorization.reason },
+      authorization.reason === "unauthorized" ? 401 : 403,
+    );
+  }
+  const admin = authorization.admin;
   const { id } = await params;
   if (!isValidAdminTransparencyDocumentId(id)) return json({ ok: false, error: "not_found" }, 404);
   if (request.headers.get("content-type")?.split(";", 1)[0] !== "application/json") return json({ ok: false, error: "unsupported_media_type" }, 415);

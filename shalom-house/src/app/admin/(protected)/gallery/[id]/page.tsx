@@ -1,3 +1,5 @@
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
 import { notFound } from "next/navigation";
@@ -23,6 +25,13 @@ export default async function GalleryDetail({
   const { id } = await params,
     item = await findAdminGalleryItemById(id);
   if (!item) notFound();
+  const admin = await getCurrentAdmin();
+  const canUpdate = Boolean(admin && hasAdminPermission(admin, "content.update"));
+  const canRequestReview = Boolean(admin && hasAdminPermission(admin, "content.request_review"));
+  const canDecideReview = Boolean(admin && hasAdminPermission(admin, "content.decide_review"));
+  const canPublish = Boolean(admin && hasAdminPermission(admin, "content.publish"));
+  const canArchive = Boolean(admin && hasAdminPermission(admin, "content.archive"));
+  const canWithdrawConsent = Boolean(admin && hasAdminPermission(admin, "gallery.withdraw_consent"));
   const auditHistory = await listAdminGalleryAuditHistory({ contentId: item.id });
   const details: [
     [string, string | number | null],
@@ -49,7 +58,7 @@ export default async function GalleryDetail({
     ["생성일", item.createdAt],
     ["수정일", item.updatedAt],
   ];
-  const editable = item.isEditable;
+  const editable = item.isEditable && canUpdate;
   return (
     <div className="space-y-8">
       <header>
@@ -98,31 +107,31 @@ export default async function GalleryDetail({
         <h2 id="gallery-actions" className="text-heading font-bold">
           상태 변경
         </h2>
-        {item.canRequestReview ? (
+        {item.canRequestReview && canRequestReview ? (
           <AdminGalleryReviewForm
             id={id}
             expectedUpdatedAt={item.updatedAt}
           />
         ) : null}
-        {item.canDecideReview ? (
+        {item.canDecideReview && canDecideReview ? (
           <AdminGalleryReviewDecisionForm
             id={id}
             expectedUpdatedAt={item.updatedAt}
           />
         ) : null}
-        {item.canPublish ? (
+        {item.canPublish && canPublish ? (
           <AdminGalleryPublishForm
             id={id}
             expectedUpdatedAt={item.updatedAt}
           />
         ) : null}
-        {item.canManagePublicationState ? (
+        {item.canManagePublicationState && canPublish ? (
           <AdminGalleryPublicationStateForm
             id={id}
             expectedUpdatedAt={item.updatedAt}
           />
         ) : null}
-        {item.canWithdrawConsent ? (
+        {item.canWithdrawConsent && canWithdrawConsent ? (
           <AdminGalleryConsentWithdrawalForm
             id={id}
             expectedUpdatedAt={item.updatedAt}

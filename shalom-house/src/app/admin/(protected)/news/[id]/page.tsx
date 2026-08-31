@@ -1,3 +1,5 @@
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
@@ -53,6 +55,11 @@ export default async function AdminNewsDetailPage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const post = await findAdminNewsPostById(id);
   if (!post) notFound();
+  const admin = await getCurrentAdmin();
+  const canUpdate = Boolean(admin && hasAdminPermission(admin, "content.update"));
+  const canRequestReview = Boolean(admin && hasAdminPermission(admin, "content.request_review"));
+  const canDecideReview = Boolean(admin && hasAdminPermission(admin, "content.decide_review"));
+  const canPublish = Boolean(admin && hasAdminPermission(admin, "content.publish"));
   const auditHistory = await listAdminNewsAuditHistory({ contentId: post.id });
   const wasUpdated = typeof query.updated === "string" && query.updated === "1";
   const wasReviewRequested =
@@ -140,7 +147,7 @@ export default async function AdminNewsDetailPage({
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        {post.isEditable ? (
+        {post.isEditable && canUpdate ? (
           <Link href={`/admin/news/${post.id}/edit`} className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
             게시물 수정
           </Link>
@@ -211,7 +218,7 @@ export default async function AdminNewsDetailPage({
         <div><h3 className="font-bold">본문</h3><div className="mt-2 space-y-4">{post.body.map((paragraph, index) => <p key={index} className="whitespace-pre-wrap break-words">{paragraph}</p>)}</div></div>
       </section>
 
-      {post.canRequestReview ? (
+      {post.canRequestReview && canRequestReview ? (
         <section aria-labelledby="admin-news-review-heading" className="rounded-card border border-border-strong bg-surface p-5">
           <h2 id="admin-news-review-heading" className="text-heading font-bold">{isRejectedDraft ? "재검토 요청" : "검토 요청"}</h2>
           {isRejectedDraft ? (
@@ -232,7 +239,7 @@ export default async function AdminNewsDetailPage({
         </section>
       ) : null}
 
-      {post.canDecideReview ? (
+      {post.canDecideReview && canDecideReview ? (
         <section aria-labelledby="admin-news-decision-heading" className="rounded-card border border-border-strong bg-surface p-5">
           <h2 id="admin-news-decision-heading" className="text-heading font-bold">검토 결과 처리</h2>
           <p className="mt-3 text-small text-muted-foreground">
@@ -243,7 +250,7 @@ export default async function AdminNewsDetailPage({
         </section>
       ) : null}
 
-      {post.canPublish ? (
+      {post.canPublish && canPublish ? (
         <section aria-labelledby="admin-news-publish-heading" className="rounded-card border border-border-strong bg-surface p-5">
           <h2 id="admin-news-publish-heading" className="text-heading font-bold">게시</h2>
           <p className="mt-3 text-small text-muted-foreground">
@@ -254,7 +261,7 @@ export default async function AdminNewsDetailPage({
         </section>
       ) : null}
 
-      {post.canManagePublicationState ? (
+      {post.canManagePublicationState && canPublish ? (
         <section aria-labelledby="admin-news-publication-state-heading" className="rounded-card border border-border-strong bg-surface p-5">
           <h2 id="admin-news-publication-state-heading" className="text-heading font-bold">게시 상태 변경</h2>
           <p className="mt-3 text-small text-muted-foreground">

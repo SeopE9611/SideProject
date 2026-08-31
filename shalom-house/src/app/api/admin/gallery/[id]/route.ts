@@ -1,7 +1,5 @@
-import {
-  getCurrentAdmin,
-  isSameOriginRequest,
-} from "@/features/admin-auth/admin-auth.service";
+import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
+import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
 import {
   isValidAdminGalleryItemId,
   updateAdminGalleryDraft,
@@ -21,8 +19,14 @@ const json = (body: unknown, status: number) =>
 export async function PATCH(request: Request, { params }: Context) {
   if (!isSameOriginRequest(request))
     return json({ ok: false, error: "forbidden" }, 403);
-  const admin = await getCurrentAdmin();
-  if (!admin) return json({ ok: false, error: "unauthorized" }, 401);
+  const authorization = await authorizeCurrentAdmin("content.update");
+  if (!authorization.ok) {
+    return json(
+      { ok: false, error: authorization.reason },
+      authorization.reason === "unauthorized" ? 401 : 403,
+    );
+  }
+  const admin = authorization.admin;
   const { id } = await params;
   if (!isValidAdminGalleryItemId(id))
     return json({ ok: false, error: "not_found" }, 404);
