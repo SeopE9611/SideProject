@@ -880,11 +880,11 @@ async function changeAdminProgramTrashState(input: { id: string; expectedUpdated
         const duplicate = await collection.findOne({ slug: current.slug, _id: { $ne: programId }, $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }] }, { session, projection: { _id: 1 } });
         if (duplicate) return { ok: false, reason: "slug_conflict" } as const;
       }
-      const now = new Date(), nextUpdatedAt = createNextUpdatedAt(input.expectedUpdatedAt, now);
-      const after = await collection.findOneAndUpdate({ _id: programId, updatedAt: input.expectedUpdatedAt, ...(input.restore ? { deletedAt: { $type: "date" } } : { $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }] }) }, { $set: { deletedAt: input.restore ? null : now, publicationStatus: input.restore ? "draft" : "archived", approvalStatus: "pending", publishedAt: null, updatedAt: nextUpdatedAt } }, { session, returnDocument: "after" });
+      const transitionAt = createNextUpdatedAt(input.expectedUpdatedAt, new Date());
+      const after = await collection.findOneAndUpdate({ _id: programId, updatedAt: input.expectedUpdatedAt, ...(input.restore ? { deletedAt: { $type: "date" } } : { $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }] }) }, { $set: { deletedAt: input.restore ? null : transitionAt, publicationStatus: input.restore ? "draft" : "archived", approvalStatus: "pending", publishedAt: null, updatedAt: transitionAt } }, { session, returnDocument: "after" });
       if (!after) return { ok: false, reason: "edit_conflict" } as const;
-      await insertProgramAuditEvent({ database, session, eventId: new ObjectId(), programId, action: input.restore ? "restored" : "soft_deleted", actor: input.actor, occurredAt: now, fromVersionAt: current.updatedAt, toVersionAt: nextUpdatedAt, before: createProgramAuditSnapshot(current), after: createProgramAuditSnapshot(after), changedFields: ["deletedAt", "publicationStatus", "approvalStatus", "publishedAt"] });
-      return { ok: true, id: input.id, updatedAt: nextUpdatedAt.toISOString() } as const;
+      await insertProgramAuditEvent({ database, session, eventId: new ObjectId(), programId, action: input.restore ? "restored" : "soft_deleted", actor: input.actor, occurredAt: transitionAt, fromVersionAt: current.updatedAt, toVersionAt: transitionAt, before: createProgramAuditSnapshot(current), after: createProgramAuditSnapshot(after), changedFields: ["deletedAt", "publicationStatus", "approvalStatus", "publishedAt"] });
+      return { ok: true, id: input.id, updatedAt: transitionAt.toISOString() } as const;
     });
   } catch (error) { if (isProgramSlugConflict(error)) return { ok: false, reason: "slug_conflict" }; throw error; }
 }
