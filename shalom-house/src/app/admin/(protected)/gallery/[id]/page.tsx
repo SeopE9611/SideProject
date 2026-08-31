@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
 import { notFound } from "next/navigation";
 import { AdminGalleryReviewForm } from "@/components/admin/admin-gallery-review-form";
 import { AdminGalleryReviewDecisionForm } from "@/components/admin/admin-gallery-review-decision-form";
@@ -6,6 +7,7 @@ import { AdminGalleryPublishForm } from "@/components/admin/admin-gallery-publis
 import { AdminGalleryPublicationStateForm } from "@/components/admin/admin-gallery-publication-state-form";
 import { AdminGalleryConsentWithdrawalForm } from "@/components/admin/admin-gallery-consent-withdrawal-form";
 import { AdminGalleryArchiveForm } from "@/components/admin/admin-gallery-archive-form";
+import { listAdminGalleryAuditHistory } from "@/features/gallery/gallery.audit-repository";
 import { findAdminGalleryItemById } from "@/features/gallery/gallery.admin-repository";
 import {
   getGalleryApprovalStatusLabel,
@@ -21,6 +23,7 @@ export default async function GalleryDetail({
   const { id } = await params,
     item = await findAdminGalleryItemById(id);
   if (!item) notFound();
+  const auditHistory = await listAdminGalleryAuditHistory({ contentId: item.id });
   const details: [
     [string, string | number | null],
     ...Array<[string, string | number | null]>,
@@ -148,6 +151,7 @@ export default async function GalleryDetail({
           <AdminGalleryArchiveForm id={id} expectedUpdatedAt={item.updatedAt} />
         </section>
       ) : null}
+      <AdminAuditHistory items={auditHistory} />
     </div>
   );
 }

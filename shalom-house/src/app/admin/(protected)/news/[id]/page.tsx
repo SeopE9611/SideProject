@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
 import { notFound } from "next/navigation";
 
 import { AdminNewsReviewRequestForm } from "@/components/admin/admin-news-review-request-form";
 import { AdminNewsReviewDecisionForm } from "@/components/admin/admin-news-review-decision-form";
 import { AdminNewsPublishForm } from "@/components/admin/admin-news-publish-form";
 import { AdminNewsPublicationStateForm } from "@/components/admin/admin-news-publication-state-form";
+import { listAdminNewsAuditHistory } from "@/features/news/news.audit-repository";
 import { findAdminNewsPostById } from "@/features/news/news.admin-repository";
 import {
   getNewsApprovalStatusLabel,
@@ -51,6 +53,7 @@ export default async function AdminNewsDetailPage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const post = await findAdminNewsPostById(id);
   if (!post) notFound();
+  const auditHistory = await listAdminNewsAuditHistory({ contentId: post.id });
   const wasUpdated = typeof query.updated === "string" && query.updated === "1";
   const wasReviewRequested =
     typeof query.reviewRequested === "string" &&
@@ -261,6 +264,7 @@ export default async function AdminNewsDetailPage({
           <AdminNewsPublicationStateForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </section>
       ) : null}
+      <AdminAuditHistory items={auditHistory} />
     </div>
   );
 }

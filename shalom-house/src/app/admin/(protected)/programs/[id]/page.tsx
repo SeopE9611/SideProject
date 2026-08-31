@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
 import { notFound } from "next/navigation";
 
 import { AdminProgramReviewRequestForm } from "@/components/admin/admin-program-review-request-form";
 import { AdminProgramReviewDecisionForm } from "@/components/admin/admin-program-review-decision-form";
 import { AdminProgramPublishForm } from "@/components/admin/admin-program-publish-form";
 import { AdminProgramPublicationStateForm } from "@/components/admin/admin-program-publication-state-form";
+import { listAdminProgramAuditHistory } from "@/features/programs/program.audit-repository";
 import { findAdminProgramPostById } from "@/features/programs/program.admin-repository";
 import {
   getProgramApprovalStatusLabel,
@@ -51,6 +53,7 @@ export default async function AdminProgramDetailPage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const post = await findAdminProgramPostById(id);
   if (!post) notFound();
+  const auditHistory = await listAdminProgramAuditHistory({ contentId: post.id });
   const wasUpdated = typeof query.updated === "string" && query.updated === "1";
   const wasReviewRequested =
     typeof query.reviewRequested === "string" &&
@@ -264,6 +267,7 @@ export default async function AdminProgramDetailPage({
           <AdminProgramPublicationStateForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </section>
       ) : null}
+      <AdminAuditHistory items={auditHistory} />
     </div>
   );
 }
