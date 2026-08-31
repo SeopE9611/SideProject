@@ -155,3 +155,24 @@ export function publishAdminTransparencyDocument(input: { id: string; expectedUp
 export function changeAdminTransparencyPublicationState(input: { id: string; expectedUpdatedAt: Date; action: "unpublish"; actor: AdminPrincipal }) {
   return transitionDocument({ ...input, predicate: isManageable, stateReason: "not_manageable", action: "unpublished", filter: { publicationStatus: "published", approvalStatus: "approved", publishedAt: { $type: "date" }, archivedAt: null, deletedAt: null }, set: (updatedAt) => ({ publicationStatus: "review", publishedAt: null, updatedAt }), changedFields: ["publicationStatus", "publishedAt"] });
 }
+
+export type AdminTransparencyTrashResult = { ok: true; id: string; updatedAt: string } | { ok: false; reason: "not_found" | "not_deletable" | "not_restorable" | "edit_conflict" | "slug_conflict" | "document_duplicate" };
+async function changeAdminTransparencyTrashState(input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal; restore: boolean }): Promise<AdminTransparencyTrashResult> {
+  if (!isValidAdminTransparencyDocumentId(input.id)) return { ok: false, reason: "not_found" };
+  const id = new ObjectId(input.id);
+  try { return await transaction(async (database, session) => {
+    const collection = database.collection<MongoTransparencyDocument>(TRANSPARENCY_DOCUMENT_COLLECTION_NAME), current = await collection.findOne({ _id: id }, { session });
+    if (!current) return { ok: false, reason: "not_found" } as const;
+    const deleted = current.deletedAt instanceof Date && !Number.isNaN(current.deletedAt.getTime());
+    if (input.restore ? !deleted : deleted) return { ok: false, reason: input.restore ? "not_restorable" : "not_deletable" } as const;
+    if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" } as const;
+    if (input.restore) { const duplicate = await collection.findOne({ _id: { $ne: id }, deletedAt: null, $or: [{ slug: current.slug }, { "file.sha256": current.file.sha256 }] }, { session, projection: { slug: 1, "file.sha256": 1 } }); if (duplicate?.slug === current.slug) return { ok: false, reason: "slug_conflict" } as const; if (duplicate) return { ok: false, reason: "document_duplicate" } as const; }
+    const now = new Date(), updatedAt = new Date(Math.max(now.getTime(), input.expectedUpdatedAt.getTime() + 1));
+    const after = await collection.findOneAndUpdate({ _id: id, updatedAt: input.expectedUpdatedAt, deletedAt: input.restore ? { $type: "date" } : null }, { $set: { deletedAt: input.restore ? null : now, archivedAt: input.restore ? null : now, publicationStatus: input.restore ? "draft" : "archived", approvalStatus: "pending", publishedAt: null, updatedAt } }, { session, returnDocument: "after" });
+    if (!after) return { ok: false, reason: "edit_conflict" } as const;
+    await insertTransparencyAuditEvent({ database, session, documentId: id, action: input.restore ? "restored" : "soft_deleted", actor: input.actor, occurredAt: now, fromVersionAt: current.updatedAt, toVersionAt: updatedAt, before: createTransparencyAuditSnapshot(current), after: createTransparencyAuditSnapshot(after), changedFields: ["deletedAt", "archivedAt", "publicationStatus", "approvalStatus", "publishedAt"] });
+    return { ok: true, id: input.id, updatedAt: updatedAt.toISOString() } as const;
+  }); } catch (error) { const reason = conflict(error); if (reason === "slug_conflict") return { ok: false, reason }; if (reason === "document_duplicate") return { ok: false, reason }; throw error; }
+}
+export const softDeleteAdminTransparencyDocument = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) => changeAdminTransparencyTrashState({ ...input, restore: false });
+export const restoreAdminTransparencyDocument = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) => changeAdminTransparencyTrashState({ ...input, restore: true });

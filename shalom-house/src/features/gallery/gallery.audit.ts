@@ -11,11 +11,13 @@ export const galleryAuditActions = [
   "unpublished",
   "consent_withdrawn",
   "archived",
+  "soft_deleted",
+  "restored",
 ] as const;
 export type GalleryAuditAction = (typeof galleryAuditActions)[number];
 export type GalleryAuditSnapshot = Omit<
   MongoGalleryItemDocument,
-  "_id" | "createdAt" | "updatedAt" | "deletedAt" | "media"
+  "_id" | "createdAt" | "updatedAt" | "media"
 > & { media: Omit<MongoGalleryItemDocument["media"], "originalFileName"> };
 export type GalleryAuditActor = {
   adminId: ObjectId;
@@ -52,5 +54,6 @@ export function createGalleryAuditSnapshot(
     publishedAt: d.publishedAt,
     consentWithdrawnAt: d.consentWithdrawnAt,
     archivedAt: d.archivedAt,
+    deletedAt: d.deletedAt ?? null,
   };
 }

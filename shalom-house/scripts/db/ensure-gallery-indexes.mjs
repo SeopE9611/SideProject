@@ -37,6 +37,7 @@ if (!uri) {
         { deletedAt: 1, updatedAt: -1, _id: -1 },
         { name: "gallery_items_admin_updated" },
       ),
+      items.createIndex({ deletedAt: -1, _id: -1 }, { name: "gallery_items_deleted_timeline" }),
     ]);
     const auditIndexNames = await Promise.all([
       audits.createIndex(

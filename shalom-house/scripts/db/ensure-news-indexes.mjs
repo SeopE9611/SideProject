@@ -25,6 +25,10 @@ if (!uri) {
         { name: "news_posts_public_list" },
       ),
       newsCollection.createIndex(
+        { deletedAt: -1, _id: -1 },
+        { name: "news_posts_deleted_timeline" },
+      ),
+      newsCollection.createIndex(
         { deletedAt: 1, updatedAt: -1, _id: -1 },
         { name: "news_posts_admin_updated" },
       ),

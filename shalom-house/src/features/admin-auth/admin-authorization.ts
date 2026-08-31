@@ -6,6 +6,8 @@ export const adminPermissions = [
   "content.create",
   "content.update",
   "content.archive",
+  "content.delete",
+  "content.restore",
   "content.request_review",
   "content.decide_review",
   "content.publish",

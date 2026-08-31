@@ -195,6 +195,7 @@ export async function findAdminGalleryItemById(id: string) {
   return {
     ...serialize(d),
     isEditable: editable,
+    isArchivable: d.publicationStatus === "draft" && d.publishedAt === null && d.archivedAt === null && d.deletedAt == null,
     canRequestReview: editable,
     canDecideReview:
       d.publicationStatus === "review" &&
@@ -696,3 +697,25 @@ export async function withdrawAdminGalleryConsent(input: TransitionInput) {
     };
   });
 }
+
+export type AdminGalleryTrashResult = { ok: true; id: string; updatedAt: string } | { ok: false; reason: "not_found" | "not_deletable" | "not_restorable" | "edit_conflict" | "slug_conflict" };
+async function changeAdminGalleryTrashState(input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal; restore: boolean }): Promise<AdminGalleryTrashResult> {
+  if (!isValidAdminGalleryItemId(input.id)) return { ok: false, reason: "not_found" };
+  const id = new ObjectId(input.id);
+  try { return await transaction(async (database, session) => {
+    const collection = database.collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME);
+    const current = await collection.findOne({ _id: id }, { session });
+    if (!current) return { ok: false, reason: "not_found" } as const;
+    const deleted = current.deletedAt instanceof Date && !Number.isNaN(current.deletedAt.getTime());
+    if (input.restore ? !deleted : deleted) return { ok: false, reason: input.restore ? "not_restorable" : "not_deletable" } as const;
+    if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" } as const;
+    if (input.restore && await collection.findOne({ slug: current.slug, _id: { $ne: id }, deletedAt: { $in: [null, undefined] } }, { session, projection: { _id: 1 } })) return { ok: false, reason: "slug_conflict" } as const;
+    const now = new Date(), updatedAt = new Date(Math.max(now.getTime(), input.expectedUpdatedAt.getTime() + 1));
+    const after = await collection.findOneAndUpdate({ _id: id, updatedAt: input.expectedUpdatedAt, ...(input.restore ? { deletedAt: { $type: "date" } } : { deletedAt: { $in: [null, undefined] } }) }, { $set: { deletedAt: input.restore ? null : now, archivedAt: input.restore ? null : now, publicationStatus: input.restore ? "draft" : "archived", approvalStatus: "pending", publishedAt: null, updatedAt } }, { session, returnDocument: "after" });
+    if (!after) return { ok: false, reason: "edit_conflict" } as const;
+    await insertGalleryAuditEvent({ database, session, galleryItemId: id, action: input.restore ? "restored" : "soft_deleted", actor: input.actor, occurredAt: now, fromVersionAt: current.updatedAt, toVersionAt: updatedAt, before: createGalleryAuditSnapshot(current), after: createGalleryAuditSnapshot(after), changedFields: ["deletedAt", "archivedAt", "publicationStatus", "approvalStatus", "publishedAt"] });
+    return { ok: true, id: input.id, updatedAt: updatedAt.toISOString() } as const;
+  }); } catch (error) { if (conflict(error) === "slug_conflict") return { ok: false, reason: "slug_conflict" }; throw error; }
+}
+export const softDeleteAdminGalleryItem = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) => changeAdminGalleryTrashState({ ...input, restore: false });
+export const restoreAdminGalleryItem = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) => changeAdminGalleryTrashState({ ...input, restore: true });
