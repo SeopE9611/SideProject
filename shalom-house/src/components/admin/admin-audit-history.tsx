@@ -12,13 +12,32 @@ const formatter = new Intl.DateTimeFormat("ko-KR", {
   day: "2-digit",
   hour: "2-digit",
   minute: "2-digit",
-  hour12: false,
+  hourCycle: "h23",
 });
 
-function formatDate(value: string) {
+function formatDate(value: string): string {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "시간 확인 불가";
-  return formatter.format(date).replace(/\. /g, ".").replace(". ", " ");
+
+  if (Number.isNaN(date.getTime())) {
+    return "시간 확인 불가";
+  }
+
+  const parts = formatter.formatToParts(date);
+  const values = new Map(
+    parts.map((part) => [part.type, part.value]),
+  );
+
+  const year = values.get("year");
+  const month = values.get("month");
+  const day = values.get("day");
+  const hour = values.get("hour");
+  const minute = values.get("minute");
+
+  if (!year || !month || !day || !hour || !minute) {
+    return "시간 확인 불가";
+  }
+
+  return `${year}.${month}.${day} ${hour}:${minute}`;
 }
 
 export function AdminAuditHistory({ heading = "수정 이력", items }: AdminAuditHistoryProps) {

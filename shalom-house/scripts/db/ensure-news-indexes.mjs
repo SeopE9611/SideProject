@@ -36,7 +36,7 @@ if (!uri) {
       ),
       auditCollection.createIndex(
         { newsPostId: 1, occurredAt: -1, _id: -1 },
-        { name: "news_audit_events_content_occurred" },
+        { name: "news_audit_events_post_timeline" },
       ),
       auditCollection.createIndex(
         { occurredAt: -1, _id: -1 },

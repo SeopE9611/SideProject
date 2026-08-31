@@ -12,7 +12,7 @@ if (!uri) { console.error("SHALOM_MONGODB_URI가 설정되지 않았습니다.")
  programs.createIndex({deletedAt:1,updatedAt:-1,_id:-1},{name:"program_posts_admin_updated"})]);
  const auditIndexNames=await Promise.all([
  audits.createIndex({programId:1,toVersionAt:1},{unique:true,name:"program_audit_events_program_version_unique"}),
- audits.createIndex({programId:1,occurredAt:-1,_id:-1},{name:"program_audit_events_content_occurred"}),
+ audits.createIndex({programId:1,occurredAt:-1,_id:-1},{name:"program_audit_events_program_timeline"}),
  audits.createIndex({occurredAt:-1,_id:-1},{name:"program_audit_events_recent"}),
  audits.createIndex({"actor.adminId":1,occurredAt:-1,_id:-1},{name:"program_audit_events_actor_timeline"})]);
  console.log("프로그램 인덱스를 확인했습니다.",{databaseName,programCollectionName,programIndexNames,auditCollectionName,auditIndexNames});
