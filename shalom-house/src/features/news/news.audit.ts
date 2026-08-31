@@ -18,6 +18,8 @@ export const newsAuditActions = [
   "published",
   "unpublished",
   "archived",
+  "soft_deleted",
+  "restored",
 ] as const;
 
 export type NewsAuditAction = (typeof newsAuditActions)[number];
@@ -31,6 +33,7 @@ export const newsAuditChangedFields = [
   "publicationStatus",
   "approvalStatus",
   "publishedAt",
+  "deletedAt",
 ] as const;
 
 export type NewsAuditChangedField = (typeof newsAuditChangedFields)[number];
@@ -42,6 +45,7 @@ export type NewsAuditSnapshot = {
   publicationStatus: NewsPublicationStatus;
   approvalStatus: NewsApprovalStatus;
   publishedAt: Date | null;
+  deletedAt: Date | null;
 };
 
 export type NewsAuditActor = {
@@ -59,6 +63,7 @@ export function createNewsAuditSnapshot(
     | "publicationStatus"
     | "approvalStatus"
     | "publishedAt"
+    | "deletedAt"
   >,
 ): NewsAuditSnapshot {
   return {
@@ -68,6 +73,7 @@ export function createNewsAuditSnapshot(
     publicationStatus: document.publicationStatus,
     approvalStatus: document.approvalStatus,
     publishedAt: document.publishedAt,
+    deletedAt: document.deletedAt ?? null,
   };
 }
 

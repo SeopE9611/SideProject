@@ -1,0 +1,8 @@
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { RESTORE_CONFIRMATION } from "@/features/admin-trash/admin-trash.validation";
+export function AdminContentRestoreForm({ id, endpoint, expectedUpdatedAt }: { id: string; endpoint: string; expectedUpdatedAt: string }) {
+ const router=useRouter(),[confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState("");
+ return <form aria-busy={busy} onSubmit={async(e)=>{e.preventDefault();setError("");if(!confirmed){setError("확인 항목에 동의해 주세요.");return;}setBusy(true);try{const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({expectedUpdatedAt,confirmation:true})});let body:{error?:string}={};try{body=await response.json() as {error?:string};}catch{setError("서버 응답을 확인할 수 없습니다.");return;}if(!response.ok){const messages:Record<string,string>={edit_conflict:"다른 관리자가 먼저 변경했습니다.",slug_conflict:"같은 slug의 활성 콘텐츠가 있어 복구할 수 없습니다.",document_duplicate:"같은 PDF 문서가 있어 복구할 수 없습니다.",not_restorable:"이미 복구되었거나 복구할 수 없는 상태입니다."};setError(messages[body.error??""]??"복구하지 못했습니다.");return;}router.push("/admin/trash?restored=1");router.refresh();}catch{setError("네트워크 연결을 확인해 주세요.");}finally{setBusy(false);}}} className="space-y-3"><label className="flex gap-3"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)} aria-invalid={Boolean(error)}/><span>{RESTORE_CONFIRMATION} <strong>(필수)</strong></span></label>{error?<p role="alert">{error}</p>:null}<button className="min-h-11 border px-4 py-2 font-bold" disabled={busy}>{busy?"복구 중…":"복구"}</button></form>;
+}

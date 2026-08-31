@@ -2,6 +2,7 @@ import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
+import { AdminContentDeleteForm } from "@/components/admin/admin-content-delete-form";
 import { notFound } from "next/navigation";
 import { AdminGalleryReviewForm } from "@/components/admin/admin-gallery-review-form";
 import { AdminGalleryReviewDecisionForm } from "@/components/admin/admin-gallery-review-decision-form";
@@ -27,6 +28,7 @@ export default async function GalleryDetail({
   if (!item) notFound();
   const admin = await getCurrentAdmin();
   const canUpdate = Boolean(admin && hasAdminPermission(admin, "content.update"));
+  const canDelete = Boolean(admin && hasAdminPermission(admin, "content.delete"));
   const canRequestReview = Boolean(admin && hasAdminPermission(admin, "content.request_review"));
   const canDecideReview = Boolean(admin && hasAdminPermission(admin, "content.decide_review"));
   const canPublish = Boolean(admin && hasAdminPermission(admin, "content.publish"));
@@ -154,13 +156,13 @@ export default async function GalleryDetail({
           )}
         </p>
       </section>
-      {editable ? (
+      {item.isArchivable && canArchive ? (
         <section className="rounded-card border p-5">
           <h2 className="text-heading font-bold">초안 보관</h2>
           <AdminGalleryArchiveForm id={id} expectedUpdatedAt={item.updatedAt} />
         </section>
       ) : null}
-      <AdminAuditHistory items={auditHistory} />
+      {canDelete ? <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5"><h2 id="delete-content-heading" className="text-heading font-bold">위험 영역: 콘텐츠 삭제</h2><AdminContentDeleteForm id={item.id} title={item.title} endpoint={`/api/admin/gallery/${item.id}/delete`} expectedUpdatedAt={item.updatedAt} /></section> : null}<AdminAuditHistory items={auditHistory} />
     </div>
   );
 }

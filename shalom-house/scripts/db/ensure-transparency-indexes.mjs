@@ -12,6 +12,7 @@ if (!uri) {
     const audits = database.collection("transparency_audit_events");
     const active = { deletedAt: null };
     const indexNames = await Promise.all([
+      documents.createIndex({ deletedAt: -1, _id: -1 }, { name: "transparency_documents_deleted_timeline" }),
       documents.createIndex({ slug: 1 }, { unique: true, partialFilterExpression: active, name: "transparency_documents_slug_unique" }),
       documents.createIndex({ "file.sha256": 1 }, { unique: true, partialFilterExpression: active, name: "transparency_documents_file_sha256_unique" }),
       documents.createIndex({ updatedAt: -1, _id: -1 }, { name: "transparency_documents_updated" }),

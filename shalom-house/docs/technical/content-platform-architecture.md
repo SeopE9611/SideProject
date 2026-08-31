@@ -337,3 +337,8 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 ## 관리자 역할 기반 권한 적용
 
 관리자 역할은 `admin`, `editor`, `reviewer`, `publisher`로 구분한다. `admin`은 전체 권한, `editor`는 초안 작성·수정·보관·검토 요청, `reviewer`는 승인·반려 및 활동사진 동의 철회, `publisher`는 게시·게시 중단 및 활동사진 동의 철회 권한을 가진다. 모든 쓰기 API는 중앙 권한 매트릭스를 통해 권한을 서버에서 강제하고, UI의 버튼 숨김은 보조 수단으로만 사용한다. 기존 `admin` 계정의 동작은 유지한다.
+
+
+## 관리자 소프트 삭제와 복구
+
+뉴스, 프로그램, 활동사진, 자료공개 삭제는 MongoDB 문서의 `deletedAt`을 기록하는 소프트 삭제이며 영구 삭제는 지원하지 않는다. 게시 중 콘텐츠도 삭제 즉시 공개 상태가 해제된다. 활동사진 이미지와 자료공개 PDF의 Supabase Storage object는 삭제하지 않고 복구 시 그대로 재사용한다. 복구는 이전 게시 상태를 되살리지 않고 항상 `draft`·`pending` 상태로 전환하며, 검토·승인·게시 절차를 다시 거쳐야 한다. 삭제와 복구는 시스템 관리자만 수행하며 `expectedUpdatedAt` 기반 optimistic locking을 적용하고 상태 변경과 감사 이벤트를 같은 MongoDB transaction에 기록한다.

@@ -860,3 +860,33 @@ export function normalizeAdminProgramPage(value: unknown): number {
 export const listAdminPrograms = listAdminProgramPosts;
 
 export const findAdminProgramById = findAdminProgramPostById;
+
+export type AdminProgramTrashResult =
+  | { ok: true; id: string; updatedAt: string }
+  | { ok: false; reason: "not_found" | "not_deletable" | "not_restorable" | "edit_conflict" | "slug_conflict" };
+
+async function changeAdminProgramTrashState(input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal; restore: boolean }): Promise<AdminProgramTrashResult> {
+  if (!isValidAdminProgramId(input.id)) return { ok: false, reason: "not_found" };
+  const programId = new ObjectId(input.id);
+  try {
+    return await runProgramAdminTransaction(async ({ database, session }) => {
+      const collection = database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME);
+      const current = await collection.findOne({ _id: programId }, { session });
+      if (!current) return { ok: false, reason: "not_found" } as const;
+      const deleted = isValidDate(current.deletedAt);
+      if (input.restore ? !deleted : deleted) return { ok: false, reason: input.restore ? "not_restorable" : "not_deletable" } as const;
+      if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" } as const;
+      if (input.restore) {
+        const duplicate = await collection.findOne({ slug: current.slug, _id: { $ne: programId }, $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }] }, { session, projection: { _id: 1 } });
+        if (duplicate) return { ok: false, reason: "slug_conflict" } as const;
+      }
+      const now = new Date(), nextUpdatedAt = createNextUpdatedAt(input.expectedUpdatedAt, now);
+      const after = await collection.findOneAndUpdate({ _id: programId, updatedAt: input.expectedUpdatedAt, ...(input.restore ? { deletedAt: { $type: "date" } } : { $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }] }) }, { $set: { deletedAt: input.restore ? null : now, publicationStatus: input.restore ? "draft" : "archived", approvalStatus: "pending", publishedAt: null, updatedAt: nextUpdatedAt } }, { session, returnDocument: "after" });
+      if (!after) return { ok: false, reason: "edit_conflict" } as const;
+      await insertProgramAuditEvent({ database, session, eventId: new ObjectId(), programId, action: input.restore ? "restored" : "soft_deleted", actor: input.actor, occurredAt: now, fromVersionAt: current.updatedAt, toVersionAt: nextUpdatedAt, before: createProgramAuditSnapshot(current), after: createProgramAuditSnapshot(after), changedFields: ["deletedAt", "publicationStatus", "approvalStatus", "publishedAt"] });
+      return { ok: true, id: input.id, updatedAt: nextUpdatedAt.toISOString() } as const;
+    });
+  } catch (error) { if (isProgramSlugConflict(error)) return { ok: false, reason: "slug_conflict" }; throw error; }
+}
+export const softDeleteAdminProgram = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) => changeAdminProgramTrashState({ ...input, restore: false });
+export const restoreAdminProgram = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) => changeAdminProgramTrashState({ ...input, restore: true });

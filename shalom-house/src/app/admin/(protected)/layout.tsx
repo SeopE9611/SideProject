@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { AdminNavigation } from "@/components/admin/admin-navigation";
 import { SkipLink } from "@/components/layout/skip-link";
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import { adminRoleLabels } from "@/features/admin-auth/admin-auth.types";
 
@@ -63,7 +64,7 @@ export default async function ProtectedAdminLayout({
         </div>
       </header>
       <div className="mx-auto grid max-w-site gap-6 px-page py-6 sm:px-page-wide lg:grid-cols-[14rem_minmax(0,1fr)] lg:py-8">
-        <AdminNavigation />
+        <AdminNavigation canRestore={hasAdminPermission(admin, "content.restore")} />
         <main id="main-content" tabIndex={-1} className="min-w-0">
           {children}
         </main>

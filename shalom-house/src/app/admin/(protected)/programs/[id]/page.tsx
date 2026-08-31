@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
+import { AdminContentDeleteForm } from "@/components/admin/admin-content-delete-form";
 import { notFound } from "next/navigation";
 
 import { AdminProgramReviewRequestForm } from "@/components/admin/admin-program-review-request-form";
@@ -57,6 +58,7 @@ export default async function AdminProgramDetailPage({
   if (!post) notFound();
   const admin = await getCurrentAdmin();
   const canUpdate = Boolean(admin && hasAdminPermission(admin, "content.update"));
+  const canDelete = Boolean(admin && hasAdminPermission(admin, "content.delete"));
   const canRequestReview = Boolean(admin && hasAdminPermission(admin, "content.request_review"));
   const canDecideReview = Boolean(admin && hasAdminPermission(admin, "content.decide_review"));
   const canPublish = Boolean(admin && hasAdminPermission(admin, "content.publish"));
@@ -274,7 +276,7 @@ export default async function AdminProgramDetailPage({
           <AdminProgramPublicationStateForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </section>
       ) : null}
-      <AdminAuditHistory items={auditHistory} />
+      {canDelete ? <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5"><h2 id="delete-content-heading" className="text-heading font-bold">위험 영역: 콘텐츠 삭제</h2><AdminContentDeleteForm id={post.id} title={post.title} endpoint={`/api/admin/programs/${post.id}/delete`} expectedUpdatedAt={post.updatedAt} /></section> : null}<AdminAuditHistory items={auditHistory} />
     </div>
   );
 }

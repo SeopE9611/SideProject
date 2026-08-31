@@ -28,8 +28,8 @@ export async function insertTransparencyAuditEvent(input: {
 }
 
 
-const adminAuditActionLabels: Record<string, string> = { draft_created: "초안 생성", draft_updated: "초안 수정", review_requested: "검토 요청", review_approved: "승인", review_rejected: "반려", published: "게시", unpublished: "게시 중단", archived: "보관", consent_withdrawn: "공개 동의 철회" };
-const adminAuditFieldLabels: Record<string, string> = { slug: "주소 식별자", title: "제목", category: "분류", periodLabel: "기준 기간", summary: "요약", documentDate: "문서일", privacyReviewStatus: "개인정보 검토 상태", finalDocumentStatus: "최종본 상태", file: "파일", publicationStatus: "게시 상태", approvalStatus: "승인 상태", publishedAt: "게시일", archivedAt: "보관일" };
+const adminAuditActionLabels: Record<string, string> = { draft_created: "초안 생성", draft_updated: "초안 수정", review_requested: "검토 요청", review_approved: "승인", review_rejected: "반려", published: "게시", unpublished: "게시 중단", archived: "보관", soft_deleted: "삭제", restored: "복구", consent_withdrawn: "공개 동의 철회" };
+const adminAuditFieldLabels: Record<string, string> = { slug: "주소 식별자", title: "제목", category: "분류", periodLabel: "기준 기간", summary: "요약", documentDate: "문서일", privacyReviewStatus: "개인정보 검토 상태", finalDocumentStatus: "최종본 상태", file: "파일", publicationStatus: "게시 상태", approvalStatus: "승인 상태", publishedAt: "게시일", archivedAt: "보관일", deletedAt: "삭제일" };
 
 type AdminAuditProjection = {
   _id?: unknown; action?: unknown; actor?: { displayName?: unknown };
