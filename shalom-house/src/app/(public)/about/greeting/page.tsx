@@ -35,9 +35,9 @@ export default async function GreetingPage() {
         <h2 className="text-safe-wrap mt-3 text-heading font-bold">
           {greeting.title}
         </h2>
-        {greeting.paragraphs.map((paragraph) => (
+        {greeting.paragraphs.map((paragraph, index) => (
           <p
-            key={paragraph}
+            key={`greeting-paragraph-${index}`}
             className="text-safe-wrap mt-4 max-w-3xl text-body text-muted-foreground"
           >
             {paragraph}

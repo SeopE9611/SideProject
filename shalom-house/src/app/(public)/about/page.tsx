@@ -34,9 +34,9 @@ export default async function AboutPage() {
             시설 기본 정보
           </h2>
           <dl className="grid border-y border-border sm:grid-cols-3">
-            {content.facts.map((item) => (
+            {content.facts.map((item, index) => (
               <div
-                key={item.label}
+                key={`fact-${index}`}
                 className="border-b border-border py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:px-6 sm:first:pl-0 sm:last:border-r-0"
               >
                 <dt className="text-safe-wrap text-small font-bold text-primary">
@@ -68,7 +68,7 @@ export default async function AboutPage() {
           <ol className="mt-8 grid border-t-2 border-foreground lg:grid-cols-3">
             {content.principles.map((item, index) => (
               <li
-                key={item.title}
+                key={`principle-${index}`}
                 className="border-b border-border py-6 lg:px-6 lg:first:pl-0 lg:last:pr-0"
               >
                 <p className="text-small font-bold text-accent">
@@ -105,7 +105,7 @@ export default async function AboutPage() {
           <ol className="mt-8 grid border-t-2 border-foreground lg:grid-cols-3">
             {content.scenes.map((item, index) => (
               <li
-                key={item.title}
+                key={`scene-${index}`}
                 className="border-b border-border py-6 lg:px-6 lg:first:pl-0 lg:last:pr-0"
               >
                 <p className="text-safe-wrap text-small font-bold text-accent">
@@ -138,7 +138,7 @@ export default async function AboutPage() {
           </h2>
           <div className="mt-8 grid border-t-4 border-primary sm:grid-cols-2">
             {content.policyItems.map((item, index) => (
-              <div key={item.title} className={index === 0 ? "border-b border-border py-6 sm:border-b-0 sm:border-r sm:pr-8" : "py-6 sm:pl-8"}>
+              <div key={`policy-${index}`} className={index === 0 ? "border-b border-border py-6 sm:border-b-0 sm:border-r sm:pr-8" : "py-6 sm:pl-8"}>
                 <h3 className="text-safe-wrap font-bold">{item.title}</h3>
                 <p className="text-safe-wrap mt-3 text-muted-foreground">{item.description}</p>
               </div>
