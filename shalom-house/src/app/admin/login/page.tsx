@@ -15,15 +15,17 @@ const errorMessages: Record<string, string> = {
 export default async function AdminLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string | string[] }>;
+  searchParams: Promise<{ error?: string | string[]; sessionRevoked?: string | string[] }>;
 }) {
-  const errorValue = (await searchParams).error;
+  const query = await searchParams;
+  const errorValue = query.error;
   const error = typeof errorValue === "string" ? errorMessages[errorValue] : undefined;
 
   return (
     <main id="main-content" tabIndex={-1} className="flex min-h-screen items-center px-page py-12 text-foreground">
       <div className="mx-auto w-full max-w-md rounded-card border border-border bg-surface p-6 sm:p-8">
         <div>
+          {query.sessionRevoked === "1" ? <p role="status">관리자 로그인 세션이 해제되었습니다. 다시 로그인해 주세요.</p> : null}
           <p className="text-small font-semibold text-primary">샬롬의 집 콘텐츠 관리</p>
           <h1 className="mt-2 text-title font-bold">관리자 로그인</h1>
           <p className="mt-3 text-body text-muted-foreground">

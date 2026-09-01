@@ -67,6 +67,7 @@ export default async function ProtectedAdminLayout({ children }: Readonly<{ chil
           canManageSiteContent={hasAdminPermission(admin, "site_content.manage")}
           canManageInquiries={hasAdminPermission(admin, "inquiries.manage")}
           canManageDonations={hasAdminPermission(admin, "donations.manage")}
+          canManageAdminUsers={hasAdminPermission(admin, "admin_users.manage")}
         />
         <main id="main-content" tabIndex={-1} className="min-w-0">
           {children}

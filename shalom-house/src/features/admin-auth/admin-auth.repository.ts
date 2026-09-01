@@ -4,9 +4,9 @@ import { getMongoDatabase } from "@/lib/mongodb";
 
 import { isAdminRole, type AdminRole, type AdminUserStatus } from "./admin-auth.types";
 
-const usersCollectionName = "admin_users";
-const sessionsCollectionName = "admin_sessions";
-const attemptsCollectionName = "admin_login_attempts";
+export const ADMIN_USERS_COLLECTION_NAME = "admin_users";
+export const ADMIN_SESSIONS_COLLECTION_NAME = "admin_sessions";
+export const ADMIN_LOGIN_ATTEMPTS_COLLECTION_NAME = "admin_login_attempts";
 
 export type AdminUserDocument = {
   _id: ObjectId;
@@ -21,7 +21,7 @@ export type AdminUserDocument = {
   lastLoginAt: Date | null;
 };
 
-type AdminSessionDocument = {
+export type AdminSessionDocument = {
   _id: ObjectId;
   userId: ObjectId;
   tokenHash: string;
@@ -42,7 +42,7 @@ export type AdminLoginAttemptDocument = {
 
 export async function findActiveAdminByNormalizedEmail(normalizedEmail: string): Promise<AdminUserDocument | null> {
   const database = await getMongoDatabase();
-  const admin = await database.collection<AdminUserDocument>(usersCollectionName).findOne({
+  const admin = await database.collection<AdminUserDocument>(ADMIN_USERS_COLLECTION_NAME).findOne({
     normalizedEmail,
     status: "active",
   });
@@ -52,7 +52,7 @@ export async function findActiveAdminByNormalizedEmail(normalizedEmail: string):
 export async function updateAdminLastLoginAt(userId: ObjectId, now: Date) {
   const database = await getMongoDatabase();
   await database
-    .collection<AdminUserDocument>(usersCollectionName)
+    .collection<AdminUserDocument>(ADMIN_USERS_COLLECTION_NAME)
     .updateOne({ _id: userId }, { $set: { lastLoginAt: now, updatedAt: now } });
 }
 
@@ -63,7 +63,7 @@ export async function createAdminSession(input: {
   expiresAt: Date;
 }) {
   const database = await getMongoDatabase();
-  await database.collection<AdminSessionDocument>(sessionsCollectionName).insertOne({
+  await database.collection<AdminSessionDocument>(ADMIN_SESSIONS_COLLECTION_NAME).insertOne({
     _id: new ObjectId(),
     ...input,
     revokedAt: null,
@@ -77,10 +77,10 @@ export async function findActiveAdminBySessionHash(tokenHash: string, now: Date)
     expiresAt: { $gt: now },
     $or: [{ revokedAt: null }, { revokedAt: { $exists: false } }],
   };
-  const session = await database.collection<AdminSessionDocument>(sessionsCollectionName).findOne(sessionFilter);
+  const session = await database.collection<AdminSessionDocument>(ADMIN_SESSIONS_COLLECTION_NAME).findOne(sessionFilter);
   if (!session) return null;
 
-  const admin = await database.collection<AdminUserDocument>(usersCollectionName).findOne({
+  const admin = await database.collection<AdminUserDocument>(ADMIN_USERS_COLLECTION_NAME).findOne({
     _id: session.userId,
     status: "active",
   });
@@ -89,7 +89,7 @@ export async function findActiveAdminBySessionHash(tokenHash: string, now: Date)
 
 export async function revokeAdminSession(tokenHash: string, now: Date) {
   const database = await getMongoDatabase();
-  await database.collection<AdminSessionDocument>(sessionsCollectionName).updateOne(
+  await database.collection<AdminSessionDocument>(ADMIN_SESSIONS_COLLECTION_NAME).updateOne(
     {
       tokenHash,
       $or: [{ revokedAt: null }, { revokedAt: { $exists: false } }],
@@ -100,7 +100,7 @@ export async function revokeAdminSession(tokenHash: string, now: Date) {
 
 export async function getLoginAttempt(keyHash: string): Promise<AdminLoginAttemptDocument | null> {
   const database = await getMongoDatabase();
-  return database.collection<AdminLoginAttemptDocument>(attemptsCollectionName).findOne({ keyHash });
+  return database.collection<AdminLoginAttemptDocument>(ADMIN_LOGIN_ATTEMPTS_COLLECTION_NAME).findOne({ keyHash });
 }
 
 export async function saveLoginAttempt(input: {
@@ -118,7 +118,7 @@ export async function saveLoginAttempt(input: {
     $or: [{ $eq: [{ $type: "$windowStartedAt" }, "missing"] }, { $lt: ["$windowStartedAt", windowStartCutoff] }],
   };
 
-  await database.collection<AdminLoginAttemptDocument>(attemptsCollectionName).updateOne(
+  await database.collection<AdminLoginAttemptDocument>(ADMIN_LOGIN_ATTEMPTS_COLLECTION_NAME).updateOne(
     { keyHash: input.keyHash },
     [
       {
@@ -151,5 +151,5 @@ export async function saveLoginAttempt(input: {
 
 export async function clearLoginAttempt(keyHash: string): Promise<void> {
   const database = await getMongoDatabase();
-  await database.collection<AdminLoginAttemptDocument>(attemptsCollectionName).deleteOne({ keyHash });
+  await database.collection<AdminLoginAttemptDocument>(ADMIN_LOGIN_ATTEMPTS_COLLECTION_NAME).deleteOne({ keyHash });
 }
