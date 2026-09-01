@@ -57,8 +57,17 @@ export default async function SiteContentPage() {
         </section>
         <section className="rounded-card border p-5">
           <h2 className="text-heading font-bold">생활공간</h2>
-          <p className="mt-2">등록된 생활공간 수 {spaceCounts.total}개 · 공개 중인 생활공간 수 {spaceCounts.published}개</p>
-          <div className="mt-4 flex gap-4"><Link className="min-h-11 underline" href="/admin/site-content/spaces">관리</Link><Link className="min-h-11 underline" href="/about/spaces">공개 페이지 보기</Link></div>
+          <p className="mt-2">
+            등록된 생활공간 수 {spaceCounts.total}개 · 공개 중인 생활공간 수 {spaceCounts.published}개
+          </p>
+          <div className="mt-4 flex gap-4">
+            <Link className="min-h-11 underline" href="/admin/site-content/spaces">
+              관리
+            </Link>
+            <Link className="min-h-11 underline" href="/about/spaces">
+              공개 페이지 보기
+            </Link>
+          </div>
         </section>
       </div>
     </div>

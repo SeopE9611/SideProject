@@ -8,9 +8,16 @@ export type FacilitySpaceAuditChangedField = (typeof facilitySpaceAuditChangedFi
 export type FacilitySpaceAuditSnapshot = Omit<FacilitySpaceDocument, "_id" | "createdAt" | "updatedAt">;
 export type FacilitySpaceAuditActor = { adminId: ObjectId; displayName: string; role: AdminRole };
 export const createFacilitySpaceAuditSnapshot = (document: FacilitySpaceDocument): FacilitySpaceAuditSnapshot => ({
-  title: document.title, description: document.description, publicationStatus: document.publicationStatus,
-  displayOrder: document.displayOrder, publishedAt: document.publishedAt, archivedAt: document.archivedAt,
+  title: document.title,
+  description: document.description,
+  publicationStatus: document.publicationStatus,
+  displayOrder: document.displayOrder,
+  publishedAt: document.publishedAt,
+  archivedAt: document.archivedAt,
 });
-export function getFacilitySpaceChangedFields(before: FacilitySpaceDocument, after: FacilitySpaceDocument): FacilitySpaceAuditChangedField[] {
+export function getFacilitySpaceChangedFields(
+  before: FacilitySpaceDocument,
+  after: FacilitySpaceDocument,
+): FacilitySpaceAuditChangedField[] {
   return facilitySpaceAuditChangedFields.filter((field) => before[field] !== after[field]);
 }

@@ -1,2 +1,24 @@
-import Link from "next/link"; import { redirect } from "next/navigation"; import { AdminFacilitySpaceForm } from "@/components/admin/admin-facility-space-form"; import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service"; import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
-export default async function Page() { const admin = await getCurrentAdmin(); if (!admin || !hasAdminPermission(admin, "site_content.manage")) redirect("/admin?forbidden=1"); return <div className="space-y-6"><header><Link href="/admin/site-content/spaces" className="underline">← 생활공간 관리</Link><h1 className="mt-4 text-title font-bold">생활공간 등록</h1></header><AdminFacilitySpaceForm mode="create" expectedUpdatedAt={null} initialSpace={{ title: "", description: "", publicationStatus: "draft", displayOrder: 1 }}/></div>; }
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { AdminFacilitySpaceForm } from "@/components/admin/admin-facility-space-form";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+export default async function Page() {
+  const admin = await getCurrentAdmin();
+  if (!admin || !hasAdminPermission(admin, "site_content.manage")) redirect("/admin?forbidden=1");
+  return (
+    <div className="space-y-6">
+      <header>
+        <Link href="/admin/site-content/spaces" className="underline">
+          ← 생활공간 관리
+        </Link>
+        <h1 className="mt-4 text-title font-bold">생활공간 등록</h1>
+      </header>
+      <AdminFacilitySpaceForm
+        mode="create"
+        expectedUpdatedAt={null}
+        initialSpace={{ title: "", description: "", publicationStatus: "draft", displayOrder: 1 }}
+      />
+    </div>
+  );
+}
