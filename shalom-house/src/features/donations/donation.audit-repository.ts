@@ -1,3 +1,89 @@
-import {ObjectId,type ClientSession,type Db}from"mongodb";import{donationAuditActions,donationAuditFields,type DonationAuditDocument}from"./donation.audit";import{isCanonicalDateOnly,isDonationMethod,isDonationPurpose,isDonationReceiptStatus,isDonationStatus,isValidDonationDate}from"./donation.types";import{isDonorReference}from"./donor.types";
-const forbiddenPlainTextPattern=/<[^>]*>|[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;const isSingleLinePlainText=(value:unknown,minLength:number,maxLength:number):value is string=>typeof value==="string"&&value===value.trim()&&value.length>=minLength&&value.length<=maxLength&&!forbiddenPlainTextPattern.test(value)&&!/[\r\n\t]/.test(value);const hasValidDonorReference=(value:{anonymous:boolean;donorReference:unknown})=>value.anonymous?value.donorReference===null:isDonorReference(value.donorReference);const snapshot=(v:any)=>v&&typeof v.anonymous==="boolean"&&hasValidDonorReference(v)&&isCanonicalDateOnly(v.donatedOn)&&Number.isSafeInteger(v.amountWon)&&v.amountWon>=1&&v.amountWon<=1e12&&isDonationMethod(v.method)&&isDonationPurpose(v.purpose)&&typeof v.purposeDescription==="string"&&isDonationReceiptStatus(v.receiptStatus)&&(v.receiptIssuedOn===null||isCanonicalDateOnly(v.receiptIssuedOn))&&isDonationStatus(v.status)&&(v.purpose==="general"?v.purposeDescription==="":isSingleLinePlainText(v.purposeDescription,1,300))&&(v.receiptStatus==="issued"?isCanonicalDateOnly(v.receiptIssuedOn):v.receiptIssuedOn===null);
-export async function insertDonationAuditEvent(db:Db,document:DonationAuditDocument,session:ClientSession){await db.collection<DonationAuditDocument>("donation_audit_events").insertOne(document,{session});}export async function listDonationAuditEvents(db:Db,donationId:ObjectId){const rows=await db.collection("donation_audit_events").find({donationId},{projection:{action:1,"actor.displayName":1,occurredAt:1,fromVersionAt:1,toVersionAt:1,changedFields:1,before:1,after:1}}).sort({occurredAt:-1,_id:-1}).limit(50).toArray();return rows.filter(v=>v._id instanceof ObjectId&&donationAuditActions.includes(v.action)&&typeof v.actor?.displayName==="string"&&v.actor.displayName.trim().length>0&&isValidDonationDate(v.occurredAt)&&(v.fromVersionAt===null||isValidDonationDate(v.fromVersionAt))&&isValidDonationDate(v.toVersionAt)&&v.toVersionAt.getTime()===v.occurredAt.getTime()&&Array.isArray(v.changedFields)&&v.changedFields.every((x:unknown)=>donationAuditFields.includes(x as never))&&(v.before===null||snapshot(v.before))&&snapshot(v.after)).map(v=>({action:v.action,displayName:v.actor.displayName,occurredAt:v.occurredAt.toISOString(),changedFields:v.changedFields,fromStatus:v.before?.status??null,toStatus:v.after.status}));}
+import { ObjectId, type ClientSession, type Db } from "mongodb";
+import { donationAuditActions, donationAuditFields, type DonationAuditDocument } from "./donation.audit";
+import {
+  isCanonicalDateOnly,
+  isDonationMethod,
+  isDonationPurpose,
+  isDonationReceiptStatus,
+  isDonationStatus,
+  isValidDonationDate,
+} from "./donation.types";
+import { isDonorReference } from "./donor.types";
+const forbiddenPlainTextPattern = /<[^>]*>|[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
+const isSingleLinePlainText = (value: unknown, minLength: number, maxLength: number): value is string =>
+  typeof value === "string" &&
+  value === value.trim() &&
+  value.length >= minLength &&
+  value.length <= maxLength &&
+  !forbiddenPlainTextPattern.test(value) &&
+  !/[\r\n\t]/.test(value);
+const snapshot = (value: unknown) => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const v = value as Record<string, unknown>;
+  return (
+  typeof v.anonymous === "boolean" &&
+  (v.anonymous ? v.donorReference === null : isDonorReference(v.donorReference)) &&
+  isCanonicalDateOnly(v.donatedOn) &&
+  typeof v.amountWon === "number" &&
+  Number.isSafeInteger(v.amountWon) &&
+  v.amountWon >= 1 &&
+  v.amountWon <= 1e12 &&
+  isDonationMethod(v.method) &&
+  isDonationPurpose(v.purpose) &&
+  typeof v.purposeDescription === "string" &&
+  isDonationReceiptStatus(v.receiptStatus) &&
+  (v.receiptIssuedOn === null || isCanonicalDateOnly(v.receiptIssuedOn)) &&
+  isDonationStatus(v.status) &&
+  (v.purpose === "general" ? v.purposeDescription === "" : isSingleLinePlainText(v.purposeDescription, 1, 300)) &&
+    (v.receiptStatus === "issued" ? isCanonicalDateOnly(v.receiptIssuedOn) : v.receiptIssuedOn === null)
+  );
+};
+export async function insertDonationAuditEvent(db: Db, document: DonationAuditDocument, session: ClientSession) {
+  await db.collection<DonationAuditDocument>("donation_audit_events").insertOne(document, { session });
+}
+export async function listDonationAuditEvents(db: Db, donationId: ObjectId) {
+  const rows = await db
+    .collection("donation_audit_events")
+    .find(
+      { donationId },
+      {
+        projection: {
+          action: 1,
+          "actor.displayName": 1,
+          occurredAt: 1,
+          fromVersionAt: 1,
+          toVersionAt: 1,
+          changedFields: 1,
+          before: 1,
+          after: 1,
+        },
+      },
+    )
+    .sort({ occurredAt: -1, _id: -1 })
+    .limit(50)
+    .toArray();
+  return rows
+    .filter(
+      (v) =>
+        v._id instanceof ObjectId &&
+        donationAuditActions.includes(v.action) &&
+        typeof v.actor?.displayName === "string" &&
+        v.actor.displayName.trim().length > 0 &&
+        isValidDonationDate(v.occurredAt) &&
+        (v.fromVersionAt === null || isValidDonationDate(v.fromVersionAt)) &&
+        isValidDonationDate(v.toVersionAt) &&
+        v.toVersionAt.getTime() === v.occurredAt.getTime() &&
+        Array.isArray(v.changedFields) &&
+        v.changedFields.every((x: unknown) => donationAuditFields.includes(x as never)) &&
+        (v.before === null || snapshot(v.before)) &&
+        snapshot(v.after),
+    )
+    .map((v) => ({
+      action: v.action,
+      displayName: v.actor.displayName,
+      occurredAt: v.occurredAt.toISOString(),
+      changedFields: v.changedFields,
+      fromStatus: v.before?.status ?? null,
+      toStatus: v.after.status,
+    }));
+}

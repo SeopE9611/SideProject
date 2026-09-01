@@ -1,2 +1,196 @@
-"use client";import{useState,type FormEvent}from"react";import type{DonorStatus,DonorType}from"@/features/donations/donor.types";
-type Props={id?:string;expectedUpdatedAt?:string;initial?:{type:DonorType;status:DonorStatus;displayName:string;phone:string;email:string;internalNote:string}};const empty={type:"individual" as DonorType,status:"active" as DonorStatus,displayName:"",phone:"",email:"",internalNote:""};export function AdminDonorForm({id,expectedUpdatedAt,initial=empty}:Props){const[d,setD]=useState(initial),[confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false),[errors,setErrors]=useState<Record<string,string>>({});const change=(key:keyof typeof d,value:string)=>{setD({...d,[key]:value});setConfirmed(false)};async function submit(e:FormEvent){e.preventDefault();if(!confirmed){setErrors({saveConfirmed:"저장 확인이 필요합니다."});return}setBusy(true);setErrors({});try{const r=await fetch(id?`/api/admin/donors/${id}`:"/api/admin/donors",{method:id?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({expectedUpdatedAt:expectedUpdatedAt??null,saveConfirmed:true,donor:d})});let body:any;try{body=await r.json()}catch{setErrors({form:"서버 응답을 확인할 수 없습니다."});return}if(!r.ok){setErrors(body.fieldErrors??{form:body.error==="edit_conflict"?"다른 관리자가 먼저 수정했습니다. 새로고침 후 다시 시도해 주세요.":"저장하지 못했습니다."});return}if(typeof body.redirectTo==="string"&&body.redirectTo.startsWith("/admin/donors/"))location.assign(body.redirectTo);else setErrors({form:"이동 경로가 올바르지 않습니다."})}catch{setErrors({form:"네트워크 오류로 저장하지 못했습니다."})}finally{setBusy(false)}}const field=(key:string)=>errors[`donor.${key}`];const aria=(key:string)=>field(key)?{"aria-invalid":true as const,"aria-describedby":`donor-${key}-error`}:{};const error=(key:string)=>field(key)&&<p id={`donor-${key}-error`} role="alert">{field(key)}</p>;return <form onSubmit={submit}aria-busy={busy}className="mt-6 space-y-5"><p className="rounded-card border p-4">주민등록번호, 사업자등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보는 입력하지 마세요.</p>{errors.form&&<p role="alert">{errors.form}</p>}<label className="block">후원자 유형<select id="donor-type" {...aria("type")} className="block min-h-11"value={d.type}onChange={e=>change("type",e.target.value)}><option value="individual">개인</option><option value="organization">단체·법인</option></select>{error("type")}</label><label className="block">표시 이름<input id="donor-displayName" {...aria("displayName")} className="block min-h-11"value={d.displayName}onChange={e=>change("displayName",e.target.value)}aria-invalid={!!field("displayName")}/>{error("displayName")}</label><label className="block">전화번호<input id="donor-phone" {...aria("phone")} className="block min-h-11"value={d.phone}onChange={e=>change("phone",e.target.value)}/>{error("phone")}</label><label className="block">이메일<input id="donor-email" {...aria("email")} type="email"className="block min-h-11"value={d.email}onChange={e=>change("email",e.target.value)}/>{error("email")}</label><label className="block">상태<select id="donor-status" {...aria("status")} className="block min-h-11"value={d.status}onChange={e=>change("status",e.target.value)}><option value="active">이용 중</option><option value="archived">보관</option></select>{error("status")}</label><label className="block">내부 메모<textarea id="donor-internalNote" {...aria("internalNote")} className="block min-h-28"value={d.internalNote}onChange={e=>change("internalNote",e.target.value)}/>{error("internalNote")}</label><label className="flex min-h-11 items-center gap-2"><input id="donor-saveConfirmed" type="checkbox" checked={confirmed} aria-invalid={errors.saveConfirmed?true:undefined} aria-describedby={errors.saveConfirmed?"donor-saveConfirmed-error":undefined}onChange={e=>setConfirmed(e.target.checked)}/>입력한 후원자 정보와 개인정보 취급 주의사항을 확인했습니다.</label>{errors.saveConfirmed&&<p id="donor-saveConfirmed-error" role="alert">{errors.saveConfirmed}</p>}{errors.expectedUpdatedAt&&<p role="alert">{errors.expectedUpdatedAt}</p>}<button type="submit" disabled={busy||!confirmed}className="min-h-11 rounded-control bg-primary px-4 text-primary-foreground">{busy?"저장 중…":"저장"}</button></form>}
+"use client";
+import { useState, type FormEvent } from "react";
+import type { DonorStatus, DonorType } from "@/features/donations/donor.types";
+type Props = {
+  id?: string;
+  expectedUpdatedAt?: string;
+  initial?: {
+    type: DonorType;
+    status: DonorStatus;
+    displayName: string;
+    phone: string;
+    email: string;
+    internalNote: string;
+  };
+};
+const empty = {
+  type: "individual" as DonorType,
+  status: "active" as DonorStatus,
+  displayName: "",
+  phone: "",
+  email: "",
+  internalNote: "",
+};
+export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props) {
+  const [d, setD] = useState(initial),
+    [confirmed, setConfirmed] = useState(false),
+    [busy, setBusy] = useState(false),
+    [errors, setErrors] = useState<Record<string, string>>({});
+  const change = (key: keyof typeof d, value: string) => {
+    setD({ ...d, [key]: value });
+    setConfirmed(false);
+  };
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!confirmed) {
+      setErrors({ saveConfirmed: "저장 확인이 필요합니다." });
+      return;
+    }
+    setBusy(true);
+    setErrors({});
+    try {
+      const r = await fetch(id ? `/api/admin/donors/${id}` : "/api/admin/donors", {
+        method: id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedUpdatedAt: expectedUpdatedAt ?? null, saveConfirmed: true, donor: d }),
+      });
+      let body: unknown;
+      try {
+        body = await r.json();
+      } catch {
+        setErrors({ form: "서버 응답을 확인할 수 없습니다." });
+        return;
+      }
+      if (typeof body !== "object" || body === null || Array.isArray(body)) {
+        setErrors({ form: "서버 응답을 확인할 수 없습니다." });
+        return;
+      }
+      const responseBody = body as Record<string, unknown>;
+      if (!r.ok) {
+        setErrors(
+          (typeof responseBody.fieldErrors === "object" && responseBody.fieldErrors !== null
+            ? (responseBody.fieldErrors as Record<string, string>)
+            : undefined) ?? {
+            form:
+              responseBody.error === "edit_conflict"
+                ? "다른 관리자가 먼저 수정했습니다. 새로고침 후 다시 시도해 주세요."
+                : "저장하지 못했습니다.",
+          },
+        );
+        return;
+      }
+      if (typeof responseBody.redirectTo === "string" && responseBody.redirectTo.startsWith("/admin/donors/"))
+        location.assign(responseBody.redirectTo);
+      else setErrors({ form: "이동 경로가 올바르지 않습니다." });
+    } catch {
+      setErrors({ form: "네트워크 오류로 저장하지 못했습니다." });
+    } finally {
+      setBusy(false);
+    }
+  }
+  const field = (key: string) => errors[`donor.${key}`];
+  const aria = (key: string) =>
+    field(key) ? { "aria-invalid": true as const, "aria-describedby": `donor-${key}-error` } : {};
+  const error = (key: string) =>
+    field(key) && (
+      <p id={`donor-${key}-error`} role="alert">
+        {field(key)}
+      </p>
+    );
+  return (
+    <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-5">
+      <p className="rounded-card border p-4">
+        주민등록번호, 사업자등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보는 입력하지 마세요.
+      </p>
+      {errors.form && <p role="alert">{errors.form}</p>}
+      <label className="block">
+        후원자 유형
+        <select
+          id="donor-type"
+          {...aria("type")}
+          className="block min-h-11"
+          value={d.type}
+          onChange={(e) => change("type", e.target.value)}
+        >
+          <option value="individual">개인</option>
+          <option value="organization">단체·법인</option>
+        </select>
+        {error("type")}
+      </label>
+      <label className="block">
+        표시 이름
+        <input
+          id="donor-displayName"
+          {...aria("displayName")}
+          className="block min-h-11"
+          value={d.displayName}
+          onChange={(e) => change("displayName", e.target.value)}
+          aria-invalid={!!field("displayName")}
+        />
+        {error("displayName")}
+      </label>
+      <label className="block">
+        전화번호
+        <input
+          id="donor-phone"
+          {...aria("phone")}
+          className="block min-h-11"
+          value={d.phone}
+          onChange={(e) => change("phone", e.target.value)}
+        />
+        {error("phone")}
+      </label>
+      <label className="block">
+        이메일
+        <input
+          id="donor-email"
+          {...aria("email")}
+          type="email"
+          className="block min-h-11"
+          value={d.email}
+          onChange={(e) => change("email", e.target.value)}
+        />
+        {error("email")}
+      </label>
+      <label className="block">
+        상태
+        <select
+          id="donor-status"
+          {...aria("status")}
+          className="block min-h-11"
+          value={d.status}
+          onChange={(e) => change("status", e.target.value)}
+        >
+          <option value="active">이용 중</option>
+          <option value="archived">보관</option>
+        </select>
+        {error("status")}
+      </label>
+      <label className="block">
+        내부 메모
+        <textarea
+          id="donor-internalNote"
+          {...aria("internalNote")}
+          className="block min-h-28"
+          value={d.internalNote}
+          onChange={(e) => change("internalNote", e.target.value)}
+        />
+        {error("internalNote")}
+      </label>
+      <label className="flex min-h-11 items-center gap-2">
+        <input
+          id="donor-saveConfirmed"
+          type="checkbox"
+          checked={confirmed}
+          aria-invalid={errors.saveConfirmed ? true : undefined}
+          aria-describedby={errors.saveConfirmed ? "donor-saveConfirmed-error" : undefined}
+          onChange={(e) => setConfirmed(e.target.checked)}
+        />
+        입력한 후원자 정보와 개인정보 취급 주의사항을 확인했습니다.
+      </label>
+      {errors.saveConfirmed && (
+        <p id="donor-saveConfirmed-error" role="alert">
+          {errors.saveConfirmed}
+        </p>
+      )}
+      {errors.expectedUpdatedAt && <p role="alert">{errors.expectedUpdatedAt}</p>}
+      <button
+        type="submit"
+        disabled={busy || !confirmed}
+        className="min-h-11 rounded-control bg-primary px-4 text-primary-foreground"
+      >
+        {busy ? "저장 중…" : "저장"}
+      </button>
+    </form>
+  );
+}

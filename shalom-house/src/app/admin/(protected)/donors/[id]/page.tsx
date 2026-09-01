@@ -1,1 +1,79 @@
-import Link from"next/link";import{notFound,redirect}from"next/navigation";import{authorizeCurrentAdmin}from"@/features/admin-auth/admin-authorization";import{getAdminDonor}from"@/features/donations/donor.admin-repository";import{donorAuditActionLabels,donorAuditFieldLabels}from"@/features/donations/donor.audit";import{donorStatusLabels,donorTypeLabels}from"@/features/donations/donor.types";export default async function Page({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{saved?:string}>}){const a=await authorizeCurrentAdmin("donations.manage");if(!a.ok)redirect("/admin?forbidden=1");const saved=(await searchParams).saved==="1";const d=await getAdminDonor((await params).id);if(!d)notFound();const date=(x:string|null)=>x?new Date(x).toLocaleString("ko-KR"):"—";return <div>{saved&&<p role="status">후원자 정보를 저장했습니다.</p>}<h1 className="text-title font-bold">후원자 상세</h1><dl className="mt-6 grid gap-4 sm:grid-cols-2"><div><dt>참조번호</dt><dd>{d.reference}</dd></div><div><dt>표시 이름</dt><dd>{d.displayName}</dd></div><div><dt>유형</dt><dd>{donorTypeLabels[d.type]}</dd></div><div><dt>상태</dt><dd>{donorStatusLabels[d.status]}</dd></div><div><dt>전화번호</dt><dd>{d.phone||"—"}</dd></div><div><dt>이메일</dt><dd>{d.email||"—"}</dd></div><div><dt>생성일</dt><dd>{date(d.createdAt)}</dd></div><div><dt>수정일</dt><dd>{date(d.updatedAt)}</dd></div><div><dt>보관일</dt><dd>{date(d.archivedAt)}</dd></div><div><dt>내부 메모</dt><dd className="whitespace-pre-wrap">{d.internalNote||"—"}</dd></div></dl><div className="mt-5 flex gap-3"><Link href={`/admin/donors/${d.id}/edit`}>편집</Link><Link href={`/admin/donations?donorId=${d.id}`}>후원 기록 보기</Link></div><h2 className="mt-10 text-heading font-bold">감사 이력</h2>{d.audit.map((e:any,i:number)=><p key={i}className="mt-3 border-t pt-3">{(donorAuditActionLabels as Record<string,string>)[e.action]} · {e.displayName} · {date(e.occurredAt)} · {e.changedFields.map((x:any)=>(donorAuditFieldLabels as Record<string,string>)[x]).join(", ")}</p>)}</div>}
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
+import { getAdminDonor } from "@/features/donations/donor.admin-repository";
+import { donorAuditActionLabels, donorAuditFieldLabels } from "@/features/donations/donor.audit";
+import { donorStatusLabels, donorTypeLabels } from "@/features/donations/donor.types";
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string }>;
+}) {
+  const a = await authorizeCurrentAdmin("donations.manage");
+  if (!a.ok) redirect("/admin?forbidden=1");
+  const saved = (await searchParams).saved === "1";
+  const d = await getAdminDonor((await params).id);
+  if (!d) notFound();
+  const date = (x: string | null) => (x ? new Date(x).toLocaleString("ko-KR") : "—");
+  return (
+    <div>
+      {saved && <p role="status">후원자 정보를 저장했습니다.</p>}
+      <h1 className="text-title font-bold">후원자 상세</h1>
+      <dl className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div>
+          <dt>참조번호</dt>
+          <dd>{d.reference}</dd>
+        </div>
+        <div>
+          <dt>표시 이름</dt>
+          <dd>{d.displayName}</dd>
+        </div>
+        <div>
+          <dt>유형</dt>
+          <dd>{donorTypeLabels[d.type]}</dd>
+        </div>
+        <div>
+          <dt>상태</dt>
+          <dd>{donorStatusLabels[d.status]}</dd>
+        </div>
+        <div>
+          <dt>전화번호</dt>
+          <dd>{d.phone || "—"}</dd>
+        </div>
+        <div>
+          <dt>이메일</dt>
+          <dd>{d.email || "—"}</dd>
+        </div>
+        <div>
+          <dt>생성일</dt>
+          <dd>{date(d.createdAt)}</dd>
+        </div>
+        <div>
+          <dt>수정일</dt>
+          <dd>{date(d.updatedAt)}</dd>
+        </div>
+        <div>
+          <dt>보관일</dt>
+          <dd>{date(d.archivedAt)}</dd>
+        </div>
+        <div>
+          <dt>내부 메모</dt>
+          <dd className="whitespace-pre-wrap">{d.internalNote || "—"}</dd>
+        </div>
+      </dl>
+      <div className="mt-5 flex gap-3">
+        <Link href={`/admin/donors/${d.id}/edit`}>편집</Link>
+        <Link href={`/admin/donations?donorId=${d.id}`}>후원 기록 보기</Link>
+      </div>
+      <h2 className="mt-10 text-heading font-bold">감사 이력</h2>
+      {d.audit.map((e, i: number) => (
+        <p key={i} className="mt-3 border-t pt-3">
+          {(donorAuditActionLabels as Record<string, string>)[e.action]} · {e.displayName} · {date(e.occurredAt)} ·{" "}
+          {e.changedFields.map((x: string) => (donorAuditFieldLabels as Record<string, string>)[x]).join(", ")}
+        </p>
+      ))}
+    </div>
+  );
+}
