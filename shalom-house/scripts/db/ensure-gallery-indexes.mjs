@@ -1,4 +1,5 @@
 import { MongoClient } from "mongodb";
+import { INDEX_COLLECTION_GROUPS, toCreateIndexSpecs } from "./index-specs.mjs";
 const uri = process.env.SHALOM_MONGODB_URI,
   databaseName = process.env.SHALOM_MONGODB_DB || "shalom_house";
 if (!uri) {
@@ -7,52 +8,13 @@ if (!uri) {
 } else {
   const client = new MongoClient(uri);
   try {
-    const database = client.db(databaseName),
-      items = database.collection("gallery_items"),
-      audits = database.collection("gallery_audit_events");
-    const galleryIndexNames = await Promise.all([
-      items.createIndex({ slug: 1 }, { unique: true, name: "gallery_items_slug_unique" }),
-      items.createIndex({ "media.sha256": 1 }, { unique: true, name: "gallery_items_media_sha256_unique" }),
-      items.createIndex(
-        {
-          publicationStatus: 1,
-          approvalStatus: 1,
-          consentStatus: 1,
-          updatedAt: -1,
-          _id: -1,
-        },
-        { name: "gallery_items_admin_status" },
+    const database = client.db(databaseName);
+    const [galleryIndexNames, auditIndexNames] = await Promise.all(
+      INDEX_COLLECTION_GROUPS.gallery.map((collectionName) =>
+        database.collection(collectionName).createIndexes(toCreateIndexSpecs(collectionName)),
       ),
-      items.createIndex(
-        {
-          publicationStatus: 1,
-          approvalStatus: 1,
-          consentStatus: 1,
-          consentWithdrawnAt: 1,
-          displayStartOn: 1,
-          displayEndOn: 1,
-          activityDate: -1,
-          publishedAt: -1,
-          _id: -1,
-        },
-        { name: "gallery_items_public_visibility" },
-      ),
-      items.createIndex({ deletedAt: 1, updatedAt: -1, _id: -1 }, { name: "gallery_items_admin_updated" }),
-      items.createIndex({ deletedAt: -1, _id: -1 }, { name: "gallery_items_deleted_timeline" }),
-    ]);
-    const auditIndexNames = await Promise.all([
-      audits.createIndex(
-        { galleryItemId: 1, toVersionAt: 1 },
-        { unique: true, name: "gallery_audit_events_item_version_unique" },
-      ),
-      audits.createIndex({ galleryItemId: 1, occurredAt: -1, _id: -1 }, { name: "gallery_audit_events_item_timeline" }),
-      audits.createIndex({ occurredAt: -1, _id: -1 }, { name: "gallery_audit_events_recent" }),
-    ]);
-    console.log("활동사진 인덱스를 확인했습니다.", {
-      databaseName,
-      galleryIndexNames,
-      auditIndexNames,
-    });
+    );
+    console.log("활동사진 인덱스를 확인했습니다.", { databaseName, galleryIndexNames, auditIndexNames });
   } finally {
     await client.close();
   }
