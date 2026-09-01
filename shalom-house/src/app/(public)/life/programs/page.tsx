@@ -1,8 +1,10 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/life/programs");
+
 import Link from "next/link";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { getProgramRepository } from "@/features/programs/program.repository";
-export const metadata: Metadata = { title: "프로그램" };
 export default async function ProgramsPage() {
   let programs: Awaited<ReturnType<ReturnType<typeof getProgramRepository>["listPublished"]>> = [];
   try {

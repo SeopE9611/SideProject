@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/news/notices");
+
 
 import { NewsListPage, type NewsSearchParams } from "@/components/news/news-list-page";
 
-export const metadata: Metadata = {
-  title: "공지사항",
-};
 
 export const dynamic = "force-dynamic";
 

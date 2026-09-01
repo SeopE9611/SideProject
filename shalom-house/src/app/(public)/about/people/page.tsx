@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/about/people");
+
 import Link from "next/link";
 
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
@@ -8,9 +11,6 @@ import { listPublicStaffProfiles } from "@/features/staff/staff.repository";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "함께하는 사람들",
-};
 
 export default async function PeoplePage() {
   const profiles = await listPublicStaffProfiles();

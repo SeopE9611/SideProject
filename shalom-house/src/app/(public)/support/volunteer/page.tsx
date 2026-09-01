@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/support/volunteer");
+
 import Link from "next/link";
 
 import { SectionPageHeader } from "@/components/layout/section-page-header";
@@ -6,9 +9,6 @@ import { getPublicContactInformation } from "@/features/site-content/site-conten
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
 import { supportFixture } from "@/content/fixtures/support.fixture";
 
-export const metadata: Metadata = {
-  title: "자원봉사",
-};
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

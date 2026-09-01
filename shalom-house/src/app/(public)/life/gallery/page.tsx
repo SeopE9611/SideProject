@@ -1,10 +1,12 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/life/gallery");
+
 import Link from "next/link";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { siteConfig } from "@/config/site";
 import { findPublicGalleryItems } from "@/features/gallery/gallery.repository";
 
-export const metadata: Metadata = { title: "활동사진" };
 
 const date = (v: string) => v.replace(/-/g, ".");
 

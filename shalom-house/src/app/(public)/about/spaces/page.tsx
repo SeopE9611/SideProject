@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/about/spaces");
+
 import Link from "next/link";
 
 import { SectionPageHeader } from "@/components/layout/section-page-header";
@@ -8,9 +11,6 @@ import { listPublicFacilitySpaces } from "@/features/facility-spaces/facility-sp
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "생활공간",
-};
 
 export default async function SpacesPage() {
   const spaces = await listPublicFacilitySpaces();

@@ -58,6 +58,15 @@ const projection = { slug: 1, category: 1, title: 1, summary: 1, purpose: 1, ope
   coverGalleryItemId: 1, attachment: 1 } as const;
 
 export class MongoProgramRepository implements ProgramRepository {
+  async listPublishedSitemapEntries(options?: { limit?: number }) {
+    const { normalizePublicSitemapLimit } = await import("@/features/seo/seo.types");
+    const now = new Date();
+    const documents = await (await getMongoDatabase()).collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME)
+      .find(publicFilter(now), { projection: { ...projection, body: 1 } }).sort({ publishedAt: -1, _id: -1 })
+      .limit(normalizePublicSitemapLimit(options?.limit)).toArray();
+    return documents.flatMap((document) => isValidPublishedProgramDocument(document, { requireBody: true, now })
+      ? [{ slug: document.slug, lastModified: document.updatedAt.toISOString() }] : []);
+  }
   async listPublished(options?: { limit?: number }): Promise<readonly PublicProgramSummary[]> {
     const now = new Date();
     const documents = await (await getMongoDatabase()).collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME)

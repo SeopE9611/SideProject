@@ -13,8 +13,10 @@ import type {
   PublicNewsSearchOptions,
   PublicNewsSearchResult,
 } from "./news.types";
+import { normalizePublicSitemapLimit, type PublicSitemapEntry } from "@/features/seo/seo.types";
 
 export interface NewsRepository {
+  listPublishedSitemapEntries(options?: { limit?: number }): Promise<readonly PublicSitemapEntry[]>;
   listPublished(options?: { limit?: number }): Promise<readonly PublicNewsPostSummary[]>;
 
   searchPublished(options?: PublicNewsSearchOptions): Promise<PublicNewsSearchResult>;
@@ -23,6 +25,7 @@ export interface NewsRepository {
 }
 
 const emptyNewsRepository: NewsRepository = {
+  async listPublishedSitemapEntries() { return []; },
   async listPublished() {
     return [];
   },
@@ -41,6 +44,11 @@ const emptyNewsRepository: NewsRepository = {
 };
 
 const fixtureNewsRepository: NewsRepository = {
+  async listPublishedSitemapEntries(options) {
+    return getPublishedFixtureNewsPosts().filter((post) => !post.isDemo)
+      .slice(0, normalizePublicSitemapLimit(options?.limit))
+      .map((post) => ({ slug: post.slug, lastModified: post.updatedAt }));
+  },
   async listPublished(options) {
     const limit = normalizePublicNewsLimit(options?.limit);
     return getPublishedFixtureNewsPosts()

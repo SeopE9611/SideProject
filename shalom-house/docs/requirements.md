@@ -154,3 +154,6 @@
 ## 관리자 계정 관리
 
 시스템 관리자만 네 가지 고정 역할(`admin`, `editor`, `reviewer`, `publisher`)과 `active`·`disabled` 상태의 관리자 계정을 관리한다. 이메일은 생성 후 변경할 수 없고 계정은 물리 삭제하지 않는다. 비밀번호는 12~128자이며 변경·재설정, MFA, 초대 이메일은 이번 범위에 포함하지 않는다.
+# 검색 노출
+
+공개 홈페이지는 공식 canonical origin, 페이지별 metadata, 환경별 robots, 구조화 데이터 및 공개 콘텐츠 기반 sitemap을 제공한다. 상세 운영 기준은 `docs/technical/seo-search-discovery.md`를 따른다.

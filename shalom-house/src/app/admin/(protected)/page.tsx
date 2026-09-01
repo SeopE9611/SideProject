@@ -3,6 +3,7 @@ import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 
 const preparedItems = [
+  "검색 노출·canonical·구조화 데이터·sitemap 관리",
   "관리자 로그인과 세션",
   "소식 목록·상세 관리",
   "소식 초안 작성·수정",
@@ -24,7 +25,7 @@ const preparedItems = [
   "소식·프로그램 대표 이미지와 PDF 첨부 관리",
 ] as const;
 
-const nextItems = ["검색 노출·메타데이터와 최종 통합 QA"] as const;
+const nextItems = ["MongoDB 인덱스 적용 점검과 최종 통합 QA"] as const;
 
 export default async function AdminDashboardPage({
   searchParams,

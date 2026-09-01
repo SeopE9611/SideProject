@@ -1,13 +1,12 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/about");
+
 
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
 import { getPublicFacilityOverview } from "@/features/site-content/site-content.repository";
 
-export const metadata: Metadata = {
-  title: "시설소개",
-  description: "지체 및 지적 장애인이 서로의 속도와 선택을 존중하며 함께 생활하는 샬롬의 집을 소개합니다.",
-};
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

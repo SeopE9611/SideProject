@@ -1,10 +1,9 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/life");
+
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 
-export const metadata: Metadata = {
-  title: "생활이야기",
-  description: "샬롬의 집에서 함께 보내는 일상과 지역사회로 이어지는 활동을 소개합니다.",
-};
 
 const dailyRhythms = [
   {
