@@ -26,10 +26,11 @@ export function validateAdminInquiryUpdate(raw: unknown) {
   const e: Errors = {}; const keys = ["expectedUpdatedAt", "updateConfirmed", "status", "internalNote"];
   if (!object(raw) || Object.keys(raw).some((k) => !keys.includes(k))) return { ok: false as const, fieldErrors: { form: "허용되지 않은 입력입니다." } };
   const status = typeof raw.status === "string" ? raw.status : ""; const note = typeof raw.internalNote === "string" ? raw.internalNote.trim() : "";
-  const expected = typeof raw.expectedUpdatedAt === "string" ? new Date(raw.expectedUpdatedAt) : new Date(NaN);
+  let expected: Date | undefined;
   if (!inquiryStatuses.includes(status as InquiryStatus)) e.status = "처리 상태를 선택해 주세요.";
   if (note.length > 2000 || forbidden.test(note) || /[\r\t]/.test(note)) e.internalNote = "내부 메모는 2000자 이내의 평문으로 입력해 주세요.";
-  if (Number.isNaN(expected.getTime())) e.expectedUpdatedAt = "수정 시각이 유효하지 않습니다.";
+  if (typeof raw.expectedUpdatedAt !== "string") e.expectedUpdatedAt = "수정 시각이 유효하지 않습니다.";
+  else { const candidate = new Date(raw.expectedUpdatedAt); if (Number.isNaN(candidate.getTime()) || candidate.toISOString() !== raw.expectedUpdatedAt) e.expectedUpdatedAt = "수정 시각이 유효하지 않습니다."; else expected = candidate; }
   if (raw.updateConfirmed !== true) e.updateConfirmed = "처리 내용을 확인해 주세요.";
-  return Object.keys(e).length ? { ok: false as const, fieldErrors: e } : { ok: true as const, value: { expectedUpdatedAt: expected, updateConfirmed: true as const, status: status as InquiryStatus, internalNote: note } };
+  return Object.keys(e).length || !expected ? { ok: false as const, fieldErrors: e } : { ok: true as const, value: { expectedUpdatedAt: expected, updateConfirmed: true as const, status: status as InquiryStatus, internalNote: note } };
 }
