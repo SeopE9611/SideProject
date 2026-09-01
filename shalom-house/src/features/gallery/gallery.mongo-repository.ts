@@ -1,4 +1,4 @@
-import { type Filter } from "mongodb";
+import { ObjectId, type Filter } from "mongodb";
 import { getMongoDatabase } from "@/lib/mongodb";
 import { GALLERY_ITEM_COLLECTION_NAME, type MongoGalleryItemDocument } from "./gallery.mongo-schema";
 import {
@@ -12,6 +12,7 @@ import type {
   PublicGalleryItem,
   PublicGalleryMedia,
   PublicGallerySummary,
+  PublicGalleryCoverReference,
 } from "./gallery.repository";
 
 function publicFilter(now = new Date()): Filter<MongoGalleryItemDocument> {
@@ -115,6 +116,27 @@ function toPublicGalleryItem(document: MongoGalleryItemDocument): PublicGalleryI
 }
 
 export class MongoGalleryRepository implements GalleryRepository {
+  async findPublicCoverById(id: ObjectId): Promise<PublicGalleryCoverReference | null> {
+    return (await this.findPublicCoversByIds([id])).get(id.toHexString()) ?? null;
+  }
+
+  async findPublicCoversByIds(ids: readonly ObjectId[]): Promise<ReadonlyMap<string, PublicGalleryCoverReference>> {
+    const unique = [...new Map(ids.map((id) => [id.toHexString(), id])).values()];
+    if (unique.length === 0) return new Map();
+    const documents = await (await getMongoDatabase())
+      .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
+      .find({ ...publicFilter(), _id: { $in: unique } }, { projection: { ...projection, _id: 1 } })
+      .toArray();
+    const result = new Map<string, PublicGalleryCoverReference>();
+    for (const document of documents) {
+      const item = toPublicGalleryItem(document);
+      if (item) result.set(document._id.toHexString(), {
+        id: document._id.toHexString(), slug: item.slug, title: item.title, altText: item.altText,
+        width: item.width, height: item.height, mediaUrl: `/api/gallery/${encodeURIComponent(item.slug)}/media`,
+      });
+    }
+    return result;
+  }
   async listPublished(): Promise<readonly PublicGallerySummary[]> {
     const documents = await (
       await getMongoDatabase()

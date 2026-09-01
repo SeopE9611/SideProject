@@ -14,6 +14,20 @@ export const newsApprovalStatuses = ["pending", "approved", "rejected"] as const
 
 export type NewsApprovalStatus = (typeof newsApprovalStatuses)[number];
 
+export type PublicNewsCoverImage = {
+  src: string;
+  altText: string;
+  width: number;
+  height: number;
+};
+
+export type PublicNewsAttachment = {
+  href: string;
+  label: string;
+  originalFileName: string;
+  byteSize: number;
+};
+
 export type PublicNewsPost = {
   id: string;
   slug: string;
@@ -24,6 +38,8 @@ export type PublicNewsPost = {
   publishedAt: string;
   updatedAt: string;
   isDemo: boolean;
+  coverImage: PublicNewsCoverImage | null;
+  attachment: PublicNewsAttachment | null;
 };
 
 export type PublicNewsPostSummary = Omit<PublicNewsPost, "body">;

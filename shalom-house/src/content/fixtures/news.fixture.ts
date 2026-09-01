@@ -5,7 +5,7 @@ import type {
   PublicNewsPost,
 } from "@/features/news/news.types";
 
-type FixtureNewsPost = Omit<PublicNewsPost, "isDemo"> & {
+type FixtureNewsPost = Omit<PublicNewsPost, "isDemo" | "coverImage" | "attachment"> & {
   publicationStatus: NewsPublicationStatus;
   approvalStatus: NewsApprovalStatus;
 };
@@ -192,5 +192,7 @@ export function getPublishedFixtureNewsPosts(): readonly PublicNewsPost[] {
       publishedAt: post.publishedAt,
       updatedAt: post.updatedAt,
       isDemo: true,
+      coverImage: null,
+      attachment: null,
     }));
 }

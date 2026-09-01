@@ -133,6 +133,8 @@ const adminAuditFieldLabels: Record<string, string> = {
   summary: "요약",
   body: "본문",
   deletedAt: "삭제일",
+  coverImage: "대표 활동사진",
+  attachment: "PDF 첨부파일",
   publicationStatus: "게시 상태",
   approvalStatus: "승인 상태",
   publishedAt: "게시일",

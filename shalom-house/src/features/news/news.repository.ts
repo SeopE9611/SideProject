@@ -54,6 +54,8 @@ const fixtureNewsRepository: NewsRepository = {
         publishedAt: post.publishedAt,
         updatedAt: post.updatedAt,
         isDemo: post.isDemo,
+        coverImage: null,
+        attachment: null,
       }));
   },
   async searchPublished(options) {
@@ -68,12 +70,17 @@ const fixtureNewsRepository: NewsRepository = {
     const total = filtered.length;
     const totalPages = Math.ceil(total / pageSize);
     const page = resolvePublicNewsPage(normalizePublicNewsPage(options?.page), totalPages);
-    const items = filtered.slice((page - 1) * pageSize, page * pageSize).map(({ body: _body, ...summary }) => summary);
+    const items = filtered.slice((page - 1) * pageSize, page * pageSize).map(({ body: _body, ...summary }) => ({
+      ...summary,
+      coverImage: null,
+      attachment: null,
+    }));
 
     return { items, total, page, pageSize, totalPages };
   },
   async findPublishedBySlug(slug) {
-    return getPublishedFixtureNewsPosts().find((post) => post.slug === slug) ?? null;
+    const post = getPublishedFixtureNewsPosts().find((item) => item.slug === slug);
+    return post ? { ...post, coverImage: null, attachment: null } : null;
   },
 };
 

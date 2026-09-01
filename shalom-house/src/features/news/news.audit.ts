@@ -31,6 +31,8 @@ export const newsAuditChangedFields = [
   "approvalStatus",
   "publishedAt",
   "deletedAt",
+  "coverImage",
+  "attachment",
 ] as const;
 
 export type NewsAuditChangedField = (typeof newsAuditChangedFields)[number];
@@ -43,6 +45,8 @@ export type NewsAuditSnapshot = {
   approvalStatus: NewsApprovalStatus;
   publishedAt: Date | null;
   deletedAt: Date | null;
+  coverGalleryItemId: string | null;
+  attachment: null | { present: true; originalFileName: string; label: string; byteSize: number; contentType: "application/pdf" };
 };
 
 export type NewsAuditActor = {
@@ -54,7 +58,7 @@ export type NewsAuditActor = {
 export function createNewsAuditSnapshot(
   document: Pick<
     MongoNewsPostDocument,
-    "slug" | "category" | "title" | "publicationStatus" | "approvalStatus" | "publishedAt" | "deletedAt"
+    "slug" | "category" | "title" | "publicationStatus" | "approvalStatus" | "publishedAt" | "deletedAt" | "coverGalleryItemId" | "attachment"
   >,
 ): NewsAuditSnapshot {
   return {
@@ -65,6 +69,9 @@ export function createNewsAuditSnapshot(
     approvalStatus: document.approvalStatus,
     publishedAt: document.publishedAt,
     deletedAt: document.deletedAt ?? null,
+    coverGalleryItemId: document.coverGalleryItemId?.toHexString() ?? null,
+    attachment: document.attachment ? { present: true, originalFileName: document.attachment.originalFileName,
+      label: document.attachment.label, byteSize: document.attachment.byteSize, contentType: document.attachment.contentType } : null,
   };
 }
 
