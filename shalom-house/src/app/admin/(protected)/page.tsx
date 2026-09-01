@@ -19,6 +19,7 @@ const preparedItems = [
   "직원 소개의 공개 범위·표시 순서 관리",
   "생활공간 설명의 공개 상태·표시 순서 관리",
   "일반·방문·자원봉사·후원 문의 통합 관리",
+  "후원자 명부와 후원금 관리대장",
 ] as const;
 
 const nextItems = ["이미지·첨부파일 공개 절차"] as const;
@@ -32,6 +33,7 @@ export default async function AdminDashboardPage({
   const admin = await getCurrentAdmin();
   const canManageSiteContent = Boolean(admin && hasAdminPermission(admin, "site_content.manage"));
   const canManageInquiries = Boolean(admin && hasAdminPermission(admin, "inquiries.manage"));
+  const canManageDonations = Boolean(admin && hasAdminPermission(admin, "donations.manage"));
   return (
     <div className="space-y-8">
       {forbidden ? (
@@ -62,6 +64,11 @@ export default async function AdminDashboardPage({
         </section>
       </div>
       <div className="flex flex-wrap gap-3">
+        {canManageDonations ? (
+          <Link href="/admin/donations" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">
+            후원 관리 열기
+          </Link>
+        ) : null}
         {canManageInquiries ? (
           <Link
             href="/admin/inquiries"
