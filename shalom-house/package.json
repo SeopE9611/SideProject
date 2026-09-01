@@ -7,6 +7,7 @@
     "build": "next build",
     "admin:create-user": "node scripts/admin/create-admin-user.mjs",
     "db:ensure-admin-auth-indexes": "node scripts/db/ensure-admin-auth-indexes.mjs",
+    "db:check-runtime-indexes": "node scripts/db/check-runtime-indexes.mjs",
     "db:ensure-news-indexes": "node scripts/db/ensure-news-indexes.mjs",
     "start": "next start",
     "lint": "eslint",
