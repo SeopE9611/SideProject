@@ -83,6 +83,22 @@ export function isValidStoredGalleryItem(document: MongoGalleryItemDocument): bo
   const validDate = (value: unknown): value is Date => value instanceof Date && !Number.isNaN(value.getTime());
   const nullableDate = (value: unknown) => value === null || validDate(value);
   const nullableCalendarDate = (value: unknown) => value === null || isCanonicalGalleryDate(value);
+  const validPublicationState =
+    (document.publicationStatus === "draft" &&
+      (document.approvalStatus === "pending" || document.approvalStatus === "rejected") &&
+      document.publishedAt === null && document.archivedAt === null) ||
+    (document.publicationStatus === "review" &&
+      (document.approvalStatus === "pending" || document.approvalStatus === "approved") &&
+      document.publishedAt === null && document.archivedAt === null) ||
+    (document.publicationStatus === "published" && document.approvalStatus === "approved" &&
+      validDate(document.publishedAt) && validDate(document.createdAt) && validDate(document.updatedAt) &&
+      document.publishedAt >= document.createdAt && document.publishedAt <= document.updatedAt &&
+      document.archivedAt === null) ||
+    (document.publicationStatus === "archived" &&
+      (document.approvalStatus === "pending" || document.approvalStatus === "rejected") &&
+      document.publishedAt === null && validDate(document.archivedAt) && validDate(document.createdAt) &&
+      validDate(document.updatedAt) && document.archivedAt >= document.createdAt &&
+      document.archivedAt <= document.updatedAt);
   const validReference = document.consentReferenceCode === null ||
     typeof document.consentReferenceCode === "string" && /^[A-Za-z0-9_-]{1,80}$/.test(document.consentReferenceCode);
   const noConsentRequired = (document.subjectPresence === "none" || document.subjectPresence === "non_identifiable") &&
@@ -97,6 +113,9 @@ export function isValidStoredGalleryItem(document: MongoGalleryItemDocument): bo
     isCanonicalGalleryDate(document.consentCheckedOn) && document.consentReferenceCode !== null && validReference &&
     validDate(document.consentWithdrawnAt) && validDate(document.updatedAt) && document.consentWithdrawnAt <= document.updatedAt;
   const media = document.media;
+  const normalizedOriginalFileName = normalizeAdminGalleryOriginalFileName(media?.originalFileName);
+  const validOriginalFileName = typeof media?.originalFileName === "string" &&
+    normalizedOriginalFileName !== null && normalizedOriginalFileName === media.originalFileName;
   return document._id instanceof ObjectId && isValidGallerySlug(document.slug) &&
     [document.title, document.category, document.description, document.altText].every(
       (value) => typeof value === "string" && value === value.trim() && value.length > 0,
@@ -106,6 +125,10 @@ export function isValidStoredGalleryItem(document: MongoGalleryItemDocument): bo
     validDate(document.createdAt) && validDate(document.updatedAt) && document.updatedAt >= document.createdAt &&
     nullableDate(document.publishedAt) && nullableDate(document.archivedAt) &&
     (document.deletedAt === undefined || nullableDate(document.deletedAt)) && nullableDate(document.consentWithdrawnAt) &&
+    (document.deletedAt == null || document.deletedAt >= document.createdAt && document.deletedAt <= document.updatedAt) &&
+    (document.consentWithdrawnAt === null ||
+      document.consentWithdrawnAt >= document.createdAt && document.consentWithdrawnAt <= document.updatedAt) &&
+    validPublicationState &&
     nullableCalendarDate(document.displayStartOn) && nullableCalendarDate(document.displayEndOn) &&
     (document.displayStartOn === null || document.displayEndOn === null || document.displayStartOn <= document.displayEndOn) &&
     nullableCalendarDate(document.consentCheckedOn) && validReference &&
@@ -116,7 +139,7 @@ export function isValidStoredGalleryItem(document: MongoGalleryItemDocument): bo
     media.byteSize <= ADMIN_GALLERY_IMAGE_MAX_BYTES && Number.isSafeInteger(media.width) && media.width >= 1 &&
     media.width <= ADMIN_GALLERY_IMAGE_MAX_DIMENSION && Number.isSafeInteger(media.height) && media.height >= 1 &&
     media.height <= ADMIN_GALLERY_IMAGE_MAX_DIMENSION && /^[a-f0-9]{64}$/.test(media.sha256) &&
-    normalizeAdminGalleryOriginalFileName(media.originalFileName) === media.originalFileName;
+    validOriginalFileName;
 }
 
 export function toPublicGalleryItem(document: MongoGalleryItemDocument): PublicGalleryItem | null {
@@ -175,10 +198,11 @@ export class MongoGalleryRepository implements GalleryRepository {
     if (unique.length === 0) return new Map();
     const documents = await (await getMongoDatabase())
       .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
-      .find({ ...publicGalleryFilter(), _id: { $in: unique } }, { projection: { ...projection, _id: 1 } })
+      .find({ ...publicGalleryFilter(), _id: { $in: unique } })
       .toArray();
     const result = new Map<string, PublicGalleryCoverReference>();
     for (const document of documents) {
+      if (!isValidStoredGalleryItem(document)) continue;
       const item = toPublicGalleryItem(document);
       if (item) result.set(document._id.toHexString(), {
         id: document._id.toHexString(), slug: item.slug, title: item.title, altText: item.altText,
@@ -228,7 +252,7 @@ export class MongoGalleryRepository implements GalleryRepository {
       .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
       .findOne({ ...publicGalleryFilter(), slug });
 
-    if (!document || !toPublicGalleryItem(document)) {
+    if (!document || !isValidStoredGalleryItem(document) || !toPublicGalleryItem(document)) {
       return null;
     }
 

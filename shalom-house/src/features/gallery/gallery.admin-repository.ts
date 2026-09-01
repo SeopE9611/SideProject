@@ -18,13 +18,21 @@ import {
   isGalleryConsentWithdrawable,
   isGalleryPubliclyVisible,
 } from "./gallery.types";
-import { publicGalleryFilter, toPublicGalleryItem } from "./gallery.mongo-repository";
+import { isValidStoredGalleryItem, publicGalleryFilter, toPublicGalleryItem } from "./gallery.mongo-repository";
 const PAGE_SIZE = 20;
 export async function listAdminPublicGalleryCoverOptions() {
   const documents = await (await getMongoDatabase()).collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
     .find(publicGalleryFilter())
     .sort({ activityDate: -1, publishedAt: -1, _id: -1 }).limit(100).toArray();
   return documents.flatMap((document) => {
+    if (!isValidStoredGalleryItem(document)) {
+      console.error("대표 이미지 option 활동사진 검증 실패", {
+        galleryItemId: document._id instanceof ObjectId ? document._id.toHexString() : "unknown",
+      });
+
+      return [];
+    }
+
     const item = toPublicGalleryItem(document);
     return item ? [{ id: document._id.toHexString(), slug: item.slug, title: item.title, activityDate: item.activityDate,
       altText: item.altText, mediaUrl: `/api/gallery/${encodeURIComponent(item.slug)}/media` }] : [];
