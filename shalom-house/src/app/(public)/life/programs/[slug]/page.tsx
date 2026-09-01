@@ -64,6 +64,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
             ))}
           </dl>
         </section>
+        {program.coverImage ? <img src={program.coverImage.src} alt={program.coverImage.altText} width={program.coverImage.width} height={program.coverImage.height} className="mt-10 h-auto w-full rounded-card" /> : null}
         <section className="mt-10" aria-labelledby="program-purpose">
           <h2 id="program-purpose" className="text-heading font-bold">
             목적
@@ -81,6 +82,9 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
               </p>
             ))}
           </div>
+        </section>
+        <section className="mt-10" aria-labelledby="program-attachment"><h2 id="program-attachment" className="text-heading font-bold">첨부파일</h2>
+          {program.attachment ? <div className="mt-4"><p className="font-semibold">{program.attachment.label}</p><p className="mt-1 text-small text-muted-foreground">{program.attachment.originalFileName} · {program.attachment.byteSize >= 1024 * 1024 ? `${(program.attachment.byteSize / 1024 / 1024).toFixed(1)} MB` : `${Math.ceil(program.attachment.byteSize / 1024)} KB`}</p><a href={program.attachment.href} download className="mt-3 inline-flex min-h-11 items-center font-bold text-primary underline">PDF 내려받기</a></div> : <p className="mt-4">첨부파일이 없습니다.</p>}
         </section>
         <Link
           href="/life/programs"

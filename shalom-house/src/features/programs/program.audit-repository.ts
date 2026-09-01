@@ -26,8 +26,13 @@ export type MongoProgramAuditEventDocument = {
   changedFields: ProgramAuditChangedField[];
 };
 const validDate = (v: unknown): v is Date => v instanceof Date && !Number.isNaN(v.getTime());
-function validSnapshot(v: ProgramAuditSnapshot): boolean {
-  return (
+function validSnapshot(value: unknown): value is ProgramAuditSnapshot {
+  if (!value || typeof value !== "object") return false;
+  const v = value as ProgramAuditSnapshot;
+  const coverValid = v.coverGalleryItemId === undefined || v.coverGalleryItemId === null || (typeof v.coverGalleryItemId === "string" && /^[a-f0-9]{24}$/.test(v.coverGalleryItemId));
+  const a = v.attachment;
+  const attachmentValid = a === undefined || a === null || (a.present === true && typeof a.originalFileName === "string" && typeof a.label === "string" && Number.isSafeInteger(a.byteSize) && a.contentType === "application/pdf");
+  return coverValid && attachmentValid && (
     isValidProgramSlug(v.slug) &&
     v.category.trim().length > 0 &&
     v.title.trim().length > 0 &&
@@ -127,6 +132,8 @@ const adminAuditFieldLabels: Record<string, string> = {
   publicationStatus: "게시 상태",
   approvalStatus: "승인 상태",
   publishedAt: "게시일",
+  coverImage: "대표 활동사진",
+  attachment: "PDF 첨부파일",
 };
 
 type AdminAuditProjection = {
@@ -136,6 +143,11 @@ type AdminAuditProjection = {
   occurredAt?: unknown;
   changedFields?: unknown;
   programId?: unknown;
+  schemaVersion?: unknown;
+  before?: unknown;
+  after?: unknown;
+  fromVersionAt?: unknown;
+  toVersionAt?: unknown;
 };
 
 export async function listAdminProgramAuditHistory(input: {
@@ -160,6 +172,7 @@ export async function listAdminProgramAuditHistory(input: {
           occurredAt: 1,
           changedFields: 1,
           programId: 1,
+          schemaVersion: 1, before: 1, after: 1, fromVersionAt: 1, toVersionAt: 1,
         },
       },
     )
@@ -167,16 +180,18 @@ export async function listAdminProgramAuditHistory(input: {
     .limit(limit)
     .toArray();
   return documents.flatMap((event) => {
+    const fields = Array.isArray(event.changedFields) ? event.changedFields : [];
     const valid =
-      event._id instanceof ObjectId &&
+      event.schemaVersion === 1 && event._id instanceof ObjectId && event.programId instanceof ObjectId && event.programId.equals(contentId) &&
       event.occurredAt instanceof Date &&
       !Number.isNaN(event.occurredAt.getTime()) &&
       typeof event.action === "string" &&
       programAuditActions.includes(event.action as never) &&
-      typeof event.actor?.displayName === "string" &&
-      event.actor.displayName.trim().length > 0 &&
-      Array.isArray(event.changedFields) &&
-      event.changedFields.every((field) => typeof field === "string");
+      typeof event.actor?.displayName === "string" && event.actor.displayName.trim().length > 0 &&
+      (event.fromVersionAt === null || validDate(event.fromVersionAt)) && validDate(event.toVersionAt) &&
+      (event.before === null || validSnapshot(event.before)) && validSnapshot(event.after) &&
+      fields.every((field) => typeof field === "string" && programAuditChangedFields.includes(field as never)) &&
+      new Set(fields).size === fields.length;
     if (!valid) {
       console.error("관리자 감사 이벤트 검증에 실패했습니다.", {
         auditEventId: event._id instanceof ObjectId ? event._id.toHexString() : "unknown",

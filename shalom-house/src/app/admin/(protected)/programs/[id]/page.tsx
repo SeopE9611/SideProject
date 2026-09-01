@@ -10,6 +10,10 @@ import { notFound } from "next/navigation";
 import { AdminProgramPublicationStateForm } from "@/components/admin/admin-program-publication-state-form";
 import { AdminProgramPublishForm } from "@/components/admin/admin-program-publish-form";
 import { AdminProgramReviewDecisionForm } from "@/components/admin/admin-program-review-decision-form";
+import { AdminProgramMediaForm } from "@/components/admin/admin-program-media-form";
+import { listAdminPublicGalleryCoverOptions } from "@/features/gallery/gallery.admin-repository";
+import { findPublicGalleryCoverById } from "@/features/gallery/gallery.repository";
+import { ObjectId } from "mongodb";
 import { AdminProgramReviewRequestForm } from "@/components/admin/admin-program-review-request-form";
 import { findAdminProgramPostById } from "@/features/programs/program.admin-repository";
 import { listAdminProgramAuditHistory } from "@/features/programs/program.audit-repository";
@@ -49,6 +53,7 @@ export default async function AdminProgramDetailPage({
     published?: string | string[];
     directPublished?: string | string[];
     publication?: string | string[];
+    mediaUpdated?: string | string[];
   }>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
@@ -61,9 +66,9 @@ export default async function AdminProgramDetailPage({
   const canDecideReview = Boolean(admin && hasAdminPermission(admin, "content.decide_review"));
   const canPublish = Boolean(admin && hasAdminPermission(admin, "content.publish"));
   const canDirectPublish = Boolean(admin && hasAdminPermission(admin, "content.direct_publish"));
-  const auditHistory = await listAdminProgramAuditHistory({
-    contentId: post.id,
-  });
+  const auditHistory = await listAdminProgramAuditHistory({ contentId: post.id });
+  const coverOptions = await listAdminPublicGalleryCoverOptions();
+  const publicCover = post.coverGalleryItemId ? await findPublicGalleryCoverById(new ObjectId(post.coverGalleryItemId)) : null;
   const wasUpdated = typeof query.updated === "string" && query.updated === "1";
   const wasReviewRequested = typeof query.reviewRequested === "string" && query.reviewRequested === "1";
   const isPendingReview = post.publicationStatus === "review" && post.approvalStatus === "pending";
@@ -76,6 +81,7 @@ export default async function AdminProgramDetailPage({
   const wasDirectPublished = typeof query.directPublished === "string" && query.directPublished === "1";
   const publication = typeof query.publication === "string" ? query.publication : null;
   const isArchived = post.publicationStatus === "archived" && post.approvalStatus === "approved";
+  const wasMediaUpdated = query.mediaUpdated === "1";
 
   const details = [
     ["게시 상태", getProgramPublicationStatusLabel(post.publicationStatus)],
@@ -97,6 +103,8 @@ export default async function AdminProgramDetailPage({
         <h1 className="mt-1 text-title font-bold">프로그램 상세 관리</h1>
         <p className="mt-3 break-words text-heading font-bold">{post.title}</p>
       </header>
+
+      {wasMediaUpdated ? <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">대표 이미지 또는 첨부파일을 저장했습니다.</p> : null}
 
       {wasUpdated ? (
         <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
@@ -284,6 +292,12 @@ export default async function AdminProgramDetailPage({
           </div>
         </div>
       </section>
+
+      <AdminProgramMediaForm programId={post.id} expectedUpdatedAt={post.updatedAt} editable={post.isEditable && canUpdate}
+        currentCover={post.coverGalleryItemId ? { id: post.coverGalleryItemId, title: publicCover?.title ?? "공개 불가 활동사진",
+          altText: publicCover?.altText ?? "", mediaUrl: publicCover?.mediaUrl ?? "", publiclyAvailable: Boolean(publicCover) } : null}
+        coverOptions={coverOptions} currentAttachment={post.attachment ? { label: post.attachment.label, originalFileName: post.attachment.originalFileName,
+          byteSize: post.attachment.byteSize, downloadUrl: `/api/admin/programs/${post.id}/attachment` } : null} />
 
       {post.canDirectPublish && canDirectPublish ? (
         <section

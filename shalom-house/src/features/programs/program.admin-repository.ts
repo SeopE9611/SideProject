@@ -10,7 +10,11 @@ import {
   type ProgramAuditAction,
   type ProgramAuditChangedField,
 } from "./program.audit";
-import { PROGRAM_COLLECTION_NAME, type MongoProgramDocument } from "./program.mongo-schema";
+import { PROGRAM_COLLECTION_NAME, type MongoProgramAttachment, type MongoProgramDocument } from "./program.mongo-schema";
+import { GALLERY_ITEM_COLLECTION_NAME, type MongoGalleryItemDocument } from "@/features/gallery/gallery.mongo-schema";
+import { findPublicGalleryCoverById } from "@/features/gallery/gallery.repository";
+import { isValidStoredGalleryItem } from "@/features/gallery/gallery.mongo-repository";
+import { isValidStoredProgramAttachment, isValidStoredProgramMedia } from "./program.media-validation";
 import {
   ADMIN_PROGRAM_SORT_ORDER_MAX,
   ADMIN_PROGRAM_SORT_ORDER_MIN,
@@ -54,6 +58,8 @@ export type AdminProgramDetail = AdminProgramListItem & {
   canDecideReview: boolean;
   canPublish: boolean;
   canManagePublicationState: boolean;
+  coverGalleryItemId: string | null;
+  attachment: MongoProgramAttachment | null;
 };
 
 export type AdminProgramListFilters = {
@@ -184,6 +190,8 @@ export async function createAdminProgramDraft(
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
+    coverGalleryItemId: null,
+    attachment: null,
   };
 
   try {
@@ -330,11 +338,25 @@ function toAdminProgramListItem(document: WithId<MongoProgramDocument>, now: Dat
 }
 
 export function isValidAdminProgramId(value: unknown): value is string {
-  if (typeof value !== "string" || !/^[a-fA-F0-9]{24}$/.test(value)) {
+  if (typeof value !== "string" || !/^[a-f0-9]{24}$/.test(value)) {
     return false;
   }
 
-  return ObjectId.isValid(value) && new ObjectId(value).toHexString() === value.toLowerCase();
+  return ObjectId.isValid(value) && new ObjectId(value).toHexString() === value;
+}
+
+export type AdminProgramMediaTargetResult =
+  | { ok: true; editable: boolean }
+  | { ok: false; reason: "not_found" | "invalid_document" };
+
+export async function inspectAdminProgramMediaTarget(id: string): Promise<AdminProgramMediaTargetResult> {
+  if (!isValidAdminProgramId(id) || id !== id.toLowerCase()) return { ok: false, reason: "not_found" };
+  const document = await (await getMongoDatabase()).collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME)
+    .findOne({ _id: new ObjectId(id), ...activeDocumentFilter });
+  if (!document) return { ok: false, reason: "not_found" };
+  if (!toAdminProgramListItem(document, new Date()) || !isNonEmptyString(document.purpose) || !Array.isArray(document.body) ||
+      !document.body.every(isNonEmptyString) || !isValidStoredProgramMedia(document)) return { ok: false, reason: "invalid_document" };
+  return { ok: true, editable: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt) };
 }
 
 export async function findAdminProgramPostById(id: string, now: Date = new Date()): Promise<AdminProgramDetail | null> {
@@ -361,6 +383,8 @@ export async function findAdminProgramPostById(id: string, now: Date = new Date(
         publishedAt: 1,
         createdAt: 1,
         updatedAt: 1,
+        coverGalleryItemId: 1,
+        attachment: 1,
       },
     },
   );
@@ -372,7 +396,8 @@ export async function findAdminProgramPostById(id: string, now: Date = new Date(
     !isNonEmptyString(document.purpose) ||
     !Array.isArray(document.body) ||
     document.body.length === 0 ||
-    !document.body.every(isNonEmptyString)
+    !document.body.every(isNonEmptyString) ||
+    !isValidStoredProgramMedia(document)
   ) {
     console.error("관리자 프로그램 상세 문서 검증 실패", {
       documentId: document._id.toString(),
@@ -389,6 +414,8 @@ export async function findAdminProgramPostById(id: string, now: Date = new Date(
     canRequestReview: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
     canDecideReview: isPendingReviewState(document.publicationStatus, document.approvalStatus, document.publishedAt),
     canPublish: isApprovedReviewState(document.publicationStatus, document.approvalStatus, document.publishedAt),
+    coverGalleryItemId: document.coverGalleryItemId?.toHexString() ?? null,
+    attachment: document.attachment ?? null,
     canManagePublicationState: isPublishedApprovedState(
       document.publicationStatus,
       document.approvalStatus,
@@ -443,6 +470,8 @@ async function changeProgramAndInsertAudit(input: {
     createdAt: before.createdAt,
     updatedAt: input.toVersionAt,
     deletedAt: before.deletedAt,
+    coverGalleryItemId: input.set.coverGalleryItemId === undefined ? before.coverGalleryItemId : input.set.coverGalleryItemId,
+    attachment: input.set.attachment === undefined ? before.attachment : input.set.attachment,
   };
   await insertProgramAuditEvent({
     database: input.database,
@@ -974,3 +1003,56 @@ export const softDeleteAdminProgram = (input: { id: string; expectedUpdatedAt: D
   changeAdminProgramTrashState({ ...input, restore: false });
 export const restoreAdminProgram = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) =>
   changeAdminProgramTrashState({ ...input, restore: true });
+
+export type AdminProgramMediaResult =
+  | { ok: true; id: string; updatedAt: string; previousAttachment?: MongoProgramAttachment | null }
+  | { ok: false; reason: "not_found" | "invalid_document" | "not_editable" | "edit_conflict" | "invalid_gallery_item" | "gallery_item_not_public" };
+
+async function changeAdminProgramMedia(input: {
+  id: string; expectedUpdatedAt: Date; actor: AdminPrincipal;
+  set: Pick<MongoProgramDocument, "coverGalleryItemId"> | Pick<MongoProgramDocument, "attachment">;
+  changedField: "coverImage" | "attachment";
+}): Promise<AdminProgramMediaResult> {
+  if (!isValidAdminProgramId(input.id)) return { ok: false, reason: "not_found" };
+  const programId = new ObjectId(input.id);
+  const attachmentStoredAt = "attachment" in input.set ? input.set.attachment?.storedAt.getTime() ?? 0 : 0;
+  const transitionAt = new Date(Math.max(new Date().getTime(), input.expectedUpdatedAt.getTime() + 1, attachmentStoredAt));
+  return runProgramAdminTransaction(async ({ database, session }) => {
+    const collection = database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME);
+    const current = await collection.findOne({ _id: programId, ...activeDocumentFilter }, { session });
+    if (!current) return { ok: false, reason: "not_found" };
+    if (!toAdminProgramListItem(current, transitionAt) || !isNonEmptyString(current.purpose) || !Array.isArray(current.body) ||
+        !current.body.every(isNonEmptyString) || !isValidStoredProgramMedia(current))
+      return { ok: false, reason: "invalid_document" };
+    if ("attachment" in input.set && input.set.attachment !== null &&
+        !isValidStoredProgramAttachment(input.set.attachment, transitionAt, programId.toHexString()))
+      return { ok: false, reason: "invalid_document" };
+    if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
+      return { ok: false, reason: "not_editable" };
+    const change = await changeProgramAndInsertAudit({ database, session, programId, eventId: new ObjectId(),
+      actor: input.actor, action: "draft_updated", toVersionAt: transitionAt,
+      filter: { _id: programId, ...activeDocumentFilter, updatedAt: input.expectedUpdatedAt },
+      set: { ...input.set, updatedAt: transitionAt }, changedFields: [input.changedField] });
+    if (!change) return { ok: false, reason: "edit_conflict" };
+    return { ok: true, id: input.id, updatedAt: transitionAt.toISOString(),
+      previousAttachment: current.attachment ?? null };
+  });
+}
+
+export async function setAdminProgramCoverImage(input: { id: string; galleryItemId: string; expectedUpdatedAt: Date; actor: AdminPrincipal }): Promise<AdminProgramMediaResult> {
+  if (!ObjectId.isValid(input.galleryItemId) || new ObjectId(input.galleryItemId).toHexString() !== input.galleryItemId)
+    return { ok: false, reason: "invalid_gallery_item" };
+  const galleryId = new ObjectId(input.galleryItemId);
+  const raw = await (await getMongoDatabase()).collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
+    .findOne({ _id: galleryId });
+  if (!raw) return { ok: false, reason: "invalid_gallery_item" };
+  if (!isValidStoredGalleryItem(raw)) return { ok: false, reason: "invalid_gallery_item" };
+  if (!(await findPublicGalleryCoverById(galleryId))) return { ok: false, reason: "gallery_item_not_public" };
+  return changeAdminProgramMedia({ ...input, set: { coverGalleryItemId: galleryId }, changedField: "coverImage" });
+}
+export const removeAdminProgramCoverImage = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) =>
+  changeAdminProgramMedia({ ...input, set: { coverGalleryItemId: null }, changedField: "coverImage" });
+export const setAdminProgramAttachment = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal; attachment: MongoProgramAttachment }) =>
+  changeAdminProgramMedia({ ...input, set: { attachment: input.attachment }, changedField: "attachment" });
+export const removeAdminProgramAttachment = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) =>
+  changeAdminProgramMedia({ ...input, set: { attachment: null }, changedField: "attachment" });

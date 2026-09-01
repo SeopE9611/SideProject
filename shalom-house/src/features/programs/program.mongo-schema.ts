@@ -1,6 +1,15 @@
 import type { ObjectId } from "mongodb";
 import type { ProgramApprovalStatus, ProgramPublicationStatus } from "./program.types";
 export const PROGRAM_COLLECTION_NAME = "program_posts";
+export type MongoProgramAttachment = {
+  bucket: string;
+  objectPath: string;
+  originalFileName: string;
+  label: string;
+  contentType: "application/pdf";
+  byteSize: number;
+  storedAt: Date;
+};
 export type MongoProgramDocument = {
   _id: ObjectId;
   slug: string;
@@ -17,4 +26,6 @@ export type MongoProgramDocument = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
+  coverGalleryItemId?: ObjectId | null;
+  attachment?: MongoProgramAttachment | null;
 };
