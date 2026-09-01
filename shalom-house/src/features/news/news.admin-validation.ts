@@ -1,9 +1,4 @@
-import {
-  isNewsCategory,
-  isPublicNewsReservedSlug,
-  isValidNewsSlug,
-  type NewsCategory,
-} from "./news.types";
+import { isNewsCategory, isPublicNewsReservedSlug, isValidNewsSlug, type NewsCategory } from "./news.types";
 
 export const ADMIN_NEWS_TITLE_MAX_LENGTH = 100;
 export const ADMIN_NEWS_SLUG_MAX_LENGTH = 80;
@@ -41,8 +36,7 @@ export type AdminNewsDirectPublishFieldErrors = {
 };
 
 export type AdminNewsDirectPublishValidationResult =
-  | { ok: true; value: { expectedUpdatedAt: Date } }
-  | { ok: false; fieldErrors: AdminNewsDirectPublishFieldErrors };
+  { ok: true; value: { expectedUpdatedAt: Date } } | { ok: false; fieldErrors: AdminNewsDirectPublishFieldErrors };
 
 export type AdminNewsPublishInput = {
   expectedUpdatedAt: unknown;
@@ -67,8 +61,7 @@ export type AdminNewsPublishValidationResult =
 
 export const adminNewsPublicationActions = ["unpublish", "archive"] as const;
 
-export type AdminNewsPublicationAction =
-  (typeof adminNewsPublicationActions)[number];
+export type AdminNewsPublicationAction = (typeof adminNewsPublicationActions)[number];
 
 export type AdminNewsPublicationStateInput = {
   expectedUpdatedAt: unknown;
@@ -96,8 +89,7 @@ export type AdminNewsPublicationStateValidationResult =
 
 export const adminNewsReviewDecisions = ["approve", "reject"] as const;
 
-export type AdminNewsReviewDecision =
-  (typeof adminNewsReviewDecisions)[number];
+export type AdminNewsReviewDecision = (typeof adminNewsReviewDecisions)[number];
 
 export type AdminNewsReviewDecisionInput = {
   expectedUpdatedAt: unknown;
@@ -131,21 +123,12 @@ export type ValidatedAdminNewsDraft = {
   body: readonly string[];
 };
 
-export type AdminNewsDraftField =
-  | "category"
-  | "slug"
-  | "title"
-  | "summary"
-  | "body"
-  | "contentSafetyConfirmed";
+export type AdminNewsDraftField = "category" | "slug" | "title" | "summary" | "body" | "contentSafetyConfirmed";
 
-export type AdminNewsDraftFieldErrors = Partial<
-  Record<AdminNewsDraftField, string>
->;
+export type AdminNewsDraftFieldErrors = Partial<Record<AdminNewsDraftField, string>>;
 
 export type AdminNewsDraftValidationResult =
-  | { ok: true; value: ValidatedAdminNewsDraft }
-  | { ok: false; fieldErrors: AdminNewsDraftFieldErrors };
+  { ok: true; value: ValidatedAdminNewsDraft } | { ok: false; fieldErrors: AdminNewsDraftFieldErrors };
 
 export type ValidatedAdminNewsDraftUpdate = {
   draft: ValidatedAdminNewsDraft;
@@ -180,36 +163,19 @@ function parseCanonicalIsoDate(value: unknown): Date | null {
   if (typeof value !== "string") return null;
 
   const date = new Date(value);
-  return !Number.isNaN(date.getTime()) && date.toISOString() === value
-    ? date
-    : null;
+  return !Number.isNaN(date.getTime()) && date.toISOString() === value ? date : null;
 }
 
-export function isAdminNewsReviewDecision(
-  value: unknown,
-): value is AdminNewsReviewDecision {
-  return (
-    typeof value === "string" &&
-    adminNewsReviewDecisions.includes(value as AdminNewsReviewDecision)
-  );
+export function isAdminNewsReviewDecision(value: unknown): value is AdminNewsReviewDecision {
+  return typeof value === "string" && adminNewsReviewDecisions.includes(value as AdminNewsReviewDecision);
 }
 
-export function isAdminNewsPublicationAction(
-  value: unknown,
-): value is AdminNewsPublicationAction {
-  return (
-    typeof value === "string" &&
-    adminNewsPublicationActions.includes(value as AdminNewsPublicationAction)
-  );
+export function isAdminNewsPublicationAction(value: unknown): value is AdminNewsPublicationAction {
+  return typeof value === "string" && adminNewsPublicationActions.includes(value as AdminNewsPublicationAction);
 }
 
-export function validateAdminNewsPublicationStateInput(
-  input: unknown,
-): AdminNewsPublicationStateValidationResult {
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+export function validateAdminNewsPublicationStateInput(input: unknown): AdminNewsPublicationStateValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminNewsPublicationStateFieldErrors = {};
 
@@ -217,8 +183,7 @@ export function validateAdminNewsPublicationStateInput(
     fieldErrors.action = "게시 상태 변경 방법을 선택해 주세요.";
   }
   if (value.transitionConfirmed !== true) {
-    fieldErrors.transitionConfirmed =
-      "선택한 상태 변경과 공개 종료 결과를 확인해 주세요.";
+    fieldErrors.transitionConfirmed = "선택한 상태 변경과 공개 종료 결과를 확인해 주세요.";
   }
 
   if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
@@ -238,13 +203,8 @@ export function validateAdminNewsPublicationStateInput(
   };
 }
 
-export function validateAdminNewsDraftInput(
-  input: unknown,
-): AdminNewsDraftValidationResult {
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+export function validateAdminNewsDraftInput(input: unknown): AdminNewsDraftValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const fieldErrors: AdminNewsDraftFieldErrors = {};
 
   if (!isNewsCategory(value.category)) {
@@ -259,8 +219,7 @@ export function validateAdminNewsDraftInput(
   } else if (!isValidNewsSlug(slug)) {
     fieldErrors.slug = "슬러그는 영문 소문자, 숫자와 하이픈만 사용할 수 있습니다.";
   } else if (isPublicNewsReservedSlug(slug)) {
-    fieldErrors.slug =
-      "이 주소는 소식 분류 페이지에서 사용 중입니다. 다른 슬러그를 입력해 주세요.";
+    fieldErrors.slug = "이 주소는 소식 분류 페이지에서 사용 중입니다. 다른 슬러그를 입력해 주세요.";
   }
 
   const title = typeof value.title === "string" ? value.title.trim() : "";
@@ -277,10 +236,7 @@ export function validateAdminNewsDraftInput(
     fieldErrors.summary = "요약은 300자 이하여야 합니다.";
   }
 
-  const normalizedBody =
-    typeof value.body === "string"
-      ? value.body.replace(/\r\n?/g, "\n").trim()
-      : "";
+  const normalizedBody = typeof value.body === "string" ? value.body.replace(/\r\n?/g, "\n").trim() : "";
   const body = normalizedBody
     ? normalizedBody
         .split(/\n[\t ]*\n+/)
@@ -293,17 +249,12 @@ export function validateAdminNewsDraftInput(
     fieldErrors.body = "본문은 10,000자 이하여야 합니다.";
   } else if (body.length > ADMIN_NEWS_BODY_MAX_PARAGRAPHS) {
     fieldErrors.body = "본문은 최대 50개 문단까지 작성할 수 있습니다.";
-  } else if (
-    body.some(
-      (paragraph) => paragraph.length > ADMIN_NEWS_BODY_PARAGRAPH_MAX_LENGTH,
-    )
-  ) {
+  } else if (body.some((paragraph) => paragraph.length > ADMIN_NEWS_BODY_PARAGRAPH_MAX_LENGTH)) {
     fieldErrors.body = "본문의 각 문단은 2,000자 이하여야 합니다.";
   }
 
   if (value.contentSafetyConfirmed !== true) {
-    fieldErrors.contentSafetyConfirmed =
-      "개인정보와 공개 금지 정보가 포함되지 않았는지 확인해 주세요.";
+    fieldErrors.contentSafetyConfirmed = "개인정보와 공개 금지 정보가 포함되지 않았는지 확인해 주세요.";
   }
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -322,14 +273,9 @@ export function validateAdminNewsDraftInput(
   };
 }
 
-export function validateAdminNewsDraftUpdateInput(
-  input: unknown,
-): AdminNewsDraftUpdateValidationResult {
+export function validateAdminNewsDraftUpdateInput(input: unknown): AdminNewsDraftUpdateValidationResult {
   const draftValidation = validateAdminNewsDraftInput(input);
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const hasValidVersion = expectedUpdatedAt !== null;
 
@@ -347,19 +293,13 @@ export function validateAdminNewsDraftUpdateInput(
   };
 }
 
-export function validateAdminNewsReviewRequestInput(
-  input: unknown,
-): AdminNewsReviewRequestValidationResult {
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+export function validateAdminNewsReviewRequestInput(input: unknown): AdminNewsReviewRequestValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminNewsReviewRequestFieldErrors = {};
 
   if (value.reviewReadinessConfirmed !== true) {
-    fieldErrors.reviewReadinessConfirmed =
-      "게시물 내용과 개인정보·공개 금지 정보 확인을 완료해 주세요.";
+    fieldErrors.reviewReadinessConfirmed = "게시물 내용과 개인정보·공개 금지 정보 확인을 완료해 주세요.";
   }
 
   if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
@@ -373,13 +313,8 @@ export function validateAdminNewsReviewRequestInput(
   return { ok: true, value: { expectedUpdatedAt } };
 }
 
-export function validateAdminNewsReviewDecisionInput(
-  input: unknown,
-): AdminNewsReviewDecisionValidationResult {
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+export function validateAdminNewsReviewDecisionInput(input: unknown): AdminNewsReviewDecisionValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminNewsReviewDecisionFieldErrors = {};
 
@@ -387,8 +322,7 @@ export function validateAdminNewsReviewDecisionInput(
     fieldErrors.decision = "검토 결과를 선택해 주세요.";
   }
   if (value.decisionConfirmed !== true) {
-    fieldErrors.decisionConfirmed =
-      "선택한 검토 결과와 이후 상태 변화를 확인해 주세요.";
+    fieldErrors.decisionConfirmed = "선택한 검토 결과와 이후 상태 변화를 확인해 주세요.";
   }
 
   if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
@@ -408,19 +342,13 @@ export function validateAdminNewsReviewDecisionInput(
   };
 }
 
-export function validateAdminNewsPublishInput(
-  input: unknown,
-): AdminNewsPublishValidationResult {
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+export function validateAdminNewsPublishInput(input: unknown): AdminNewsPublishValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminNewsPublishFieldErrors = {};
 
   if (value.publicationConfirmed !== true) {
-    fieldErrors.publicationConfirmed =
-      "게시 즉시 홈페이지에 공개된다는 점과 개인정보·공개 범위 확인을 완료해 주세요.";
+    fieldErrors.publicationConfirmed = "게시 즉시 홈페이지에 공개된다는 점과 개인정보·공개 범위 확인을 완료해 주세요.";
   }
 
   if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
@@ -434,13 +362,8 @@ export function validateAdminNewsPublishInput(
   return { ok: true, value: { expectedUpdatedAt } };
 }
 
-
-export function validateAdminNewsDirectPublishInput(
-  input: unknown,
-): AdminNewsDirectPublishValidationResult {
-  const value = typeof input === "object" && input !== null
-    ? input as Record<string, unknown>
-    : {};
+export function validateAdminNewsDirectPublishInput(input: unknown): AdminNewsDirectPublishValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminNewsDirectPublishFieldErrors = {};
   if (!expectedUpdatedAt) fieldErrors.expectedUpdatedAt = "게시 기준 시각을 확인할 수 없습니다.";

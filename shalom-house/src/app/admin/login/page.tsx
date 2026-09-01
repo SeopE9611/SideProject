@@ -9,8 +9,7 @@ export const metadata: Metadata = {
 const errorMessages: Record<string, string> = {
   credentials: "이메일 또는 비밀번호를 확인해 주세요.",
   "rate-limit": "로그인 시도가 많습니다. 잠시 후 다시 시도해 주세요.",
-  unavailable:
-    "관리자 로그인을 현재 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+  unavailable: "관리자 로그인을 현재 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.",
 };
 
 export default async function AdminLoginPage({
@@ -22,11 +21,7 @@ export default async function AdminLoginPage({
   const error = typeof errorValue === "string" ? errorMessages[errorValue] : undefined;
 
   return (
-    <main
-      id="main-content"
-      tabIndex={-1}
-      className="flex min-h-screen items-center px-page py-12 text-foreground"
-    >
+    <main id="main-content" tabIndex={-1} className="flex min-h-screen items-center px-page py-12 text-foreground">
       <div className="mx-auto w-full max-w-md rounded-card border border-border bg-surface p-6 sm:p-8">
         <div>
           <p className="text-small font-semibold text-primary">샬롬의 집 콘텐츠 관리</p>

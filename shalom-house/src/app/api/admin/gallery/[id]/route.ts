@@ -1,9 +1,6 @@
 import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
 import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
-import {
-  isValidAdminGalleryItemId,
-  updateAdminGalleryDraft,
-} from "@/features/gallery/gallery.admin-repository";
+import { isValidAdminGalleryItemId, updateAdminGalleryDraft } from "@/features/gallery/gallery.admin-repository";
 import { validateAdminGalleryDraftUpdateInput } from "@/features/gallery/gallery.admin-validation";
 export const runtime = "nodejs";
 type Context = { params: Promise<{ id: string }> };
@@ -17,28 +14,20 @@ const json = (body: unknown, status: number) =>
     },
   });
 export async function PATCH(request: Request, { params }: Context) {
-  if (!isSameOriginRequest(request))
-    return json({ ok: false, error: "forbidden" }, 403);
+  if (!isSameOriginRequest(request)) return json({ ok: false, error: "forbidden" }, 403);
   const authorization = await authorizeCurrentAdmin("content.update");
   if (!authorization.ok) {
-    return json(
-      { ok: false, error: authorization.reason },
-      authorization.reason === "unauthorized" ? 401 : 403,
-    );
+    return json({ ok: false, error: authorization.reason }, authorization.reason === "unauthorized" ? 401 : 403);
   }
   const admin = authorization.admin;
   const { id } = await params;
-  if (!isValidAdminGalleryItemId(id))
-    return json({ ok: false, error: "not_found" }, 404);
-  if (
-    request.headers.get("content-type")?.split(";", 1)[0] !== "application/json"
-  )
+  if (!isValidAdminGalleryItemId(id)) return json({ ok: false, error: "not_found" }, 404);
+  if (request.headers.get("content-type")?.split(";", 1)[0] !== "application/json")
     return json({ ok: false, error: "unsupported_media_type" }, 415);
   if (Number(request.headers.get("content-length") ?? 0) > MAX)
     return json({ ok: false, error: "payload_too_large" }, 413);
   const text = await request.text();
-  if (new TextEncoder().encode(text).byteLength > MAX)
-    return json({ ok: false, error: "payload_too_large" }, 413);
+  if (new TextEncoder().encode(text).byteLength > MAX) return json({ ok: false, error: "payload_too_large" }, 413);
   let body;
   try {
     body = JSON.parse(text);
@@ -61,15 +50,8 @@ export async function PATCH(request: Request, { params }: Context) {
       ...validation.value,
       actor: admin,
     });
-    if (!result.ok)
-      return json(
-        { ok: false, error: result.reason },
-        result.reason === "not_found" ? 404 : 409,
-      );
-    return json(
-      { ...result, redirectTo: `/admin/gallery/${id}?updated=1` },
-      200,
-    );
+    if (!result.ok) return json({ ok: false, error: result.reason }, result.reason === "not_found" ? 404 : 409);
+    return json({ ...result, redirectTo: `/admin/gallery/${id}?updated=1` }, 200);
   } catch (error) {
     console.error("관리자 활동사진 초안 수정 실패", {
       name: error instanceof Error ? error.name : "UnknownError",

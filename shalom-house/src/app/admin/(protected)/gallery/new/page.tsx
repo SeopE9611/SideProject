@@ -14,9 +14,7 @@ export default async function NewGalleryPage() {
           ← 활동사진 관리로 돌아가기
         </Link>
         <h1 className="mt-4 text-title font-bold">활동사진 초안 작성</h1>
-        <p className="mt-2">
-          업로드 즉시 공개되지 않으며 변환된 WebP만 비공개로 저장합니다.
-        </p>
+        <p className="mt-2">업로드 즉시 공개되지 않으며 변환된 WebP만 비공개로 저장합니다.</p>
       </header>
       <aside className="rounded-card border p-5">
         <h2 className="text-heading font-bold">업로드 전 안전 확인</h2>

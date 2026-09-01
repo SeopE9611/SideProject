@@ -34,18 +34,15 @@ export function AdminGalleryTransitionForm({
     const form = new FormData(e.currentTarget);
 
     try {
-      const response = await fetch(
-        `/api/admin/gallery/${encodeURIComponent(id)}/${endpoint}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            expectedUpdatedAt,
-            ...extra,
-            [confirmationField]: form.get("confirmed") === "on",
-          }),
-        },
-      );
+      const response = await fetch(`/api/admin/gallery/${encodeURIComponent(id)}/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expectedUpdatedAt,
+          ...extra,
+          [confirmationField]: form.get("confirmed") === "on",
+        }),
+      });
       const body = (await response.json().catch(() => null)) as {
         error?: string;
         redirectTo?: string;
@@ -75,16 +72,9 @@ export function AdminGalleryTransitionForm({
       className={`grid gap-4 rounded-card border p-5 ${danger ? "border-danger" : ""}`}
     >
       <p className="font-semibold">{label}</p>
-      <p className="text-safe-wrap text-small text-muted-foreground">
-        {description}
-      </p>
+      <p className="text-safe-wrap text-small text-muted-foreground">{description}</p>
       <label className="flex items-start gap-3">
-        <input
-          name="confirmed"
-          type="checkbox"
-          required
-          className="mt-1 size-5"
-        />
+        <input name="confirmed" type="checkbox" required className="mt-1 size-5" />
         <span>위 내용을 확인했으며 이 작업을 진행합니다.</span>
       </label>
       {error ? (
@@ -102,10 +92,7 @@ export function AdminGalleryTransitionForm({
   );
 }
 
-export function AdminGalleryReviewForm(p: {
-  id: string;
-  expectedUpdatedAt: string;
-}) {
+export function AdminGalleryReviewForm(p: { id: string; expectedUpdatedAt: string }) {
   return (
     <AdminGalleryTransitionForm
       {...p}

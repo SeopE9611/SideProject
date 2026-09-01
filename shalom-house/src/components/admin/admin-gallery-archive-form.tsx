@@ -1,13 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-export function AdminGalleryArchiveForm({
-  id,
-  expectedUpdatedAt,
-}: {
-  id: string;
-  expectedUpdatedAt: string;
-}) {
+export function AdminGalleryArchiveForm({ id, expectedUpdatedAt }: { id: string; expectedUpdatedAt: string }) {
   const router = useRouter(),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");

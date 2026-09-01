@@ -11,10 +11,19 @@ export interface ProgramRepository {
   listPublished(options?: { limit?: number }): Promise<readonly PublicProgramSummary[]>;
   findPublishedBySlug(slug: string): Promise<PublicProgram | null>;
 }
-const emptyProgramRepository: ProgramRepository = { async listPublished() { return []; }, async findPublishedBySlug() { return null; } };
+const emptyProgramRepository: ProgramRepository = {
+  async listPublished() {
+    return [];
+  },
+  async findPublishedBySlug() {
+    return null;
+  },
+};
 export function getProgramRepository(): ProgramRepository {
   const configuredSource = process.env.SHALOM_CONTENT_SOURCE;
-  const source = configuredSource || (process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview" ? "fixture" : "empty");
+  const source =
+    configuredSource ||
+    (process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview" ? "fixture" : "empty");
   if (source === "mongodb") return new MongoProgramRepository();
   if (source === "empty" || source === "fixture") return emptyProgramRepository;
   throw new Error(`지원하지 않는 SHALOM_CONTENT_SOURCE 설정입니다: ${source}`);

@@ -70,9 +70,7 @@ export function AdminGalleryDraftForm(props: Props) {
     [formError, setFormError] = useState(""),
     [fieldErrors, setFieldErrors] = useState<Record<string, string>>({}),
     [busy, setBusy] = useState(false),
-    [alt, setAlt] = useState(
-      props.mode === "edit" ? props.initialValue.altText : "",
-    );
+    [alt, setAlt] = useState(props.mode === "edit" ? props.initialValue.altText : "");
   const initial = props.mode === "edit" ? props.initialValue : empty;
   useEffect(
     () => () => {
@@ -110,17 +108,12 @@ export function AdminGalleryDraftForm(props: Props) {
 
         context.drawImage(bitmap, 0, 0, width, height);
         blob = await new Promise<Blob>((resolve, reject) =>
-          canvas.toBlob(
-            (value) => (value ? resolve(value) : reject(new Error())),
-            "image/webp",
-            0.82,
-          ),
+          canvas.toBlob((value) => (value ? resolve(value) : reject(new Error())), "image/webp", 0.82),
         );
       } finally {
         bitmap.close();
       }
-      if (blob.size > 3 * 1024 * 1024)
-        throw new Error("변환된 이미지가 3MB를 초과합니다.");
+      if (blob.size > 3 * 1024 * 1024) throw new Error("변환된 이미지가 3MB를 초과합니다.");
       if (previewRef.current) URL.revokeObjectURL(previewRef.current);
       previewRef.current = URL.createObjectURL(blob);
       setPreview(previewRef.current);
@@ -134,9 +127,7 @@ export function AdminGalleryDraftForm(props: Props) {
       setStatus("WebP 변환을 완료했습니다.");
     } catch {
       setStatus("");
-      setConversionError(
-        "이미지를 변환할 수 없습니다. 다른 이미지를 선택해 주세요.",
-      );
+      setConversionError("이미지를 변환할 수 없습니다. 다른 이미지를 선택해 주세요.");
     }
   }
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -155,10 +146,7 @@ export function AdminGalleryDraftForm(props: Props) {
           return;
         }
         const body = new FormData();
-        body.set(
-          "image",
-          new File([converted.blob], "image.webp", { type: "image/webp" }),
-        );
+        body.set("image", new File([converted.blob], "image.webp", { type: "image/webp" }));
         body.set(
           "metadata",
           JSON.stringify({
@@ -183,9 +171,7 @@ export function AdminGalleryDraftForm(props: Props) {
             expectedUpdatedAt: props.expectedUpdatedAt,
           }),
         });
-      const result = (await response
-        .json()
-        .catch(() => null)) as GalleryFormResponse | null;
+      const result = (await response.json().catch(() => null)) as GalleryFormResponse | null;
       if (response.ok && result?.redirectTo) {
         router.push(result.redirectTo);
         router.refresh();
@@ -204,11 +190,7 @@ export function AdminGalleryDraftForm(props: Props) {
     }
   }
   return (
-    <form
-      onSubmit={submit}
-      className="max-w-3xl space-y-5"
-      aria-busy={busy || undefined}
-    >
+    <form onSubmit={submit} className="max-w-3xl space-y-5" aria-busy={busy || undefined}>
       {formError ? (
         <p role="alert" className="border border-border-strong p-4 text-danger">
           {formError}
@@ -227,12 +209,8 @@ export function AdminGalleryDraftForm(props: Props) {
             aria-invalid={Boolean(fieldErrors.image) || undefined}
             aria-describedby={`gallery-image-help gallery-image-status${fieldErrors.image ? " gallery-image-error" : ""}`}
           />
-          <p
-            id="gallery-image-help"
-            className="text-small text-muted-foreground"
-          >
-            JPEG, PNG, WebP 원본을 선택하면 긴 변 1920px 이하, quality 0.82
-            WebP로 변환합니다.
+          <p id="gallery-image-help" className="text-small text-muted-foreground">
+            JPEG, PNG, WebP 원본을 선택하면 긴 변 1920px 이하, quality 0.82 WebP로 변환합니다.
           </p>
           <p id="gallery-image-status" role="status">
             {status}
@@ -255,17 +233,12 @@ export function AdminGalleryDraftForm(props: Props) {
               <dd>{converted.originalSize.toLocaleString()} bytes</dd>
               <dt>변환 결과</dt>
               <dd>
-                {converted.blob.size.toLocaleString()} bytes · {converted.width}
-                ×{converted.height}
+                {converted.blob.size.toLocaleString()} bytes · {converted.width}×{converted.height}
               </dd>
             </dl>
           ) : null}
           {preview ? (
-            <img
-              src={preview}
-              alt={alt}
-              className="h-auto max-h-96 max-w-full rounded-card object-contain"
-            />
+            <img src={preview} alt={alt} className="h-auto max-h-96 max-w-full rounded-card object-contain" />
           ) : null}
         </div>
       ) : (
@@ -279,12 +252,7 @@ export function AdminGalleryDraftForm(props: Props) {
         <div key={name} className="grid gap-2">
           <label htmlFor={`gallery-${name}`} className="font-semibold">
             {label}
-            {[
-              "consentCheckedOn",
-              "consentReferenceCode",
-              "displayStartOn",
-              "displayEndOn",
-            ].includes(name)
+            {["consentCheckedOn", "consentReferenceCode", "displayStartOn", "displayEndOn"].includes(name)
               ? " (선택)"
               : ""}
           </label>
@@ -302,9 +270,7 @@ export function AdminGalleryDraftForm(props: Props) {
                     ? `gallery-${name}-error`
                     : undefined
               }
-              onChange={
-                name === "altText" ? (e) => setAlt(e.target.value) : undefined
-              }
+              onChange={name === "altText" ? (e) => setAlt(e.target.value) : undefined}
             />
           ) : (
             <input
@@ -313,26 +279,16 @@ export function AdminGalleryDraftForm(props: Props) {
               type={kind}
               defaultValue={initial[name]}
               aria-invalid={Boolean(fieldErrors[name]) || undefined}
-              aria-describedby={
-                fieldErrors[name] ? `gallery-${name}-error` : undefined
-              }
+              aria-describedby={fieldErrors[name] ? `gallery-${name}-error` : undefined}
             />
           )}{" "}
           {name === "altText" ? (
-            <p
-              id="gallery-altText-help"
-              className="text-small text-muted-foreground"
-            >
-              이름, 나이, 장애·건강 정보나 개인을 추정할 상세 위치 없이 핵심
-              장면을 설명해 주세요.
+            <p id="gallery-altText-help" className="text-small text-muted-foreground">
+              이름, 나이, 장애·건강 정보나 개인을 추정할 상세 위치 없이 핵심 장면을 설명해 주세요.
             </p>
           ) : null}
           {fieldErrors[name] ? (
-            <p
-              id={`gallery-${name}-error`}
-              role="alert"
-              className="text-small text-danger"
-            >
+            <p id={`gallery-${name}-error`} role="alert" className="text-small text-danger">
               {fieldErrors[name]}
             </p>
           ) : null}
@@ -348,22 +304,14 @@ export function AdminGalleryDraftForm(props: Props) {
           defaultValue={initial.subjectPresence}
           className="min-h-11 border"
           aria-invalid={Boolean(fieldErrors.subjectPresence) || undefined}
-          aria-describedby={
-            fieldErrors.subjectPresence
-              ? "gallery-subjectPresence-error"
-              : undefined
-          }
+          aria-describedby={fieldErrors.subjectPresence ? "gallery-subjectPresence-error" : undefined}
         >
           <option value="none">인물 없음</option>
           <option value="non_identifiable">개인 식별 불가</option>
           <option value="identifiable">개인 식별 가능</option>
         </select>
         {fieldErrors.subjectPresence ? (
-          <p
-            id="gallery-subjectPresence-error"
-            role="alert"
-            className="text-small text-danger"
-          >
+          <p id="gallery-subjectPresence-error" role="alert" className="text-small text-danger">
             {fieldErrors.subjectPresence}
           </p>
         ) : null}
@@ -378,22 +326,14 @@ export function AdminGalleryDraftForm(props: Props) {
           defaultValue={initial.consentStatus}
           className="min-h-11 border"
           aria-invalid={Boolean(fieldErrors.consentStatus) || undefined}
-          aria-describedby={
-            fieldErrors.consentStatus
-              ? "gallery-consentStatus-error"
-              : undefined
-          }
+          aria-describedby={fieldErrors.consentStatus ? "gallery-consentStatus-error" : undefined}
         >
           <option value="not_required">별도 동의 불필요</option>
           <option value="pending">동의 확인 중</option>
           <option value="confirmed">공개 동의 확인</option>
         </select>
         {fieldErrors.consentStatus ? (
-          <p
-            id="gallery-consentStatus-error"
-            role="alert"
-            className="text-small text-danger"
-          >
+          <p id="gallery-consentStatus-error" role="alert" className="text-small text-danger">
             {fieldErrors.consentStatus}
           </p>
         ) : null}
@@ -404,25 +344,14 @@ export function AdminGalleryDraftForm(props: Props) {
           name="contentSafetyConfirmed"
           type="checkbox"
           required
-          aria-invalid={
-            Boolean(fieldErrors.contentSafetyConfirmed) || undefined
-          }
-          aria-describedby={
-            fieldErrors.contentSafetyConfirmed
-              ? "gallery-contentSafetyConfirmed-error"
-              : undefined
-          }
+          aria-invalid={Boolean(fieldErrors.contentSafetyConfirmed) || undefined}
+          aria-describedby={fieldErrors.contentSafetyConfirmed ? "gallery-contentSafetyConfirmed-error" : undefined}
         />
         <label htmlFor="gallery-safety">
-          얼굴·이름표·문서·주소·차량번호와 개인정보·민감정보를 확인했고 공개
-          권한 없는 내용이 없음을 확인했습니다.
+          얼굴·이름표·문서·주소·차량번호와 개인정보·민감정보를 확인했고 공개 권한 없는 내용이 없음을 확인했습니다.
         </label>
         {fieldErrors.contentSafetyConfirmed ? (
-          <p
-            id="gallery-contentSafetyConfirmed-error"
-            role="alert"
-            className="text-small text-danger"
-          >
+          <p id="gallery-contentSafetyConfirmed-error" role="alert" className="text-small text-danger">
             {fieldErrors.contentSafetyConfirmed}
           </p>
         ) : null}

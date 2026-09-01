@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 
-import {
-  NewsListPage,
-  type NewsSearchParams,
-} from "@/components/news/news-list-page";
+import { NewsListPage, type NewsSearchParams } from "@/components/news/news-list-page";
 
 export const metadata: Metadata = {
   title: "활동소식",
@@ -11,11 +8,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function ActivitiesPage({
-  searchParams,
-}: {
-  searchParams: Promise<NewsSearchParams>;
-}) {
+export default function ActivitiesPage({ searchParams }: { searchParams: Promise<NewsSearchParams> }) {
   return (
     <NewsListPage
       basePath="/news/activities"

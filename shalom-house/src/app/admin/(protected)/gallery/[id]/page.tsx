@@ -18,11 +18,7 @@ import {
   getGalleryPublicationStatusLabel,
   getGallerySubjectPresenceLabel,
 } from "@/features/gallery/gallery.types";
-export default async function GalleryDetail({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function GalleryDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params,
     item = await findAdminGalleryItemById(id);
   if (!item) notFound();
@@ -34,11 +30,10 @@ export default async function GalleryDetail({
   const canPublish = Boolean(admin && hasAdminPermission(admin, "content.publish"));
   const canArchive = Boolean(admin && hasAdminPermission(admin, "content.archive"));
   const canWithdrawConsent = Boolean(admin && hasAdminPermission(admin, "gallery.withdraw_consent"));
-  const auditHistory = await listAdminGalleryAuditHistory({ contentId: item.id });
-  const details: [
-    [string, string | number | null],
-    ...Array<[string, string | number | null]>,
-  ] = [
+  const auditHistory = await listAdminGalleryAuditHistory({
+    contentId: item.id,
+  });
+  const details: [[string, string | number | null], ...Array<[string, string | number | null]>] = [
     ["슬러그", item.slug],
     ["분류", item.category],
     ["활동일", item.activityDate],
@@ -69,10 +64,7 @@ export default async function GalleryDetail({
         </Link>
         <h1 className="mt-4 text-title font-bold">{item.title}</h1>
         {editable ? (
-          <Link
-            href={`/admin/gallery/${id}/edit`}
-            className="mt-3 inline-flex min-h-11 items-center underline"
-          >
+          <Link href={`/admin/gallery/${id}/edit`} className="mt-3 inline-flex min-h-11 items-center underline">
             메타데이터 수정
           </Link>
         ) : null}
@@ -87,9 +79,7 @@ export default async function GalleryDetail({
       </section>
       <section>
         <h2 className="text-heading font-bold">설명과 대체 텍스트</h2>
-        <p className="mt-3 whitespace-pre-wrap break-words">
-          {item.description}
-        </p>
+        <p className="mt-3 whitespace-pre-wrap break-words">{item.description}</p>
         <p className="mt-3 whitespace-pre-wrap break-words">
           <strong>대체 텍스트:</strong> {item.altText}
         </p>
@@ -110,44 +100,24 @@ export default async function GalleryDetail({
           상태 변경
         </h2>
         {item.canRequestReview && canRequestReview ? (
-          <AdminGalleryReviewForm
-            id={id}
-            expectedUpdatedAt={item.updatedAt}
-          />
+          <AdminGalleryReviewForm id={id} expectedUpdatedAt={item.updatedAt} />
         ) : null}
         {item.canDecideReview && canDecideReview ? (
-          <AdminGalleryReviewDecisionForm
-            id={id}
-            expectedUpdatedAt={item.updatedAt}
-          />
+          <AdminGalleryReviewDecisionForm id={id} expectedUpdatedAt={item.updatedAt} />
         ) : null}
-        {item.canPublish && canPublish ? (
-          <AdminGalleryPublishForm
-            id={id}
-            expectedUpdatedAt={item.updatedAt}
-          />
-        ) : null}
+        {item.canPublish && canPublish ? <AdminGalleryPublishForm id={id} expectedUpdatedAt={item.updatedAt} /> : null}
         {item.canManagePublicationState && canPublish ? (
-          <AdminGalleryPublicationStateForm
-            id={id}
-            expectedUpdatedAt={item.updatedAt}
-          />
+          <AdminGalleryPublicationStateForm id={id} expectedUpdatedAt={item.updatedAt} />
         ) : null}
         {item.canWithdrawConsent && canWithdrawConsent ? (
-          <AdminGalleryConsentWithdrawalForm
-            id={id}
-            expectedUpdatedAt={item.updatedAt}
-          />
+          <AdminGalleryConsentWithdrawalForm id={id} expectedUpdatedAt={item.updatedAt} />
         ) : null}
         <p>
           <strong>현재 공개 여부:</strong>{" "}
           {item.isPubliclyVisible ? (
             <>
               공개 중 ·{" "}
-              <Link
-                className="underline"
-                href={`/life/gallery/${item.slug}`}
-              >
+              <Link className="underline" href={`/life/gallery/${item.slug}`}>
                 공개 상세 보기
               </Link>
             </>
@@ -162,7 +132,20 @@ export default async function GalleryDetail({
           <AdminGalleryArchiveForm id={id} expectedUpdatedAt={item.updatedAt} />
         </section>
       ) : null}
-      {canDelete ? <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5"><h2 id="delete-content-heading" className="text-heading font-bold">위험 영역: 콘텐츠 삭제</h2><AdminContentDeleteForm id={item.id} title={item.title} endpoint={`/api/admin/gallery/${item.id}/delete`} expectedUpdatedAt={item.updatedAt} /></section> : null}<AdminAuditHistory items={auditHistory} />
+      {canDelete ? (
+        <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5">
+          <h2 id="delete-content-heading" className="text-heading font-bold">
+            위험 영역: 콘텐츠 삭제
+          </h2>
+          <AdminContentDeleteForm
+            id={item.id}
+            title={item.title}
+            endpoint={`/api/admin/gallery/${item.id}/delete`}
+            expectedUpdatedAt={item.updatedAt}
+          />
+        </section>
+      ) : null}
+      <AdminAuditHistory items={auditHistory} />
     </div>
   );
 }

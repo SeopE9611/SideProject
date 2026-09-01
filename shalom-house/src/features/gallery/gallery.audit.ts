@@ -15,18 +15,15 @@ export const galleryAuditActions = [
   "restored",
 ] as const;
 export type GalleryAuditAction = (typeof galleryAuditActions)[number];
-export type GalleryAuditSnapshot = Omit<
-  MongoGalleryItemDocument,
-  "_id" | "createdAt" | "updatedAt" | "media"
-> & { media: Omit<MongoGalleryItemDocument["media"], "originalFileName"> };
+export type GalleryAuditSnapshot = Omit<MongoGalleryItemDocument, "_id" | "createdAt" | "updatedAt" | "media"> & {
+  media: Omit<MongoGalleryItemDocument["media"], "originalFileName">;
+};
 export type GalleryAuditActor = {
   adminId: ObjectId;
   displayName: string;
   role: AdminRole;
 };
-export function createGalleryAuditSnapshot(
-  d: MongoGalleryItemDocument,
-): GalleryAuditSnapshot {
+export function createGalleryAuditSnapshot(d: MongoGalleryItemDocument): GalleryAuditSnapshot {
   return {
     slug: d.slug,
     title: d.title,

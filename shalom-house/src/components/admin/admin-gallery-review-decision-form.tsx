@@ -2,10 +2,7 @@
 
 import { AdminGalleryTransitionForm } from "./admin-gallery-review-form";
 
-export function AdminGalleryReviewDecisionForm(p: {
-  id: string;
-  expectedUpdatedAt: string;
-}) {
+export function AdminGalleryReviewDecisionForm(p: { id: string; expectedUpdatedAt: string }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <AdminGalleryTransitionForm

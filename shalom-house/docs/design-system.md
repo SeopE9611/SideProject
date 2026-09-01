@@ -21,26 +21,26 @@
 
 여러 토큰을 묶은 행의 현재 값은 토큰 표기 순서와 같다. `--shadow-card`의 실제 값은 두 줄 선언이므로 CSS에서 확인한다.
 
-| 분류 | 토큰 | 현재 값 | 허용 용도 | 상태 |
-| --- | --- | --- | --- | --- |
-| 기본 배경과 표면 | `--color-background`, `--color-surface`, `--color-surface-subtle` | `#f7f4ed`, `#ffffff`, `#eef2ee` | 페이지 배경, 기본·보조 표면 | 유지 |
-| 텍스트 | `--color-foreground`, `--color-muted-foreground` | `#202f35`, `#58655f` | 본문과 보조 정보 | 유지 |
-| 경계 | `--color-border`, `--color-border-strong` | `#d7ddd7`, `#6f7d76` | 구분선과 강한 경계 | 유지 |
-| 주요색 | `--color-primary`, `--color-primary-hover`, `--color-primary-soft`, `--color-primary-foreground` | `#245246`, `#193f36`, `#e6efea`, `#ffffff` | 브랜드, 주요 행동과 그 상태 | 유지 |
-| 강조색 | `--color-accent`, `--color-accent-hover`, `--color-accent-soft` | `#a95336`, `#874027`, `#f4e9e3` | 제한적 강조와 상태 | 제한 사용 |
-| 상태색 | `--color-success`, `--color-success-soft`, `--color-warning`, `--color-warning-soft`, `--color-danger`, `--color-danger-soft` | `#2f6b4f`, `#eaf4ee`, `#7a520f`, `#fff4d9`, `#a23b3b`, `#fbecec` | 성공·경고·오류의 텍스트와 표면 | 제한 사용 |
-| 어두운 표면 | `--color-on-dark`, `--color-sun-soft` | `#ffffff`, `#ead39b` | 의미 기반 어두운 표면의 전경과 제한적 강조 | 제한 사용 |
-| 홈·히어로 전용 기존 토큰 | `--color-hero-forest`, `--color-hero-clay`, `--color-hero-night`, `--color-hero-on-dark`, `--color-hero-muted`, `--color-hero-mist`, `--color-hero-sun` | `#1f493f`, `#85452f`, `#19363a`, `#ffffff`, `#edf3ef`, `#d9e5df`, `#ead39b` | 현재 `PageHero` 등 기존 호출부 호환 | 점진적 폐기 검토 |
-| 홈·히어로 전용 기존 토큰 | `--color-home-cream`, `--color-home-ink`, `--color-home-sun`, `--color-home-coral`, `--color-home-sky`, `--color-home-lilac` | `#f1ece2`, `#183b3b`, `#e6d7aa`, `#d9a08c`, `#b9d2c8`, `#c9c5cf` | 현재 `HomeHero`와 공개 페이지 기존 호출부 호환 | 점진적 폐기 검토 |
-| 포커스 | `--color-focus-ring` | `#a95336` | `focus-visible` 표시 | 유지 |
-| 타이포그래피 | `--text-hero`, `--text-hero-lg`, `--text-display`, `--text-display-lg` | `2.625rem`, `4.5rem`, `2.5rem`, `3.5rem` | 대표·디스플레이 제목 | 제한 사용 |
-| 타이포그래피 | `--text-title`, `--text-heading`, `--text-body`, `--text-small` | `2rem`, `1.5rem`, `1.0625rem`, `0.9375rem` | 제목, 본문, 보조 정보 | 유지 |
-| 컨테이너 | `--container-site`, `--container-content` | `80rem`, `46rem` | 전체 사이트 폭과 읽기 폭 | 유지 |
-| 간격 | `--spacing-page`, `--spacing-page-wide`, `--spacing-section`, `--spacing-section-wide` | `1.25rem`, `3rem`, `5rem`, `7rem` | 페이지 좌우와 섹션 간격 | 유지 |
-| 모서리 | `--radius-control`, `--radius-card`, `--radius-panel` | `0.5rem`, `0.875rem`, `1.25rem` | 컨트롤, 기능 카드, 강조 패널 | 제한 사용 |
-| 그림자 | `--shadow-card`, `--shadow-nav`, `--shadow-elevated` | CSS의 다중 그림자, `0 8px 24px rgb(32 47 53 / 0.07)`, `0 22px 54px rgb(24 59 59 / 0.14)` | 필요한 카드·내비게이션·부유 표면 | 제한 사용 |
-| 모션 | `--ease-standard`, `--motion-duration-fast`, `--motion-duration-standard` | `cubic-bezier(0.2, 0, 0, 1)`, `150ms`, `240ms` | 상태 전환과 짧은 피드백 | 유지 |
-| 모션 | `--motion-duration-hero` | `520ms` | 기존 히어로 모션 호환 | 점진적 폐기 검토 |
+| 분류                     | 토큰                                                                                                                                                    | 현재 값                                                                                  | 허용 용도                                      | 상태             |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------- |
+| 기본 배경과 표면         | `--color-background`, `--color-surface`, `--color-surface-subtle`                                                                                       | `#f7f4ed`, `#ffffff`, `#eef2ee`                                                          | 페이지 배경, 기본·보조 표면                    | 유지             |
+| 텍스트                   | `--color-foreground`, `--color-muted-foreground`                                                                                                        | `#202f35`, `#58655f`                                                                     | 본문과 보조 정보                               | 유지             |
+| 경계                     | `--color-border`, `--color-border-strong`                                                                                                               | `#d7ddd7`, `#6f7d76`                                                                     | 구분선과 강한 경계                             | 유지             |
+| 주요색                   | `--color-primary`, `--color-primary-hover`, `--color-primary-soft`, `--color-primary-foreground`                                                        | `#245246`, `#193f36`, `#e6efea`, `#ffffff`                                               | 브랜드, 주요 행동과 그 상태                    | 유지             |
+| 강조색                   | `--color-accent`, `--color-accent-hover`, `--color-accent-soft`                                                                                         | `#a95336`, `#874027`, `#f4e9e3`                                                          | 제한적 강조와 상태                             | 제한 사용        |
+| 상태색                   | `--color-success`, `--color-success-soft`, `--color-warning`, `--color-warning-soft`, `--color-danger`, `--color-danger-soft`                           | `#2f6b4f`, `#eaf4ee`, `#7a520f`, `#fff4d9`, `#a23b3b`, `#fbecec`                         | 성공·경고·오류의 텍스트와 표면                 | 제한 사용        |
+| 어두운 표면              | `--color-on-dark`, `--color-sun-soft`                                                                                                                   | `#ffffff`, `#ead39b`                                                                     | 의미 기반 어두운 표면의 전경과 제한적 강조     | 제한 사용        |
+| 홈·히어로 전용 기존 토큰 | `--color-hero-forest`, `--color-hero-clay`, `--color-hero-night`, `--color-hero-on-dark`, `--color-hero-muted`, `--color-hero-mist`, `--color-hero-sun` | `#1f493f`, `#85452f`, `#19363a`, `#ffffff`, `#edf3ef`, `#d9e5df`, `#ead39b`              | 현재 `PageHero` 등 기존 호출부 호환            | 점진적 폐기 검토 |
+| 홈·히어로 전용 기존 토큰 | `--color-home-cream`, `--color-home-ink`, `--color-home-sun`, `--color-home-coral`, `--color-home-sky`, `--color-home-lilac`                            | `#f1ece2`, `#183b3b`, `#e6d7aa`, `#d9a08c`, `#b9d2c8`, `#c9c5cf`                         | 현재 `HomeHero`와 공개 페이지 기존 호출부 호환 | 점진적 폐기 검토 |
+| 포커스                   | `--color-focus-ring`                                                                                                                                    | `#a95336`                                                                                | `focus-visible` 표시                           | 유지             |
+| 타이포그래피             | `--text-hero`, `--text-hero-lg`, `--text-display`, `--text-display-lg`                                                                                  | `2.625rem`, `4.5rem`, `2.5rem`, `3.5rem`                                                 | 대표·디스플레이 제목                           | 제한 사용        |
+| 타이포그래피             | `--text-title`, `--text-heading`, `--text-body`, `--text-small`                                                                                         | `2rem`, `1.5rem`, `1.0625rem`, `0.9375rem`                                               | 제목, 본문, 보조 정보                          | 유지             |
+| 컨테이너                 | `--container-site`, `--container-content`                                                                                                               | `80rem`, `46rem`                                                                         | 전체 사이트 폭과 읽기 폭                       | 유지             |
+| 간격                     | `--spacing-page`, `--spacing-page-wide`, `--spacing-section`, `--spacing-section-wide`                                                                  | `1.25rem`, `3rem`, `5rem`, `7rem`                                                        | 페이지 좌우와 섹션 간격                        | 유지             |
+| 모서리                   | `--radius-control`, `--radius-card`, `--radius-panel`                                                                                                   | `0.5rem`, `0.875rem`, `1.25rem`                                                          | 컨트롤, 기능 카드, 강조 패널                   | 제한 사용        |
+| 그림자                   | `--shadow-card`, `--shadow-nav`, `--shadow-elevated`                                                                                                    | CSS의 다중 그림자, `0 8px 24px rgb(32 47 53 / 0.07)`, `0 22px 54px rgb(24 59 59 / 0.14)` | 필요한 카드·내비게이션·부유 표면               | 제한 사용        |
+| 모션                     | `--ease-standard`, `--motion-duration-fast`, `--motion-duration-standard`                                                                               | `cubic-bezier(0.2, 0, 0, 1)`, `150ms`, `240ms`                                           | 상태 전환과 짧은 피드백                        | 유지             |
+| 모션                     | `--motion-duration-hero`                                                                                                                                | `520ms`                                                                                  | 기존 히어로 모션 호환                          | 점진적 폐기 검토 |
 
 `home-*`, `hero-*` 토큰과 `--motion-duration-hero`는 현재 `HomeHero`, `PageHero` 및 공개 페이지가 사용하므로 당장은 유지한다. 새 페이지에서 무분별하게 확장하지 않고 UI 개편 때 의미 기반 토큰으로 교체할지 검토한다. 삭제는 실제 호출부를 제거한 뒤 별도 작업으로 진행한다.
 
@@ -55,17 +55,17 @@
 
 현재 상한은 홈 대표 제목 `64px`, 일반 페이지 제목 `48px`, 목록·검색 페이지 제목 `40px`, 본문 `16~18px`, 보조 정보 `14~16px`다. 역할은 다음처럼 구분한다.
 
-| 역할 | 사용 기준 |
-| --- | --- |
-| 홈 대표 제목 | 사이트 입구의 단일 `h1`; 대형 표현은 한 화면에서 반복하지 않음 |
-| 일반 페이지 제목 | 페이지 목적을 설명하는 단일 `h1`; 홈보다 낮은 위계 |
-| 목록·검색 페이지 제목 | 검색·분류 도구와 결과가 우선 보이도록 절제한 `h1` |
-| 섹션 제목 | 주요 모듈을 구분하는 `h2`; 필요할 때 `text-display` 계열 사용 |
-| 카드·목록 제목 | 항목 이름을 나타내는 `h3` 또는 문맥상 제목; `text-title`·`text-heading` 사용 |
-| 본문 | 설명과 상세 콘텐츠; `text-body`와 읽기 폭 사용 |
-| 보조 정보 | 부연 설명·도움말; 본문보다 낮되 읽을 수 있는 대비 유지 |
-| 메타데이터 | 날짜·분류·파일 정보; `text-small`을 기본으로 관계를 명확히 함 |
-| 버튼과 링크 | 동작 또는 목적이 드러나는 짧은 문구; 크기보다 의미를 우선함 |
+| 역할                  | 사용 기준                                                                    |
+| --------------------- | ---------------------------------------------------------------------------- |
+| 홈 대표 제목          | 사이트 입구의 단일 `h1`; 대형 표현은 한 화면에서 반복하지 않음               |
+| 일반 페이지 제목      | 페이지 목적을 설명하는 단일 `h1`; 홈보다 낮은 위계                           |
+| 목록·검색 페이지 제목 | 검색·분류 도구와 결과가 우선 보이도록 절제한 `h1`                            |
+| 섹션 제목             | 주요 모듈을 구분하는 `h2`; 필요할 때 `text-display` 계열 사용                |
+| 카드·목록 제목        | 항목 이름을 나타내는 `h3` 또는 문맥상 제목; `text-title`·`text-heading` 사용 |
+| 본문                  | 설명과 상세 콘텐츠; `text-body`와 읽기 폭 사용                               |
+| 보조 정보             | 부연 설명·도움말; 본문보다 낮되 읽을 수 있는 대비 유지                       |
+| 메타데이터            | 날짜·분류·파일 정보; `text-small`을 기본으로 관계를 명확히 함                |
+| 버튼과 링크           | 동작 또는 목적이 드러나는 짧은 문구; 크기보다 의미를 우선함                  |
 
 글자 크기만으로 제목 단계를 정하지 않는다. `h1`부터 `h3`의 문서 구조와 시각 크기는 독립적으로 관리한다. 본문은 `--container-content` 등으로 한 줄이 지나치게 길어지지 않게 한다. 한국어에는 `word-break: keep-all`과 `overflow-wrap: break-word`를 함께 사용하며 URL, 파일명과 공백 없는 문자열도 레이아웃 밖으로 넘치지 않아야 한다.
 
@@ -99,28 +99,28 @@
 
 외형이 아니라 실제 동작 의미로 선택한다. 링크는 경로·문서로 이동하고 버튼은 현재 맥락의 동작을 실행한다.
 
-| 패턴 | 목적과 텍스트 | 상태와 표시 |
-| --- | --- | --- |
-| Primary action | 페이지의 단일 우선 행동; 동사와 대상을 명확히 작성 | hover·active에 의미 토큰을 쓰고 `focus-visible`을 보존한다. 실행 불가 시 비활성 이유를 함께 제공한다. |
-| Secondary action | 우선순위가 낮은 보조 행동 | Primary와 시각 위계를 구분하되 동일한 focus·active 기준을 적용한다. |
-| Text link | 본문 안의 관련 페이지 이동 | hover에서도 밑줄 등 링크 단서를 유지하고 현재 페이지면 `aria-current`를 검토한다. |
-| Navigation link | 전역·지역 탐색 | 목적지 이름을 쓰고 hover, focus-visible, active/현재 위치를 색상 외에도 구분한다. |
-| Download link | 파일 다운로드 | 문서명과 형식·크기를 알리고 아이콘은 장식이면 `aria-hidden`; 다운로드 불가는 이유를 표시한다. |
-| External link | 외부 사이트 또는 새 창 이동 | 목적지를 쓰고 새 창이면 사전 안내한다. 화살표 아이콘은 중복 낭독되지 않게 처리한다. |
-| Telephone link | 승인된 번호로 전화 연결 | 화면에 읽을 수 있는 번호·용도를 제공하고 `tel:` 동작을 예측 가능하게 한다. |
+| 패턴             | 목적과 텍스트                                      | 상태와 표시                                                                                           |
+| ---------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Primary action   | 페이지의 단일 우선 행동; 동사와 대상을 명확히 작성 | hover·active에 의미 토큰을 쓰고 `focus-visible`을 보존한다. 실행 불가 시 비활성 이유를 함께 제공한다. |
+| Secondary action | 우선순위가 낮은 보조 행동                          | Primary와 시각 위계를 구분하되 동일한 focus·active 기준을 적용한다.                                   |
+| Text link        | 본문 안의 관련 페이지 이동                         | hover에서도 밑줄 등 링크 단서를 유지하고 현재 페이지면 `aria-current`를 검토한다.                     |
+| Navigation link  | 전역·지역 탐색                                     | 목적지 이름을 쓰고 hover, focus-visible, active/현재 위치를 색상 외에도 구분한다.                     |
+| Download link    | 파일 다운로드                                      | 문서명과 형식·크기를 알리고 아이콘은 장식이면 `aria-hidden`; 다운로드 불가는 이유를 표시한다.         |
+| External link    | 외부 사이트 또는 새 창 이동                        | 목적지를 쓰고 새 창이면 사전 안내한다. 화살표 아이콘은 중복 낭독되지 않게 처리한다.                   |
+| Telephone link   | 승인된 번호로 전화 연결                            | 화면에 읽을 수 있는 번호·용도를 제공하고 `tel:` 동작을 예측 가능하게 한다.                            |
 
 모든 패턴은 hover만으로 정보를 전달하지 않고 `focus-visible`과 active 피드백을 제공한다. 비활성 링크처럼 보이는 가짜 링크를 만들지 않으며 disabled 버튼은 오류 원인을 숨기는 수단으로 쓰지 않는다. 새 창·다운로드 표시는 텍스트로 사전 안내하고 아이콘과 화살표가 같은 이름을 중복 낭독하지 않도록 장식이면 `aria-hidden="true"`를 사용한다.
 
 ## 이미지 패턴
 
-| 유형 | 권장 비율 | 표시와 크롭 검토 |
-| --- | --- | --- |
-| 홈 대표 이미지 | `3:2` 또는 `4:3` | 영역을 채울 때 `object-fit: cover`; 핵심 맥락이 잘리지 않는지 전 viewport 확인 |
-| 활동 카드 이미지 | `4:3` | 같은 목록은 비율을 통일하고 활동 도구·공간의 초점 보존 |
-| 생활 기록 이미지 | `3:2` 또는 원본 맥락에 맞는 비율 | 기록 의미가 크롭으로 바뀌지 않게 하고 필요하면 `contain` 검토 |
-| 시설 공간 이미지 | `3:2` 또는 `4:3` | 공간 구조와 접근 정보가 잘리지 않게 크롭 위치 확인 |
-| 목록 썸네일 | 한 목록에서 동일한 `4:3` 또는 `3:2` | `cover` 기본, 이미지 없는 항목과 정렬·대체 상태 검증 |
-| 지도 또는 위치 이미지 | 제공 원본 비율 | 표식·경로가 잘리면 `contain`; 확대·외부 지도 경로와 실제 위치 여부를 명시 |
+| 유형                  | 권장 비율                           | 표시와 크롭 검토                                                               |
+| --------------------- | ----------------------------------- | ------------------------------------------------------------------------------ |
+| 홈 대표 이미지        | `3:2` 또는 `4:3`                    | 영역을 채울 때 `object-fit: cover`; 핵심 맥락이 잘리지 않는지 전 viewport 확인 |
+| 활동 카드 이미지      | `4:3`                               | 같은 목록은 비율을 통일하고 활동 도구·공간의 초점 보존                         |
+| 생활 기록 이미지      | `3:2` 또는 원본 맥락에 맞는 비율    | 기록 의미가 크롭으로 바뀌지 않게 하고 필요하면 `contain` 검토                  |
+| 시설 공간 이미지      | `3:2` 또는 `4:3`                    | 공간 구조와 접근 정보가 잘리지 않게 크롭 위치 확인                             |
+| 목록 썸네일           | 한 목록에서 동일한 `4:3` 또는 `3:2` | `cover` 기본, 이미지 없는 항목과 정렬·대체 상태 검증                           |
+| 지도 또는 위치 이미지 | 제공 원본 비율                      | 표식·경로가 잘리면 `contain`; 확대·외부 지도 경로와 실제 위치 여부를 명시      |
 
 최종은 공개 승인된 실제 사진을 우선한다. 개발 placeholder는 중앙 fixture 정책을 따르며 실제 사진처럼 설명하지 않는다. 실제 이미지가 없을 때 인용문 패널이나 실제 사진처럼 보이는 추상 그래픽으로 대체하지 않고 데이터 상태와 대체 텍스트에서 fixture placeholder임을 구분한다. 이미지 정보·대체 텍스트 기준은 [`accessibility.md`](./accessibility.md), 상태·승인은 [`content-governance.md`](./content-governance.md)가 소유한다.
 

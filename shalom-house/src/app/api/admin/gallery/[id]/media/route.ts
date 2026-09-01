@@ -24,10 +24,7 @@ export async function GET(_: Request, { params }: Context) {
       headers: { "Cache-Control": "private, no-store" },
     });
   try {
-    const blob = await downloadPrivateGalleryImage(
-      item.media.bucket,
-      item.media.objectPath,
-    );
+    const blob = await downloadPrivateGalleryImage(item.media.bucket, item.media.objectPath);
     return new Response(await blob.arrayBuffer(), {
       status: 200,
       headers: privateHeaders,

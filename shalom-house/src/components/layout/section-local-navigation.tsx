@@ -11,35 +11,22 @@ type SectionLocalNavigationProps = {
   sectionHref: SectionHref;
 };
 
-export function SectionLocalNavigation({
-  sectionHref,
-}: SectionLocalNavigationProps) {
+export function SectionLocalNavigation({ sectionHref }: SectionLocalNavigationProps) {
   const pathname = usePathname();
-  const section = siteConfig.mainNavigation.find(
-    (item) => item.href === sectionHref,
-  );
+  const section = siteConfig.mainNavigation.find((item) => item.href === sectionHref);
 
   if (!section) return null;
 
-  const overviewChild = section.children.find(
-    (child) => child.href === section.href,
-  );
+  const overviewChild = section.children.find((child) => child.href === section.href);
   const links = [
     { label: overviewChild?.label ?? section.label, href: section.href },
     ...section.children.filter((child) => child.href !== section.href),
   ];
-  const matchingLinks = links.filter(
-    (link) => pathname === link.href || pathname.startsWith(`${link.href}/`),
-  );
-  const activeHref =
-    matchingLinks.sort((a, b) => b.href.length - a.href.length)[0]?.href ??
-    section.href;
+  const matchingLinks = links.filter((link) => pathname === link.href || pathname.startsWith(`${link.href}/`));
+  const activeHref = matchingLinks.sort((a, b) => b.href.length - a.href.length)[0]?.href ?? section.href;
 
   return (
-    <nav
-      aria-label={`${section.label} 세부 메뉴`}
-      className="border-y border-border bg-surface"
-    >
+    <nav aria-label={`${section.label} 세부 메뉴`} className="border-y border-border bg-surface">
       <div className="mx-auto max-w-site overflow-x-auto px-page sm:px-page-wide">
         <ul className="flex w-max min-w-full items-stretch gap-6 sm:gap-8">
           {links.map((link) => {

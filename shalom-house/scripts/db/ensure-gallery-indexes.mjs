@@ -11,14 +11,8 @@ if (!uri) {
       items = database.collection("gallery_items"),
       audits = database.collection("gallery_audit_events");
     const galleryIndexNames = await Promise.all([
-      items.createIndex(
-        { slug: 1 },
-        { unique: true, name: "gallery_items_slug_unique" },
-      ),
-      items.createIndex(
-        { "media.sha256": 1 },
-        { unique: true, name: "gallery_items_media_sha256_unique" },
-      ),
+      items.createIndex({ slug: 1 }, { unique: true, name: "gallery_items_slug_unique" }),
+      items.createIndex({ "media.sha256": 1 }, { unique: true, name: "gallery_items_media_sha256_unique" }),
       items.createIndex(
         {
           publicationStatus: 1,
@@ -30,13 +24,20 @@ if (!uri) {
         { name: "gallery_items_admin_status" },
       ),
       items.createIndex(
-        { publicationStatus: 1, approvalStatus: 1, consentStatus: 1, consentWithdrawnAt: 1, displayStartOn: 1, displayEndOn: 1, activityDate: -1, publishedAt: -1, _id: -1 },
+        {
+          publicationStatus: 1,
+          approvalStatus: 1,
+          consentStatus: 1,
+          consentWithdrawnAt: 1,
+          displayStartOn: 1,
+          displayEndOn: 1,
+          activityDate: -1,
+          publishedAt: -1,
+          _id: -1,
+        },
         { name: "gallery_items_public_visibility" },
       ),
-      items.createIndex(
-        { deletedAt: 1, updatedAt: -1, _id: -1 },
-        { name: "gallery_items_admin_updated" },
-      ),
+      items.createIndex({ deletedAt: 1, updatedAt: -1, _id: -1 }, { name: "gallery_items_admin_updated" }),
       items.createIndex({ deletedAt: -1, _id: -1 }, { name: "gallery_items_deleted_timeline" }),
     ]);
     const auditIndexNames = await Promise.all([
@@ -44,14 +45,8 @@ if (!uri) {
         { galleryItemId: 1, toVersionAt: 1 },
         { unique: true, name: "gallery_audit_events_item_version_unique" },
       ),
-      audits.createIndex(
-        { galleryItemId: 1, occurredAt: -1, _id: -1 },
-        { name: "gallery_audit_events_item_timeline" },
-      ),
-      audits.createIndex(
-        { occurredAt: -1, _id: -1 },
-        { name: "gallery_audit_events_recent" },
-      ),
+      audits.createIndex({ galleryItemId: 1, occurredAt: -1, _id: -1 }, { name: "gallery_audit_events_item_timeline" }),
+      audits.createIndex({ occurredAt: -1, _id: -1 }, { name: "gallery_audit_events_recent" }),
     ]);
     console.log("활동사진 인덱스를 확인했습니다.", {
       databaseName,

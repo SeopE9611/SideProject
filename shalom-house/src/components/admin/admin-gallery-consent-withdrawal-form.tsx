@@ -2,10 +2,7 @@
 
 import { AdminGalleryTransitionForm } from "./admin-gallery-review-form";
 
-export function AdminGalleryConsentWithdrawalForm(p: {
-  id: string;
-  expectedUpdatedAt: string;
-}) {
+export function AdminGalleryConsentWithdrawalForm(p: { id: string; expectedUpdatedAt: string }) {
   return (
     <AdminGalleryTransitionForm
       {...p}

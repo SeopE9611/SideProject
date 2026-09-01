@@ -12,39 +12,24 @@ const headers = {
   "Cache-Control": "no-store",
   "Content-Type": "application/json; charset=utf-8",
 };
-const json = (body: unknown, status: number) =>
-  new Response(JSON.stringify(body), { status, headers });
+const json = (body: unknown, status: number) => new Response(JSON.stringify(body), { status, headers });
 export async function POST(request: Request) {
-  if (!isSameOriginRequest(request))
-    return json({ ok: false, error: "forbidden" }, 403);
+  if (!isSameOriginRequest(request)) return json({ ok: false, error: "forbidden" }, 403);
   const authorization = await authorizeCurrentAdmin("content.create");
   if (!authorization.ok) {
-    return json(
-      { ok: false, error: authorization.reason },
-      authorization.reason === "unauthorized" ? 401 : 403,
-    );
+    return json({ ok: false, error: authorization.reason }, authorization.reason === "unauthorized" ? 401 : 403);
   }
   const admin = authorization.admin;
   const length = Number(request.headers.get("content-length") ?? 0);
-  if (length > ADMIN_GALLERY_REQUEST_MAX_BYTES)
-    return json({ ok: false, error: "payload_too_large" }, 413);
-  if (
-    !request.headers
-      .get("content-type")
-      ?.toLowerCase()
-      .startsWith("multipart/form-data;")
-  )
+  if (length > ADMIN_GALLERY_REQUEST_MAX_BYTES) return json({ ok: false, error: "payload_too_large" }, 413);
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data;"))
     return json({ ok: false, error: "unsupported_media_type" }, 415);
   try {
     const form = await request.formData(),
       image = form.get("image"),
       raw = form.get("metadata");
-    if (!(image instanceof File) || typeof raw !== "string")
-      return json({ ok: false, error: "validation" }, 400);
-    if (
-      image.size + new TextEncoder().encode(raw).byteLength >
-      ADMIN_GALLERY_REQUEST_MAX_BYTES
-    )
+    if (!(image instanceof File) || typeof raw !== "string") return json({ ok: false, error: "validation" }, 400);
+    if (image.size + new TextEncoder().encode(raw).byteLength > ADMIN_GALLERY_REQUEST_MAX_BYTES)
       return json({ ok: false, error: "payload_too_large" }, 413);
     let metadata: unknown;
     try {
@@ -54,11 +39,7 @@ export async function POST(request: Request) {
     }
     const draft = validateAdminGalleryDraftInput(metadata),
       checked = await validateAdminGalleryImage(image);
-    if (!draft.ok)
-      return json(
-        { ok: false, error: "validation", fieldErrors: draft.fieldErrors },
-        400,
-      );
+    if (!draft.ok) return json({ ok: false, error: "validation", fieldErrors: draft.fieldErrors }, 400);
     if (!checked.ok)
       return json(
         {
@@ -69,9 +50,7 @@ export async function POST(request: Request) {
         400,
       );
     const record = metadata as Record<string, unknown>,
-      originalFileName = normalizeAdminGalleryOriginalFileName(
-        record.originalFileName,
-      );
+      originalFileName = normalizeAdminGalleryOriginalFileName(record.originalFileName);
     if (!originalFileName)
       return json(
         {

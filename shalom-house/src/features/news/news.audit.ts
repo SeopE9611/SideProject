@@ -3,11 +3,7 @@ import type { ObjectId } from "mongodb";
 import type { AdminRole } from "../admin-auth/admin-auth.types";
 import type { ValidatedAdminNewsDraft } from "./news.admin-validation";
 import type { MongoNewsPostDocument } from "./news.mongo-schema";
-import type {
-  NewsApprovalStatus,
-  NewsCategory,
-  NewsPublicationStatus,
-} from "./news.types";
+import type { NewsApprovalStatus, NewsCategory, NewsPublicationStatus } from "./news.types";
 
 export const newsAuditActions = [
   "draft_created",
@@ -58,13 +54,7 @@ export type NewsAuditActor = {
 export function createNewsAuditSnapshot(
   document: Pick<
     MongoNewsPostDocument,
-    | "slug"
-    | "category"
-    | "title"
-    | "publicationStatus"
-    | "approvalStatus"
-    | "publishedAt"
-    | "deletedAt"
+    "slug" | "category" | "title" | "publicationStatus" | "approvalStatus" | "publishedAt" | "deletedAt"
   >,
 ): NewsAuditSnapshot {
   return {
@@ -79,10 +69,7 @@ export function createNewsAuditSnapshot(
 }
 
 export function getDraftChangedFields(
-  before: Pick<
-    MongoNewsPostDocument,
-    "slug" | "category" | "title" | "summary" | "body"
-  >,
+  before: Pick<MongoNewsPostDocument, "slug" | "category" | "title" | "summary" | "body">,
   after: ValidatedAdminNewsDraft,
 ): NewsAuditChangedField[] {
   const changedFields: NewsAuditChangedField[] = [];

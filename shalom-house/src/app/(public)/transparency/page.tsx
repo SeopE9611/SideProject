@@ -46,14 +46,15 @@ const publicationPrinciples = [
 
 export const metadata: Metadata = {
   title: "자료공개",
-  description:
-    "샬롬의 집의 운영 보고, 예산·결산, 후원금 관련 공개 자료를 확인합니다.",
+  description: "샬롬의 집의 운영 보고, 예산·결산, 후원금 관련 공개 자료를 확인합니다.",
 };
 
 const canonicalDateLabel = (value: string) => value.replace(/-/g, ".");
 const publishedDateLabel = (value: string) => {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "-" : `${date.getUTCFullYear()}.${String(date.getUTCMonth() + 1).padStart(2, "0")}.${String(date.getUTCDate()).padStart(2, "0")}`;
+  return Number.isNaN(date.getTime())
+    ? "-"
+    : `${date.getUTCFullYear()}.${String(date.getUTCMonth() + 1).padStart(2, "0")}.${String(date.getUTCDate()).padStart(2, "0")}`;
 };
 export default async function TransparencyPage() {
   const transparencyDocuments = await findPublicTransparencyDocuments();
@@ -64,21 +65,11 @@ export default async function TransparencyPage() {
         eyebrow="소식"
         title="자료공개"
         description="운영 보고, 예산·결산, 후원금 관련 자료를 분류와 기준 기간에 맞춰 안내합니다. 담당자 확인과 개인정보 검토를 마친 최종 자료만 게시합니다."
-        breadcrumbs={[
-          { label: "홈", href: "/" },
-          { label: "소식", href: "/news" },
-          { label: "자료공개" },
-        ]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "소식", href: "/news" }, { label: "자료공개" }]}
       />
-      <section
-        className="bg-surface py-12 sm:py-16"
-        aria-labelledby="transparency-summary-heading"
-      >
+      <section className="bg-surface py-12 sm:py-16" aria-labelledby="transparency-summary-heading">
         <div className="mx-auto max-w-site px-page sm:px-page-wide">
-          <h2
-            id="transparency-summary-heading"
-            className="text-safe-wrap sr-only"
-          >
+          <h2 id="transparency-summary-heading" className="text-safe-wrap sr-only">
             자료 현황
           </h2>
           <dl className="grid border-y border-border sm:grid-cols-3">
@@ -100,28 +91,17 @@ export default async function TransparencyPage() {
                 key={item.label}
                 className="border-b border-border py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:px-6 sm:first:pl-0 sm:last:border-r-0"
               >
-                <dt className="text-safe-wrap text-small font-bold text-primary">
-                  {item.label}
-                </dt>
+                <dt className="text-safe-wrap text-small font-bold text-primary">{item.label}</dt>
                 <dd className="mt-2 text-safe-wrap">{item.value}</dd>
               </div>
             ))}
           </dl>
         </div>
       </section>
-      <section
-        id="public-documents"
-        aria-labelledby="documents-heading"
-        className="bg-surface-subtle py-12 sm:py-16"
-      >
+      <section id="public-documents" aria-labelledby="documents-heading" className="bg-surface-subtle py-12 sm:py-16">
         <div className="mx-auto max-w-site px-page sm:px-page-wide">
-          <p className="text-safe-wrap text-small font-bold text-accent">
-            공개 자료
-          </p>
-          <h2
-            id="documents-heading"
-            className="text-safe-wrap mt-3 text-display font-bold"
-          >
+          <p className="text-safe-wrap text-small font-bold text-accent">공개 자료</p>
+          <h2 id="documents-heading" className="text-safe-wrap mt-3 text-display font-bold">
             필요한 운영 자료를 확인하세요
           </h2>
           {transparencyDocuments.length > 0 ? (
@@ -129,21 +109,51 @@ export default async function TransparencyPage() {
               {transparencyDocuments.map((document) => (
                 <li key={document.slug} className="border-b border-border py-5">
                   <article className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                    <div><p className="text-small font-bold text-accent">{transparencyCategoryLabels[document.category]}</p><h3 className="text-safe-wrap mt-1 text-heading font-bold">{document.title}</h3>{document.summary ? <p className="text-safe-wrap mt-2 text-muted-foreground">{document.summary}</p> : null}</div>
-                    <dl className="grid gap-x-5 gap-y-2 text-small sm:grid-cols-2"><div><dt className="font-semibold">기준 기간</dt><dd>{document.periodLabel}</dd></div><div><dt className="font-semibold">문서일</dt><dd>{canonicalDateLabel(document.documentDate)}</dd></div><div><dt className="font-semibold">게시일</dt><dd>{publishedDateLabel(document.publishedAt)}</dd></div><div><dt className="font-semibold">파일</dt><dd>{document.fileType} · {document.byteSize.toLocaleString()} bytes</dd></div></dl>
-                    <a className="text-safe-wrap font-bold text-primary underline sm:col-span-2" href={`/api/transparency/${document.slug}/document`} target="_blank" rel="noreferrer">{document.title} PDF 열기</a>
+                    <div>
+                      <p className="text-small font-bold text-accent">
+                        {transparencyCategoryLabels[document.category]}
+                      </p>
+                      <h3 className="text-safe-wrap mt-1 text-heading font-bold">{document.title}</h3>
+                      {document.summary ? (
+                        <p className="text-safe-wrap mt-2 text-muted-foreground">{document.summary}</p>
+                      ) : null}
+                    </div>
+                    <dl className="grid gap-x-5 gap-y-2 text-small sm:grid-cols-2">
+                      <div>
+                        <dt className="font-semibold">기준 기간</dt>
+                        <dd>{document.periodLabel}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold">문서일</dt>
+                        <dd>{canonicalDateLabel(document.documentDate)}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold">게시일</dt>
+                        <dd>{publishedDateLabel(document.publishedAt)}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold">파일</dt>
+                        <dd>
+                          {document.fileType} · {document.byteSize.toLocaleString()} bytes
+                        </dd>
+                      </div>
+                    </dl>
+                    <a
+                      className="text-safe-wrap font-bold text-primary underline sm:col-span-2"
+                      href={`/api/transparency/${document.slug}/document`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {document.title} PDF 열기
+                    </a>
                   </article>
                 </li>
               ))}
             </ul>
           ) : (
             <div className="mt-8 border-y border-border py-6">
-              <p className="text-safe-wrap text-small font-bold text-accent">
-                등록된 자료 0건
-              </p>
-              <h3 className="text-safe-wrap mt-2 text-heading font-bold">
-                현재 공개된 운영 자료가 없습니다.
-              </h3>
+              <p className="text-safe-wrap text-small font-bold text-accent">등록된 자료 0건</p>
+              <h3 className="text-safe-wrap mt-2 text-heading font-bold">현재 공개된 운영 자료가 없습니다.</h3>
               <p className="text-safe-wrap mt-3 text-muted-foreground">
                 확인을 마친 자료가 게시되면 이 목록에서 안내합니다.
               </p>
@@ -151,67 +161,35 @@ export default async function TransparencyPage() {
           )}
         </div>
       </section>
-      <section
-        aria-labelledby="categories-heading"
-        className="bg-surface py-12 sm:py-16"
-      >
+      <section aria-labelledby="categories-heading" className="bg-surface py-12 sm:py-16">
         <div className="mx-auto max-w-site px-page sm:px-page-wide">
-          <p className="text-safe-wrap text-small font-bold text-accent">
-            자료 분류
-          </p>
-          <h2
-            id="categories-heading"
-            className="text-safe-wrap mt-3 text-display font-bold"
-          >
+          <p className="text-safe-wrap text-small font-bold text-accent">자료 분류</p>
+          <h2 id="categories-heading" className="text-safe-wrap mt-3 text-display font-bold">
             다음과 같은 자료를 안내합니다
           </h2>
           <div className="mt-8 grid border-t-2 border-foreground sm:grid-cols-2 lg:grid-cols-4">
             {disclosureCategories.map((item) => (
-              <article
-                key={item.number}
-                className="border-b border-border py-6 sm:px-5 sm:first:pl-0 sm:last:pr-0"
-              >
-                <p className="text-small font-bold text-accent">
-                  {item.number}
-                </p>
-                <h3 className="text-safe-wrap mt-3 text-heading font-bold">
-                  {item.title}
-                </h3>
-                <p className="text-safe-wrap mt-3 text-muted-foreground">
-                  {item.description}
-                </p>
+              <article key={item.number} className="border-b border-border py-6 sm:px-5 sm:first:pl-0 sm:last:pr-0">
+                <p className="text-small font-bold text-accent">{item.number}</p>
+                <h3 className="text-safe-wrap mt-3 text-heading font-bold">{item.title}</h3>
+                <p className="text-safe-wrap mt-3 text-muted-foreground">{item.description}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
-      <section
-        aria-labelledby="principles-heading"
-        className="bg-surface-subtle py-12 sm:py-16"
-      >
+      <section aria-labelledby="principles-heading" className="bg-surface-subtle py-12 sm:py-16">
         <div className="mx-auto max-w-site px-page sm:px-page-wide">
-          <p className="text-safe-wrap text-small font-bold text-primary">
-            게시 원칙
-          </p>
-          <h2
-            id="principles-heading"
-            className="text-safe-wrap mt-3 text-display font-bold"
-          >
+          <p className="text-safe-wrap text-small font-bold text-primary">게시 원칙</p>
+          <h2 id="principles-heading" className="text-safe-wrap mt-3 text-display font-bold">
             확인하기 쉬운 자료를 제공합니다
           </h2>
           <ol className="mt-8 border-t-4 border-primary">
             {publicationPrinciples.map((item) => (
-              <li
-                key={item.number}
-                className="grid gap-3 border-b border-border py-5 sm:grid-cols-[3rem_0.8fr_1.2fr]"
-              >
-                <span className="text-small font-bold text-accent">
-                  {item.number}
-                </span>
+              <li key={item.number} className="grid gap-3 border-b border-border py-5 sm:grid-cols-[3rem_0.8fr_1.2fr]">
+                <span className="text-small font-bold text-accent">{item.number}</span>
                 <h3 className="text-safe-wrap font-bold">{item.title}</h3>
-                <p className="text-safe-wrap text-muted-foreground">
-                  {item.description}
-                </p>
+                <p className="text-safe-wrap text-muted-foreground">{item.description}</p>
               </li>
             ))}
           </ol>

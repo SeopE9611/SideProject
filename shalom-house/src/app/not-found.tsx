@@ -8,11 +8,7 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <SkipLink />
       <SiteHeader />
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="flex flex-1 items-center"
-      >
+      <main id="main-content" tabIndex={-1} className="flex flex-1 items-center">
         <NotFoundContent />
       </main>
       <SiteFooter />

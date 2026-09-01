@@ -31,10 +31,7 @@ if (!uri || !email || !password || !displayName) {
   const client = new MongoClient(uri);
   try {
     const collection = client.db(databaseName).collection("admin_users");
-    await collection.createIndex(
-      { normalizedEmail: 1 },
-      { name: "admin_users_normalized_email_unique", unique: true },
-    );
+    await collection.createIndex({ normalizedEmail: 1 }, { name: "admin_users_normalized_email_unique", unique: true });
     const normalizedEmail = email.toLowerCase();
     if (await collection.findOne({ normalizedEmail }, { projection: { _id: 1 } })) {
       fail("동일한 이메일의 관리자 계정이 이미 존재합니다.");

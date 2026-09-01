@@ -19,10 +19,7 @@ function isCurrentPage(pathname: string, href: string) {
 type NavigationItem = (typeof siteConfig.mainNavigation)[number];
 
 function isCurrentNavigationItem(pathname: string, item: NavigationItem) {
-  return (
-    isCurrentSection(pathname, item.href) ||
-    item.children.some((child) => isCurrentSection(pathname, child.href))
-  );
+  return isCurrentSection(pathname, item.href) || item.children.some((child) => isCurrentSection(pathname, child.href));
 }
 
 type SiteNavigationContentProps = {
@@ -33,18 +30,13 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
   const mobileMenuId = useId();
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const navigationRef = useRef<HTMLDivElement>(null);
-  const desktopButtonRefs = useRef<Record<string, HTMLButtonElement | null>>(
-    {},
-  );
+  const desktopButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const activeExpandableItem = siteConfig.mainNavigation.find(
-    (item) =>
-      item.children.length > 0 && isCurrentNavigationItem(pathname, item),
+    (item) => item.children.length > 0 && isCurrentNavigationItem(pathname, item),
   );
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [openDesktopHref, setOpenDesktopHref] = useState<string | null>(null);
-  const [openMobileHref, setOpenMobileHref] = useState<string | null>(
-    activeExpandableItem?.href ?? null,
-  );
+  const [openMobileHref, setOpenMobileHref] = useState<string | null>(activeExpandableItem?.href ?? null);
 
   useEffect(() => {
     const desktopMediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
@@ -120,19 +112,14 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                 className="relative"
                 onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget)) {
-                    setOpenDesktopHref((current) =>
-                      current === item.href ? null : current,
-                    );
+                    setOpenDesktopHref((current) => (current === item.href ? null : current));
                   }
                 }}
                 onPointerEnter={() => {
                   if (hasChildren) setOpenDesktopHref(item.href);
                 }}
                 onPointerLeave={(event) => {
-                  if (
-                    hasChildren &&
-                    !event.currentTarget.contains(document.activeElement)
-                  ) {
+                  if (hasChildren && !event.currentTarget.contains(document.activeElement)) {
                     setOpenDesktopHref(null);
                   }
                 }}
@@ -147,9 +134,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                   }`}
                 >
                   <Link
-                    aria-current={
-                      isCurrentPage(pathname, item.href) ? "page" : undefined
-                    }
+                    aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
                     className="text-safe-wrap inline-flex min-h-11 items-center whitespace-nowrap px-2 py-2 text-small font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3"
                     href={item.href}
                   >
@@ -163,15 +148,9 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                       type="button"
                       aria-controls={submenuId}
                       aria-expanded={isSubmenuOpen}
-                      aria-label={`${item.label} 하위 메뉴 ${
-                        isSubmenuOpen ? "닫기" : "열기"
-                      }`}
+                      aria-label={`${item.label} 하위 메뉴 ${isSubmenuOpen ? "닫기" : "열기"}`}
                       className="inline-flex min-h-11 min-w-9 items-center justify-center border-l border-current/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                      onClick={() =>
-                        setOpenDesktopHref((current) =>
-                          current === item.href ? null : item.href,
-                        )
-                      }
+                      onClick={() => setOpenDesktopHref((current) => (current === item.href ? null : item.href))}
                     >
                       <svg
                         aria-hidden="true"
@@ -195,28 +174,19 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                 </div>
 
                 {hasChildren ? (
-                  <div
-                    id={submenuId}
-                    className="absolute left-0 top-full w-72 pt-3"
-                    hidden={!isSubmenuOpen}
-                  >
+                  <div id={submenuId} className="absolute left-0 top-full w-72 pt-3" hidden={!isSubmenuOpen}>
                     <div className="border border-border bg-surface p-3 shadow-elevated">
                       <p className="text-safe-wrap border-b border-border px-3 pb-3 pt-1 text-xs font-semibold text-muted-foreground">
                         {item.description}
                       </p>
                       <ul className="space-y-1">
                         {item.children.map((child) => {
-                          const isChildActive = isCurrentPage(
-                            pathname,
-                            child.href,
-                          );
+                          const isChildActive = isCurrentPage(pathname, child.href);
 
                           return (
                             <li key={child.href}>
                               <Link
-                                aria-current={
-                                  isChildActive ? "page" : undefined
-                                }
+                                aria-current={isChildActive ? "page" : undefined}
                                 className={`block border-l-2 px-3 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
                                   isChildActive
                                     ? "border-primary bg-primary-soft text-primary"
@@ -224,9 +194,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                                 }`}
                                 href={child.href}
                               >
-                                <span className="text-safe-wrap block text-small font-bold">
-                                  {child.label}
-                                </span>
+                                <span className="text-safe-wrap block text-small font-bold">{child.label}</span>
                                 <span className="text-safe-wrap mt-1 block text-xs text-muted-foreground">
                                   {child.description}
                                 </span>
@@ -302,26 +270,19 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                 ? "border-accent bg-accent-soft"
                 : "border-primary bg-primary-soft"
               : "border-transparent bg-transparent";
-            const mobileItemTextClassName =
-              item.emphasis && !isActive ? "text-accent" : "text-foreground";
+            const mobileItemTextClassName = item.emphasis && !isActive ? "text-accent" : "text-foreground";
 
             return (
               <li key={item.href} className="py-1">
-                <div
-                  className={`flex border-l-4 ${mobileItemContainerClassName}`}
-                >
+                <div className={`flex border-l-4 ${mobileItemContainerClassName}`}>
                   <Link
-                    aria-current={
-                      isCurrentPage(pathname, item.href) ? "page" : undefined
-                    }
+                    aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
                     className={`flex min-h-14 min-w-0 flex-1 items-center px-4 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${mobileItemTextClassName}`}
                     href={item.href}
                     onClick={closeMobileMenu}
                   >
                     <span>
-                      <span className="text-safe-wrap block text-base font-bold">
-                        {item.label}
-                      </span>
+                      <span className="text-safe-wrap block text-base font-bold">{item.label}</span>
                     </span>
                   </Link>
                   {hasChildren ? (
@@ -329,15 +290,9 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                       type="button"
                       aria-controls={submenuId}
                       aria-expanded={isSubmenuOpen}
-                      aria-label={`${item.label} 하위 메뉴 ${
-                        isSubmenuOpen ? "닫기" : "열기"
-                      }`}
+                      aria-label={`${item.label} 하위 메뉴 ${isSubmenuOpen ? "닫기" : "열기"}`}
                       className={`inline-flex min-h-14 min-w-12 items-center justify-center border-l border-border hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${mobileItemTextClassName}`}
-                      onClick={() =>
-                        setOpenMobileHref((current) =>
-                          current === item.href ? null : item.href,
-                        )
-                      }
+                      onClick={() => setOpenMobileHref((current) => (current === item.href ? null : item.href))}
                     >
                       <svg
                         aria-hidden="true"
@@ -368,11 +323,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                 </div>
 
                 {hasChildren ? (
-                  <ul
-                    id={submenuId}
-                    className="ml-4 border-l border-border py-1 pl-4"
-                    hidden={!isSubmenuOpen}
-                  >
+                  <ul id={submenuId} className="ml-4 border-l border-border py-1 pl-4" hidden={!isSubmenuOpen}>
                     {item.children.map((child) => {
                       const isChildActive = isCurrentPage(pathname, child.href);
 
@@ -388,9 +339,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                             href={child.href}
                             onClick={closeMobileMenu}
                           >
-                            <span className="text-safe-wrap block text-small font-bold">
-                              {child.label}
-                            </span>
+                            <span className="text-safe-wrap block text-small font-bold">{child.label}</span>
                           </Link>
                         </li>
                       );

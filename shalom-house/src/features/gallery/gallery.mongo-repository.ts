@@ -1,9 +1,6 @@
 import { type Filter } from "mongodb";
 import { getMongoDatabase } from "@/lib/mongodb";
-import {
-  GALLERY_ITEM_COLLECTION_NAME,
-  type MongoGalleryItemDocument,
-} from "./gallery.mongo-schema";
+import { GALLERY_ITEM_COLLECTION_NAME, type MongoGalleryItemDocument } from "./gallery.mongo-schema";
 import {
   getSeoulCalendarDate,
   isCanonicalGalleryDate,
@@ -17,9 +14,7 @@ import type {
   PublicGallerySummary,
 } from "./gallery.repository";
 
-function publicFilter(
-  now = new Date(),
-): Filter<MongoGalleryItemDocument> {
+function publicFilter(now = new Date()): Filter<MongoGalleryItemDocument> {
   const today = getSeoulCalendarDate(now);
 
   return {
@@ -31,10 +26,7 @@ function publicFilter(
     $and: [
       { $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }] },
       {
-        $or: [
-          { displayStartOn: null },
-          { displayStartOn: { $lte: today } },
-        ],
+        $or: [{ displayStartOn: null }, { displayStartOn: { $lte: today } }],
       },
       {
         $or: [{ displayEndOn: null }, { displayEndOn: { $gte: today } }],
@@ -76,9 +68,7 @@ const projection = {
   consentWithdrawnAt: 1,
 } as const;
 
-function toPublicGalleryItem(
-  document: MongoGalleryItemDocument,
-): PublicGalleryItem | null {
+function toPublicGalleryItem(document: MongoGalleryItemDocument): PublicGalleryItem | null {
   const validTextFields =
     typeof document.title === "string" &&
     document.title.trim().length > 0 &&
@@ -88,9 +78,7 @@ function toPublicGalleryItem(
     document.description.trim().length > 0 &&
     typeof document.altText === "string" &&
     document.altText.trim().length > 0;
-  const validPublishedAt =
-    document.publishedAt instanceof Date &&
-    !Number.isNaN(document.publishedAt.getTime());
+  const validPublishedAt = document.publishedAt instanceof Date && !Number.isNaN(document.publishedAt.getTime());
   const validDimensions =
     Number.isInteger(document.media?.width) &&
     document.media.width > 0 &&
@@ -128,7 +116,9 @@ function toPublicGalleryItem(
 
 export class MongoGalleryRepository implements GalleryRepository {
   async listPublished(): Promise<readonly PublicGallerySummary[]> {
-    const documents = await (await getMongoDatabase())
+    const documents = await (
+      await getMongoDatabase()
+    )
       .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
       .find(publicFilter(), { projection })
       .sort({ activityDate: -1, publishedAt: -1, _id: -1 })
@@ -146,7 +136,9 @@ export class MongoGalleryRepository implements GalleryRepository {
       return null;
     }
 
-    const document = await (await getMongoDatabase())
+    const document = await (
+      await getMongoDatabase()
+    )
       .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
       .findOne({ ...publicFilter(), slug }, { projection });
 
@@ -158,7 +150,9 @@ export class MongoGalleryRepository implements GalleryRepository {
       return null;
     }
 
-    const document = await (await getMongoDatabase())
+    const document = await (
+      await getMongoDatabase()
+    )
       .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
       .findOne({ ...publicFilter(), slug });
 

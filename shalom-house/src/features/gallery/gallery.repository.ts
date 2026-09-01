@@ -44,10 +44,7 @@ export function getGalleryRepository(): GalleryRepository {
   const configured = process.env.SHALOM_CONTENT_SOURCE;
   const source =
     configured ||
-    (process.env.NODE_ENV === "development" ||
-    process.env.VERCEL_ENV === "preview"
-      ? "fixture"
-      : "empty");
+    (process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview" ? "fixture" : "empty");
 
   if (source === "mongodb") {
     return new MongoGalleryRepository();
@@ -58,11 +55,8 @@ export function getGalleryRepository(): GalleryRepository {
   throw new Error(`지원하지 않는 SHALOM_CONTENT_SOURCE 설정입니다: ${source}`);
 }
 
-export const findPublicGalleryItems = () =>
-  getGalleryRepository().listPublished();
+export const findPublicGalleryItems = () => getGalleryRepository().listPublished();
 
-export const findPublicGalleryBySlug = (slug: string) =>
-  getGalleryRepository().findPublishedBySlug(slug);
+export const findPublicGalleryBySlug = (slug: string) => getGalleryRepository().findPublishedBySlug(slug);
 
-export const findPublicGalleryMediaBySlug = (slug: string) =>
-  getGalleryRepository().findMediaBySlug(slug);
+export const findPublicGalleryMediaBySlug = (slug: string) => getGalleryRepository().findMediaBySlug(slug);

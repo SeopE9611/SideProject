@@ -23,9 +23,7 @@ async function getPost(params: NewsPostPageProps["params"]) {
   return getNewsRepository().findPublishedBySlug(slug);
 }
 
-export async function generateMetadata({
-  params,
-}: NewsPostPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: NewsPostPageProps): Promise<Metadata> {
   const post = await getPost(params);
   if (!post) notFound();
 
@@ -57,19 +55,11 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
               </Link>
             </nav>
             <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-small">
-              <span className="font-bold text-primary">
-                {getNewsCategoryLabel(post.category)}
-              </span>
-              {post.isDemo ? (
-                <span className="text-muted-foreground">개발용 예시</span>
-              ) : null}
+              <span className="font-bold text-primary">{getNewsCategoryLabel(post.category)}</span>
+              {post.isDemo ? <span className="text-muted-foreground">개발용 예시</span> : null}
             </div>
-            <h1 className="text-safe-wrap mt-4 text-balance text-title font-bold sm:text-display">
-              {post.title}
-            </h1>
-            <p className="text-safe-wrap mt-5 text-pretty text-body text-muted-foreground">
-              {post.summary}
-            </p>
+            <h1 className="text-safe-wrap mt-4 text-balance text-title font-bold sm:text-display">{post.title}</h1>
+            <p className="text-safe-wrap mt-5 text-pretty text-body text-muted-foreground">{post.summary}</p>
             <dl className="mt-6 flex flex-wrap gap-x-7 gap-y-2 text-small text-muted-foreground">
               <div className="flex gap-2">
                 <dt className="font-bold text-foreground">게시일</dt>
@@ -97,25 +87,17 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
           <section aria-label="소식 본문" className="border-b border-border pb-12">
             <div className="space-y-6">
               {post.body.map((paragraph, index) => (
-                <p
-                  key={`${post.id}-${index}`}
-                  className="text-safe-wrap text-pretty text-body text-foreground"
-                >
+                <p key={`${post.id}-${index}`} className="text-safe-wrap text-pretty text-body text-foreground">
                   {paragraph}
                 </p>
               ))}
             </div>
           </section>
-          <section
-            aria-labelledby="attachments-heading"
-            className="border-b border-border py-8"
-          >
+          <section aria-labelledby="attachments-heading" className="border-b border-border py-8">
             <h2 id="attachments-heading" className="text-heading font-bold">
               첨부파일
             </h2>
-            <p className="mt-3 text-body text-muted-foreground">
-              첨부파일이 없습니다.
-            </p>
+            <p className="mt-3 text-body text-muted-foreground">첨부파일이 없습니다.</p>
           </section>
           <Link
             className="mt-8 inline-flex min-h-12 items-center border border-border-strong px-5 py-3 font-bold text-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
@@ -126,10 +108,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
         </div>
       </article>
       {related.length > 0 ? (
-        <section
-          aria-labelledby="related-heading"
-          className="border-t border-border bg-surface-subtle"
-        >
+        <section aria-labelledby="related-heading" className="border-t border-border bg-surface-subtle">
           <div className="mx-auto max-w-content px-page py-10 sm:px-page-wide">
             <h2 id="related-heading" className="text-heading font-bold">
               관련 소식

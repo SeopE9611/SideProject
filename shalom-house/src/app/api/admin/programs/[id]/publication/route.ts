@@ -32,10 +32,7 @@ function payloadTooLargeResponse(): Response {
 
 export async function POST(request: Request, context: RouteContext) {
   if (!isSameOriginRequest(request)) {
-    return jsonResponse(
-      { ok: false, error: "forbidden", message: "요청을 처리할 수 없습니다." },
-      403,
-    );
+    return jsonResponse({ ok: false, error: "forbidden", message: "요청을 처리할 수 없습니다." }, 403);
   }
 
   try {
@@ -51,13 +48,21 @@ export async function POST(request: Request, context: RouteContext) {
     const { id } = await context.params;
     if (!isValidAdminProgramId(id)) {
       return jsonResponse(
-        { ok: false, error: "not_found", message: "프로그램을 찾을 수 없습니다." },
+        {
+          ok: false,
+          error: "not_found",
+          message: "프로그램을 찾을 수 없습니다.",
+        },
         404,
       );
     }
     if (!isJsonContentType(request)) {
       return jsonResponse(
-        { ok: false, error: "unsupported_media_type", message: "JSON 형식으로 게시 상태 변경 요청을 보내 주세요." },
+        {
+          ok: false,
+          error: "unsupported_media_type",
+          message: "JSON 형식으로 게시 상태 변경 요청을 보내 주세요.",
+        },
         415,
       );
     }
@@ -82,14 +87,15 @@ export async function POST(request: Request, context: RouteContext) {
     if (!validation.ok) {
       if (validation.formError === "invalid_version") {
         return jsonResponse(
-          { ok: false, error: "invalid_version", message: "게시 상태 변경 기준 시각을 확인할 수 없습니다." },
+          {
+            ok: false,
+            error: "invalid_version",
+            message: "게시 상태 변경 기준 시각을 확인할 수 없습니다.",
+          },
           400,
         );
       }
-      return jsonResponse(
-        { ok: false, error: "validation", fieldErrors: validation.fieldErrors },
-        400,
-      );
+      return jsonResponse({ ok: false, error: "validation", fieldErrors: validation.fieldErrors }, 400);
     }
     const result = await changeAdminProgramPublicationState({
       id,
@@ -100,24 +106,39 @@ export async function POST(request: Request, context: RouteContext) {
     if (!result.ok) {
       if (result.reason === "not_found") {
         return jsonResponse(
-          { ok: false, error: "not_found", message: "프로그램을 찾을 수 없습니다." },
+          {
+            ok: false,
+            error: "not_found",
+            message: "프로그램을 찾을 수 없습니다.",
+          },
           404,
         );
       }
       if (result.reason === "not_manageable") {
         return jsonResponse(
-          { ok: false, error: "not_manageable", message: "현재 게시 상태에서는 게시 중단 또는 보관을 처리할 수 없습니다." },
+          {
+            ok: false,
+            error: "not_manageable",
+            message: "현재 게시 상태에서는 게시 중단 또는 보관을 처리할 수 없습니다.",
+          },
           409,
         );
       }
       return jsonResponse(
-        { ok: false, error: "edit_conflict", message: "다른 관리자가 이 프로그램을 먼저 변경했습니다." },
+        {
+          ok: false,
+          error: "edit_conflict",
+          message: "다른 관리자가 이 프로그램을 먼저 변경했습니다.",
+        },
         409,
       );
     }
     const publication = result.action === "unpublish" ? "unpublished" : "archived";
     return jsonResponse(
-      { ...result, redirectTo: `/admin/programs/${result.id}?publication=${publication}` },
+      {
+        ...result,
+        redirectTo: `/admin/programs/${result.id}?publication=${publication}`,
+      },
       200,
     );
   } catch (error) {
@@ -125,7 +146,11 @@ export async function POST(request: Request, context: RouteContext) {
       name: error instanceof Error ? error.name : "UnknownError",
     });
     return jsonResponse(
-      { ok: false, error: "unavailable", message: "현재 게시 상태를 변경할 수 없습니다. 잠시 후 다시 시도해 주세요." },
+      {
+        ok: false,
+        error: "unavailable",
+        message: "현재 게시 상태를 변경할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+      },
       503,
     );
   }

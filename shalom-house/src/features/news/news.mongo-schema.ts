@@ -1,10 +1,6 @@
 import type { ObjectId } from "mongodb";
 
-import type {
-  NewsApprovalStatus,
-  NewsCategory,
-  NewsPublicationStatus,
-} from "./news.types";
+import type { NewsApprovalStatus, NewsCategory, NewsPublicationStatus } from "./news.types";
 
 export const NEWS_COLLECTION_NAME = "news_posts";
 

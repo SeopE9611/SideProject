@@ -1,9 +1,4 @@
-export const transparencyCategories = [
-  "operations",
-  "budget_settlement",
-  "donations",
-  "other",
-] as const;
+export const transparencyCategories = ["operations", "budget_settlement", "donations", "other"] as const;
 export type TransparencyCategory = (typeof transparencyCategories)[number];
 export type TransparencyPublicationStatus = "draft" | "review" | "published" | "archived";
 export type TransparencyApprovalStatus = "pending" | "approved" | "rejected";
@@ -29,8 +24,10 @@ export function isTransparencyReadyForPublication(document: {
   archivedAt: Date | null;
   deletedAt: Date | null;
 }): boolean {
-  return document.privacyReviewStatus === "confirmed" &&
+  return (
+    document.privacyReviewStatus === "confirmed" &&
     document.finalDocumentStatus === "final" &&
     document.archivedAt === null &&
-    document.deletedAt === null;
+    document.deletedAt === null
+  );
 }

@@ -3,7 +3,92 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { getProgramRepository } from "@/features/programs/program.repository";
-const formatter = new Intl.DateTimeFormat("ko-KR", { year:"numeric", month:"long", day:"numeric", timeZone:"UTC" });
-async function getProgram(slug:string) { try { return await getProgramRepository().findPublishedBySlug(slug); } catch (error) { console.error("공개 프로그램 상세 조회에 실패했습니다.",{errorName:error instanceof Error?error.name:"UnknownError"}); return null; } }
-export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{const {slug}=await params;const program=await getProgram(slug);return program?{title:program.title,description:program.summary}:{title:"프로그램",description:"샬롬의 집 프로그램 안내입니다."};}
-export default async function ProgramDetailPage({params}:{params:Promise<{slug:string}>}) { const {slug}=await params; const program=await getProgram(slug); if(!program) notFound(); const modified=program.updatedAt!==program.publishedAt; return <><SectionPageHeader sectionHref="/life" eyebrow="생활·프로그램" title={program.title} description={program.summary} breadcrumbs={[{label:"홈",href:"/"},{label:"생활·프로그램",href:"/life"},{label:"프로그램",href:"/life/programs"},{label:program.title}]}/><article className="mx-auto max-w-site px-page py-12 sm:px-page-wide"><section aria-labelledby="program-information"><h2 id="program-information" className="text-heading font-bold">프로그램 기본 정보</h2><dl className="mt-5 grid border-t border-foreground sm:grid-cols-2">{[["분류",program.category],...(program.operationStatusLabel?[["운영 상태",program.operationStatusLabel]]:[]),["게시일",formatter.format(new Date(program.publishedAt))],...(modified?[["수정일",formatter.format(new Date(program.updatedAt))]]:[])].map(([label,value])=><div key={label} className="border-b border-border py-4"><dt className="text-small font-bold">{label}</dt><dd className="text-safe-wrap mt-1">{value}</dd></div>)}</dl></section><section className="mt-10" aria-labelledby="program-purpose"><h2 id="program-purpose" className="text-heading font-bold">목적</h2><p className="text-safe-wrap mt-4">{program.purpose}</p></section><section className="mt-10" aria-labelledby="program-body"><h2 id="program-body" className="text-heading font-bold">활동 내용</h2><div className="mt-4 space-y-4">{program.body.map((paragraph,index)=><p className="text-safe-wrap" key={index}>{paragraph}</p>)}</div></section><Link href="/life/programs" className="mt-10 inline-flex min-h-11 items-center font-bold text-primary underline focus-visible:outline-2">프로그램 목록으로 이동</Link></article></>; }
+const formatter = new Intl.DateTimeFormat("ko-KR", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
+async function getProgram(slug: string) {
+  try {
+    return await getProgramRepository().findPublishedBySlug(slug);
+  } catch (error) {
+    console.error("공개 프로그램 상세 조회에 실패했습니다.", {
+      errorName: error instanceof Error ? error.name : "UnknownError",
+    });
+    return null;
+  }
+}
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const program = await getProgram(slug);
+  return program
+    ? { title: program.title, description: program.summary }
+    : { title: "프로그램", description: "샬롬의 집 프로그램 안내입니다." };
+}
+export default async function ProgramDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const program = await getProgram(slug);
+  if (!program) notFound();
+  const modified = program.updatedAt !== program.publishedAt;
+  return (
+    <>
+      <SectionPageHeader
+        sectionHref="/life"
+        eyebrow="생활·프로그램"
+        title={program.title}
+        description={program.summary}
+        breadcrumbs={[
+          { label: "홈", href: "/" },
+          { label: "생활·프로그램", href: "/life" },
+          { label: "프로그램", href: "/life/programs" },
+          { label: program.title },
+        ]}
+      />
+      <article className="mx-auto max-w-site px-page py-12 sm:px-page-wide">
+        <section aria-labelledby="program-information">
+          <h2 id="program-information" className="text-heading font-bold">
+            프로그램 기본 정보
+          </h2>
+          <dl className="mt-5 grid border-t border-foreground sm:grid-cols-2">
+            {[
+              ["분류", program.category],
+              ...(program.operationStatusLabel ? [["운영 상태", program.operationStatusLabel]] : []),
+              ["게시일", formatter.format(new Date(program.publishedAt))],
+              ...(modified ? [["수정일", formatter.format(new Date(program.updatedAt))]] : []),
+            ].map(([label, value]) => (
+              <div key={label} className="border-b border-border py-4">
+                <dt className="text-small font-bold">{label}</dt>
+                <dd className="text-safe-wrap mt-1">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+        <section className="mt-10" aria-labelledby="program-purpose">
+          <h2 id="program-purpose" className="text-heading font-bold">
+            목적
+          </h2>
+          <p className="text-safe-wrap mt-4">{program.purpose}</p>
+        </section>
+        <section className="mt-10" aria-labelledby="program-body">
+          <h2 id="program-body" className="text-heading font-bold">
+            활동 내용
+          </h2>
+          <div className="mt-4 space-y-4">
+            {program.body.map((paragraph, index) => (
+              <p className="text-safe-wrap" key={index}>
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        </section>
+        <Link
+          href="/life/programs"
+          className="mt-10 inline-flex min-h-11 items-center font-bold text-primary underline focus-visible:outline-2"
+        >
+          프로그램 목록으로 이동
+        </Link>
+      </article>
+    </>
+  );
+}

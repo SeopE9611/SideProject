@@ -1,9 +1,4 @@
-export const adminRoles = [
-  "admin",
-  "editor",
-  "reviewer",
-  "publisher",
-] as const;
+export const adminRoles = ["admin", "editor", "reviewer", "publisher"] as const;
 export type AdminRole = (typeof adminRoles)[number];
 
 export const adminRoleLabels: Record<AdminRole, string> = {

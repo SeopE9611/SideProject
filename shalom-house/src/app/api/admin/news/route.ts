@@ -35,10 +35,7 @@ function isJsonContentType(request: Request): boolean {
 
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) {
-    return jsonResponse(
-      { ok: false, error: "forbidden", message: "요청을 처리할 수 없습니다." },
-      403,
-    );
+    return jsonResponse({ ok: false, error: "forbidden", message: "요청을 처리할 수 없습니다." }, 403);
   }
 
   try {
@@ -50,7 +47,6 @@ export async function POST(request: Request) {
       );
     }
     const admin = authorization.admin;
-
 
     if (!isJsonContentType(request)) {
       return jsonResponse(
@@ -92,10 +88,7 @@ export async function POST(request: Request) {
 
     const validation = validateAdminNewsDraftInput(input);
     if (!validation.ok) {
-      return jsonResponse(
-        { ok: false, error: "validation", fieldErrors: validation.fieldErrors },
-        400,
-      );
+      return jsonResponse({ ok: false, error: "validation", fieldErrors: validation.fieldErrors }, 400);
     }
 
     const result = await createAdminNewsDraft(validation.value, admin);

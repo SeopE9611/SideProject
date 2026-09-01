@@ -5,10 +5,7 @@ import { HomeHero } from "@/components/home/home-hero";
 import { siteConfig } from "@/config/site";
 import { homeFixture } from "@/content/fixtures/home.fixture";
 import { getNewsRepository } from "@/features/news/news.repository";
-import {
-  getNewsCategoryLabel,
-  type PublicNewsPostSummary,
-} from "@/features/news/news.types";
+import { getNewsCategoryLabel, type PublicNewsPostSummary } from "@/features/news/news.types";
 
 export const metadata: Metadata = {
   title: siteConfig.name,
@@ -88,9 +85,7 @@ export default async function Home() {
               {newsPosts.map((post) => (
                 <li key={post.id} className="border-b border-border">
                   <article className="grid gap-3 py-6 md:grid-cols-[7rem_minmax(0,1fr)_9rem]">
-                    <p className="text-small font-bold text-primary">
-                      {getNewsCategoryLabel(post.category)}
-                    </p>
+                    <p className="text-small font-bold text-primary">{getNewsCategoryLabel(post.category)}</p>
                     <div>
                       <h3 className="text-heading font-bold">
                         <Link
@@ -100,14 +95,9 @@ export default async function Home() {
                           {post.title}
                         </Link>
                       </h3>
-                      <p className="text-safe-wrap mt-2 text-body text-muted-foreground">
-                        {post.summary}
-                      </p>
+                      <p className="text-safe-wrap mt-2 text-body text-muted-foreground">{post.summary}</p>
                     </div>
-                    <time
-                      className="text-small text-muted-foreground md:text-right"
-                      dateTime={post.publishedAt}
-                    >
+                    <time className="text-small text-muted-foreground md:text-right" dateTime={post.publishedAt}>
                       {dateFormatter.format(new Date(post.publishedAt))}
                     </time>
                   </article>
@@ -125,12 +115,7 @@ export default async function Home() {
                 <Link className={sectionLink} href="/news">
                   소식 페이지 보기
                 </Link>
-                <a
-                  className={sectionLink}
-                  href={siteConfig.instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a className={sectionLink} href={siteConfig.instagram} target="_blank" rel="noreferrer">
                   인스타그램 보기(새 창)
                 </a>
               </div>
@@ -175,9 +160,7 @@ export default async function Home() {
                       {item.title}
                     </Link>
                   </h3>
-                  <p className="text-safe-wrap mt-3 text-body text-muted-foreground">
-                    {item.description}
-                  </p>
+                  <p className="text-safe-wrap mt-3 text-body text-muted-foreground">{item.description}</p>
                 </div>
               </li>
             ))}
@@ -214,17 +197,12 @@ export default async function Home() {
         </div>
       </section>
 
-      <section
-        aria-labelledby="documents-heading"
-        className="border-y border-border bg-surface-subtle py-10 sm:py-12"
-      >
+      <section aria-labelledby="documents-heading" className="border-y border-border bg-surface-subtle py-10 sm:py-12">
         <div className="mx-auto max-w-site px-page sm:px-page-wide">
           <h2 id="documents-heading" className="text-title font-bold">
             자료공개
           </h2>
-          <p className="text-safe-wrap mt-3 text-body text-muted-foreground">
-            확인을 마친 운영 자료를 안내합니다.
-          </p>
+          <p className="text-safe-wrap mt-3 text-body text-muted-foreground">확인을 마친 운영 자료를 안내합니다.</p>
           <div className="mt-6 border-y border-border bg-surface py-5">
             <h3 className="font-bold">현재 공개된 자료가 없습니다.</h3>
             <p className="text-safe-wrap mt-2 text-muted-foreground">

@@ -35,9 +35,7 @@ export default function SupportPage() {
         notice="정확한 참여 방법과 최신 절차는 담당 안내를 통해 확인해 주세요."
       />
       <section className="mx-auto max-w-site px-page py-12 sm:px-page-wide sm:py-16">
-        <h2 className="text-safe-wrap text-heading font-bold">
-          참여 방법 선택
-        </h2>
+        <h2 className="text-safe-wrap text-heading font-bold">참여 방법 선택</h2>
         <ul className="mt-6 divide-y divide-border border-y">
           {links.map((item) => (
             <li key={item.href}>
@@ -45,19 +43,13 @@ export default function SupportPage() {
                 className="block py-5 hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-focus-ring"
                 href={item.href}
               >
-                <strong className="text-safe-wrap text-heading">
-                  {item.title}
-                </strong>
-                <span className="text-safe-wrap mt-2 block text-muted-foreground">
-                  {item.description}
-                </span>
+                <strong className="text-safe-wrap text-heading">{item.title}</strong>
+                <span className="text-safe-wrap mt-2 block text-muted-foreground">{item.description}</span>
               </Link>
             </li>
           ))}
         </ul>
-        <h2 className="text-safe-wrap mt-10 text-heading font-bold">
-          대표 전화
-        </h2>
+        <h2 className="text-safe-wrap mt-10 text-heading font-bold">대표 전화</h2>
         <a
           className="text-safe-wrap mt-3 inline-flex min-h-11 items-center text-heading font-bold text-primary underline"
           href={`tel:${siteConfig.phone}`}

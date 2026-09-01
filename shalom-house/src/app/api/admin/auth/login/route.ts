@@ -40,9 +40,7 @@ export async function POST(request: Request) {
     if (!result.ok) {
       return redirectTo(
         request,
-        result.reason === "rate_limited"
-          ? "/admin/login?error=rate-limit"
-          : "/admin/login?error=credentials",
+        result.reason === "rate_limited" ? "/admin/login?error=rate-limit" : "/admin/login?error=credentials",
       );
     }
 

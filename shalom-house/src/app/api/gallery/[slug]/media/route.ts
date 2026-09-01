@@ -29,10 +29,7 @@ export async function GET(_: Request, { params }: Context) {
   if (!media) return missing();
 
   try {
-    const blob = await downloadPrivateGalleryImage(
-      media.bucket,
-      media.objectPath,
-    );
+    const blob = await downloadPrivateGalleryImage(media.bucket, media.objectPath);
 
     return new Response(await blob.arrayBuffer(), {
       headers: {

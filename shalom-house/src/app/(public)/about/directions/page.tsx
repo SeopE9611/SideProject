@@ -26,22 +26,12 @@ export default function DirectionsPage() {
         eyebrow="시설소개"
         title="찾아오시는 길"
         description="샬롬의 집 방문에 필요한 주소와 연락처를 안내합니다."
-        breadcrumbs={[
-          { label: "홈", href: "/" },
-          { label: "시설소개", href: "/about" },
-          { label: "찾아오시는 길" },
-        ]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "시설소개", href: "/about" }, { label: "찾아오시는 길" }]}
       />
-      <section
-        className="bg-surface py-12 sm:py-16"
-        aria-labelledby="directions-address-heading"
-      >
+      <section className="bg-surface py-12 sm:py-16" aria-labelledby="directions-address-heading">
         <div className="mx-auto grid max-w-site gap-10 px-page sm:px-page-wide lg:grid-cols-[1.2fr_0.8fr]">
           <div className="border-t-4 border-primary">
-            <h2
-              id="directions-address-heading"
-              className="text-safe-wrap py-5 text-heading font-bold"
-            >
+            <h2 id="directions-address-heading" className="text-safe-wrap py-5 text-heading font-bold">
               주소 및 외부 지도 링크
             </h2>
             <address className="text-safe-wrap border-y border-border py-5 text-body font-semibold not-italic">
@@ -62,14 +52,8 @@ export default function DirectionsPage() {
               ))}
             </ul>
           </div>
-          <aside
-            className="border-t-4 border-primary"
-            aria-labelledby="directions-contact-heading"
-          >
-            <h2
-              id="directions-contact-heading"
-              className="text-safe-wrap py-5 text-heading font-bold"
-            >
+          <aside className="border-t-4 border-primary" aria-labelledby="directions-contact-heading">
+            <h2 id="directions-contact-heading" className="text-safe-wrap py-5 text-heading font-bold">
               방문 전 문의
             </h2>
             <p className="text-safe-wrap border-y border-border py-5 text-muted-foreground">

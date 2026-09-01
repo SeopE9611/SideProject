@@ -18,7 +18,10 @@ export default async function AdminProgramCreatePage() {
   return (
     <div className="space-y-8">
       <header>
-        <Link href="/admin/programs" className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+        <Link
+          href="/admin/programs"
+          className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
           ← 프로그램 관리로 돌아가기
         </Link>
         <h1 className="mt-4 text-title font-bold">프로그램 작성</h1>
@@ -29,9 +32,16 @@ export default async function AdminProgramCreatePage() {
         </p>
       </header>
 
-      <aside aria-labelledby="admin-program-safety-heading" className="max-w-3xl rounded-card border border-border-strong bg-surface p-5">
-        <h2 id="admin-program-safety-heading" className="text-heading font-bold">저장 전 안전 확인</h2>
-        <p className="mt-2 text-small text-muted-foreground">초안도 게시 전 검토 대상입니다. 다음 정보는 초안에 저장하지 마세요.</p>
+      <aside
+        aria-labelledby="admin-program-safety-heading"
+        className="max-w-3xl rounded-card border border-border-strong bg-surface p-5"
+      >
+        <h2 id="admin-program-safety-heading" className="text-heading font-bold">
+          저장 전 안전 확인
+        </h2>
+        <p className="mt-2 text-small text-muted-foreground">
+          초안도 게시 전 검토 대상입니다. 다음 정보는 초안에 저장하지 마세요.
+        </p>
         <ul className="mt-4 list-disc space-y-2 pl-5 text-small">
           <li>거주인 이름·장애·건강·가족관계 등 개인을 식별할 수 있는 정보</li>
           <li>개인 연락처와 계정·인증정보</li>
@@ -41,7 +51,9 @@ export default async function AdminProgramCreatePage() {
       </aside>
 
       <section aria-labelledby="admin-program-form-heading">
-        <h2 id="admin-program-form-heading" className="sr-only">프로그램 초안 입력</h2>
+        <h2 id="admin-program-form-heading" className="sr-only">
+          프로그램 초안 입력
+        </h2>
         <AdminProgramDraftForm mode="create" />
       </section>
     </div>

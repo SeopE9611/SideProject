@@ -28,9 +28,7 @@ async function readJsonResponse(response: Response): Promise<unknown | null> {
   }
 }
 
-export function AdminProgramPublicationStateForm(
-  props: AdminProgramPublicationStateFormProps,
-) {
+export function AdminProgramPublicationStateForm(props: AdminProgramPublicationStateFormProps) {
   const router = useRouter();
   const [fieldErrors, setFieldErrors] = useState<AdminProgramPublicationStateFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -57,15 +55,15 @@ export function AdminProgramPublicationStateForm(
     setFieldErrors({});
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `/api/admin/programs/${encodeURIComponent(props.postId)}/publication`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify(input),
+      const response = await fetch(`/api/admin/programs/${encodeURIComponent(props.postId)}/publication`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        credentials: "same-origin",
+        body: JSON.stringify(input),
+      });
       const body = await readJsonResponse(response);
       if (
         response.status === 200 &&
@@ -89,7 +87,9 @@ export function AdminProgramPublicationStateForm(
       if (response.status === 400 && error === "validation" && isRecord(body) && isRecord(body.fieldErrors)) {
         setFieldErrors({
           ...(typeof body.fieldErrors.action === "string" ? { action: body.fieldErrors.action } : {}),
-          ...(typeof body.fieldErrors.transitionConfirmed === "string" ? { transitionConfirmed: body.fieldErrors.transitionConfirmed } : {}),
+          ...(typeof body.fieldErrors.transitionConfirmed === "string"
+            ? { transitionConfirmed: body.fieldErrors.transitionConfirmed }
+            : {}),
         });
       } else if (response.status === 400 && error === "invalid_version") {
         setFormError("게시 상태 변경 기준 정보를 확인할 수 없습니다. 상세 화면을 새로 확인해 주세요.");
@@ -111,27 +111,81 @@ export function AdminProgramPublicationStateForm(
 
   return (
     <form onSubmit={handleSubmit} aria-busy={isSubmitting ? true : undefined} className="mt-5 max-w-3xl space-y-5">
-      {formError ? <div role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">{formError}</div> : null}
-      <fieldset aria-describedby={fieldErrors.action ? "admin-program-publication-action-error" : undefined} className="space-y-4">
+      {formError ? (
+        <div role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">
+          {formError}
+        </div>
+      ) : null}
+      <fieldset
+        aria-describedby={fieldErrors.action ? "admin-program-publication-action-error" : undefined}
+        className="space-y-4"
+      >
         <legend className="font-bold">변경할 상태 선택</legend>
         <div className="flex items-start gap-3">
-          <input id="admin-program-publication-action-unpublish" name="action" value="unpublish" type="radio" className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
-          <label htmlFor="admin-program-publication-action-unpublish"><span className="font-semibold">게시 중단</span><span className="mt-1 block text-small text-muted-foreground">홈페이지 공개를 즉시 종료하고 승인 완료·미게시 상태로 되돌립니다. 이후 다시 게시할 수 있습니다.</span></label>
+          <input
+            id="admin-program-publication-action-unpublish"
+            name="action"
+            value="unpublish"
+            type="radio"
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <label htmlFor="admin-program-publication-action-unpublish">
+            <span className="font-semibold">게시 중단</span>
+            <span className="mt-1 block text-small text-muted-foreground">
+              홈페이지 공개를 즉시 종료하고 승인 완료·미게시 상태로 되돌립니다. 이후 다시 게시할 수 있습니다.
+            </span>
+          </label>
         </div>
         <div className="flex items-start gap-3">
-          <input id="admin-program-publication-action-archive" name="action" value="archive" type="radio" className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
-          <label htmlFor="admin-program-publication-action-archive"><span className="font-semibold">보관</span><span className="mt-1 block text-small text-muted-foreground">홈페이지 공개를 즉시 종료하고 보관 상태로 전환합니다. 현재는 보관 해제와 재게시를 지원하지 않습니다.</span></label>
+          <input
+            id="admin-program-publication-action-archive"
+            name="action"
+            value="archive"
+            type="radio"
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <label htmlFor="admin-program-publication-action-archive">
+            <span className="font-semibold">보관</span>
+            <span className="mt-1 block text-small text-muted-foreground">
+              홈페이지 공개를 즉시 종료하고 보관 상태로 전환합니다. 현재는 보관 해제와 재게시를 지원하지 않습니다.
+            </span>
+          </label>
         </div>
-        {fieldErrors.action ? <p id="admin-program-publication-action-error" className="text-small font-semibold text-danger">{fieldErrors.action}</p> : null}
+        {fieldErrors.action ? (
+          <p id="admin-program-publication-action-error" className="text-small font-semibold text-danger">
+            {fieldErrors.action}
+          </p>
+        ) : null}
       </fieldset>
       <div className="space-y-2">
         <div className="flex items-start gap-3">
-          <input id="admin-program-publication-transition-confirmed" name="transitionConfirmed" type="checkbox" aria-invalid={fieldErrors.transitionConfirmed ? true : undefined} aria-describedby={fieldErrors.transitionConfirmed ? "admin-program-publication-transition-confirmed-error" : undefined} className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
-          <label htmlFor="admin-program-publication-transition-confirmed" className="font-semibold">선택한 상태 변경과 공개 종료 결과를 확인했습니다.</label>
+          <input
+            id="admin-program-publication-transition-confirmed"
+            name="transitionConfirmed"
+            type="checkbox"
+            aria-invalid={fieldErrors.transitionConfirmed ? true : undefined}
+            aria-describedby={
+              fieldErrors.transitionConfirmed ? "admin-program-publication-transition-confirmed-error" : undefined
+            }
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <label htmlFor="admin-program-publication-transition-confirmed" className="font-semibold">
+            선택한 상태 변경과 공개 종료 결과를 확인했습니다.
+          </label>
         </div>
-        {fieldErrors.transitionConfirmed ? <p id="admin-program-publication-transition-confirmed-error" className="text-small font-semibold text-danger">{fieldErrors.transitionConfirmed}</p> : null}
+        {fieldErrors.transitionConfirmed ? (
+          <p id="admin-program-publication-transition-confirmed-error" className="text-small font-semibold text-danger">
+            {fieldErrors.transitionConfirmed}
+          </p>
+        ) : null}
       </div>
-      <button type="submit" disabled={isSubmitting} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">{isSubmitting ? "처리 중…" : "게시 상태 변경"}</button>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isSubmitting ? "처리 중…" : "게시 상태 변경"}
+      </button>
     </form>
   );
 }

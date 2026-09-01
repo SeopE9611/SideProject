@@ -8,7 +8,11 @@ export function isSiteContentKey(value: unknown): value is SiteContentKey {
 
 export type FacilityFact = { label: string; value: string };
 export type FacilityPrinciple = { title: string; description: string };
-export type FacilityScene = { label: string; title: string; description: string };
+export type FacilityScene = {
+  label: string;
+  title: string;
+  description: string;
+};
 export type FacilityPolicyItem = { title: string; description: string };
 
 export type FacilityOverviewContent = {
@@ -38,6 +42,16 @@ export type GreetingContent = {
   showSignerName: boolean;
 };
 
-export type SiteContentDocumentBase = { key: SiteContentKey; createdAt: Date; updatedAt: Date };
-export type FacilityOverviewDocument = SiteContentDocumentBase & { key: "facility-overview"; content: FacilityOverviewContent };
-export type GreetingDocument = SiteContentDocumentBase & { key: "greeting"; content: GreetingContent };
+export type SiteContentDocumentBase = {
+  key: SiteContentKey;
+  createdAt: Date;
+  updatedAt: Date;
+};
+export type FacilityOverviewDocument = SiteContentDocumentBase & {
+  key: "facility-overview";
+  content: FacilityOverviewContent;
+};
+export type GreetingDocument = SiteContentDocumentBase & {
+  key: "greeting";
+  content: GreetingContent;
+};

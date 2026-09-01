@@ -1,9 +1,6 @@
 import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
 import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
-import {
-  decideAdminProgramReview,
-  isValidAdminProgramId,
-} from "@/features/programs/program.admin-repository";
+import { decideAdminProgramReview, isValidAdminProgramId } from "@/features/programs/program.admin-repository";
 import { validateAdminProgramReviewDecisionInput } from "@/features/programs/program.admin-validation";
 
 export const runtime = "nodejs";
@@ -30,17 +27,18 @@ function isJsonContentType(request: Request): boolean {
 
 function payloadTooLargeResponse(): Response {
   return jsonResponse(
-    { ok: false, error: "payload_too_large", message: "검토 결과 내용이 허용된 크기를 초과했습니다." },
+    {
+      ok: false,
+      error: "payload_too_large",
+      message: "검토 결과 내용이 허용된 크기를 초과했습니다.",
+    },
     413,
   );
 }
 
 export async function POST(request: Request, context: RouteContext) {
   if (!isSameOriginRequest(request)) {
-    return jsonResponse(
-      { ok: false, error: "forbidden", message: "요청을 처리할 수 없습니다." },
-      403,
-    );
+    return jsonResponse({ ok: false, error: "forbidden", message: "요청을 처리할 수 없습니다." }, 403);
   }
 
   try {
@@ -53,17 +51,24 @@ export async function POST(request: Request, context: RouteContext) {
     }
     const admin = authorization.admin;
 
-
     const { id } = await context.params;
     if (!isValidAdminProgramId(id)) {
       return jsonResponse(
-        { ok: false, error: "not_found", message: "프로그램을 찾을 수 없습니다." },
+        {
+          ok: false,
+          error: "not_found",
+          message: "프로그램을 찾을 수 없습니다.",
+        },
         404,
       );
     }
     if (!isJsonContentType(request)) {
       return jsonResponse(
-        { ok: false, error: "unsupported_media_type", message: "JSON 형식으로 검토 결과를 보내 주세요." },
+        {
+          ok: false,
+          error: "unsupported_media_type",
+          message: "JSON 형식으로 검토 결과를 보내 주세요.",
+        },
         415,
       );
     }
@@ -85,7 +90,11 @@ export async function POST(request: Request, context: RouteContext) {
       input = JSON.parse(requestText) as unknown;
     } catch {
       return jsonResponse(
-        { ok: false, error: "invalid_json", message: "검토 결과 내용을 확인해 주세요." },
+        {
+          ok: false,
+          error: "invalid_json",
+          message: "검토 결과 내용을 확인해 주세요.",
+        },
         400,
       );
     }
@@ -94,14 +103,15 @@ export async function POST(request: Request, context: RouteContext) {
     if (!validation.ok) {
       if (validation.formError === "invalid_version") {
         return jsonResponse(
-          { ok: false, error: "invalid_version", message: "검토 결과 기준 시각을 확인할 수 없습니다." },
+          {
+            ok: false,
+            error: "invalid_version",
+            message: "검토 결과 기준 시각을 확인할 수 없습니다.",
+          },
           400,
         );
       }
-      return jsonResponse(
-        { ok: false, error: "validation", fieldErrors: validation.fieldErrors },
-        400,
-      );
+      return jsonResponse({ ok: false, error: "validation", fieldErrors: validation.fieldErrors }, 400);
     }
 
     const result = await decideAdminProgramReview({
@@ -113,18 +123,30 @@ export async function POST(request: Request, context: RouteContext) {
     if (!result.ok) {
       if (result.reason === "not_found") {
         return jsonResponse(
-          { ok: false, error: "not_found", message: "프로그램을 찾을 수 없습니다." },
+          {
+            ok: false,
+            error: "not_found",
+            message: "프로그램을 찾을 수 없습니다.",
+          },
           404,
         );
       }
       if (result.reason === "not_decidable") {
         return jsonResponse(
-          { ok: false, error: "not_decidable", message: "현재 게시 상태에서는 검토 결과를 처리할 수 없습니다." },
+          {
+            ok: false,
+            error: "not_decidable",
+            message: "현재 게시 상태에서는 검토 결과를 처리할 수 없습니다.",
+          },
           409,
         );
       }
       return jsonResponse(
-        { ok: false, error: "edit_conflict", message: "다른 관리자가 이 프로그램을 먼저 변경했습니다." },
+        {
+          ok: false,
+          error: "edit_conflict",
+          message: "다른 관리자가 이 프로그램을 먼저 변경했습니다.",
+        },
         409,
       );
     }

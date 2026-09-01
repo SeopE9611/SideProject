@@ -1,9 +1,6 @@
 import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
 import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
-import {
-  isValidAdminGalleryItemId,
-  withdrawAdminGalleryConsent,
-} from "@/features/gallery/gallery.admin-repository";
+import { isValidAdminGalleryItemId, withdrawAdminGalleryConsent } from "@/features/gallery/gallery.admin-repository";
 import { validateAdminGalleryConsentWithdrawalInput } from "@/features/gallery/gallery.admin-validation";
 
 export const runtime = "nodejs";
@@ -30,13 +27,9 @@ export async function POST(request: Request, { params }: Context) {
 
   const authorization = await authorizeCurrentAdmin("gallery.withdraw_consent");
   if (!authorization.ok) {
-    return json(
-      { ok: false, error: authorization.reason },
-      authorization.reason === "unauthorized" ? 401 : 403,
-    );
+    return json({ ok: false, error: authorization.reason }, authorization.reason === "unauthorized" ? 401 : 403);
   }
   const admin = authorization.admin;
-
 
   const { id } = await params;
 
@@ -44,10 +37,7 @@ export async function POST(request: Request, { params }: Context) {
     return json({ ok: false, error: "not_found" }, 404);
   }
 
-  if (
-    request.headers.get("content-type")?.split(";", 1)[0] !==
-    "application/json"
-  ) {
+  if (request.headers.get("content-type")?.split(";", 1)[0] !== "application/json") {
     return json({ ok: false, error: "unsupported_media_type" }, 415);
   }
 
@@ -83,14 +73,14 @@ export async function POST(request: Request, { params }: Context) {
     });
 
     if (!result.ok) {
-      return json(
-        { ok: false, error: result.reason },
-        result.reason === "not_found" ? 404 : 409,
-      );
+      return json({ ok: false, error: result.reason }, result.reason === "not_found" ? 404 : 409);
     }
 
     return json(
-      { ...result, redirectTo: `/admin/gallery/${id}?transition=withdraw-consent` },
+      {
+        ...result,
+        redirectTo: `/admin/gallery/${id}?transition=withdraw-consent`,
+      },
       200,
     );
   } catch (error) {

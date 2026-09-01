@@ -30,13 +30,9 @@ export async function POST(request: Request, { params }: Context) {
 
   const authorization = await authorizeCurrentAdmin("content.publish");
   if (!authorization.ok) {
-    return json(
-      { ok: false, error: authorization.reason },
-      authorization.reason === "unauthorized" ? 401 : 403,
-    );
+    return json({ ok: false, error: authorization.reason }, authorization.reason === "unauthorized" ? 401 : 403);
   }
   const admin = authorization.admin;
-
 
   const { id } = await params;
 
@@ -44,10 +40,7 @@ export async function POST(request: Request, { params }: Context) {
     return json({ ok: false, error: "not_found" }, 404);
   }
 
-  if (
-    request.headers.get("content-type")?.split(";", 1)[0] !==
-    "application/json"
-  ) {
+  if (request.headers.get("content-type")?.split(";", 1)[0] !== "application/json") {
     return json({ ok: false, error: "unsupported_media_type" }, 415);
   }
 
@@ -83,16 +76,10 @@ export async function POST(request: Request, { params }: Context) {
     });
 
     if (!result.ok) {
-      return json(
-        { ok: false, error: result.reason },
-        result.reason === "not_found" ? 404 : 409,
-      );
+      return json({ ok: false, error: result.reason }, result.reason === "not_found" ? 404 : 409);
     }
 
-    return json(
-      { ...result, redirectTo: `/admin/gallery/${id}?transition=publication` },
-      200,
-    );
+    return json({ ...result, redirectTo: `/admin/gallery/${id}?transition=publication` }, 200);
   } catch (error) {
     console.error("관리자 활동사진 상태 변경 실패", {
       name: error instanceof Error ? error.name : "UnknownError",

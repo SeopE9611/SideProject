@@ -18,9 +18,7 @@ const preparedItems = [
   "직원 소개의 공개 범위·표시 순서 관리",
 ] as const;
 
-const nextItems = [
-  "이미지·첨부파일 공개 절차",
-] as const;
+const nextItems = ["이미지·첨부파일 공개 절차"] as const;
 
 export default async function AdminDashboardPage({
   searchParams,
@@ -39,39 +37,63 @@ export default async function AdminDashboardPage({
       ) : null}
       <div>
         <h1 className="text-title font-bold">관리자 대시보드</h1>
-        <p className="mt-3 text-body text-muted-foreground">
-          샬롬의 집 공식 홈페이지 콘텐츠 관리 상태를 확인합니다.
-        </p>
+        <p className="mt-3 text-body text-muted-foreground">샬롬의 집 공식 홈페이지 콘텐츠 관리 상태를 확인합니다.</p>
       </div>
       <div className="grid gap-5 md:grid-cols-2">
         <section className="rounded-card border border-border bg-surface p-5">
           <h2 className="text-heading font-bold">현재 준비된 기반</h2>
           <ul className="mt-4 list-disc space-y-2 pl-5 text-body">
-            {preparedItems.map((item) => <li key={item}>{item}</li>)}
+            {preparedItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
           </ul>
         </section>
         <section className="rounded-card border border-border bg-surface p-5">
           <h2 className="text-heading font-bold">다음 관리 작업</h2>
           <ul className="mt-4 list-disc space-y-2 pl-5 text-body">
-            {nextItems.map((item) => <li key={item}>{item}</li>)}
+            {nextItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
           </ul>
         </section>
       </div>
       <div className="flex flex-wrap gap-3">
-        {canManageSiteContent ? <Link href="/admin/site-content" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">공식 콘텐츠 관리 열기</Link> : null}
-        <Link href="/admin/news" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+        {canManageSiteContent ? (
+          <Link
+            href="/admin/site-content"
+            className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground"
+          >
+            공식 콘텐츠 관리 열기
+          </Link>
+        ) : null}
+        <Link
+          href="/admin/news"
+          className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
           소식 관리 열기
         </Link>
-        <Link href="/admin/programs" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+        <Link
+          href="/admin/programs"
+          className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
           프로그램 관리 열기
         </Link>
-        <Link href="/admin/gallery" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+        <Link
+          href="/admin/gallery"
+          className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
           활동사진 관리 열기
         </Link>
-        <Link href="/admin/transparency" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+        <Link
+          href="/admin/transparency"
+          className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
           자료공개 관리 열기
         </Link>
-        <Link href="/" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+        <Link
+          href="/"
+          className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
           공개 홈페이지 보기
         </Link>
       </div>

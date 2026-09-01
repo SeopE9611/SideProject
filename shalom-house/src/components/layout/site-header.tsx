@@ -35,8 +35,7 @@ export function SiteHeader() {
           <span
             aria-hidden="true"
             className="h-9 w-1 shrink-0 bg-accent transition-colors duration-[var(--motion-duration-fast)] ease-standard group-hover:bg-primary sm:h-10"
-          >
-          </span>
+          ></span>
           <span className="min-w-0">
             <span className="block text-xl font-bold tracking-[-0.03em] text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard group-hover:text-primary sm:text-xl">
               {siteConfig.name}

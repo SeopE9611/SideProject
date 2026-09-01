@@ -8,11 +8,7 @@ import {
   normalizePublicNewsPage,
   normalizePublicNewsSearchQuery,
 } from "@/features/news/news.pagination";
-import {
-  getNewsCategoryLabel,
-  isNewsCategory,
-  type NewsCategory,
-} from "@/features/news/news.types";
+import { getNewsCategoryLabel, isNewsCategory, type NewsCategory } from "@/features/news/news.types";
 
 const PAGE_SIZE = 8;
 const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
@@ -40,12 +36,7 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function queryHref(
-  basePath: NewsListPageProps["basePath"],
-  page: number,
-  q: string,
-  category?: NewsCategory,
-) {
+function queryHref(basePath: NewsListPageProps["basePath"], page: number, q: string, category?: NewsCategory) {
   const params = new URLSearchParams();
   if (q) params.set("q", q);
   if (category) params.set("category", category);
@@ -55,13 +46,7 @@ function queryHref(
   return query ? `${basePath}?${query}` : basePath;
 }
 
-export async function NewsListPage({
-  basePath,
-  title,
-  description,
-  fixedCategory,
-  searchParams,
-}: NewsListPageProps) {
+export async function NewsListPage({ basePath, title, description, fixedCategory, searchParams }: NewsListPageProps) {
   const raw = await searchParams;
   const q = normalizePublicNewsSearchQuery(first(raw.q));
   const categoryValue = first(raw.category);
@@ -77,10 +62,7 @@ export async function NewsListPage({
   const hasFixture = posts.some((post) => post.isDemo);
   const categoryLabel = category ? getNewsCategoryLabel(category) : "전체";
   const hasUserFilter = Boolean(q) || (!fixedCategory && Boolean(category));
-  const paginationItems = getPublicNewsPaginationItems(
-    currentPage,
-    totalPages,
-  );
+  const paginationItems = getPublicNewsPaginationItems(currentPage, totalPages);
 
   return (
     <div className="bg-surface">
@@ -94,10 +76,7 @@ export async function NewsListPage({
               홈
             </Link>
             {basePath !== "/news" ? (
-              <Link
-                className="text-primary underline underline-offset-4"
-                href="/news"
-              >
+              <Link className="text-primary underline underline-offset-4" href="/news">
                 소식
               </Link>
             ) : null}
@@ -106,9 +85,7 @@ export async function NewsListPage({
           <p className="mt-7 text-small font-bold text-accent">소식</p>
           <div className="mt-2">
             <h1 className="text-safe-wrap text-title font-bold sm:text-[2.5rem]">{title}</h1>
-            <p className="text-safe-wrap mt-3 max-w-2xl text-body text-muted-foreground">
-              {description}
-            </p>
+            <p className="text-safe-wrap mt-3 max-w-2xl text-body text-muted-foreground">{description}</p>
           </div>
         </div>
         <SectionLocalNavigation sectionHref="/news" />
@@ -119,9 +96,7 @@ export async function NewsListPage({
           action={basePath}
           method="get"
           className={`grid gap-5 border border-border bg-surface-subtle p-5 md:items-end ${
-            fixedCategory
-              ? "md:grid-cols-[minmax(0,1fr)_auto]"
-              : "md:grid-cols-[minmax(0,1fr)_14rem_auto]"
+            fixedCategory ? "md:grid-cols-[minmax(0,1fr)_auto]" : "md:grid-cols-[minmax(0,1fr)_14rem_auto]"
           }`}
         >
           <div>
@@ -139,10 +114,7 @@ export async function NewsListPage({
           </div>
           {!fixedCategory ? (
             <div>
-              <label
-                className="block text-small font-bold"
-                htmlFor="news-category"
-              >
+              <label className="block text-small font-bold" htmlFor="news-category">
                 분류
               </label>
               <select
@@ -215,28 +187,20 @@ export async function NewsListPage({
                 >
                   인스타그램 보기(새 창)
                 </a>
-                <Link
-                  className="font-bold text-primary underline underline-offset-4"
-                  href="/"
-                >
+                <Link className="font-bold text-primary underline underline-offset-4" href="/">
                   홈으로 이동
                 </Link>
               </div>
             </div>
           ) : total === 0 ? (
             <div className="border-b border-border py-10">
-              <h3 className="text-heading font-bold">
-                현재 조건에 맞는 소식이 없습니다.
-              </h3>
+              <h3 className="text-heading font-bold">현재 조건에 맞는 소식이 없습니다.</h3>
               <p className="text-safe-wrap mt-3 text-muted-foreground">
                 분류 {categoryLabel}
                 {q ? `, 검색어 “${q}”` : ""}에 해당하는 결과가 없습니다.
               </p>
               <div className="mt-5">
-                <Link
-                  className="font-bold text-primary underline underline-offset-4"
-                  href={basePath}
-                >
+                <Link className="font-bold text-primary underline underline-offset-4" href={basePath}>
                   조건 초기화
                 </Link>
               </div>
@@ -247,12 +211,8 @@ export async function NewsListPage({
                 <li key={post.id} className="border-b border-border">
                   <article className="grid gap-3 py-6 md:grid-cols-[8rem_minmax(0,1fr)_10rem]">
                     <div>
-                      <p className="text-small font-bold text-primary">
-                        {getNewsCategoryLabel(post.category)}
-                      </p>
-                      {post.isDemo ? (
-                        <p className="mt-1 text-xs text-muted-foreground">시연 콘텐츠</p>
-                      ) : null}
+                      <p className="text-small font-bold text-primary">{getNewsCategoryLabel(post.category)}</p>
+                      {post.isDemo ? <p className="mt-1 text-xs text-muted-foreground">시연 콘텐츠</p> : null}
                     </div>
                     <div>
                       <h3 className="text-heading font-bold">
@@ -263,14 +223,9 @@ export async function NewsListPage({
                           {post.title}
                         </Link>
                       </h3>
-                      <p className="text-safe-wrap mt-2 text-body text-muted-foreground">
-                        {post.summary}
-                      </p>
+                      <p className="text-safe-wrap mt-2 text-body text-muted-foreground">{post.summary}</p>
                     </div>
-                    <time
-                      className="text-small text-muted-foreground md:text-right"
-                      dateTime={post.publishedAt}
-                    >
+                    <time className="text-small text-muted-foreground md:text-right" dateTime={post.publishedAt}>
                       {dateFormatter.format(new Date(post.publishedAt))}
                     </time>
                   </article>
@@ -286,12 +241,7 @@ export async function NewsListPage({
                 <li>
                   <Link
                     className="inline-flex min-h-11 items-center border border-border px-4 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                    href={queryHref(
-                      basePath,
-                      currentPage - 1,
-                      q,
-                      fixedCategory ? undefined : category,
-                    )}
+                    href={queryHref(basePath, currentPage - 1, q, fixedCategory ? undefined : category)}
                   >
                     이전 페이지
                   </Link>
@@ -300,9 +250,7 @@ export async function NewsListPage({
               {paginationItems.map((item) =>
                 item.type === "ellipsis" ? (
                   <li key={`ellipsis-${item.position}`} aria-hidden="true">
-                    <span className="inline-flex min-h-11 min-w-6 items-center justify-center">
-                      …
-                    </span>
+                    <span className="inline-flex min-h-11 min-w-6 items-center justify-center">…</span>
                   </li>
                 ) : (
                   <li key={item.page}>
@@ -316,12 +264,7 @@ export async function NewsListPage({
                     ) : (
                       <Link
                         className="inline-flex min-h-11 min-w-11 items-center justify-center border border-border px-3 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                        href={queryHref(
-                          basePath,
-                          item.page,
-                          q,
-                          fixedCategory ? undefined : category,
-                        )}
+                        href={queryHref(basePath, item.page, q, fixedCategory ? undefined : category)}
                         aria-label={`${item.page}페이지`}
                       >
                         {item.page}
@@ -334,12 +277,7 @@ export async function NewsListPage({
                 <li>
                   <Link
                     className="inline-flex min-h-11 items-center border border-border px-4 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                    href={queryHref(
-                      basePath,
-                      currentPage + 1,
-                      q,
-                      fixedCategory ? undefined : category,
-                    )}
+                    href={queryHref(basePath, currentPage + 1, q, fixedCategory ? undefined : category)}
                   >
                     다음 페이지
                   </Link>

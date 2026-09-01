@@ -33,7 +33,5 @@ export async function getMongoClient(): Promise<MongoClient> {
     throw new Error("SHALOM_MONGODB_URI가 설정되지 않았습니다.");
   }
 
-  return (
-    globalThis.shalomMongoClientPromise ?? connectMongoClient(uri)
-  );
+  return globalThis.shalomMongoClientPromise ?? connectMongoClient(uri);
 }

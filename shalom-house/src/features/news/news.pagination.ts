@@ -7,10 +7,7 @@ export function normalizePublicNewsLimit(limit?: number): number {
     return PUBLIC_NEWS_DEFAULT_LIMIT;
   }
 
-  return Math.min(
-    PUBLIC_NEWS_MAXIMUM_LIMIT,
-    Math.max(PUBLIC_NEWS_MINIMUM_LIMIT, Math.trunc(limit)),
-  );
+  return Math.min(PUBLIC_NEWS_MAXIMUM_LIMIT, Math.max(PUBLIC_NEWS_MINIMUM_LIMIT, Math.trunc(limit)));
 }
 
 export const PUBLIC_NEWS_SEARCH_DEFAULT_PAGE_SIZE = 8;
@@ -31,12 +28,9 @@ export function getPublicNewsPaginationItems(
   currentPage: number,
   totalPages: number,
 ): readonly PublicNewsPaginationItem[] {
-  const safeTotalPages =
-    Number.isSafeInteger(totalPages) && totalPages > 0 ? totalPages : 1;
+  const safeTotalPages = Number.isSafeInteger(totalPages) && totalPages > 0 ? totalPages : 1;
   const safeCurrentPage =
-    Number.isSafeInteger(currentPage) && currentPage > 0
-      ? Math.min(currentPage, safeTotalPages)
-      : 1;
+    Number.isSafeInteger(currentPage) && currentPage > 0 ? Math.min(currentPage, safeTotalPages) : 1;
   const page = (value: number): PublicNewsPaginationItem => ({
     type: "page",
     page: value,
@@ -47,20 +41,14 @@ export function getPublicNewsPaginationItems(
   }
 
   if (safeCurrentPage <= 4) {
-    return [
-      ...[1, 2, 3, 4, 5].map(page),
-      { type: "ellipsis", position: "end" },
-      page(safeTotalPages),
-    ];
+    return [...[1, 2, 3, 4, 5].map(page), { type: "ellipsis", position: "end" }, page(safeTotalPages)];
   }
 
   if (safeCurrentPage >= safeTotalPages - 3) {
     return [
       page(1),
       { type: "ellipsis", position: "start" },
-      ...Array.from({ length: 5 }, (_, index) =>
-        page(safeTotalPages - 4 + index),
-      ),
+      ...Array.from({ length: 5 }, (_, index) => page(safeTotalPages - 4 + index)),
     ];
   }
 
@@ -76,15 +64,11 @@ export function getPublicNewsPaginationItems(
 }
 
 export function normalizePublicNewsSearchQuery(value?: string): string {
-  return typeof value === "string"
-    ? value.trim().slice(0, PUBLIC_NEWS_SEARCH_QUERY_MAX_LENGTH)
-    : "";
+  return typeof value === "string" ? value.trim().slice(0, PUBLIC_NEWS_SEARCH_QUERY_MAX_LENGTH) : "";
 }
 
 export function normalizePublicNewsPage(value?: number): number {
-  return typeof value === "number" && Number.isSafeInteger(value) && value > 0
-    ? value
-    : 1;
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0 ? value : 1;
 }
 
 export function normalizePublicNewsPageSize(value?: number): number {

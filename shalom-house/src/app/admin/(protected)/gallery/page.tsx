@@ -1,10 +1,7 @@
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
-import {
-  listAdminGalleryItems,
-  normalizeAdminGalleryPage,
-} from "@/features/gallery/gallery.admin-repository";
+import { listAdminGalleryItems, normalizeAdminGalleryPage } from "@/features/gallery/gallery.admin-repository";
 import {
   getGalleryApprovalStatusLabel,
   getGalleryConsentStatusLabel,
@@ -19,18 +16,13 @@ export default async function AdminGalleryPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const admin = await getCurrentAdmin();const canCreate=Boolean(admin&&hasAdminPermission(admin,"content.create"));
+  const admin = await getCurrentAdmin();
+  const canCreate = Boolean(admin && hasAdminPermission(admin, "content.create"));
   const q = await searchParams,
     page = normalizeAdminGalleryPage(q.page),
-    subjectPresence = isGallerySubjectPresence(q.subjectPresence)
-      ? q.subjectPresence
-      : undefined,
-    consentStatus = isGalleryConsentStatus(q.consentStatus)
-      ? q.consentStatus
-      : undefined,
-    publicationStatus = isGalleryPublicationStatus(q.publicationStatus)
-      ? q.publicationStatus
-      : undefined,
+    subjectPresence = isGallerySubjectPresence(q.subjectPresence) ? q.subjectPresence : undefined,
+    consentStatus = isGalleryConsentStatus(q.consentStatus) ? q.consentStatus : undefined,
+    publicationStatus = isGalleryPublicationStatus(q.publicationStatus) ? q.publicationStatus : undefined,
     result = await listAdminGalleryItems({
       page,
       subjectPresence,
@@ -42,25 +34,21 @@ export default async function AdminGalleryPage({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-title font-bold">활동사진 관리</h1>
-          <p className="mt-2 text-muted-foreground">
-            비공개 초안과 인물·홈페이지 공개 동의 상태를 관리합니다.
-          </p>
+          <p className="mt-2 text-muted-foreground">비공개 초안과 인물·홈페이지 공개 동의 상태를 관리합니다.</p>
         </div>
-        {canCreate?(<Link
-          href="/admin/gallery/new"
-          className="min-h-11 rounded-control bg-primary px-4 py-3 font-semibold text-primary-foreground"
-        >
-          새 활동사진 초안
-        </Link>):null}
+        {canCreate ? (
+          <Link
+            href="/admin/gallery/new"
+            className="min-h-11 rounded-control bg-primary px-4 py-3 font-semibold text-primary-foreground"
+          >
+            새 활동사진 초안
+          </Link>
+        ) : null}
       </header>
       <form className="grid gap-3 sm:grid-cols-4">
         <label>
           인물 상태
-          <select
-            name="subjectPresence"
-            defaultValue={subjectPresence ?? ""}
-            className="block min-h-11 w-full border"
-          >
+          <select name="subjectPresence" defaultValue={subjectPresence ?? ""} className="block min-h-11 w-full border">
             <option value="">전체</option>
             <option value="none">인물 없음</option>
             <option value="non_identifiable">개인 식별 불가</option>
@@ -69,11 +57,7 @@ export default async function AdminGalleryPage({
         </label>
         <label>
           동의 상태
-          <select
-            name="consentStatus"
-            defaultValue={consentStatus ?? ""}
-            className="block min-h-11 w-full border"
-          >
+          <select name="consentStatus" defaultValue={consentStatus ?? ""} className="block min-h-11 w-full border">
             <option value="">전체</option>
             <option value="not_required">별도 동의 불필요</option>
             <option value="pending">동의 확인 중</option>
@@ -95,9 +79,7 @@ export default async function AdminGalleryPage({
             <option value="archived">보관</option>
           </select>
         </label>
-        <button className="min-h-11 self-end border font-semibold">
-          필터 적용
-        </button>
+        <button className="min-h-11 self-end border font-semibold">필터 적용</button>
       </form>
       <div className="grid gap-4">
         {result.items.length ? (
@@ -139,21 +121,15 @@ export default async function AdminGalleryPage({
             </article>
           ))
         ) : (
-          <p className="rounded-card border p-5">
-            조건에 맞는 활동사진 초안이 없습니다.
-          </p>
+          <p className="rounded-card border p-5">조건에 맞는 활동사진 초안이 없습니다.</p>
         )}
       </div>
       <nav aria-label="활동사진 목록 페이지" className="flex gap-4">
-        {result.page > 1 ? (
-          <Link href={`?page=${result.page - 1}`}>이전</Link>
-        ) : null}
+        {result.page > 1 ? <Link href={`?page=${result.page - 1}`}>이전</Link> : null}
         <span>
           {result.page} / {result.totalPages}
         </span>
-        {result.page < result.totalPages ? (
-          <Link href={`?page=${result.page + 1}`}>다음</Link>
-        ) : null}
+        {result.page < result.totalPages ? <Link href={`?page=${result.page + 1}`}>다음</Link> : null}
       </nav>
     </div>
   );

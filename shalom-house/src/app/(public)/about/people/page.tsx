@@ -22,11 +22,7 @@ export default async function PeoplePage() {
         eyebrow="시설소개"
         title="함께하는 사람들"
         description="직원과 운영 역할을 승인된 범위에서 소개합니다."
-        breadcrumbs={[
-          { label: "홈", href: "/" },
-          { label: "시설소개", href: "/about" },
-          { label: "함께하는 사람들" },
-        ]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "시설소개", href: "/about" }, { label: "함께하는 사람들" }]}
         notice="직원 정보는 당사자 확인과 홈페이지 공개 승인을 마친 범위에서만 안내합니다."
       />
       <PublicAdminEditLink href="/admin/site-content/people" />
@@ -43,18 +39,14 @@ export default async function PeoplePage() {
                 ) : (
                   <h2 className="text-safe-wrap mt-5 font-bold">{profile.role}</h2>
                 )}
-                <p className="text-safe-wrap mt-3 text-muted-foreground">
-                  {profile.responsibility}
-                </p>
+                <p className="text-safe-wrap mt-3 text-muted-foreground">{profile.responsibility}</p>
               </li>
             ))}
           </ul>
         ) : (
           <div className="border-y border-border py-6">
             <p className="text-small font-bold text-accent">소개 준비 중</p>
-            <h2 className="text-safe-wrap mt-2 text-heading font-bold">
-              직원 소개를 준비하고 있습니다.
-            </h2>
+            <h2 className="text-safe-wrap mt-2 text-heading font-bold">직원 소개를 준비하고 있습니다.</h2>
             <p className="text-safe-wrap mt-3 max-w-3xl text-muted-foreground">
               직원 이름과 사진은 당사자 확인과 홈페이지 공개 승인을 마친 경우에만 게시합니다.
             </p>

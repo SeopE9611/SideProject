@@ -16,9 +16,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function ProtectedAdminLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default async function ProtectedAdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const admin = await getCurrentAdmin();
   if (!admin) {
     redirect("/admin/login");
@@ -64,7 +62,10 @@ export default async function ProtectedAdminLayout({
         </div>
       </header>
       <div className="mx-auto grid max-w-site gap-6 px-page py-6 sm:px-page-wide lg:grid-cols-[14rem_minmax(0,1fr)] lg:py-8">
-        <AdminNavigation canRestore={hasAdminPermission(admin, "content.restore")} canManageSiteContent={hasAdminPermission(admin, "site_content.manage")} />
+        <AdminNavigation
+          canRestore={hasAdminPermission(admin, "content.restore")}
+          canManageSiteContent={hasAdminPermission(admin, "site_content.manage")}
+        />
         <main id="main-content" tabIndex={-1} className="min-w-0">
           {children}
         </main>

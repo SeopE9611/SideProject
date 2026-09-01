@@ -28,13 +28,13 @@
 
 ## 작업 유형별 필독 문서
 
-| 작업 유형 | 필독 문서 |
-| --- | --- |
-| 공개 UI | requirements, information-architecture, design-system, page-patterns, accessibility |
-| 공개 콘텐츠 | requirements, content-governance, operations/official-content-intake |
-| 뉴스·CMS | technical/content-platform-architecture, content-governance |
-| 관리자 기능 | requirements, technical/content-platform-architecture, accessibility |
-| QA | page-patterns, design-system, accessibility, 해당 작업 요구사항 |
+| 작업 유형   | 필독 문서                                                                           |
+| ----------- | ----------------------------------------------------------------------------------- |
+| 공개 UI     | requirements, information-architecture, design-system, page-patterns, accessibility |
+| 공개 콘텐츠 | requirements, content-governance, operations/official-content-intake                |
+| 뉴스·CMS    | technical/content-platform-architecture, content-governance                         |
+| 관리자 기능 | requirements, technical/content-platform-architecture, accessibility                |
+| QA          | page-patterns, design-system, accessibility, 해당 작업 요구사항                     |
 
 ## 문서 유지 원칙
 

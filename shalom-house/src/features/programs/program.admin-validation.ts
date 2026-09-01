@@ -44,8 +44,7 @@ export type AdminProgramDirectPublishFieldErrors = {
 };
 
 export type AdminProgramDirectPublishValidationResult =
-  | { ok: true; value: { expectedUpdatedAt: Date } }
-  | { ok: false; fieldErrors: AdminProgramDirectPublishFieldErrors };
+  { ok: true; value: { expectedUpdatedAt: Date } } | { ok: false; fieldErrors: AdminProgramDirectPublishFieldErrors };
 
 export type AdminProgramPublishInput = {
   expectedUpdatedAt: unknown;
@@ -70,8 +69,7 @@ export type AdminProgramPublishValidationResult =
 
 export const adminProgramPublicationActions = ["unpublish", "archive"] as const;
 
-export type AdminProgramPublicationAction =
-  (typeof adminProgramPublicationActions)[number];
+export type AdminProgramPublicationAction = (typeof adminProgramPublicationActions)[number];
 
 export type AdminProgramPublicationStateInput = {
   expectedUpdatedAt: unknown;
@@ -99,8 +97,7 @@ export type AdminProgramPublicationStateValidationResult =
 
 export const adminProgramReviewDecisions = ["approve", "reject"] as const;
 
-export type AdminProgramReviewDecision =
-  (typeof adminProgramReviewDecisions)[number];
+export type AdminProgramReviewDecision = (typeof adminProgramReviewDecisions)[number];
 
 export type AdminProgramReviewDecisionInput = {
   expectedUpdatedAt: unknown;
@@ -148,13 +145,10 @@ export type AdminProgramDraftField =
   | "sortOrder"
   | "contentSafetyConfirmed";
 
-export type AdminProgramDraftFieldErrors = Partial<
-  Record<AdminProgramDraftField, string>
->;
+export type AdminProgramDraftFieldErrors = Partial<Record<AdminProgramDraftField, string>>;
 
 export type AdminProgramDraftValidationResult =
-  | { ok: true; value: ValidatedAdminProgramDraft }
-  | { ok: false; fieldErrors: AdminProgramDraftFieldErrors };
+  { ok: true; value: ValidatedAdminProgramDraft } | { ok: false; fieldErrors: AdminProgramDraftFieldErrors };
 
 export type ValidatedAdminProgramDraftUpdate = {
   draft: ValidatedAdminProgramDraft;
@@ -189,36 +183,21 @@ function parseCanonicalIsoDate(value: unknown): Date | null {
   if (typeof value !== "string") return null;
 
   const date = new Date(value);
-  return !Number.isNaN(date.getTime()) && date.toISOString() === value
-    ? date
-    : null;
+  return !Number.isNaN(date.getTime()) && date.toISOString() === value ? date : null;
 }
 
-export function isAdminProgramReviewDecision(
-  value: unknown,
-): value is AdminProgramReviewDecision {
-  return (
-    typeof value === "string" &&
-    adminProgramReviewDecisions.includes(value as AdminProgramReviewDecision)
-  );
+export function isAdminProgramReviewDecision(value: unknown): value is AdminProgramReviewDecision {
+  return typeof value === "string" && adminProgramReviewDecisions.includes(value as AdminProgramReviewDecision);
 }
 
-export function isAdminProgramPublicationAction(
-  value: unknown,
-): value is AdminProgramPublicationAction {
-  return (
-    typeof value === "string" &&
-    adminProgramPublicationActions.includes(value as AdminProgramPublicationAction)
-  );
+export function isAdminProgramPublicationAction(value: unknown): value is AdminProgramPublicationAction {
+  return typeof value === "string" && adminProgramPublicationActions.includes(value as AdminProgramPublicationAction);
 }
 
 export function validateAdminProgramPublicationStateInput(
   input: unknown,
 ): AdminProgramPublicationStateValidationResult {
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminProgramPublicationStateFieldErrors = {};
 
@@ -226,8 +205,7 @@ export function validateAdminProgramPublicationStateInput(
     fieldErrors.action = "게시 상태 변경 방법을 선택해 주세요.";
   }
   if (value.transitionConfirmed !== true) {
-    fieldErrors.transitionConfirmed =
-      "선택한 상태 변경과 공개 종료 결과를 확인해 주세요.";
+    fieldErrors.transitionConfirmed = "선택한 상태 변경과 공개 종료 결과를 확인해 주세요.";
   }
 
   if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
@@ -248,7 +226,7 @@ export function validateAdminProgramPublicationStateInput(
 }
 
 export function validateAdminProgramDraftInput(input: unknown): AdminProgramDraftValidationResult {
-  const value = typeof input === "object" && input !== null ? input as Record<string, unknown> : {};
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const fieldErrors: AdminProgramDraftFieldErrors = {};
   const category = typeof value.category === "string" ? value.category.trim() : "";
   const slug = typeof value.slug === "string" ? value.slug.trim().toLowerCase() : "";
@@ -257,30 +235,63 @@ export function validateAdminProgramDraftInput(input: unknown): AdminProgramDraf
   const purpose = typeof value.purpose === "string" ? value.purpose.trim() : "";
   const operationStatusLabel = typeof value.operationStatusLabel === "string" ? value.operationStatusLabel.trim() : "";
   const normalizedBody = typeof value.body === "string" ? value.body.replace(/\r\n?/g, "\n").trim() : "";
-  const body = normalizedBody ? normalizedBody.split(/\n[\t ]*\n+/).map(p => p.trim()).filter(Boolean) : [];
-  const rawSortOrder = typeof value.sortOrder === "string" && value.sortOrder.trim() !== "" ? Number(value.sortOrder) : value.sortOrder;
+  const body = normalizedBody
+    ? normalizedBody
+        .split(/\n[\t ]*\n+/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+    : [];
+  const rawSortOrder =
+    typeof value.sortOrder === "string" && value.sortOrder.trim() !== "" ? Number(value.sortOrder) : value.sortOrder;
   const sortOrder = typeof rawSortOrder === "number" ? rawSortOrder : Number.NaN;
-  if (!category) fieldErrors.category = "분류를 입력해 주세요."; else if (category.length > ADMIN_PROGRAM_CATEGORY_MAX_LENGTH) fieldErrors.category = "분류는 40자 이하로 입력해 주세요.";
-  if (!slug) fieldErrors.slug = "슬러그를 입력해 주세요."; else if (slug.length > ADMIN_PROGRAM_SLUG_MAX_LENGTH) fieldErrors.slug = "슬러그는 80자 이하여야 합니다."; else if (!isValidProgramSlug(slug)) fieldErrors.slug = "슬러그는 영문 소문자, 숫자와 하이픈만 사용할 수 있습니다.";
-  if (!title) fieldErrors.title = "제목을 입력해 주세요."; else if (title.length > ADMIN_PROGRAM_TITLE_MAX_LENGTH) fieldErrors.title = "제목은 100자 이하여야 합니다.";
-  if (!summary) fieldErrors.summary = "요약을 입력해 주세요."; else if (summary.length > ADMIN_PROGRAM_SUMMARY_MAX_LENGTH) fieldErrors.summary = "요약은 300자 이하여야 합니다.";
-  if (!purpose) fieldErrors.purpose = "프로그램 목적을 입력해 주세요."; else if (purpose.length > ADMIN_PROGRAM_PURPOSE_MAX_LENGTH) fieldErrors.purpose = "프로그램 목적은 500자 이하여야 합니다.";
-  if (!normalizedBody) fieldErrors.body = "본문을 입력해 주세요."; else if (normalizedBody.length > ADMIN_PROGRAM_BODY_MAX_LENGTH) fieldErrors.body = "본문은 10,000자 이하여야 합니다."; else if (body.length > ADMIN_PROGRAM_BODY_MAX_PARAGRAPHS) fieldErrors.body = "본문은 최대 50개 문단까지 작성할 수 있습니다."; else if (body.some(p => p.length > ADMIN_PROGRAM_BODY_PARAGRAPH_MAX_LENGTH)) fieldErrors.body = "본문의 각 문단은 2,000자 이하여야 합니다.";
-  if (operationStatusLabel.length > ADMIN_PROGRAM_OPERATION_STATUS_MAX_LENGTH) fieldErrors.operationStatusLabel = "운영 상태 문구는 60자 이하로 입력해 주세요.";
-  if (!Number.isInteger(sortOrder) || sortOrder < ADMIN_PROGRAM_SORT_ORDER_MIN || sortOrder > ADMIN_PROGRAM_SORT_ORDER_MAX) fieldErrors.sortOrder = "정렬 순서는 0 이상 9999 이하의 정수여야 합니다.";
-  if (value.contentSafetyConfirmed !== true) fieldErrors.contentSafetyConfirmed = "개인정보와 공개 금지 정보가 포함되지 않았는지 확인해 주세요.";
+  if (!category) fieldErrors.category = "분류를 입력해 주세요.";
+  else if (category.length > ADMIN_PROGRAM_CATEGORY_MAX_LENGTH)
+    fieldErrors.category = "분류는 40자 이하로 입력해 주세요.";
+  if (!slug) fieldErrors.slug = "슬러그를 입력해 주세요.";
+  else if (slug.length > ADMIN_PROGRAM_SLUG_MAX_LENGTH) fieldErrors.slug = "슬러그는 80자 이하여야 합니다.";
+  else if (!isValidProgramSlug(slug)) fieldErrors.slug = "슬러그는 영문 소문자, 숫자와 하이픈만 사용할 수 있습니다.";
+  if (!title) fieldErrors.title = "제목을 입력해 주세요.";
+  else if (title.length > ADMIN_PROGRAM_TITLE_MAX_LENGTH) fieldErrors.title = "제목은 100자 이하여야 합니다.";
+  if (!summary) fieldErrors.summary = "요약을 입력해 주세요.";
+  else if (summary.length > ADMIN_PROGRAM_SUMMARY_MAX_LENGTH) fieldErrors.summary = "요약은 300자 이하여야 합니다.";
+  if (!purpose) fieldErrors.purpose = "프로그램 목적을 입력해 주세요.";
+  else if (purpose.length > ADMIN_PROGRAM_PURPOSE_MAX_LENGTH)
+    fieldErrors.purpose = "프로그램 목적은 500자 이하여야 합니다.";
+  if (!normalizedBody) fieldErrors.body = "본문을 입력해 주세요.";
+  else if (normalizedBody.length > ADMIN_PROGRAM_BODY_MAX_LENGTH) fieldErrors.body = "본문은 10,000자 이하여야 합니다.";
+  else if (body.length > ADMIN_PROGRAM_BODY_MAX_PARAGRAPHS)
+    fieldErrors.body = "본문은 최대 50개 문단까지 작성할 수 있습니다.";
+  else if (body.some((p) => p.length > ADMIN_PROGRAM_BODY_PARAGRAPH_MAX_LENGTH))
+    fieldErrors.body = "본문의 각 문단은 2,000자 이하여야 합니다.";
+  if (operationStatusLabel.length > ADMIN_PROGRAM_OPERATION_STATUS_MAX_LENGTH)
+    fieldErrors.operationStatusLabel = "운영 상태 문구는 60자 이하로 입력해 주세요.";
+  if (
+    !Number.isInteger(sortOrder) ||
+    sortOrder < ADMIN_PROGRAM_SORT_ORDER_MIN ||
+    sortOrder > ADMIN_PROGRAM_SORT_ORDER_MAX
+  )
+    fieldErrors.sortOrder = "정렬 순서는 0 이상 9999 이하의 정수여야 합니다.";
+  if (value.contentSafetyConfirmed !== true)
+    fieldErrors.contentSafetyConfirmed = "개인정보와 공개 금지 정보가 포함되지 않았는지 확인해 주세요.";
   if (Object.keys(fieldErrors).length) return { ok: false, fieldErrors };
-  return { ok: true, value: { category, slug, title, summary, purpose, body, operationStatusLabel: operationStatusLabel || null, sortOrder } };
+  return {
+    ok: true,
+    value: {
+      category,
+      slug,
+      title,
+      summary,
+      purpose,
+      body,
+      operationStatusLabel: operationStatusLabel || null,
+      sortOrder,
+    },
+  };
 }
 
-export function validateAdminProgramDraftUpdateInput(
-  input: unknown,
-): AdminProgramDraftUpdateValidationResult {
+export function validateAdminProgramDraftUpdateInput(input: unknown): AdminProgramDraftUpdateValidationResult {
   const draftValidation = validateAdminProgramDraftInput(input);
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const hasValidVersion = expectedUpdatedAt !== null;
 
@@ -298,19 +309,13 @@ export function validateAdminProgramDraftUpdateInput(
   };
 }
 
-export function validateAdminProgramReviewRequestInput(
-  input: unknown,
-): AdminProgramReviewRequestValidationResult {
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+export function validateAdminProgramReviewRequestInput(input: unknown): AdminProgramReviewRequestValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminProgramReviewRequestFieldErrors = {};
 
   if (value.reviewReadinessConfirmed !== true) {
-    fieldErrors.reviewReadinessConfirmed =
-      "프로그램 내용과 개인정보·공개 금지 정보 확인을 완료해 주세요.";
+    fieldErrors.reviewReadinessConfirmed = "프로그램 내용과 개인정보·공개 금지 정보 확인을 완료해 주세요.";
   }
 
   if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
@@ -324,13 +329,8 @@ export function validateAdminProgramReviewRequestInput(
   return { ok: true, value: { expectedUpdatedAt } };
 }
 
-export function validateAdminProgramReviewDecisionInput(
-  input: unknown,
-): AdminProgramReviewDecisionValidationResult {
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+export function validateAdminProgramReviewDecisionInput(input: unknown): AdminProgramReviewDecisionValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminProgramReviewDecisionFieldErrors = {};
 
@@ -338,8 +338,7 @@ export function validateAdminProgramReviewDecisionInput(
     fieldErrors.decision = "검토 결과를 선택해 주세요.";
   }
   if (value.decisionConfirmed !== true) {
-    fieldErrors.decisionConfirmed =
-      "선택한 검토 결과와 이후 상태 변화를 확인해 주세요.";
+    fieldErrors.decisionConfirmed = "선택한 검토 결과와 이후 상태 변화를 확인해 주세요.";
   }
 
   if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
@@ -359,19 +358,13 @@ export function validateAdminProgramReviewDecisionInput(
   };
 }
 
-export function validateAdminProgramPublishInput(
-  input: unknown,
-): AdminProgramPublishValidationResult {
-  const value =
-    typeof input === "object" && input !== null
-      ? (input as Record<string, unknown>)
-      : {};
+export function validateAdminProgramPublishInput(input: unknown): AdminProgramPublishValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminProgramPublishFieldErrors = {};
 
   if (value.publicationConfirmed !== true) {
-    fieldErrors.publicationConfirmed =
-      "게시 즉시 홈페이지에 공개된다는 점과 개인정보·공개 범위 확인을 완료해 주세요.";
+    fieldErrors.publicationConfirmed = "게시 즉시 홈페이지에 공개된다는 점과 개인정보·공개 범위 확인을 완료해 주세요.";
   }
 
   if (!expectedUpdatedAt || Object.keys(fieldErrors).length > 0) {
@@ -385,13 +378,8 @@ export function validateAdminProgramPublishInput(
   return { ok: true, value: { expectedUpdatedAt } };
 }
 
-
-export function validateAdminProgramDirectPublishInput(
-  input: unknown,
-): AdminProgramDirectPublishValidationResult {
-  const value = typeof input === "object" && input !== null
-    ? input as Record<string, unknown>
-    : {};
+export function validateAdminProgramDirectPublishInput(input: unknown): AdminProgramDirectPublishValidationResult {
+  const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const fieldErrors: AdminProgramDirectPublishFieldErrors = {};
   if (!expectedUpdatedAt) fieldErrors.expectedUpdatedAt = "게시 기준 시각을 확인할 수 없습니다.";

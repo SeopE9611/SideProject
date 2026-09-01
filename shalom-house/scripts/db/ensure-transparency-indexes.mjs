@@ -13,17 +13,58 @@ if (!uri) {
     const active = { deletedAt: null };
     const indexNames = await Promise.all([
       documents.createIndex({ deletedAt: -1, _id: -1 }, { name: "transparency_documents_deleted_timeline" }),
-      documents.createIndex({ slug: 1 }, { unique: true, partialFilterExpression: active, name: "transparency_documents_slug_unique" }),
-      documents.createIndex({ "file.sha256": 1 }, { unique: true, partialFilterExpression: active, name: "transparency_documents_file_sha256_unique" }),
+      documents.createIndex(
+        { slug: 1 },
+        {
+          unique: true,
+          partialFilterExpression: active,
+          name: "transparency_documents_slug_unique",
+        },
+      ),
+      documents.createIndex(
+        { "file.sha256": 1 },
+        {
+          unique: true,
+          partialFilterExpression: active,
+          name: "transparency_documents_file_sha256_unique",
+        },
+      ),
       documents.createIndex({ updatedAt: -1, _id: -1 }, { name: "transparency_documents_updated" }),
       documents.createIndex({ category: 1, updatedAt: -1 }, { name: "transparency_documents_category_updated" }),
-      documents.createIndex({ publicationStatus: 1, updatedAt: -1 }, { name: "transparency_documents_publication_updated" }),
-      documents.createIndex({ privacyReviewStatus: 1, updatedAt: -1 }, { name: "transparency_documents_privacy_updated" }),
-      documents.createIndex({ finalDocumentStatus: 1, updatedAt: -1 }, { name: "transparency_documents_final_updated" }),
-      documents.createIndex({ publicationStatus: 1, approvalStatus: 1, privacyReviewStatus: 1, finalDocumentStatus: 1, publishedAt: -1, documentDate: -1, _id: -1 }, { name: "transparency_documents_public_visibility" }),
+      documents.createIndex(
+        { publicationStatus: 1, updatedAt: -1 },
+        { name: "transparency_documents_publication_updated" },
+      ),
+      documents.createIndex(
+        { privacyReviewStatus: 1, updatedAt: -1 },
+        { name: "transparency_documents_privacy_updated" },
+      ),
+      documents.createIndex(
+        { finalDocumentStatus: 1, updatedAt: -1 },
+        { name: "transparency_documents_final_updated" },
+      ),
+      documents.createIndex(
+        {
+          publicationStatus: 1,
+          approvalStatus: 1,
+          privacyReviewStatus: 1,
+          finalDocumentStatus: 1,
+          publishedAt: -1,
+          documentDate: -1,
+          _id: -1,
+        },
+        { name: "transparency_documents_public_visibility" },
+      ),
     ]);
-    const auditIndexName = await audits.createIndex({ transparencyDocumentId: 1, occurredAt: -1, _id: -1 }, { name: "transparency_audit_events_content_occurred" });
-    console.log("자료공개 인덱스를 확인했습니다.", { databaseName, indexNames, auditIndexName });
+    const auditIndexName = await audits.createIndex(
+      { transparencyDocumentId: 1, occurredAt: -1, _id: -1 },
+      { name: "transparency_audit_events_content_occurred" },
+    );
+    console.log("자료공개 인덱스를 확인했습니다.", {
+      databaseName,
+      indexNames,
+      auditIndexName,
+    });
   } finally {
     await client.close();
   }

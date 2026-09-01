@@ -3,10 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-import {
-  validateAdminNewsPublishInput,
-  type AdminNewsPublishFieldErrors,
-} from "@/features/news/news.admin-validation";
+import { validateAdminNewsPublishInput, type AdminNewsPublishFieldErrors } from "@/features/news/news.admin-validation";
 
 export type AdminNewsPublishFormProps = {
   postId: string;
@@ -36,9 +33,7 @@ function getResponseError(value: unknown): string | null {
 
 function getPublicationConfirmedError(value: unknown): string | null {
   if (!isRecord(value) || !isRecord(value.fieldErrors)) return null;
-  return typeof value.fieldErrors.publicationConfirmed === "string"
-    ? value.fieldErrors.publicationConfirmed
-    : null;
+  return typeof value.fieldErrors.publicationConfirmed === "string" ? value.fieldErrors.publicationConfirmed : null;
 }
 
 export function AdminNewsPublishForm(props: AdminNewsPublishFormProps) {
@@ -68,15 +63,15 @@ export function AdminNewsPublishForm(props: AdminNewsPublishFormProps) {
     setFieldErrors({});
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `/api/admin/news/${encodeURIComponent(props.postId)}/publish`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify(input),
+      const response = await fetch(`/api/admin/news/${encodeURIComponent(props.postId)}/publish`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        credentials: "same-origin",
+        body: JSON.stringify(input),
+      });
       const responseBody = await readJsonResponse(response);
       if (
         response.status === 200 &&
@@ -87,9 +82,7 @@ export function AdminNewsPublishForm(props: AdminNewsPublishFormProps) {
         typeof responseBody.redirectTo === "string"
       ) {
         const fallback = `/admin/news/${props.postId}?published=1`;
-        const redirectTo = responseBody.redirectTo.startsWith("/admin/news/")
-          ? responseBody.redirectTo
-          : fallback;
+        const redirectTo = responseBody.redirectTo.startsWith("/admin/news/") ? responseBody.redirectTo : fallback;
         router.push(redirectTo);
         router.refresh();
         return;
@@ -125,15 +118,38 @@ export function AdminNewsPublishForm(props: AdminNewsPublishFormProps) {
   const confirmationError = fieldErrors.publicationConfirmed;
   return (
     <form onSubmit={handleSubmit} aria-busy={isSubmitting ? true : undefined} className="mt-5 max-w-3xl space-y-5">
-      {formError ? <div role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">{formError}</div> : null}
+      {formError ? (
+        <div role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">
+          {formError}
+        </div>
+      ) : null}
       <div className="grid gap-2">
         <div className="flex items-start gap-3">
-          <input id={checkboxId} name="publicationConfirmed" type="checkbox" aria-invalid={confirmationError ? true : undefined} aria-describedby={confirmationError ? checkboxErrorId : undefined} className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
-          <label htmlFor={checkboxId} className="font-semibold">승인된 제목·요약·본문과 공개 범위를 최종 확인했으며 지금 즉시 홈페이지에 게시합니다.</label>
+          <input
+            id={checkboxId}
+            name="publicationConfirmed"
+            type="checkbox"
+            aria-invalid={confirmationError ? true : undefined}
+            aria-describedby={confirmationError ? checkboxErrorId : undefined}
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <label htmlFor={checkboxId} className="font-semibold">
+            승인된 제목·요약·본문과 공개 범위를 최종 확인했으며 지금 즉시 홈페이지에 게시합니다.
+          </label>
         </div>
-        {confirmationError ? <p id={checkboxErrorId} className="text-small font-semibold text-danger">{confirmationError}</p> : null}
+        {confirmationError ? (
+          <p id={checkboxErrorId} className="text-small font-semibold text-danger">
+            {confirmationError}
+          </p>
+        ) : null}
       </div>
-      <button type="submit" disabled={isSubmitting} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">{isSubmitting ? "게시 중…" : "지금 게시"}</button>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isSubmitting ? "게시 중…" : "지금 게시"}
+      </button>
     </form>
   );
 }

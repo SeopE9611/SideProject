@@ -15,9 +15,7 @@ import type {
 } from "./news.types";
 
 export interface NewsRepository {
-  listPublished(options?: {
-    limit?: number;
-  }): Promise<readonly PublicNewsPostSummary[]>;
+  listPublished(options?: { limit?: number }): Promise<readonly PublicNewsPostSummary[]>;
 
   searchPublished(options?: PublicNewsSearchOptions): Promise<PublicNewsSearchResult>;
 
@@ -65,20 +63,12 @@ const fixtureNewsRepository: NewsRepository = {
     const filtered = getPublishedFixtureNewsPosts().filter(
       (post) =>
         (!options?.category || post.category === options.category) &&
-        (!normalizedQuery ||
-          `${post.title} ${post.summary}`
-            .toLocaleLowerCase("ko-KR")
-            .includes(normalizedQuery)),
+        (!normalizedQuery || `${post.title} ${post.summary}`.toLocaleLowerCase("ko-KR").includes(normalizedQuery)),
     );
     const total = filtered.length;
     const totalPages = Math.ceil(total / pageSize);
-    const page = resolvePublicNewsPage(
-      normalizePublicNewsPage(options?.page),
-      totalPages,
-    );
-    const items = filtered
-      .slice((page - 1) * pageSize, page * pageSize)
-      .map(({ body: _body, ...summary }) => summary);
+    const page = resolvePublicNewsPage(normalizePublicNewsPage(options?.page), totalPages);
+    const items = filtered.slice((page - 1) * pageSize, page * pageSize).map(({ body: _body, ...summary }) => summary);
 
     return { items, total, page, pageSize, totalPages };
   },
@@ -91,9 +81,7 @@ export function getNewsRepository(): NewsRepository {
   const configuredSource = process.env.SHALOM_CONTENT_SOURCE;
   const source =
     configuredSource ||
-    (process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview"
-      ? "fixture"
-      : "empty");
+    (process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview" ? "fixture" : "empty");
 
   switch (source) {
     case "empty":

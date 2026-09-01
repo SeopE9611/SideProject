@@ -4,11 +4,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminGalleryDraftForm } from "@/components/admin/admin-gallery-draft-form";
 import { findAdminGalleryItemById } from "@/features/gallery/gallery.admin-repository";
-export default async function EditGallery({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditGallery({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params,
     item = await findAdminGalleryItemById(id);
   if (!item) notFound();
@@ -44,9 +40,7 @@ export default async function EditGallery({
           }}
         />
       ) : (
-        <p className="rounded-card border p-5">
-          현재 상태에서는 수정할 수 없습니다.
-        </p>
+        <p className="rounded-card border p-5">현재 상태에서는 수정할 수 없습니다.</p>
       )}
     </div>
   );

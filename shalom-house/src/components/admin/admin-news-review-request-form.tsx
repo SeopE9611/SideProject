@@ -21,11 +21,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 async function readJsonResponse(response: Response): Promise<unknown | null> {
-  const mediaType = response.headers
-    .get("content-type")
-    ?.split(";", 1)[0]
-    .trim()
-    .toLowerCase();
+  const mediaType = response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase();
   if (mediaType !== "application/json") return null;
 
   try {
@@ -47,22 +43,15 @@ function getReviewReadinessError(value: unknown): string | null {
 }
 
 function getSafeRedirect(value: unknown): string | null {
-  if (
-    !isRecord(value) ||
-    value.ok !== true ||
-    typeof value.redirectTo !== "string"
-  ) {
+  if (!isRecord(value) || value.ok !== true || typeof value.redirectTo !== "string") {
     return null;
   }
   return value.redirectTo.startsWith("/admin/news/") ? value.redirectTo : null;
 }
 
-export function AdminNewsReviewRequestForm(
-  props: AdminNewsReviewRequestFormProps,
-) {
+export function AdminNewsReviewRequestForm(props: AdminNewsReviewRequestFormProps) {
   const router = useRouter();
-  const [fieldErrors, setFieldErrors] =
-    useState<AdminNewsReviewRequestFieldErrors>({});
+  const [fieldErrors, setFieldErrors] = useState<AdminNewsReviewRequestFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -73,8 +62,7 @@ export function AdminNewsReviewRequestForm(
     const formData = new FormData(event.currentTarget);
     const input = {
       expectedUpdatedAt: props.expectedUpdatedAt,
-      reviewReadinessConfirmed:
-        formData.get("reviewReadinessConfirmed") === "on",
+      reviewReadinessConfirmed: formData.get("reviewReadinessConfirmed") === "on",
     };
     const validation = validateAdminNewsReviewRequestInput(input);
 
@@ -82,9 +70,7 @@ export function AdminNewsReviewRequestForm(
     if (!validation.ok) {
       setFieldErrors(validation.fieldErrors);
       if (validation.formError === "invalid_version") {
-        setFormError(
-          "검토 요청 기준 정보를 확인할 수 없습니다. 상세 화면을 새로 확인해 주세요.",
-        );
+        setFormError("검토 요청 기준 정보를 확인할 수 없습니다. 상세 화면을 새로 확인해 주세요.");
       }
       return;
     }
@@ -92,24 +78,17 @@ export function AdminNewsReviewRequestForm(
     setFieldErrors({});
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `/api/admin/news/${encodeURIComponent(props.postId)}/review`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          credentials: "same-origin",
-          body: JSON.stringify(input),
+      const response = await fetch(`/api/admin/news/${encodeURIComponent(props.postId)}/review`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        credentials: "same-origin",
+        body: JSON.stringify(input),
+      });
       const responseBody = await readJsonResponse(response);
-      if (
-        response.status === 200 &&
-        isRecord(responseBody) &&
-        responseBody.ok === true
-      ) {
+      if (response.status === 200 && isRecord(responseBody) && responseBody.ok === true) {
         const fallback = `/admin/news/${props.postId}?reviewRequested=1`;
         router.push(getSafeRedirect(responseBody) ?? fallback);
         router.refresh();
@@ -149,11 +128,7 @@ export function AdminNewsReviewRequestForm(
   const readinessError = fieldErrors.reviewReadinessConfirmed;
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      aria-busy={isSubmitting ? true : undefined}
-      className="mt-5 max-w-3xl space-y-5"
-    >
+    <form onSubmit={handleSubmit} aria-busy={isSubmitting ? true : undefined} className="mt-5 max-w-3xl space-y-5">
       {formError ? (
         <div role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">
           {formError}

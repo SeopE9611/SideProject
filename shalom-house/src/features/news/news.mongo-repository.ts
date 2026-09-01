@@ -3,10 +3,7 @@ import { type Document, type Filter, type WithId } from "mongodb";
 import { getMongoDatabase } from "@/lib/mongodb";
 
 import type { NewsRepository } from "./news.repository";
-import {
-  NEWS_COLLECTION_NAME,
-  type MongoNewsPostDocument,
-} from "./news.mongo-schema";
+import { NEWS_COLLECTION_NAME, type MongoNewsPostDocument } from "./news.mongo-schema";
 import {
   normalizePublicNewsLimit,
   normalizePublicNewsPage,
@@ -57,11 +54,7 @@ function toPublicSummary(document: WithId<Document>): PublicNewsPostSummary | nu
 
 function toPublicPost(document: WithId<Document>): PublicNewsPost | null {
   const summary = toPublicSummary(document);
-  if (
-    !summary ||
-    !Array.isArray(document.body) ||
-    !document.body.every(isNonEmptyString)
-  ) {
+  if (!summary || !Array.isArray(document.body) || !document.body.every(isNonEmptyString)) {
     return null;
   }
 
@@ -90,9 +83,7 @@ const publicSummaryProjection = {
   updatedAt: 1,
 } as const;
 
-function mapPublicSummaries(
-  documents: readonly WithId<Document>[],
-): PublicNewsPostSummary[] {
+function mapPublicSummaries(documents: readonly WithId<Document>[]): PublicNewsPostSummary[] {
   return documents.flatMap((document) => {
     const post = toPublicSummary(document);
     if (!post) {
@@ -106,9 +97,7 @@ function mapPublicSummaries(
 }
 
 export class MongoNewsRepository implements NewsRepository {
-  async listPublished(options?: {
-    limit?: number;
-  }): Promise<readonly PublicNewsPostSummary[]> {
+  async listPublished(options?: { limit?: number }): Promise<readonly PublicNewsPostSummary[]> {
     const database = await getMongoDatabase();
     const documents = await database
       .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
@@ -124,9 +113,7 @@ export class MongoNewsRepository implements NewsRepository {
     return mapPublicSummaries(documents);
   }
 
-  async searchPublished(
-    options?: PublicNewsSearchOptions,
-  ): Promise<PublicNewsSearchResult> {
+  async searchPublished(options?: PublicNewsSearchOptions): Promise<PublicNewsSearchResult> {
     const q = normalizePublicNewsSearchQuery(options?.q);
     const requestedPage = normalizePublicNewsPage(options?.page);
     const pageSize = normalizePublicNewsPageSize(options?.pageSize);
@@ -137,19 +124,14 @@ export class MongoNewsRepository implements NewsRepository {
     if (q) {
       const expression = new RegExp(escapeRegularExpression(q), "i");
       searchConditions.push({
-        $or: [
-          { title: { $regex: expression } },
-          { summary: { $regex: expression } },
-        ],
+        $or: [{ title: { $regex: expression } }, { summary: { $regex: expression } }],
       });
     }
 
     const filter: Filter<MongoNewsPostDocument> = searchConditions.length
       ? { $and: [publicFilter, ...searchConditions] }
       : publicFilter;
-    const collection = (await getMongoDatabase()).collection<MongoNewsPostDocument>(
-      NEWS_COLLECTION_NAME,
-    );
+    const collection = (await getMongoDatabase()).collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME);
     const total = await collection.countDocuments(filter);
     const totalPages = Math.ceil(total / pageSize);
     const page = resolvePublicNewsPage(requestedPage, totalPages);
@@ -175,22 +157,20 @@ export class MongoNewsRepository implements NewsRepository {
     }
 
     const database = await getMongoDatabase();
-    const document = await database
-      .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
-      .findOne(
-        { ...createPublicFilter(new Date()), slug },
-        {
-          projection: {
-            slug: 1,
-            category: 1,
-            title: 1,
-            summary: 1,
-            body: 1,
-            publishedAt: 1,
-            updatedAt: 1,
-          },
+    const document = await database.collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME).findOne(
+      { ...createPublicFilter(new Date()), slug },
+      {
+        projection: {
+          slug: 1,
+          category: 1,
+          title: 1,
+          summary: 1,
+          body: 1,
+          publishedAt: 1,
+          updatedAt: 1,
         },
-      );
+      },
+    );
 
     return document ? toPublicPost(document) : null;
   }

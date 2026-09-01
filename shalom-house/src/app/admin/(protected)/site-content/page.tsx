@@ -1,3 +1,59 @@
-import Link from "next/link"; import { redirect } from "next/navigation";
-import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service"; import { hasAdminPermission } from "@/features/admin-auth/admin-authorization"; import { getAdminSiteContent } from "@/features/site-content/site-content.admin-repository"; import { getAdminStaffCounts } from "@/features/staff/staff.admin-repository";
-export default async function SiteContentPage(){const admin=await getCurrentAdmin();if(!admin||!hasAdminPermission(admin,"site_content.manage"))redirect("/admin?forbidden=1");const [items,counts]=await Promise.all([Promise.all([getAdminSiteContent("facility-overview"),getAdminSiteContent("greeting")]),getAdminStaffCounts()]);return <div className="space-y-6"><header><h1 className="text-title font-bold">공식 콘텐츠 관리</h1><p className="mt-2 text-muted-foreground">시설개요, 원장 인사말과 함께하는 사람들을 관리합니다.</p></header><div className="grid gap-5">{items.map(item=><section key={item.key} className="rounded-card border p-5"><h2 className="text-heading font-bold">{item.key==="facility-overview"?"시설개요":"원장 인사말"}</h2><p className="mt-2">{item.persisted?`MongoDB 저장됨 · 최근 수정 ${item.updatedAt}`:"현재 코드 기본 콘텐츠를 사용 중입니다."}</p><div className="mt-4 flex gap-4"><Link className="min-h-11 underline" href={`/admin/site-content/${item.key}`}>편집</Link><Link className="min-h-11 underline" href={item.key==="facility-overview"?"/about":"/about/greeting"}>공개 페이지 보기</Link></div></section>)}<section className="rounded-card border p-5"><h2 className="text-heading font-bold">함께하는 사람들</h2><p className="mt-2">등록된 직원 소개 수 {counts.total}명 · 공개 중인 직원 수 {counts.published}명</p><div className="mt-4 flex gap-4"><Link className="min-h-11 underline" href="/admin/site-content/people">관리</Link><Link className="min-h-11 underline" href="/about/people">공개 페이지 보기</Link></div></section></div></div>}
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getAdminSiteContent } from "@/features/site-content/site-content.admin-repository";
+import { getAdminStaffCounts } from "@/features/staff/staff.admin-repository";
+export default async function SiteContentPage() {
+  const admin = await getCurrentAdmin();
+  if (!admin || !hasAdminPermission(admin, "site_content.manage")) redirect("/admin?forbidden=1");
+  const [items, counts] = await Promise.all([
+    Promise.all([getAdminSiteContent("facility-overview"), getAdminSiteContent("greeting")]),
+    getAdminStaffCounts(),
+  ]);
+  return (
+    <div className="space-y-6">
+      <header>
+        <h1 className="text-title font-bold">공식 콘텐츠 관리</h1>
+        <p className="mt-2 text-muted-foreground">시설개요, 원장 인사말과 함께하는 사람들을 관리합니다.</p>
+      </header>
+      <div className="grid gap-5">
+        {items.map((item) => (
+          <section key={item.key} className="rounded-card border p-5">
+            <h2 className="text-heading font-bold">{item.key === "facility-overview" ? "시설개요" : "원장 인사말"}</h2>
+            <p className="mt-2">
+              {item.persisted
+                ? `MongoDB 저장됨 · 최근 수정 ${item.updatedAt}`
+                : "현재 코드 기본 콘텐츠를 사용 중입니다."}
+            </p>
+            <div className="mt-4 flex gap-4">
+              <Link className="min-h-11 underline" href={`/admin/site-content/${item.key}`}>
+                편집
+              </Link>
+              <Link
+                className="min-h-11 underline"
+                href={item.key === "facility-overview" ? "/about" : "/about/greeting"}
+              >
+                공개 페이지 보기
+              </Link>
+            </div>
+          </section>
+        ))}
+        <section className="rounded-card border p-5">
+          <h2 className="text-heading font-bold">함께하는 사람들</h2>
+          <p className="mt-2">
+            등록된 직원 소개 수 {counts.total}명 · 공개 중인 직원 수 {counts.published}명
+          </p>
+          <div className="mt-4 flex gap-4">
+            <Link className="min-h-11 underline" href="/admin/site-content/people">
+              관리
+            </Link>
+            <Link className="min-h-11 underline" href="/about/people">
+              공개 페이지 보기
+            </Link>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}

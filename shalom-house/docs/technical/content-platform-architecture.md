@@ -328,6 +328,7 @@ publishedAt=기존 Date`로 전환한다. `publicationStatus`, `updatedAt`만 �
 브라우저에서 긴 변 1920px 이하, quality 0.82의 WebP로 변환한 뒤 서버가 MIME, RIFF/WEBP magic bytes, 실제 용량·크기와 SHA-256을 다시 검증한다. Storage 업로드 뒤 MongoDB metadata와 audit를 transaction으로 저장하며 실패하면 업로드 object를 보상 삭제한다. public bucket, 공개 URL과 공개 갤러리 연결은 후속 단계다.
 
 ## 활동사진 공개 미디어 경로
+
 공개 승인된 WebP도 Supabase private bucket에 한 번만 저장한다. 서버 공개 미디어 API가 MongoDB의 게시·승인 상태, 게시 시각, 동의 준비 상태, 철회 여부와 Asia/Seoul 기준 게시 시작·종료일을 매 요청 확인한 뒤 private Storage에서 다운로드해 전달한다. public bucket, `getPublicUrl()`, `createSignedUrl()`은 사용하지 않으며 철회와 게시 중단을 다음 요청부터 반영하도록 `Cache-Control: no-store`를 적용한다.
 
 ## 자료공개 PDF 저장 구조
@@ -337,7 +338,6 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 ## 관리자 역할 기반 권한 적용
 
 관리자 역할은 `admin`, `editor`, `reviewer`, `publisher`로 구분한다. `admin`은 전체 권한, `editor`는 초안 작성·수정·보관·검토 요청, `reviewer`는 승인·반려 및 활동사진 동의 철회, `publisher`는 게시·게시 중단 및 활동사진 동의 철회 권한을 가진다. 모든 쓰기 API는 중앙 권한 매트릭스를 통해 권한을 서버에서 강제하고, UI의 버튼 숨김은 보조 수단으로만 사용한다. 기존 `admin` 계정의 동작은 유지한다.
-
 
 ## 관리자 소프트 삭제와 복구
 

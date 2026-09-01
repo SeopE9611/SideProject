@@ -2,29 +2,15 @@ export const newsCategories = ["notice", "activity"] as const;
 
 export type NewsCategory = (typeof newsCategories)[number];
 
-export const PUBLIC_NEWS_RESERVED_SLUGS = [
-  "notices",
-  "activities",
-] as const;
+export const PUBLIC_NEWS_RESERVED_SLUGS = ["notices", "activities"] as const;
 
-export type PublicNewsReservedSlug =
-  (typeof PUBLIC_NEWS_RESERVED_SLUGS)[number];
+export type PublicNewsReservedSlug = (typeof PUBLIC_NEWS_RESERVED_SLUGS)[number];
 
-export const newsPublicationStatuses = [
-  "draft",
-  "review",
-  "published",
-  "archived",
-] as const;
+export const newsPublicationStatuses = ["draft", "review", "published", "archived"] as const;
 
-export type NewsPublicationStatus =
-  (typeof newsPublicationStatuses)[number];
+export type NewsPublicationStatus = (typeof newsPublicationStatuses)[number];
 
-export const newsApprovalStatuses = [
-  "pending",
-  "approved",
-  "rejected",
-] as const;
+export const newsApprovalStatuses = ["pending", "approved", "rejected"] as const;
 
 export type NewsApprovalStatus = (typeof newsApprovalStatuses)[number];
 
@@ -80,50 +66,29 @@ export function getNewsCategoryLabel(category: NewsCategory): string {
 }
 
 export function isNewsCategory(value: unknown): value is NewsCategory {
-  return (
-    typeof value === "string" && newsCategories.includes(value as NewsCategory)
-  );
+  return typeof value === "string" && newsCategories.includes(value as NewsCategory);
 }
 
-export function isNewsPublicationStatus(
-  value: unknown,
-): value is NewsPublicationStatus {
-  return (
-    typeof value === "string" &&
-    newsPublicationStatuses.includes(value as NewsPublicationStatus)
-  );
+export function isNewsPublicationStatus(value: unknown): value is NewsPublicationStatus {
+  return typeof value === "string" && newsPublicationStatuses.includes(value as NewsPublicationStatus);
 }
 
-export function isNewsApprovalStatus(
-  value: unknown,
-): value is NewsApprovalStatus {
-  return (
-    typeof value === "string" &&
-    newsApprovalStatuses.includes(value as NewsApprovalStatus)
-  );
+export function isNewsApprovalStatus(value: unknown): value is NewsApprovalStatus {
+  return typeof value === "string" && newsApprovalStatuses.includes(value as NewsApprovalStatus);
 }
 
-export function getNewsPublicationStatusLabel(
-  status: NewsPublicationStatus,
-): string {
+export function getNewsPublicationStatusLabel(status: NewsPublicationStatus): string {
   return publicationStatusLabels[status];
 }
 
-export function getNewsApprovalStatusLabel(
-  status: NewsApprovalStatus,
-): string {
+export function getNewsApprovalStatusLabel(status: NewsApprovalStatus): string {
   return approvalStatusLabels[status];
 }
 
 export function isValidNewsSlug(value: unknown): value is string {
-  return (
-    typeof value === "string" &&
-    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)
-  );
+  return typeof value === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
 }
 
-export function isPublicNewsReservedSlug(
-  value: string,
-): value is PublicNewsReservedSlug {
+export function isPublicNewsReservedSlug(value: string): value is PublicNewsReservedSlug {
   return PUBLIC_NEWS_RESERVED_SLUGS.includes(value as PublicNewsReservedSlug);
 }

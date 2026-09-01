@@ -40,9 +40,7 @@ export type AdminLoginAttemptDocument = {
   updatedAt: Date;
 };
 
-export async function findActiveAdminByNormalizedEmail(
-  normalizedEmail: string,
-): Promise<AdminUserDocument | null> {
+export async function findActiveAdminByNormalizedEmail(normalizedEmail: string): Promise<AdminUserDocument | null> {
   const database = await getMongoDatabase();
   const admin = await database.collection<AdminUserDocument>(usersCollectionName).findOne({
     normalizedEmail,
@@ -72,19 +70,14 @@ export async function createAdminSession(input: {
   });
 }
 
-export async function findActiveAdminBySessionHash(
-  tokenHash: string,
-  now: Date,
-): Promise<AdminUserDocument | null> {
+export async function findActiveAdminBySessionHash(tokenHash: string, now: Date): Promise<AdminUserDocument | null> {
   const database = await getMongoDatabase();
   const sessionFilter: Filter<AdminSessionDocument> = {
     tokenHash,
     expiresAt: { $gt: now },
     $or: [{ revokedAt: null }, { revokedAt: { $exists: false } }],
   };
-  const session = await database
-    .collection<AdminSessionDocument>(sessionsCollectionName)
-    .findOne(sessionFilter);
+  const session = await database.collection<AdminSessionDocument>(sessionsCollectionName).findOne(sessionFilter);
   if (!session) return null;
 
   const admin = await database.collection<AdminUserDocument>(usersCollectionName).findOne({
@@ -96,21 +89,18 @@ export async function findActiveAdminBySessionHash(
 
 export async function revokeAdminSession(tokenHash: string, now: Date) {
   const database = await getMongoDatabase();
-  await database
-    .collection<AdminSessionDocument>(sessionsCollectionName)
-    .updateOne(
-      { tokenHash, $or: [{ revokedAt: null }, { revokedAt: { $exists: false } }] },
-      { $set: { revokedAt: now } },
-    );
+  await database.collection<AdminSessionDocument>(sessionsCollectionName).updateOne(
+    {
+      tokenHash,
+      $or: [{ revokedAt: null }, { revokedAt: { $exists: false } }],
+    },
+    { $set: { revokedAt: now } },
+  );
 }
 
-export async function getLoginAttempt(
-  keyHash: string,
-): Promise<AdminLoginAttemptDocument | null> {
+export async function getLoginAttempt(keyHash: string): Promise<AdminLoginAttemptDocument | null> {
   const database = await getMongoDatabase();
-  return database
-    .collection<AdminLoginAttemptDocument>(attemptsCollectionName)
-    .findOne({ keyHash });
+  return database.collection<AdminLoginAttemptDocument>(attemptsCollectionName).findOne({ keyHash });
 }
 
 export async function saveLoginAttempt(input: {
@@ -125,10 +115,7 @@ export async function saveLoginAttempt(input: {
   const blockedUntil = new Date(input.now.getTime() + input.blockMilliseconds);
   const expiresAt = new Date(blockedUntil.getTime() + input.windowMilliseconds);
   const startsNewWindow = {
-    $or: [
-      { $eq: [{ $type: "$windowStartedAt" }, "missing"] },
-      { $lt: ["$windowStartedAt", windowStartCutoff] },
-    ],
+    $or: [{ $eq: [{ $type: "$windowStartedAt" }, "missing"] }, { $lt: ["$windowStartedAt", windowStartCutoff] }],
   };
 
   await database.collection<AdminLoginAttemptDocument>(attemptsCollectionName).updateOne(
@@ -141,11 +128,7 @@ export async function saveLoginAttempt(input: {
             $cond: [startsNewWindow, input.now, "$windowStartedAt"],
           },
           failedCount: {
-            $cond: [
-              startsNewWindow,
-              1,
-              { $add: [{ $ifNull: ["$failedCount", 0] }, 1] },
-            ],
+            $cond: [startsNewWindow, 1, { $add: [{ $ifNull: ["$failedCount", 0] }, 1] }],
           },
           blockedUntil: {
             $cond: [startsNewWindow, null, { $ifNull: ["$blockedUntil", null] }],
@@ -157,11 +140,7 @@ export async function saveLoginAttempt(input: {
       {
         $set: {
           blockedUntil: {
-            $cond: [
-              { $gte: ["$failedCount", input.failureLimit] },
-              blockedUntil,
-              { $ifNull: ["$blockedUntil", null] },
-            ],
+            $cond: [{ $gte: ["$failedCount", input.failureLimit] }, blockedUntil, { $ifNull: ["$blockedUntil", null] }],
           },
         },
       },
@@ -172,7 +151,5 @@ export async function saveLoginAttempt(input: {
 
 export async function clearLoginAttempt(keyHash: string): Promise<void> {
   const database = await getMongoDatabase();
-  await database
-    .collection<AdminLoginAttemptDocument>(attemptsCollectionName)
-    .deleteOne({ keyHash });
+  await database.collection<AdminLoginAttemptDocument>(attemptsCollectionName).deleteOne({ keyHash });
 }

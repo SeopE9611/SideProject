@@ -2,10 +2,7 @@
 
 import { AdminGalleryTransitionForm } from "./admin-gallery-review-form";
 
-export function AdminGalleryPublishForm(p: {
-  id: string;
-  expectedUpdatedAt: string;
-}) {
+export function AdminGalleryPublishForm(p: { id: string; expectedUpdatedAt: string }) {
   return (
     <AdminGalleryTransitionForm
       {...p}

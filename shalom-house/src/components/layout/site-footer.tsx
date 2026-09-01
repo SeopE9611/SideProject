@@ -60,9 +60,7 @@ export function SiteFooter() {
                 </Link>
               </p>
               <p>
-                <span className="block font-bold text-hero-on-dark">
-                  대표 전화
-                </span>
+                <span className="block font-bold text-hero-on-dark">대표 전화</span>
                 <a
                   className="text-safe-wrap mt-1 inline-flex min-h-10 items-center underline decoration-hero-on-dark/60 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
                   href={`tel:${siteConfig.phone}`}

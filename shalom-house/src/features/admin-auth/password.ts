@@ -1,8 +1,4 @@
-import {
-  randomBytes,
-  scrypt as scryptCallback,
-  timingSafeEqual,
-} from "node:crypto";
+import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 const cost = 32768;
 const blockSize = 8;
 const parallelization = 1;
@@ -44,18 +40,13 @@ function decodeBase64Url(value: string): Buffer | null {
   if (!/^[A-Za-z0-9_-]+$/.test(value)) return null;
   try {
     const decoded = Buffer.from(value, "base64url");
-    return decoded.toString("base64url") === value.replace(/=+$/, "")
-      ? decoded
-      : null;
+    return decoded.toString("base64url") === value.replace(/=+$/, "") ? decoded : null;
   } catch {
     return null;
   }
 }
 
-export async function verifyAdminPassword(
-  password: string,
-  encodedHash: string,
-): Promise<boolean> {
+export async function verifyAdminPassword(password: string, encodedHash: string): Promise<boolean> {
   if (password.length < 1 || password.length > 128) return false;
   const parts = encodedHash.split("$");
   if (

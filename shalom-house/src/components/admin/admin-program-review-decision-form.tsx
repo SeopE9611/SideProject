@@ -45,9 +45,7 @@ function getFieldErrors(value: unknown): AdminProgramReviewDecisionFieldErrors |
   return errors;
 }
 
-export function AdminProgramReviewDecisionForm(
-  props: AdminProgramReviewDecisionFormProps,
-) {
+export function AdminProgramReviewDecisionForm(props: AdminProgramReviewDecisionFormProps) {
   const router = useRouter();
   const [fieldErrors, setFieldErrors] = useState<AdminProgramReviewDecisionFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -75,15 +73,15 @@ export function AdminProgramReviewDecisionForm(
     setFieldErrors({});
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `/api/admin/programs/${encodeURIComponent(props.postId)}/decision`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify(input),
+      const response = await fetch(`/api/admin/programs/${encodeURIComponent(props.postId)}/decision`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        credentials: "same-origin",
+        body: JSON.stringify(input),
+      });
       const responseBody = await readJsonResponse(response);
       if (
         response.status === 200 &&
@@ -92,12 +90,11 @@ export function AdminProgramReviewDecisionForm(
         isAdminProgramReviewDecision(responseBody.decision) &&
         typeof responseBody.redirectTo === "string"
       ) {
-        const fallback = responseBody.decision === "approve"
-          ? `/admin/programs/${props.postId}?decision=approved`
-          : `/admin/programs/${props.postId}?decision=rejected`;
-        const redirectTo = responseBody.redirectTo.startsWith("/admin/programs/")
-          ? responseBody.redirectTo
-          : fallback;
+        const fallback =
+          responseBody.decision === "approve"
+            ? `/admin/programs/${props.postId}?decision=approved`
+            : `/admin/programs/${props.postId}?decision=rejected`;
+        const redirectTo = responseBody.redirectTo.startsWith("/admin/programs/") ? responseBody.redirectTo : fallback;
         router.push(redirectTo);
         router.refresh();
         return;
@@ -132,27 +129,76 @@ export function AdminProgramReviewDecisionForm(
 
   return (
     <form onSubmit={handleSubmit} aria-busy={isSubmitting ? true : undefined} className="mt-5 max-w-3xl space-y-5">
-      {formError ? <div role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">{formError}</div> : null}
+      {formError ? (
+        <div role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">
+          {formError}
+        </div>
+      ) : null}
       <fieldset aria-describedby={fieldErrors.decision ? decisionErrorId : undefined} className="space-y-3">
         <legend className="font-semibold">검토 결과 선택</legend>
         <div className="flex items-start gap-3">
-          <input id="admin-program-review-decision-approve" name="decision" value="approve" type="radio" className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
-          <label htmlFor="admin-program-review-decision-approve"><span className="font-semibold">승인</span><span className="mt-1 block text-small text-muted-foreground">내용 검토를 승인합니다. 승인만으로 프로그램이 공개되지는 않습니다.</span></label>
+          <input
+            id="admin-program-review-decision-approve"
+            name="decision"
+            value="approve"
+            type="radio"
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <label htmlFor="admin-program-review-decision-approve">
+            <span className="font-semibold">승인</span>
+            <span className="mt-1 block text-small text-muted-foreground">
+              내용 검토를 승인합니다. 승인만으로 프로그램이 공개되지는 않습니다.
+            </span>
+          </label>
         </div>
         <div className="flex items-start gap-3">
-          <input id="admin-program-review-decision-reject" name="decision" value="reject" type="radio" className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
-          <label htmlFor="admin-program-review-decision-reject"><span className="font-semibold">반려</span><span className="mt-1 block text-small text-muted-foreground">프로그램을 수정 가능한 초안으로 되돌립니다. 수정 후 다시 검토를 요청할 수 있습니다.</span></label>
+          <input
+            id="admin-program-review-decision-reject"
+            name="decision"
+            value="reject"
+            type="radio"
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <label htmlFor="admin-program-review-decision-reject">
+            <span className="font-semibold">반려</span>
+            <span className="mt-1 block text-small text-muted-foreground">
+              프로그램을 수정 가능한 초안으로 되돌립니다. 수정 후 다시 검토를 요청할 수 있습니다.
+            </span>
+          </label>
         </div>
-        {fieldErrors.decision ? <p id={decisionErrorId} className="text-small font-semibold text-danger">{fieldErrors.decision}</p> : null}
+        {fieldErrors.decision ? (
+          <p id={decisionErrorId} className="text-small font-semibold text-danger">
+            {fieldErrors.decision}
+          </p>
+        ) : null}
       </fieldset>
       <div className="grid gap-2">
         <div className="flex items-start gap-3">
-          <input id="admin-program-review-decision-confirmed" name="decisionConfirmed" type="checkbox" aria-invalid={fieldErrors.decisionConfirmed ? true : undefined} aria-describedby={fieldErrors.decisionConfirmed ? confirmedErrorId : undefined} className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
-          <label htmlFor="admin-program-review-decision-confirmed" className="font-semibold">선택한 검토 결과와 이후 프로그램 상태 변화를 확인했습니다.</label>
+          <input
+            id="admin-program-review-decision-confirmed"
+            name="decisionConfirmed"
+            type="checkbox"
+            aria-invalid={fieldErrors.decisionConfirmed ? true : undefined}
+            aria-describedby={fieldErrors.decisionConfirmed ? confirmedErrorId : undefined}
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <label htmlFor="admin-program-review-decision-confirmed" className="font-semibold">
+            선택한 검토 결과와 이후 프로그램 상태 변화를 확인했습니다.
+          </label>
         </div>
-        {fieldErrors.decisionConfirmed ? <p id={confirmedErrorId} className="text-small font-semibold text-danger">{fieldErrors.decisionConfirmed}</p> : null}
+        {fieldErrors.decisionConfirmed ? (
+          <p id={confirmedErrorId} className="text-small font-semibold text-danger">
+            {fieldErrors.decisionConfirmed}
+          </p>
+        ) : null}
       </div>
-      <button type="submit" disabled={isSubmitting} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">{isSubmitting ? "처리 중…" : "검토 결과 적용"}</button>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isSubmitting ? "처리 중…" : "검토 결과 적용"}
+      </button>
     </form>
   );
 }
