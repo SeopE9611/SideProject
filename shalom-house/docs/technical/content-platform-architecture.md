@@ -389,3 +389,7 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 - `program_posts`의 `coverGalleryItemId`는 `gallery_items` ObjectId만 보관하고 이미지 Storage 정보를 복제하지 않는다. `attachment`는 private documents bucket의 PDF metadata를 보관하며 필드가 없는 기존 문서도 지원한다.
 - PDF objectPath는 `shalom-house/programs/<programId>/attachments/<assetId>.pdf`로 제한한다. 공개 및 관리자 다운로드는 애플리케이션 route를 통하며 Supabase 원본 URL과 signed URL을 사용하지 않는다.
 - 변경은 `updatedAt` optimistic locking과 `program_audit_events`의 동일 MongoDB transaction을 사용한다. 업로드 실패 보상 삭제와 교체 후 이전 object 삭제를 응답 전에 기다리되, 이전 object 삭제 실패는 성공한 DB 참조를 유지한다.
+
+## 관리자 계정 관리 transaction
+
+`admin_users` 변경과 `admin_user_audit_events` 기록은 optimistic locking을 사용한 동일 MongoDB transaction으로 처리한다. 모든 역할·상태 변경은 `admin_user_management_state`의 `active-admin-guard` singleton 문서를 먼저 갱신하여 마지막 active admin 검사를 직렬화한다. 역할·상태 변경 transaction은 아직 해제되지 않은 대상 세션도 함께 해제한다. 감사 데이터에는 비밀번호·해시·세션 token을 저장하지 않는다.

@@ -20,9 +20,11 @@ const preparedItems = [
   "생활공간 설명의 공개 상태·표시 순서 관리",
   "일반·방문·자원봉사·후원 문의 통합 관리",
   "후원자 명부와 후원금 관리대장",
+  "관리자 계정·역할·상태·세션 관리",
+  "소식·프로그램 대표 이미지와 PDF 첨부 관리",
 ] as const;
 
-const nextItems = ["이미지·첨부파일 공개 절차"] as const;
+const nextItems = ["검색 노출·메타데이터와 최종 통합 QA"] as const;
 
 export default async function AdminDashboardPage({
   searchParams,
@@ -34,6 +36,7 @@ export default async function AdminDashboardPage({
   const canManageSiteContent = Boolean(admin && hasAdminPermission(admin, "site_content.manage"));
   const canManageInquiries = Boolean(admin && hasAdminPermission(admin, "inquiries.manage"));
   const canManageDonations = Boolean(admin && hasAdminPermission(admin, "donations.manage"));
+  const canManageAdminUsers = Boolean(admin && hasAdminPermission(admin, "admin_users.manage"));
   return (
     <div className="space-y-8">
       {forbidden ? (
@@ -64,6 +67,11 @@ export default async function AdminDashboardPage({
         </section>
       </div>
       <div className="flex flex-wrap gap-3">
+        {canManageAdminUsers ? (
+          <Link href="/admin/admin-users" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">
+            계정 관리 열기
+          </Link>
+        ) : null}
         {canManageDonations ? (
           <Link href="/admin/donations" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">
             후원 관리 열기

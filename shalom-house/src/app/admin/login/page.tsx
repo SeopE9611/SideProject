@@ -15,9 +15,10 @@ const errorMessages: Record<string, string> = {
 export default async function AdminLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string | string[] }>;
+  searchParams: Promise<{ error?: string | string[]; sessionRevoked?: string | string[] }>;
 }) {
-  const errorValue = (await searchParams).error;
+  const query = await searchParams;
+  const errorValue = query.error;
   const error = typeof errorValue === "string" ? errorMessages[errorValue] : undefined;
 
   return (
@@ -37,6 +38,9 @@ export default async function AdminLoginPage({
           aria-describedby={error ? "login-error" : undefined}
           className="mt-8 space-y-5"
         >
+          {query.sessionRevoked === "1" ? (
+            <p role="status">관리자 로그인 세션이 해제되었습니다. 다시 로그인해 주세요.</p>
+          ) : null}
           {error ? (
             <p
               id="login-error"
