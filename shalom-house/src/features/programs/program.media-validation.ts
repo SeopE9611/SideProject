@@ -54,6 +54,21 @@ export function normalizeProgramAttachmentFileName(value: string): string {
   return name && name !== ".pdf" ? name : "attachment.pdf";
 }
 
+export function encodeProgramAttachmentFileName(value: string): string {
+  return encodeURIComponent(value).replace(
+    /['()*]/g,
+    (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
+}
+
+export function createProgramAttachmentContentDisposition(originalFileName: string): string {
+  const normalized = normalizeProgramAttachmentFileName(originalFileName);
+  return [
+    'attachment; filename="program-attachment.pdf"',
+    `filename*=UTF-8''${encodeProgramAttachmentFileName(normalized)}`,
+  ].join("; ");
+}
+
 export function isValidStoredProgramAttachment(value: unknown, updatedAt: unknown, programId: string): value is MongoProgramAttachment {
   if (!canonicalId(programId)) return false;
   if (!value || typeof value !== "object") return false;

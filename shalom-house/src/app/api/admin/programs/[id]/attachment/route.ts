@@ -2,11 +2,10 @@ import { ObjectId } from "mongodb";
 import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin, isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
 import { findAdminProgramPostById, inspectAdminProgramMediaTarget, isValidAdminProgramId, removeAdminProgramAttachment, setAdminProgramAttachment } from "@/features/programs/program.admin-repository";
-import { ADMIN_PROGRAM_ATTACHMENT_REQUEST_MAX_BYTES, validateProgramAttachmentFile, validateProgramAttachmentMetadata, validateProgramMediaRemoveInput } from "@/features/programs/program.media-validation";
+import { ADMIN_PROGRAM_ATTACHMENT_REQUEST_MAX_BYTES, createProgramAttachmentContentDisposition, validateProgramAttachmentFile, validateProgramAttachmentMetadata, validateProgramMediaRemoveInput } from "@/features/programs/program.media-validation";
 import { downloadPrivateProgramAttachment, removePrivateProgramAttachment, uploadPrivateProgramAttachment } from "@/features/programs/program.storage";
 export const runtime = "nodejs"; const JSON_MAX = 16 * 1024;
 const json = (body: unknown, status: number) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
-const disposition = (name: string) => `attachment; filename="program-attachment.pdf"; filename*=UTF-8''${encodeURIComponent(name)}`;
 const errorName = (error: unknown) => error instanceof Error ? error.name : "UnknownError";
 async function cleanupAttachment(programId: string, bucket: string, objectPath: string, message: string) {
   try { await removePrivateProgramAttachment(programId, bucket, objectPath); }
@@ -19,7 +18,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     if (!target.ok) return json({ ok: false, error: target.reason }, target.reason === "not_found" ? 404 : 503);
     const post = await findAdminProgramPostById(id); if (!post?.attachment) return json({ ok: false, error: "not_found" }, 404);
     const blob = await downloadPrivateProgramAttachment(id, post.attachment.bucket, post.attachment.objectPath);
-    return new Response(await blob.arrayBuffer(), { headers: { "Content-Type": "application/pdf", "Content-Disposition": disposition(post.attachment.originalFileName),
+    return new Response(await blob.arrayBuffer(), { headers: { "Content-Type": "application/pdf", "Content-Disposition": createProgramAttachmentContentDisposition(post.attachment.originalFileName),
       "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
   } catch { return json({ ok: false, error: "unavailable" }, 503); }
 }
