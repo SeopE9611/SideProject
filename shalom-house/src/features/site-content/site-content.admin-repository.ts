@@ -133,7 +133,7 @@ export async function saveAdminSiteContent(input: {
           { session },
         );
       else {
-        const updated = await collection.updateOne(
+        const updated = await database.collection(SITE_CONTENT_COLLECTION_NAME).updateOne(
           { key: input.key, updatedAt: input.expectedUpdatedAt! },
           { $set: { content: input.content, updatedAt: transitionAt } },
           { session },
