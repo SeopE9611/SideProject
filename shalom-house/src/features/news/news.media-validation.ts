@@ -1,12 +1,17 @@
 import { ObjectId } from "mongodb";
+import type { MongoNewsAttachment } from "./news.mongo-schema";
+import { getNewsPrivateBucketName, isValidPrivateNewsAttachmentPath } from "./news.storage";
 
 export const ADMIN_NEWS_ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
 export const ADMIN_NEWS_ATTACHMENT_REQUEST_MAX_BYTES = 11 * 1024 * 1024;
 export const ADMIN_NEWS_ATTACHMENT_LABEL_MAX_LENGTH = 100;
 export const ADMIN_NEWS_ATTACHMENT_FILE_NAME_MAX_LENGTH = 120;
 
-const canonicalIso = (value: unknown): value is string =>
-  typeof value === "string" && new Date(value).toISOString() === value;
+export function isCanonicalNewsMediaIso(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime()) && date.toISOString() === value;
+}
 const exact = (value: object, keys: readonly string[]) =>
   Object.keys(value).length === keys.length && Object.keys(value).every((key) => keys.includes(key));
 const canonicalId = (value: unknown): value is string =>
@@ -15,7 +20,7 @@ const canonicalId = (value: unknown): value is string =>
 export function validateNewsCoverSetInput(value: unknown) {
   if (!value || typeof value !== "object" || !exact(value, ["expectedUpdatedAt", "galleryItemId", "mediaConfirmed"])) return null;
   const input = value as Record<string, unknown>;
-  return canonicalIso(input.expectedUpdatedAt) && canonicalId(input.galleryItemId) && input.mediaConfirmed === true
+  return isCanonicalNewsMediaIso(input.expectedUpdatedAt) && canonicalId(input.galleryItemId) && input.mediaConfirmed === true
     ? { expectedUpdatedAt: new Date(input.expectedUpdatedAt), galleryItemId: input.galleryItemId }
     : null;
 }
@@ -23,7 +28,7 @@ export function validateNewsCoverSetInput(value: unknown) {
 export function validateNewsMediaRemoveInput(value: unknown) {
   if (!value || typeof value !== "object" || !exact(value, ["expectedUpdatedAt", "removeConfirmed"])) return null;
   const input = value as Record<string, unknown>;
-  return canonicalIso(input.expectedUpdatedAt) && input.removeConfirmed === true
+  return isCanonicalNewsMediaIso(input.expectedUpdatedAt) && input.removeConfirmed === true
     ? { expectedUpdatedAt: new Date(input.expectedUpdatedAt) } : null;
 }
 
@@ -31,7 +36,7 @@ export function validateNewsAttachmentMetadata(value: unknown) {
   if (!value || typeof value !== "object" || !exact(value, ["expectedUpdatedAt", "label", "contentSafetyConfirmed"])) return null;
   const input = value as Record<string, unknown>;
   const label = typeof input.label === "string" ? input.label.trim() : "";
-  if (!canonicalIso(input.expectedUpdatedAt) || input.contentSafetyConfirmed !== true || !isValidNewsAttachmentLabel(label)) return null;
+  if (!isCanonicalNewsMediaIso(input.expectedUpdatedAt) || input.contentSafetyConfirmed !== true || !isValidNewsAttachmentLabel(label)) return null;
   return { expectedUpdatedAt: new Date(input.expectedUpdatedAt), label };
 }
 
@@ -47,6 +52,33 @@ export function normalizeNewsAttachmentFileName(value: string): string {
     name = `${name.slice(0, ADMIN_NEWS_ATTACHMENT_FILE_NAME_MAX_LENGTH - 4)}.pdf`;
   }
   return name && name !== ".pdf" ? name : "attachment.pdf";
+}
+
+export function isValidStoredNewsAttachment(value: unknown, updatedAt: unknown): value is MongoNewsAttachment {
+  if (!value || typeof value !== "object") return false;
+  const attachment = value as Record<string, unknown>;
+  const storedAt = attachment.storedAt;
+  return attachment.bucket === getNewsPrivateBucketName() &&
+    isValidPrivateNewsAttachmentPath(attachment.objectPath) &&
+    typeof attachment.originalFileName === "string" &&
+    normalizeNewsAttachmentFileName(attachment.originalFileName) === attachment.originalFileName &&
+    /\.pdf$/i.test(attachment.originalFileName) &&
+    isValidNewsAttachmentLabel(attachment.label) &&
+    attachment.contentType === "application/pdf" &&
+    Number.isSafeInteger(attachment.byteSize) && Number(attachment.byteSize) >= 1 &&
+    Number(attachment.byteSize) <= ADMIN_NEWS_ATTACHMENT_MAX_BYTES &&
+    storedAt instanceof Date && !Number.isNaN(storedAt.getTime()) &&
+    updatedAt instanceof Date && !Number.isNaN(updatedAt.getTime()) && storedAt <= updatedAt;
+}
+
+export function isValidStoredNewsMedia(document: {
+  coverGalleryItemId?: unknown; attachment?: unknown; updatedAt?: unknown;
+}): boolean {
+  const coverValid = document.coverGalleryItemId === undefined || document.coverGalleryItemId === null ||
+    document.coverGalleryItemId instanceof ObjectId;
+  const attachmentValid = document.attachment === undefined || document.attachment === null ||
+    isValidStoredNewsAttachment(document.attachment, document.updatedAt);
+  return coverValid && attachmentValid;
 }
 
 export async function validateNewsAttachmentFile(file: unknown) {

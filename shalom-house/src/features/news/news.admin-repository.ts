@@ -14,12 +14,14 @@ import { NEWS_COLLECTION_NAME, type MongoNewsPostDocument } from "./news.mongo-s
 import type { MongoNewsAttachment } from "./news.mongo-schema";
 import { GALLERY_ITEM_COLLECTION_NAME, type MongoGalleryItemDocument } from "@/features/gallery/gallery.mongo-schema";
 import { findPublicGalleryCoverById } from "@/features/gallery/gallery.repository";
+import { isValidStoredGalleryItem } from "@/features/gallery/gallery.mongo-repository";
 import type {
   AdminNewsPublicationAction,
   AdminNewsReviewDecision,
   ValidatedAdminNewsDraft,
 } from "./news.admin-validation";
 import { ADMIN_NEWS_MAXIMUM_PAGE, ADMIN_NEWS_PAGE_SIZE } from "./news.pagination";
+import { isValidStoredNewsAttachment, isValidStoredNewsMedia } from "./news.media-validation";
 import {
   isNewsApprovalStatus,
   isNewsCategory,
@@ -348,7 +350,8 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
 
   if (!document) return null;
   const listItem = toAdminNewsListItem(document, now);
-  if (!listItem || !Array.isArray(document.body) || !document.body.every(isNonEmptyString)) {
+  if (!listItem || !Array.isArray(document.body) || !document.body.every(isNonEmptyString) ||
+      !isValidStoredNewsMedia(document)) {
     console.error("관리자 뉴스 상세 문서 검증 실패", {
       documentId: document._id.toString(),
     });
@@ -813,6 +816,8 @@ export async function listAdminNewsPosts(input: {
         publishedAt: 1,
         createdAt: 1,
         updatedAt: 1,
+        coverGalleryItemId: 1,
+        attachment: 1,
       },
     })
     .sort({ updatedAt: -1, _id: -1 })
@@ -822,7 +827,7 @@ export async function listAdminNewsPosts(input: {
 
   const items = documents.flatMap((document) => {
     const item = toAdminNewsListItem(document, now);
-    if (!item) {
+    if (!item || !isValidStoredNewsMedia(document)) {
       console.error("관리자 뉴스 문서 검증 실패", {
         documentId: document._id.toString(),
       });
@@ -948,6 +953,12 @@ async function changeAdminNewsMedia(input: {
     const collection = database.collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME);
     const current = await collection.findOne({ _id: newsPostId, ...activeDocumentFilter }, { session });
     if (!current) return { ok: false, reason: "not_found" };
+    if (!toAdminNewsListItem(current, transitionAt) || !Array.isArray(current.body) ||
+        !current.body.every(isNonEmptyString) || !isValidStoredNewsMedia(current))
+      return { ok: false, reason: "invalid_document" };
+    if ("attachment" in input.set && input.set.attachment !== null &&
+        !isValidStoredNewsAttachment(input.set.attachment, transitionAt))
+      return { ok: false, reason: "invalid_document" };
     if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
       return { ok: false, reason: "not_editable" };
     const change = await changeNewsAndInsertAudit({ database, session, newsPostId, eventId: new ObjectId(),
@@ -965,8 +976,9 @@ export async function setAdminNewsCoverImage(input: { id: string; galleryItemId:
     return { ok: false, reason: "invalid_gallery_item" };
   const galleryId = new ObjectId(input.galleryItemId);
   const raw = await (await getMongoDatabase()).collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
-    .findOne({ _id: galleryId }, { projection: { _id: 1 } });
+    .findOne({ _id: galleryId });
   if (!raw) return { ok: false, reason: "invalid_gallery_item" };
+  if (!isValidStoredGalleryItem(raw)) return { ok: false, reason: "invalid_gallery_item" };
   if (!(await findPublicGalleryCoverById(galleryId))) return { ok: false, reason: "gallery_item_not_public" };
   return changeAdminNewsMedia({ ...input, set: { coverGalleryItemId: galleryId }, changedField: "coverImage" });
 }
