@@ -374,3 +374,7 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 # 문의 저장 구조
 
 `inquiries`, `inquiry_audit_events`, `inquiry_submission_limits` collection을 사용한다. 공개 접수번호는 unique index, 문의 및 감사 기록의 `deleteAfter`와 rate limit의 `expiresAt`은 TTL index를 사용한다. 관리자 수정과 감사 이벤트는 동일 transaction에 저장하고 `updatedAt` optimistic locking을 적용한다. 원본 IP 대신 짧은 window의 hash key만 저장한다.
+
+## 후원 관리 저장 구조
+
+`donors`, `donations`, `donor_audit_events`, `donation_audit_events`를 기존 collection과 분리한다. 후원금 생성 시 active 후원자를 서버에서 다시 검증하고 참조번호·표시 이름·유형 snapshot을 저장하며 익명 후원은 `donorId: null`로 저장한다. 생성·수정은 MongoDB transaction 안에서 도메인 문서와 개인정보를 최소화한 감사 이벤트를 함께 기록한다. 수정은 `updatedAt` 기반 optimistic locking을 사용한다. `confirmed` 이후 후원자·날짜·금액·방식·목적은 불변이고 `voided` 기록은 복구하지 않는다. 확정 합계는 유효한 `confirmed` 문서만 포함한다. 법정 보유기간을 가정하지 않으며 실제 삭제나 TTL index를 두지 않는다.

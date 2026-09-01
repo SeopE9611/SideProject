@@ -15,10 +15,12 @@ export function AdminNavigation({
   canRestore = false,
   canManageSiteContent = false,
   canManageInquiries = false,
+  canManageDonations = false,
 }: {
   canRestore?: boolean;
   canManageSiteContent?: boolean;
   canManageInquiries?: boolean;
+  canManageDonations?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -29,6 +31,7 @@ export function AdminNavigation({
           ...items,
           ...(canManageSiteContent ? [{ label: "공식 콘텐츠", href: "/admin/site-content" }] : []),
           ...(canManageInquiries ? [{ label: "문의 관리", href: "/admin/inquiries" }] : []),
+          ...(canManageDonations ? [{ label: "후원 관리", href: "/admin/donations" }] : []),
           ...(canRestore ? [{ label: "휴지통", href: "/admin/trash" }] : []),
         ].map((item) => {
           const current =
