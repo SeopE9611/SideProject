@@ -362,3 +362,7 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 ## 생활공간 저장 구조
 
 생활공간은 `facility_spaces`, 감사 이력은 `facility_space_audit_events` collection에 저장한다. 수정은 `updatedAt` 기반 optimistic locking을 적용하고, 공간 저장과 감사 이벤트 생성을 동일 MongoDB transaction에서 처리한다. 공개 repository는 유효한 `published` 문서만 표시 순서대로 반환하며 내부 상태·날짜·감사·관리자 필드는 공개하지 않는다. 공개 페이지는 권한이 있는 관리자에게 관리 편집 링크를 제공한다.
+
+## 공통 연락처 문서
+
+`contact-information`은 기존 `site_content_documents_key_unique` 인덱스와 collection을 재사용한다. 찾아오시는 길, 문의하기, 푸터는 공통 repository를 조회한다. 외부 지도 URL과 `tel:` URL은 저장하지 않고 검증된 주소와 전화로 서버 렌더링 시 생성한다. Instagram URL은 HTTPS의 `instagram.com` 또는 `www.instagram.com`만 허용한다. optimistic locking 및 감사 이벤트의 동일 transaction 원칙을 유지한다.

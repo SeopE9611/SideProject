@@ -1,12 +1,12 @@
 import { MongoServerError, ObjectId, type ClientSession, type Db } from "mongodb";
 import { getMongoClient, getMongoDatabase } from "@/lib/mongodb";
 import type { AdminPrincipal } from "@/features/admin-auth/admin-auth.types";
-import { defaultFacilityOverviewContent, defaultGreetingContent } from "./site-content.defaults";
+import { defaultContactInformationContent, defaultFacilityOverviewContent, defaultGreetingContent } from "./site-content.defaults";
 import { insertSiteContentAuditEvent } from "./site-content.audit-repository";
 import { getSiteContentChangedFields } from "./site-content.audit";
 import { SITE_CONTENT_COLLECTION_NAME, type MongoSiteContentDocument } from "./site-content.mongo-schema";
-import type { FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
-import { validateFacilityOverviewInput, validateGreetingInput } from "./site-content.validation";
+import type { ContactInformationContent, FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
+import { validateContactInformationInput, validateFacilityOverviewInput, validateGreetingInput } from "./site-content.validation";
 
 export type AdminSiteContentDetail =
   | {
@@ -19,6 +19,12 @@ export type AdminSiteContentDetail =
       key: "greeting";
       persisted: boolean;
       content: GreetingContent;
+      updatedAt: string | null;
+    }
+  | {
+      key: "contact-information";
+      persisted: boolean;
+      content: ContactInformationContent;
       updatedAt: string | null;
     };
 export type SaveAdminSiteContentResult =
@@ -36,13 +42,21 @@ export function getAdminSiteContent(
   key: "facility-overview",
 ): Promise<Extract<AdminSiteContentDetail, { key: "facility-overview" }>>;
 export function getAdminSiteContent(key: "greeting"): Promise<Extract<AdminSiteContentDetail, { key: "greeting" }>>;
+export function getAdminSiteContent(
+  key: "contact-information",
+): Promise<Extract<AdminSiteContentDetail, { key: "contact-information" }>>;
 export async function getAdminSiteContent(key: SiteContentKey): Promise<AdminSiteContentDetail> {
   const document = await (
     await getMongoDatabase()
   )
     .collection<MongoSiteContentDocument>(SITE_CONTENT_COLLECTION_NAME)
     .findOne({ key });
-  const fallback = key === "facility-overview" ? defaultFacilityOverviewContent : defaultGreetingContent;
+  const fallback =
+    key === "facility-overview"
+      ? defaultFacilityOverviewContent
+      : key === "greeting"
+        ? defaultGreetingContent
+        : defaultContactInformationContent;
   if (!document)
     return {
       key,
@@ -51,10 +65,13 @@ export async function getAdminSiteContent(key: SiteContentKey): Promise<AdminSit
       updatedAt: null,
     } as AdminSiteContentDetail;
   if (!validDate(document.updatedAt)) throw new Error("공식 콘텐츠 수정 시각이 유효하지 않습니다.");
-  const result =
-    key === "facility-overview"
-      ? validateFacilityOverviewInput(document.content)
-      : validateGreetingInput(document.content);
+  const result = (() => {
+    switch (key) {
+      case "facility-overview": return validateFacilityOverviewInput(document.content);
+      case "greeting": return validateGreetingInput(document.content);
+      case "contact-information": return validateContactInformationInput(document.content);
+    }
+  })();
   if (!result.ok) throw new Error("공식 콘텐츠 문서가 유효하지 않습니다.");
   return {
     key,
@@ -80,7 +97,7 @@ async function transaction<T>(work: (database: Db, session: ClientSession) => Pr
 
 export async function saveAdminSiteContent(input: {
   key: SiteContentKey;
-  content: FacilityOverviewContent | GreetingContent;
+  content: FacilityOverviewContent | GreetingContent | ContactInformationContent;
   expectedUpdatedAt: Date | null;
   actor: AdminPrincipal;
   now?: Date;
@@ -94,10 +111,13 @@ export async function saveAdminSiteContent(input: {
       if (input.expectedUpdatedAt !== null && !existing) return { ok: false, reason: "not_found" };
       if (existing) {
         if (!validDate(existing.updatedAt)) return { ok: false, reason: "invalid_document" };
-        const validation =
-          input.key === "facility-overview"
-            ? validateFacilityOverviewInput(existing.content)
-            : validateGreetingInput(existing.content);
+        const validation = (() => {
+          switch (input.key) {
+            case "facility-overview": return validateFacilityOverviewInput(existing.content);
+            case "greeting": return validateGreetingInput(existing.content);
+            case "contact-information": return validateContactInformationInput(existing.content);
+          }
+        })();
         if (!validation.ok) return { ok: false, reason: "invalid_document" };
       }
       const transitionAt = input.expectedUpdatedAt === null ? now : nextDate(input.expectedUpdatedAt, now);
@@ -113,28 +133,11 @@ export async function saveAdminSiteContent(input: {
           { session },
         );
       else {
-        const updated =
-          input.key === "facility-overview"
-            ? await collection.updateOne(
-                { key: input.key, updatedAt: input.expectedUpdatedAt! },
-                {
-                  $set: {
-                    content: input.content as FacilityOverviewContent,
-                    updatedAt: transitionAt,
-                  },
-                },
-                { session },
-              )
-            : await collection.updateOne(
-                { key: input.key, updatedAt: input.expectedUpdatedAt! },
-                {
-                  $set: {
-                    content: input.content as GreetingContent,
-                    updatedAt: transitionAt,
-                  },
-                },
-                { session },
-              );
+        const updated = await collection.updateOne(
+          { key: input.key, updatedAt: input.expectedUpdatedAt! },
+          { $set: { content: input.content, updatedAt: transitionAt } },
+          { session },
+        );
         if (updated.matchedCount !== 1) return { ok: false, reason: "edit_conflict" };
       }
       await insertSiteContentAuditEvent({

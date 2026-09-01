@@ -1,4 +1,4 @@
-export const siteContentKeys = ["facility-overview", "greeting"] as const;
+export const siteContentKeys = ["facility-overview", "greeting", "contact-information"] as const;
 
 export type SiteContentKey = (typeof siteContentKeys)[number];
 
@@ -42,6 +42,23 @@ export type GreetingContent = {
   showSignerName: boolean;
 };
 
+export type ContactInformationContent = {
+  directionsPageDescription: string;
+  address: string;
+  phone: string;
+  visitInquiryTitle: string;
+  visitInquiryDescription: string;
+  contactPageDescription: string;
+  contactIntroduction: string;
+  instagramUrl: string;
+  showInstagram: boolean;
+};
+
+export function createTelephoneHref(phone: string): string {
+  const leadingPlus = phone.trim().startsWith("+") ? "+" : "";
+  return `tel:${leadingPlus}${phone.replace(/\D/g, "")}`;
+}
+
 export type SiteContentDocumentBase = {
   key: SiteContentKey;
   createdAt: Date;
@@ -54,4 +71,8 @@ export type FacilityOverviewDocument = SiteContentDocumentBase & {
 export type GreetingDocument = SiteContentDocumentBase & {
   key: "greeting";
   content: GreetingContent;
+};
+export type ContactInformationDocument = SiteContentDocumentBase & {
+  key: "contact-information";
+  content: ContactInformationContent;
 };
