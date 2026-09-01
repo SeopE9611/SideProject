@@ -46,6 +46,15 @@ function decodeBase64Url(value: string): Buffer | null {
   }
 }
 
+export function isValidAdminPasswordHash(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const parts = value.split("$");
+  if (parts.length !== 6 || parts[0] !== "scrypt" || parts[1] !== String(cost) || parts[2] !== String(blockSize) || parts[3] !== String(parallelization)) return false;
+  const salt = decodeBase64Url(parts[4]);
+  const hash = decodeBase64Url(parts[5]);
+  return salt?.length === saltLength && hash?.length === keyLength;
+}
+
 export async function verifyAdminPassword(password: string, encodedHash: string): Promise<boolean> {
   if (password.length < 1 || password.length > 128) return false;
   const parts = encodedHash.split("$");

@@ -170,3 +170,7 @@ Supabase 비공개 보관소의 운영 환경 변수는
 - 대표 이미지는 저장 문서 guard와 공개·승인·인물 동의·게시 기간·삭제·보관·Storage metadata 정책을 통과한 활동사진만 연결한다.
 - 프로그램별 PDF는 한 건, 최대 10MB이며 program ID와 objectPath를 결합해 검증한다. 미디어 변경은 optimistic locking과 MongoDB transaction으로 감사 이벤트와 함께 기록한다.
 - 업로드 뒤 DB 변경 실패 시 새 object를 보상 삭제한다. 교체·제거 뒤 이전 object 삭제 실패는 새 DB 참조를 되돌리지 않으며, 감사 snapshot에는 bucket과 objectPath를 저장하지 않는다.
+
+## 관리자 계정 통제
+
+현재 계정의 역할·상태 변경과 마지막 active `admin`의 강등·비활성화를 금지한다. 모든 역할·상태 변경은 대상의 전체 세션을 해제하며 관리자는 수동으로도 전체 세션을 해제할 수 있다. 본인 세션 해제 뒤에는 재로그인한다. 비밀번호, 비밀번호 해시, 세션 token은 감사 기록에 저장하지 않는다.
