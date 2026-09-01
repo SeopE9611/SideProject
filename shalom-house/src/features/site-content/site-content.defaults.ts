@@ -1,6 +1,11 @@
 import { aboutFixture } from "@/content/fixtures/about.fixture";
 import { siteConfig } from "@/config/site";
-import type { ContactInformationContent, FacilityOverviewContent, GreetingContent } from "./site-content.types";
+import type {
+  ContactInformationContent,
+  DonationGuidanceContent,
+  FacilityOverviewContent,
+  GreetingContent,
+} from "./site-content.types";
 
 export const defaultFacilityOverviewContent: FacilityOverviewContent = {
   pageDescription:
@@ -83,4 +88,20 @@ export const defaultContactInformationContent: ContactInformationContent = {
   contactIntroduction: "대표 전화와 방문 안내, 공식 외부 채널을 통해 문의할 수 있습니다.",
   instagramUrl: siteConfig.instagram,
   showInstagram: true,
+};
+
+export const defaultDonationGuidanceContent: DonationGuidanceContent = {
+  pageDescription: "확인 가능한 후원 방식과 문의 절차를 안내합니다.",
+  notice: "공식 계좌 정보는 준비 중이며 홈페이지에 아직 표시하지 않습니다.",
+  steps: [
+    "가능한 후원 방식과 최신 안내 여부를 대표 전화로 확인합니다.",
+    "공식 안내의 절차와 필요한 사항을 다시 확인합니다.",
+    "확인된 정보에 따라 참여합니다.",
+  ],
+  contactTitle: "후원 관련 문의",
+  contactDescription:
+    "대표 전화 또는 온라인 문의를 통해 후원 방법과 후원금 영수증·내역을 확인할 수 있습니다.",
+  transparencyLinkLabel: "후원금 자료공개 보기",
+  donationInquiryLabel: "후원 문의 접수",
+  receiptInquiryLabel: "후원금 영수증·내역 문의",
 };

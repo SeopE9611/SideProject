@@ -2,18 +2,21 @@ import { getMongoDatabase } from "@/lib/mongodb";
 import { cache } from "react";
 import {
   defaultContactInformationContent,
+  defaultDonationGuidanceContent,
   defaultFacilityOverviewContent,
   defaultGreetingContent,
 } from "./site-content.defaults";
 import { SITE_CONTENT_COLLECTION_NAME } from "./site-content.mongo-schema";
 import type {
   ContactInformationContent,
+  DonationGuidanceContent,
   FacilityOverviewContent,
   GreetingContent,
   SiteContentKey,
 } from "./site-content.types";
 import {
   validateContactInformationInput,
+  validateDonationGuidanceInput,
   validateFacilityOverviewInput,
   validateGreetingInput,
 } from "./site-content.validation";
@@ -24,7 +27,9 @@ function source(): "mongodb" | "fixture" | "empty" {
   throw new Error(`지원하지 않는 SHALOM_CONTENT_SOURCE 설정입니다: ${value}`);
 }
 
-async function getContent<T extends FacilityOverviewContent | GreetingContent | ContactInformationContent>(
+async function getContent<
+  T extends FacilityOverviewContent | GreetingContent | ContactInformationContent | DonationGuidanceContent,
+>(
   key: SiteContentKey,
   fallback: T,
 ): Promise<T> {
@@ -43,6 +48,8 @@ async function getContent<T extends FacilityOverviewContent | GreetingContent | 
         return validateGreetingInput(document.content);
       case "contact-information":
         return validateContactInformationInput(document.content);
+      case "donation-guidance":
+        return validateDonationGuidanceInput(document.content);
     }
   })();
   if (!result.ok) {
@@ -68,3 +75,7 @@ export const getPublicContactInformation = cache(async (): Promise<ContactInform
   const content = await getContent("contact-information", defaultContactInformationContent);
   return content.showInstagram ? content : { ...content, instagramUrl: "" };
 });
+
+export async function getPublicDonationGuidance(): Promise<DonationGuidanceContent> {
+  return getContent("donation-guidance", defaultDonationGuidanceContent);
+}

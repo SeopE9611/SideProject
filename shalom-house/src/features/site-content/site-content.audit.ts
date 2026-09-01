@@ -1,5 +1,6 @@
 import type {
   ContactInformationContent,
+  DonationGuidanceContent,
   FacilityOverviewContent,
   GreetingContent,
   SiteContentKey,
@@ -27,9 +28,14 @@ export const siteContentAuditChangedFields = [
   "contactPageDescription",
   "contactIntroduction",
   "instagram",
+  "donationPageDescription",
+  "donationNotice",
+  "donationSteps",
+  "donationContact",
+  "donationLinks",
 ] as const;
 export type SiteContentAuditChangedField = (typeof siteContentAuditChangedFields)[number];
-type Content = FacilityOverviewContent | GreetingContent | ContactInformationContent;
+type Content = FacilityOverviewContent | GreetingContent | ContactInformationContent | DonationGuidanceContent;
 
 function sections(key: SiteContentKey, content: Content): Partial<Record<SiteContentAuditChangedField, unknown>> {
   if (key === "facility-overview") {
@@ -43,15 +49,25 @@ function sections(key: SiteContentKey, content: Content): Partial<Record<SiteCon
     };
   }
   if (key === "greeting") return content as GreetingContent;
-  const value = content as ContactInformationContent;
+  if (key === "contact-information") {
+    const value = content as ContactInformationContent;
+    return {
+      directionsPageDescription: value.directionsPageDescription,
+      address: value.address,
+      phone: value.phone,
+      visitGuidance: [value.visitInquiryTitle, value.visitInquiryDescription],
+      contactPageDescription: value.contactPageDescription,
+      contactIntroduction: value.contactIntroduction,
+      instagram: [value.instagramUrl, value.showInstagram],
+    };
+  }
+  const value = content as DonationGuidanceContent;
   return {
-    directionsPageDescription: value.directionsPageDescription,
-    address: value.address,
-    phone: value.phone,
-    visitGuidance: [value.visitInquiryTitle, value.visitInquiryDescription],
-    contactPageDescription: value.contactPageDescription,
-    contactIntroduction: value.contactIntroduction,
-    instagram: [value.instagramUrl, value.showInstagram],
+    donationPageDescription: value.pageDescription,
+    donationNotice: value.notice,
+    donationSteps: value.steps,
+    donationContact: [value.contactTitle, value.contactDescription],
+    donationLinks: [value.transparencyLinkLabel, value.donationInquiryLabel, value.receiptInquiryLabel],
   };
 }
 

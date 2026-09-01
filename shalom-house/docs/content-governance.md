@@ -150,6 +150,10 @@ Supabase 비공개 보관소의 운영 환경 변수는
 
 `contact-information`은 시스템 관리자만 수정하며 optimistic locking을 적용한다. 콘텐츠 저장과 감사 이벤트는 같은 MongoDB transaction에 기록한다. 문서가 없으면 코드 기본값을 사용하지만 MongoDB 연결 장애를 기본값으로 조용히 대체하지 않는다. 온라인 문의 form은 이 단계의 관리 대상이 아니다.
 
+## 후원 안내 관리
+
+`donation-guidance`는 기존 `site_content_documents`와 감사 collection을 재사용하며 시스템 관리자만 수정한다. 후원 페이지의 안내 문구와 절차는 fixture 대신 이 문서를 사용하고, 대표 전화는 별도의 연락처 CMS가 담당한다. 문서가 없으면 코드 기본값을 사용하지만 MongoDB 연결 장애는 숨기지 않는다. `expectedUpdatedAt` 기반 optimistic locking을 적용하며 저장과 감사 이벤트는 같은 transaction에서 처리한다. 계좌번호·은행명·예금주, 후원자 개인정보, 온라인 결제와 영수증 자동 발급은 관리 대상이 아니다.
+
 # 문의 개인정보와 운영
 
 문의 관리 권한은 admin 전용이다. 목록은 연락 가능 수단만 표시하고 연락처 원문과 문의 내용은 상세에서만 제공한다. 상태 및 내부 메모 수정은 optimistic locking과 MongoDB transaction을 사용하며 감사 기록에는 변경 영역과 상태만 남기고 문의 본문, 연락처, 내부 메모 본문은 저장하지 않는다. 문의와 감사 기록은 처리 완료 후 같은 1년 보유 기한을 적용한다.

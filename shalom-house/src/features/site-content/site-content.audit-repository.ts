@@ -11,13 +11,14 @@ import {
 } from "./site-content.audit";
 import type {
   ContactInformationContent,
+  DonationGuidanceContent,
   FacilityOverviewContent,
   GreetingContent,
   SiteContentKey,
 } from "./site-content.types";
 
 export const SITE_CONTENT_AUDIT_COLLECTION_NAME = "site_content_audit_events";
-type Snapshot = FacilityOverviewContent | GreetingContent | ContactInformationContent;
+type Snapshot = FacilityOverviewContent | GreetingContent | ContactInformationContent | DonationGuidanceContent;
 type AuditDocument = {
   _id: ObjectId;
   siteContentKey: SiteContentKey;
@@ -96,6 +97,11 @@ const fieldLabels: Record<SiteContentAuditChangedField, string> = {
   contactPageDescription: "문의하기 페이지 설명",
   contactIntroduction: "문의 경로 소개",
   instagram: "인스타그램 공개 설정",
+  donationPageDescription: "후원 페이지 설명",
+  donationNotice: "후원 중요 안내",
+  donationSteps: "후원 절차",
+  donationContact: "후원 문의 안내",
+  donationLinks: "후원 페이지 링크 문구",
 };
 
 export async function listAdminSiteContentAuditHistory(input: {
