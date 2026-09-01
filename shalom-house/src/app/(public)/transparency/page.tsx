@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/transparency");
+
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { findPublicTransparencyDocuments } from "@/features/transparency/transparency.repository";
 import { transparencyCategoryLabels } from "@/features/transparency/transparency.types";
@@ -44,10 +47,6 @@ const publicationPrinciples = [
   },
 ] as const;
 
-export const metadata: Metadata = {
-  title: "자료공개",
-  description: "샬롬의 집의 운영 보고, 예산·결산, 후원금 관련 공개 자료를 확인합니다.",
-};
 
 const canonicalDateLabel = (value: string) => value.replace(/-/g, ".");
 const publishedDateLabel = (value: string) => {

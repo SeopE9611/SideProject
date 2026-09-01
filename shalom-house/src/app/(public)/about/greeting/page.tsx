@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/about/greeting");
+
 import Link from "next/link";
 
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
 import { getPublicGreeting } from "@/features/site-content/site-content.repository";
 
-export const metadata: Metadata = {
-  title: "인사말",
-};
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

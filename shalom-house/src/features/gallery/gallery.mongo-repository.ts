@@ -189,6 +189,16 @@ export function toPublicGalleryItem(document: MongoGalleryItemDocument): PublicG
 }
 
 export class MongoGalleryRepository implements GalleryRepository {
+  async listPublishedSitemapEntries(options?: { limit?: number }) {
+    const { normalizePublicSitemapLimit } = await import("@/features/seo/seo.types");
+    const documents = await (await getMongoDatabase()).collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
+      .find(publicGalleryFilter(), { projection }).sort({ publishedAt: -1, _id: -1 })
+      .limit(normalizePublicSitemapLimit(options?.limit)).toArray();
+    return documents.flatMap((document) => {
+      const item = toPublicGalleryItem(document);
+      return item ? [{ slug: item.slug, lastModified: item.publishedAt }] : [];
+    });
+  }
   async findPublicCoverById(id: ObjectId): Promise<PublicGalleryCoverReference | null> {
     return (await this.findPublicCoversByIds([id])).get(id.toHexString()) ?? null;
   }

@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
 import { getNewsRepository } from "@/features/news/news.repository";
 import { getNewsCategoryLabel } from "@/features/news/news.types";
+import { JsonLd } from "@/features/seo/json-ld";
+import { createDynamicPublicMetadata } from "@/features/seo/metadata";
+import { createAbsolutePublicUrl, getSiteOrigin } from "@/features/seo/site-url";
 
 export const dynamic = "force-dynamic";
 
@@ -18,20 +22,19 @@ const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "UTC",
 });
 
-async function getPost(params: NewsPostPageProps["params"]) {
-  const { slug } = await params;
-  return getNewsRepository().findPublishedBySlug(slug);
-}
+const getPublishedItem = cache((slug: string) => getNewsRepository().findPublishedBySlug(slug));
 
 export async function generateMetadata({ params }: NewsPostPageProps): Promise<Metadata> {
-  const post = await getPost(params);
+  const { slug } = await params;
+  const post = await getPublishedItem(slug);
   if (!post) notFound();
 
-  return { title: post.title, description: post.summary };
+  return createDynamicPublicMetadata({ path: `/news/${slug}`, title: post.title, description: post.summary, type: "article", publishedTime: post.publishedAt, modifiedTime: post.updatedAt, section: getNewsCategoryLabel(post.category), image: post.coverImage ? { url: post.coverImage.src, alt: post.coverImage.altText, width: post.coverImage.width, height: post.coverImage.height } : null });
 }
 
 export default async function NewsPostPage({ params }: NewsPostPageProps) {
-  const post = await getPost(params);
+  const { slug } = await params;
+  const post = await getPublishedItem(slug);
   if (!post) notFound();
 
   const related = (await getNewsRepository().listPublished({ limit: 3 }))
@@ -43,6 +46,8 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
 
   return (
     <div className="bg-surface">
+      <JsonLd id="news-article-json-ld" data={{ "@context": "https://schema.org", "@type": "NewsArticle", headline: post.title, description: post.summary, url: createAbsolutePublicUrl(`/news/${slug}`), mainEntityOfPage: createAbsolutePublicUrl(`/news/${slug}`), datePublished: post.publishedAt, dateModified: post.updatedAt, inLanguage: "ko-KR", articleSection: getNewsCategoryLabel(post.category), publisher: { "@id": `${getSiteOrigin()}/#organization` }, ...(post.coverImage ? { image: post.coverImage.src } : {}) }} />
+      <JsonLd id="news-breadcrumb-json-ld" data={{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [["홈", "/"], ["소식", "/news"], [post.title, `/news/${slug}`]].map(([name, path], index) => ({ "@type": "ListItem", position: index + 1, name, item: createAbsolutePublicUrl(path) })) }} />
       <article>
         <header className="border-b border-border">
           <div className="mx-auto max-w-content px-page py-10 sm:px-page-wide sm:py-14">

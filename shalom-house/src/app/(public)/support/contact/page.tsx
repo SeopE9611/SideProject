@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/support/contact");
+
 import Link from "next/link";
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
@@ -7,7 +10,6 @@ import { createTelephoneHref } from "@/features/site-content/site-content.types"
 import { PublicInquiryForm } from "@/components/support/public-inquiry-form";
 import { inquiryKinds, type InquiryKind } from "@/features/inquiries/inquiry.types";
 
-export const metadata: Metadata = { title: "문의하기" };
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 

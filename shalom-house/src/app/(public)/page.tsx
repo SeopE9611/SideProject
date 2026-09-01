@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/");
+
 import Link from "next/link";
 
 import { HomeHero } from "@/components/home/home-hero";
@@ -7,10 +10,6 @@ import { homeFixture } from "@/content/fixtures/home.fixture";
 import { getNewsRepository } from "@/features/news/news.repository";
 import { getNewsCategoryLabel, type PublicNewsPostSummary } from "@/features/news/news.types";
 
-export const metadata: Metadata = {
-  title: siteConfig.name,
-  description: siteConfig.description,
-};
 export const dynamic = "force-dynamic";
 
 const dateFormatter = new Intl.DateTimeFormat("ko-KR", {

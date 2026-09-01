@@ -1,5 +1,6 @@
 import { MongoGalleryRepository } from "./gallery.mongo-repository";
 import type { ObjectId } from "mongodb";
+import type { PublicSitemapEntry } from "@/features/seo/seo.types";
 
 export type PublicGalleryCoverReference = {
   id: string;
@@ -34,12 +35,14 @@ export type PublicGalleryMedia = {
 };
 
 export interface GalleryRepository {
+  listPublishedSitemapEntries(options?: { limit?: number }): Promise<readonly PublicSitemapEntry[]>;
   listPublished(): Promise<readonly PublicGallerySummary[]>;
   findPublishedBySlug(slug: string): Promise<PublicGalleryItem | null>;
   findMediaBySlug(slug: string): Promise<PublicGalleryMedia | null>;
 }
 
 const empty: GalleryRepository = {
+  async listPublishedSitemapEntries() { return []; },
   async listPublished() {
     return [];
   },

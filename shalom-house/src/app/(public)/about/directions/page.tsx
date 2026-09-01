@@ -1,15 +1,13 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/about/directions");
+
 
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
-import { siteConfig } from "@/config/site";
 import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
-export const metadata: Metadata = {
-  title: "찾아오시는 길",
-  description: `${siteConfig.name} 주소와 방문 문의 연락처를 안내합니다.`,
-};
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 

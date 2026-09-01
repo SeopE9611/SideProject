@@ -118,6 +118,13 @@ async function mapPublicSummaries(documents: readonly WithId<Document>[]): Promi
 }
 
 export class MongoNewsRepository implements NewsRepository {
+  async listPublishedSitemapEntries(options?: { limit?: number }) {
+    const { normalizePublicSitemapLimit } = await import("@/features/seo/seo.types");
+    const documents = await (await getMongoDatabase()).collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
+      .find(createPublicFilter(new Date()), { projection: { slug: 1, category: 1, title: 1, summary: 1, body: 1, publishedAt: 1, updatedAt: 1, coverGalleryItemId: 1, attachment: 1 } })
+      .sort({ publishedAt: -1, _id: -1 }).limit(normalizePublicSitemapLimit(options?.limit)).toArray();
+    return documents.flatMap((document) => toPublicPost(document, null) ? [{ slug: document.slug, lastModified: document.updatedAt.toISOString() }] : []);
+  }
   async listPublished(options?: { limit?: number }): Promise<readonly PublicNewsPostSummary[]> {
     const database = await getMongoDatabase();
     const documents = await database

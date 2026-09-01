@@ -1,28 +1,36 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { findPublicGalleryBySlug } from "@/features/gallery/gallery.repository";
+import { JsonLd } from "@/features/seo/json-ld";
+import { createDynamicPublicMetadata } from "@/features/seo/metadata";
+import { createAbsolutePublicUrl } from "@/features/seo/site-url";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
+const getPublishedItem = cache((slug: string) => findPublicGalleryBySlug(slug));
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const item = await findPublicGalleryBySlug(slug);
-
-  return item ? { title: item.title, description: item.description } : { title: "활동사진" };
+  const item = await getPublishedItem(slug);
+  if (!item) notFound();
+  return createDynamicPublicMetadata({ path: `/life/gallery/${slug}`, title: item.title, description: item.description, type: "article", publishedTime: item.publishedAt, image: { url: `/api/gallery/${slug}/media`, alt: item.altText, width: item.width, height: item.height } });
 }
 
 export default async function GalleryDetail({ params }: Props) {
   const { slug } = await params;
-  const item = await findPublicGalleryBySlug(slug);
+  const item = await getPublishedItem(slug);
 
   if (!item) notFound();
 
   return (
     <>
+      <JsonLd id="gallery-image-json-ld" data={{ "@context": "https://schema.org", "@type": "ImageObject", name: item.title, description: item.description, caption: item.altText, contentUrl: createAbsolutePublicUrl(`/api/gallery/${slug}/media`), url: createAbsolutePublicUrl(`/life/gallery/${slug}`), width: item.width, height: item.height, datePublished: item.publishedAt, dateCreated: item.activityDate, inLanguage: "ko-KR", copyrightHolder: "샬롬의 집" }} />
+      <JsonLd id="gallery-breadcrumb-json-ld" data={{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [["홈", "/"], ["활동사진", "/life/gallery"], [item.title, `/life/gallery/${slug}`]].map(([name, path], index) => ({ "@type": "ListItem", position: index + 1, name, item: createAbsolutePublicUrl(path) })) }} />
       <SectionPageHeader
         sectionHref="/life"
         eyebrow="생활·프로그램"

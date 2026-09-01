@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/support/donation");
+
 import Link from "next/link";
 
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
@@ -9,9 +12,6 @@ import {
 } from "@/features/site-content/site-content.repository";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
-export const metadata: Metadata = {
-  title: "후원하기",
-};
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

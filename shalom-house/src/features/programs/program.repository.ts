@@ -1,5 +1,6 @@
 import { MongoProgramRepository } from "./program.mongo-repository";
 import type { PublicProgram, PublicProgramSummary } from "./program.types";
+import type { PublicSitemapEntry } from "@/features/seo/seo.types";
 export const PUBLIC_PROGRAM_DEFAULT_LIMIT = 100;
 export const PUBLIC_PROGRAM_MINIMUM_LIMIT = 1;
 export const PUBLIC_PROGRAM_MAXIMUM_LIMIT = 200;
@@ -8,10 +9,12 @@ export function normalizePublicProgramLimit(limit?: number): number {
   return Math.min(PUBLIC_PROGRAM_MAXIMUM_LIMIT, Math.max(PUBLIC_PROGRAM_MINIMUM_LIMIT, Math.trunc(limit)));
 }
 export interface ProgramRepository {
+  listPublishedSitemapEntries(options?: { limit?: number }): Promise<readonly PublicSitemapEntry[]>;
   listPublished(options?: { limit?: number }): Promise<readonly PublicProgramSummary[]>;
   findPublishedBySlug(slug: string): Promise<PublicProgram | null>;
 }
 const emptyProgramRepository: ProgramRepository = {
+  async listPublishedSitemapEntries() { return []; },
   async listPublished() {
     return [];
   },

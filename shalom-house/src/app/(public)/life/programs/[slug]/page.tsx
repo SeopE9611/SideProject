@@ -1,30 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { getProgramRepository } from "@/features/programs/program.repository";
+import { JsonLd } from "@/features/seo/json-ld";
+import { createDynamicPublicMetadata } from "@/features/seo/metadata";
+import { createAbsolutePublicUrl, getSiteOrigin } from "@/features/seo/site-url";
 const formatter = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
   month: "long",
   day: "numeric",
   timeZone: "UTC",
 });
-async function getProgram(slug: string) {
-  try {
-    return await getProgramRepository().findPublishedBySlug(slug);
-  } catch (error) {
-    console.error("공개 프로그램 상세 조회에 실패했습니다.", {
-      errorName: error instanceof Error ? error.name : "UnknownError",
-    });
-    return null;
-  }
-}
+const getProgram = cache((slug: string) => getProgramRepository().findPublishedBySlug(slug));
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const program = await getProgram(slug);
-  return program
-    ? { title: program.title, description: program.summary }
-    : { title: "프로그램", description: "샬롬의 집 프로그램 안내입니다." };
+  if (!program) notFound();
+  return createDynamicPublicMetadata({ path: `/life/programs/${slug}`, title: program.title, description: program.summary,
+    type: "article", publishedTime: program.publishedAt, modifiedTime: program.updatedAt, section: program.category, image: program.coverImage ? { url: program.coverImage.src, alt: program.coverImage.altText, width: program.coverImage.width, height: program.coverImage.height } : null });
 }
 export default async function ProgramDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -33,6 +28,8 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
   const modified = program.updatedAt !== program.publishedAt;
   return (
     <>
+      <JsonLd id="program-article-json-ld" data={{ "@context": "https://schema.org", "@type": "Article", headline: program.title, description: program.summary, url: createAbsolutePublicUrl(`/life/programs/${slug}`), mainEntityOfPage: createAbsolutePublicUrl(`/life/programs/${slug}`), datePublished: program.publishedAt, dateModified: program.updatedAt, inLanguage: "ko-KR", articleSection: program.category, publisher: { "@id": `${getSiteOrigin()}/#organization` }, ...(program.coverImage ? { image: program.coverImage.src } : {}) }} />
+      <JsonLd id="program-breadcrumb-json-ld" data={{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [["홈", "/"], ["생활·프로그램", "/life"], ["프로그램", "/life/programs"], [program.title, `/life/programs/${slug}`]].map(([name, path], index) => ({ "@type": "ListItem", position: index + 1, name, item: createAbsolutePublicUrl(path) })) }} />
       <SectionPageHeader
         sectionHref="/life"
         eyebrow="생활·프로그램"

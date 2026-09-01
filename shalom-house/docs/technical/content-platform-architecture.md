@@ -393,3 +393,6 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 ## 관리자 계정 관리 동시성
 
 계정 수정은 `updatedAt` optimistic locking을 사용한다. 역할·상태 변경 transaction은 `admin_user_management_state`의 `active-admin-guard` singleton 문서를 먼저 갱신하여 마지막 active admin 검사를 직렬화한다. 계정 생성·변경·세션 해제와 해당 감사 이벤트는 동일 transaction에서 처리하며, 감사 snapshot은 이메일·표시 이름·역할·상태만 포함한다.
+# 검색 노출 계층
+
+SEO 계층은 정적 route metadata와 각 공개 repository의 sitemap 전용 조회를 사용한다. 일반 목록 제한과 sitemap 최대 항목 수는 분리하며, 한 콘텐츠 영역의 조회 실패가 정적 route나 다른 영역을 제거하지 않도록 격리한다. 세부 정책은 `seo-search-discovery.md`를 참고한다.

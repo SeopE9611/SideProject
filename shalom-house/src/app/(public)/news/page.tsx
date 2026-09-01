@@ -1,11 +1,10 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/news");
+
 
 import { NewsListPage, type NewsSearchParams } from "@/components/news/news-list-page";
 
-export const metadata: Metadata = {
-  title: "소식",
-  description: "샬롬의 집의 공지사항과 활동 소식을 확인합니다.",
-};
 
 export const dynamic = "force-dynamic";
 

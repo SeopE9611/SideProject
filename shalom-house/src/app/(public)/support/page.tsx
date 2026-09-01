@@ -1,10 +1,12 @@
-import type { Metadata } from "next";
+import { createPublicPageMetadata } from "@/features/seo/metadata";
+
+export const metadata = createPublicPageMetadata("/support");
+
 import Link from "next/link";
 
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { siteConfig } from "@/config/site";
 
-export const metadata: Metadata = { title: "함께하기" };
 const links = [
   {
     title: "후원하기",
