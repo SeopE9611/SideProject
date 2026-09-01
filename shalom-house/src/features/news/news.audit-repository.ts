@@ -12,6 +12,7 @@ import {
   type NewsAuditSnapshot,
 } from "./news.audit";
 import { isNewsApprovalStatus, isNewsCategory, isNewsPublicationStatus, isValidNewsSlug } from "./news.types";
+import { ADMIN_NEWS_ATTACHMENT_MAX_BYTES, isValidNewsAttachmentLabel, normalizeNewsAttachmentFileName } from "./news.media-validation";
 
 export const NEWS_AUDIT_COLLECTION_NAME = "news_audit_events";
 
@@ -48,14 +49,30 @@ function isValidDate(value: unknown): value is Date {
   return value instanceof Date && !Number.isNaN(value.getTime());
 }
 
-function isValidSnapshot(value: NewsAuditSnapshot): boolean {
+function isValidSnapshot(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const snapshot = value as Record<string, unknown>;
+  const cover = snapshot.coverGalleryItemId;
+  const attachment = snapshot.attachment;
+  const validCover = cover === undefined || cover === null ||
+    typeof cover === "string" && /^[a-f0-9]{24}$/.test(cover) && ObjectId.isValid(cover);
+  const validAttachment = attachment === undefined || attachment === null || (() => {
+    if (!attachment || typeof attachment !== "object") return false;
+    const item = attachment as Record<string, unknown>;
+    return Object.keys(item).length === 5 &&
+      ["present", "originalFileName", "label", "byteSize", "contentType"].every((key) => key in item) &&
+      item.present === true && typeof item.originalFileName === "string" &&
+      normalizeNewsAttachmentFileName(item.originalFileName) === item.originalFileName &&
+      isValidNewsAttachmentLabel(item.label) && Number.isSafeInteger(item.byteSize) &&
+      Number(item.byteSize) >= 1 && Number(item.byteSize) <= ADMIN_NEWS_ATTACHMENT_MAX_BYTES &&
+      item.contentType === "application/pdf";
+  })();
   return (
-    isValidNewsSlug(value.slug) &&
-    isNewsCategory(value.category) &&
-    value.title.trim().length > 0 &&
-    isNewsPublicationStatus(value.publicationStatus) &&
-    isNewsApprovalStatus(value.approvalStatus) &&
-    (value.publishedAt === null || isValidDate(value.publishedAt))
+    isValidNewsSlug(snapshot.slug) && isNewsCategory(snapshot.category) &&
+    typeof snapshot.title === "string" && snapshot.title.trim().length > 0 &&
+    isNewsPublicationStatus(snapshot.publicationStatus) && isNewsApprovalStatus(snapshot.approvalStatus) &&
+    (snapshot.publishedAt === null || isValidDate(snapshot.publishedAt)) &&
+    (snapshot.deletedAt === null || isValidDate(snapshot.deletedAt)) && validCover && validAttachment
   );
 }
 
@@ -147,6 +164,11 @@ type AdminAuditProjection = {
   occurredAt?: unknown;
   changedFields?: unknown;
   newsPostId?: unknown;
+  schemaVersion?: unknown;
+  fromVersionAt?: unknown;
+  toVersionAt?: unknown;
+  before?: unknown;
+  after?: unknown;
 };
 
 export async function listAdminNewsAuditHistory(input: {
@@ -171,6 +193,11 @@ export async function listAdminNewsAuditHistory(input: {
           occurredAt: 1,
           changedFields: 1,
           newsPostId: 1,
+          schemaVersion: 1,
+          fromVersionAt: 1,
+          toVersionAt: 1,
+          before: 1,
+          after: 1,
         },
       },
     )
@@ -180,14 +207,21 @@ export async function listAdminNewsAuditHistory(input: {
   return documents.flatMap((event) => {
     const valid =
       event._id instanceof ObjectId &&
+      event.newsPostId instanceof ObjectId &&
+      event.schemaVersion === 1 &&
       event.occurredAt instanceof Date &&
       !Number.isNaN(event.occurredAt.getTime()) &&
       typeof event.action === "string" &&
       newsAuditActions.includes(event.action as never) &&
       typeof event.actor?.displayName === "string" &&
       event.actor.displayName.trim().length > 0 &&
+      (event.fromVersionAt === null || isValidDate(event.fromVersionAt)) &&
+      isValidDate(event.toVersionAt) &&
+      (event.occurredAt as Date).getTime() === (event.toVersionAt as Date).getTime() &&
+      (event.before === null || isValidSnapshot(event.before)) && isValidSnapshot(event.after) &&
       Array.isArray(event.changedFields) &&
-      event.changedFields.every((field) => typeof field === "string");
+      event.changedFields.every((field) => typeof field === "string" && newsAuditChangedFields.includes(field as never)) &&
+      new Set(event.changedFields).size === event.changedFields.length;
     if (!valid) {
       console.error("관리자 감사 이벤트 검증에 실패했습니다.", {
         auditEventId: event._id instanceof ObjectId ? event._id.toHexString() : "unknown",

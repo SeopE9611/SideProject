@@ -5,6 +5,10 @@ import {
   getSeoulCalendarDate,
   isCanonicalGalleryDate,
   isGalleryConsentReadyForPublication,
+  isGalleryApprovalStatus,
+  isGalleryConsentStatus,
+  isGalleryPublicationStatus,
+  isGallerySubjectPresence,
   isValidGallerySlug,
 } from "./gallery.types";
 import type {
@@ -15,7 +19,7 @@ import type {
   PublicGalleryCoverReference,
 } from "./gallery.repository";
 
-function publicFilter(now = new Date()): Filter<MongoGalleryItemDocument> {
+export function publicGalleryFilter(now = new Date()): Filter<MongoGalleryItemDocument> {
   const today = getSeoulCalendarDate(now);
 
   return {
@@ -69,7 +73,24 @@ const projection = {
   consentWithdrawnAt: 1,
 } as const;
 
-function toPublicGalleryItem(document: MongoGalleryItemDocument): PublicGalleryItem | null {
+export function isValidStoredGalleryItem(document: MongoGalleryItemDocument): boolean {
+  const dates = [document.createdAt, document.updatedAt];
+  return document._id instanceof ObjectId && isValidGallerySlug(document.slug) &&
+    [document.title, document.category, document.description, document.altText].every(
+      (value) => typeof value === "string" && value.trim().length > 0,
+    ) && isCanonicalGalleryDate(document.activityDate) &&
+    isGallerySubjectPresence(document.subjectPresence) && isGalleryConsentStatus(document.consentStatus) &&
+    isGalleryPublicationStatus(document.publicationStatus) && isGalleryApprovalStatus(document.approvalStatus) &&
+    dates.every((date) => date instanceof Date && !Number.isNaN(date.getTime())) &&
+    (document.publishedAt === null || document.publishedAt instanceof Date && !Number.isNaN(document.publishedAt.getTime())) &&
+    (document.archivedAt === null || document.archivedAt instanceof Date && !Number.isNaN(document.archivedAt.getTime())) &&
+    (document.deletedAt == null || document.deletedAt instanceof Date && !Number.isNaN(document.deletedAt.getTime())) &&
+    (document.consentWithdrawnAt === null || document.consentWithdrawnAt instanceof Date && !Number.isNaN(document.consentWithdrawnAt.getTime())) &&
+    Boolean(document.media) && Number.isInteger(document.media.width) && document.media.width > 0 &&
+    Number.isInteger(document.media.height) && document.media.height > 0;
+}
+
+export function toPublicGalleryItem(document: MongoGalleryItemDocument): PublicGalleryItem | null {
   const validTextFields =
     typeof document.title === "string" &&
     document.title.trim().length > 0 &&
@@ -125,7 +146,7 @@ export class MongoGalleryRepository implements GalleryRepository {
     if (unique.length === 0) return new Map();
     const documents = await (await getMongoDatabase())
       .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
-      .find({ ...publicFilter(), _id: { $in: unique } }, { projection: { ...projection, _id: 1 } })
+      .find({ ...publicGalleryFilter(), _id: { $in: unique } }, { projection: { ...projection, _id: 1 } })
       .toArray();
     const result = new Map<string, PublicGalleryCoverReference>();
     for (const document of documents) {
@@ -142,7 +163,7 @@ export class MongoGalleryRepository implements GalleryRepository {
       await getMongoDatabase()
     )
       .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
-      .find(publicFilter(), { projection })
+      .find(publicGalleryFilter(), { projection })
       .sort({ activityDate: -1, publishedAt: -1, _id: -1 })
       .limit(60)
       .toArray();
@@ -162,7 +183,7 @@ export class MongoGalleryRepository implements GalleryRepository {
       await getMongoDatabase()
     )
       .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
-      .findOne({ ...publicFilter(), slug }, { projection });
+      .findOne({ ...publicGalleryFilter(), slug }, { projection });
 
     return document ? toPublicGalleryItem(document) : null;
   }
@@ -176,7 +197,7 @@ export class MongoGalleryRepository implements GalleryRepository {
       await getMongoDatabase()
     )
       .collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
-      .findOne({ ...publicFilter(), slug });
+      .findOne({ ...publicGalleryFilter(), slug });
 
     if (!document || !toPublicGalleryItem(document)) {
       return null;
