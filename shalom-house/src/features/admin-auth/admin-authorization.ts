@@ -14,6 +14,7 @@ export const adminPermissions = [
   "content.direct_publish",
   "gallery.withdraw_consent",
   "admin_users.manage",
+  "site_content.manage",
 ] as const;
 
 export type AdminPermission = (typeof adminPermissions)[number];

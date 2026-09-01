@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 
 const preparedItems = [
   "관리자 로그인과 세션",
@@ -12,6 +14,7 @@ const preparedItems = [
   "콘텐츠 상세별 수정 이력과 감사 기록 조회",
   "관리자 역할별 작성·검토·게시 권한 정책",
   "콘텐츠 소프트 삭제와 안전한 초안 복구",
+  "시설개요와 원장 인사말 공식 콘텐츠 관리",
 ] as const;
 
 const nextItems = [
@@ -24,6 +27,8 @@ export default async function AdminDashboardPage({
   searchParams: Promise<{ forbidden?: string | string[] }>;
 }) {
   const forbidden = (await searchParams).forbidden === "1";
+  const admin = await getCurrentAdmin();
+  const canManageSiteContent = Boolean(admin && hasAdminPermission(admin, "site_content.manage"));
   return (
     <div className="space-y-8">
       {forbidden ? (
@@ -52,6 +57,7 @@ export default async function AdminDashboardPage({
         </section>
       </div>
       <div className="flex flex-wrap gap-3">
+        {canManageSiteContent ? <Link href="/admin/site-content" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">공식 콘텐츠 관리 열기</Link> : null}
         <Link href="/admin/news" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           소식 관리 열기
         </Link>
