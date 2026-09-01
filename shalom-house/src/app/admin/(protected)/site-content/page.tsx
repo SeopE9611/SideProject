@@ -4,18 +4,20 @@ import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getAdminSiteContent } from "@/features/site-content/site-content.admin-repository";
 import { getAdminStaffCounts } from "@/features/staff/staff.admin-repository";
+import { getAdminFacilitySpaceCounts } from "@/features/facility-spaces/facility-space.admin-repository";
 export default async function SiteContentPage() {
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "site_content.manage")) redirect("/admin?forbidden=1");
-  const [items, counts] = await Promise.all([
+  const [items, counts, spaceCounts] = await Promise.all([
     Promise.all([getAdminSiteContent("facility-overview"), getAdminSiteContent("greeting")]),
     getAdminStaffCounts(),
+    getAdminFacilitySpaceCounts(),
   ]);
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-title font-bold">공식 콘텐츠 관리</h1>
-        <p className="mt-2 text-muted-foreground">시설개요, 원장 인사말과 함께하는 사람들을 관리합니다.</p>
+        <p className="mt-2 text-muted-foreground">시설개요, 원장 인사말, 함께하는 사람들과 생활공간을 관리합니다.</p>
       </header>
       <div className="grid gap-5">
         {items.map((item) => (
@@ -52,6 +54,11 @@ export default async function SiteContentPage() {
               공개 페이지 보기
             </Link>
           </div>
+        </section>
+        <section className="rounded-card border p-5">
+          <h2 className="text-heading font-bold">생활공간</h2>
+          <p className="mt-2">등록된 생활공간 수 {spaceCounts.total}개 · 공개 중인 생활공간 수 {spaceCounts.published}개</p>
+          <div className="mt-4 flex gap-4"><Link className="min-h-11 underline" href="/admin/site-content/spaces">관리</Link><Link className="min-h-11 underline" href="/about/spaces">공개 페이지 보기</Link></div>
         </section>
       </div>
     </div>

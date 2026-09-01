@@ -2,14 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { SectionPageHeader } from "@/components/layout/section-page-header";
-import { aboutFixture } from "@/content/fixtures/about.fixture";
+import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
+import { listPublicFacilitySpaces } from "@/features/facility-spaces/facility-space.repository";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "생활공간",
 };
 
-export default function SpacesPage() {
-  const hasOfficialSpaces = (aboutFixture.contentStatus as "fixture" | "official") === "official";
+export default async function SpacesPage() {
+  const spaces = await listPublicFacilitySpaces();
 
   return (
     <>
@@ -22,9 +26,10 @@ export default function SpacesPage() {
         notice="공간 정보는 설명과 사진의 공개 승인을 마친 범위에서 안내합니다."
       />
       <section className="mx-auto max-w-site px-page py-12 sm:px-page-wide">
-        {hasOfficialSpaces ? (
+        <PublicAdminEditLink href="/admin/site-content/spaces" />
+        {spaces.length ? (
           <ul className="divide-y divide-border border-y">
-            {aboutFixture.spaces.map((space) => (
+            {spaces.map((space) => (
               <li className="grid gap-3 py-6 md:grid-cols-[1fr_2fr]" key={space.id}>
                 <h2 className="text-safe-wrap font-bold">{space.title}</h2>
                 <p className="text-safe-wrap text-muted-foreground">{space.description}</p>

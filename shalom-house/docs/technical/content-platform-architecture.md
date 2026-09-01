@@ -358,3 +358,7 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 ## 직원 소개 저장 구조
 
 `staff_profiles`와 `staff_audit_events` collection을 분리하고 생성·수정을 동일 MongoDB transaction으로 처리한다. `updatedAt` 기반 optimistic locking을 사용하며 공개 repository는 공개 상태와 이름 공개 확인 조건을 runtime 검증한 최소 projection만 반환한다. 손상 문서는 개별 제외하지만 MongoDB 장애는 전파한다. 공개 페이지에는 권한 기반 관리자 편집 링크가 있으며 직원 사진과 생활공간 CMS는 후속 단계이고 입소자 프로필은 구현하지 않는다.
+
+## 생활공간 저장 구조
+
+생활공간은 `facility_spaces`, 감사 이력은 `facility_space_audit_events` collection에 저장한다. 수정은 `updatedAt` 기반 optimistic locking을 적용하고, 공간 저장과 감사 이벤트 생성을 동일 MongoDB transaction에서 처리한다. 공개 repository는 유효한 `published` 문서만 표시 순서대로 반환하며 내부 상태·날짜·감사·관리자 필드는 공개하지 않는다. 공개 페이지는 권한이 있는 관리자에게 관리 편집 링크를 제공한다.
