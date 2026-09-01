@@ -22,12 +22,21 @@ export function createAbsolutePublicUrl(pathname: string): string {
   return new URL(pathname, `${getSiteOrigin()}/`).toString();
 }
 export function isSearchIndexingEnabled(): boolean {
-  return process.env.NODE_ENV === "production" && !["preview", "development"].includes(process.env.VERCEL_ENV ?? "");
+  if (process.env.NODE_ENV !== "production") return false;
+
+  const vercelEnvironment = process.env.VERCEL_ENV;
+  if (vercelEnvironment !== undefined && vercelEnvironment !== "production") return false;
+
+  const contentSource = process.env.SHALOM_CONTENT_SOURCE;
+  if (contentSource === "fixture") return false;
+  if (contentSource !== undefined && contentSource !== "empty" && contentSource !== "mongodb") return false;
+
+  return true;
 }
 function verification(name: string): string | undefined {
   const value = process.env[name];
   if (value === undefined || value === "") return undefined;
-  if (value !== value.trim() || value.length > 200 || /[\u0000-\u001f\u007f<>]/.test(value)) {
+  if (value !== value.trim() || value.length > 200 || /\s|[<>]/u.test(value)) {
     throw new Error(`${name} 설정 형식이 올바르지 않습니다.`);
   }
   return value;
