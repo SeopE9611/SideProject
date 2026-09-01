@@ -36,13 +36,13 @@ export function validateFacilityOverviewInput(value: unknown): SiteContentValida
   const scene = (item: Record<string, unknown>, path: string) => ({ label: text(item.label, `${path}.label`, errors, 1, 40), title: text(item.title, `${path}.title`, errors, 1, 100), description: text(item.description, `${path}.description`, errors, 1, 400) });
   const content: FacilityOverviewContent = {
     pageDescription: text(value.pageDescription, "pageDescription", errors, 10, 400),
-    facts: objectArray(value.facts, "facts", 3, ["label", "value"], fact, errors) as FacilityOverviewContent["facts"],
+    facts: objectArray(value.facts, "facts", 3, ["label", "value"], fact, errors) as unknown as FacilityOverviewContent["facts"],
     principlesEyebrow: text(value.principlesEyebrow, "principlesEyebrow", errors, 1, 40), principlesTitle: text(value.principlesTitle, "principlesTitle", errors, 1, 140), principlesDescription: text(value.principlesDescription, "principlesDescription", errors, 1, 500),
-    principles: objectArray(value.principles, "principles", 3, ["title", "description"], principle, errors) as FacilityOverviewContent["principles"],
+    principles: objectArray(value.principles, "principles", 3, ["title", "description"], principle, errors) as unknown as FacilityOverviewContent["principles"],
     scenesEyebrow: text(value.scenesEyebrow, "scenesEyebrow", errors, 1, 40), scenesTitle: text(value.scenesTitle, "scenesTitle", errors, 1, 140), scenesDescription: text(value.scenesDescription, "scenesDescription", errors, 1, 500),
-    scenes: objectArray(value.scenes, "scenes", 3, ["label", "title", "description"], scene, errors) as FacilityOverviewContent["scenes"],
+    scenes: objectArray(value.scenes, "scenes", 3, ["label", "title", "description"], scene, errors) as unknown as FacilityOverviewContent["scenes"],
     policyEyebrow: text(value.policyEyebrow, "policyEyebrow", errors, 1, 40), policyTitle: text(value.policyTitle, "policyTitle", errors, 1, 140),
-    policyItems: objectArray(value.policyItems, "policyItems", 2, ["title", "description"], principle, errors) as FacilityOverviewContent["policyItems"],
+    policyItems: objectArray(value.policyItems, "policyItems", 2, ["title", "description"], principle, errors) as unknown as FacilityOverviewContent["policyItems"],
   };
   return Object.keys(errors).length ? { ok: false, fieldErrors: errors } : { ok: true, value: content };
 }

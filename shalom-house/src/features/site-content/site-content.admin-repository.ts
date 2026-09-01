@@ -16,6 +16,8 @@ export type SaveAdminSiteContentResult = { ok: true; key: SiteContentKey; create
 function validDate(value: unknown): value is Date { return value instanceof Date && !Number.isNaN(value.getTime()); }
 function nextDate(expected: Date, now: Date) { return new Date(Math.max(now.getTime(), expected.getTime() + 1)); }
 
+export function getAdminSiteContent(key: "facility-overview"): Promise<Extract<AdminSiteContentDetail, { key: "facility-overview" }>>;
+export function getAdminSiteContent(key: "greeting"): Promise<Extract<AdminSiteContentDetail, { key: "greeting" }>>;
 export async function getAdminSiteContent(key: SiteContentKey): Promise<AdminSiteContentDetail> {
   const document = await (await getMongoDatabase()).collection<MongoSiteContentDocument>(SITE_CONTENT_COLLECTION_NAME).findOne({ key });
   const fallback = key === "facility-overview" ? defaultFacilityOverviewContent : defaultGreetingContent;
@@ -47,7 +49,9 @@ export async function saveAdminSiteContent(input: { key: SiteContentKey; content
       const transitionAt = input.expectedUpdatedAt === null ? now : nextDate(input.expectedUpdatedAt, now);
       if (!existing) await collection.insertOne({ _id: new ObjectId(), key: input.key, content: input.content, createdAt: transitionAt, updatedAt: transitionAt } as MongoSiteContentDocument, { session });
       else {
-        const updated = await collection.updateOne({ key: input.key, updatedAt: input.expectedUpdatedAt! }, { $set: { content: input.content, updatedAt: transitionAt } }, { session });
+        const updated = input.key === "facility-overview"
+          ? await collection.updateOne({ key: input.key, updatedAt: input.expectedUpdatedAt! }, { $set: { content: input.content as FacilityOverviewContent, updatedAt: transitionAt } }, { session })
+          : await collection.updateOne({ key: input.key, updatedAt: input.expectedUpdatedAt! }, { $set: { content: input.content as GreetingContent, updatedAt: transitionAt } }, { session });
         if (updated.matchedCount !== 1) return { ok: false, reason: "edit_conflict" };
       }
       await insertSiteContentAuditEvent({ database, session, eventId: new ObjectId(), siteContentKey: input.key, action: existing ? "updated" : "created", actor: input.actor, occurredAt: transitionAt, fromVersionAt: input.expectedUpdatedAt, toVersionAt: transitionAt, before: existing?.content ?? null, after: input.content, changedFields: getSiteContentChangedFields(input.key, existing?.content ?? null, input.content) });
