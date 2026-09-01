@@ -11,13 +11,13 @@ const items = [
   { label: "자료공개 관리", href: "/admin/transparency" },
 ] as const;
 
-export function AdminNavigation({ canRestore = false }: { canRestore?: boolean }) {
+export function AdminNavigation({ canRestore = false, canManageSiteContent = false }: { canRestore?: boolean; canManageSiteContent?: boolean }) {
   const pathname = usePathname();
 
   return (
     <nav aria-label="관리자 메뉴">
       <ul className="flex flex-wrap gap-2 lg:flex-col">
-        {[...items, ...(canRestore ? [{ label: "휴지통", href: "/admin/trash" }] : [])].map((item) => {
+        {[...items, ...(canManageSiteContent ? [{ label: "공식 콘텐츠", href: "/admin/site-content" }] : []), ...(canRestore ? [{ label: "휴지통", href: "/admin/trash" }] : [])].map((item) => {
           const current =
             item.href === "/admin"
               ? pathname === "/admin"
