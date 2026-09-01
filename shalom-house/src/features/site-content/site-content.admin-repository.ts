@@ -3,6 +3,7 @@ import { getMongoClient, getMongoDatabase } from "@/lib/mongodb";
 import type { AdminPrincipal } from "@/features/admin-auth/admin-auth.types";
 import {
   defaultContactInformationContent,
+  defaultDonationGuidanceContent,
   defaultFacilityOverviewContent,
   defaultGreetingContent,
 } from "./site-content.defaults";
@@ -11,12 +12,14 @@ import { getSiteContentChangedFields } from "./site-content.audit";
 import { SITE_CONTENT_COLLECTION_NAME, type MongoSiteContentDocument } from "./site-content.mongo-schema";
 import type {
   ContactInformationContent,
+  DonationGuidanceContent,
   FacilityOverviewContent,
   GreetingContent,
   SiteContentKey,
 } from "./site-content.types";
 import {
   validateContactInformationInput,
+  validateDonationGuidanceInput,
   validateFacilityOverviewInput,
   validateGreetingInput,
 } from "./site-content.validation";
@@ -39,6 +42,12 @@ export type AdminSiteContentDetail =
       persisted: boolean;
       content: ContactInformationContent;
       updatedAt: string | null;
+    }
+  | {
+      key: "donation-guidance";
+      persisted: boolean;
+      content: DonationGuidanceContent;
+      updatedAt: string | null;
     };
 export type SaveAdminSiteContentResult =
   | { ok: true; key: SiteContentKey; created: boolean; updatedAt: string }
@@ -58,18 +67,27 @@ export function getAdminSiteContent(key: "greeting"): Promise<Extract<AdminSiteC
 export function getAdminSiteContent(
   key: "contact-information",
 ): Promise<Extract<AdminSiteContentDetail, { key: "contact-information" }>>;
+export function getAdminSiteContent(
+  key: "donation-guidance",
+): Promise<Extract<AdminSiteContentDetail, { key: "donation-guidance" }>>;
 export async function getAdminSiteContent(key: SiteContentKey): Promise<AdminSiteContentDetail> {
   const document = await (
     await getMongoDatabase()
   )
     .collection<MongoSiteContentDocument>(SITE_CONTENT_COLLECTION_NAME)
     .findOne({ key });
-  const fallback =
-    key === "facility-overview"
-      ? defaultFacilityOverviewContent
-      : key === "greeting"
-        ? defaultGreetingContent
-        : defaultContactInformationContent;
+  const fallback = (() => {
+    switch (key) {
+      case "facility-overview":
+        return defaultFacilityOverviewContent;
+      case "greeting":
+        return defaultGreetingContent;
+      case "contact-information":
+        return defaultContactInformationContent;
+      case "donation-guidance":
+        return defaultDonationGuidanceContent;
+    }
+  })();
   if (!document)
     return {
       key,
@@ -86,6 +104,8 @@ export async function getAdminSiteContent(key: SiteContentKey): Promise<AdminSit
         return validateGreetingInput(document.content);
       case "contact-information":
         return validateContactInformationInput(document.content);
+      case "donation-guidance":
+        return validateDonationGuidanceInput(document.content);
     }
   })();
   if (!result.ok) throw new Error("공식 콘텐츠 문서가 유효하지 않습니다.");
@@ -113,7 +133,7 @@ async function transaction<T>(work: (database: Db, session: ClientSession) => Pr
 
 export async function saveAdminSiteContent(input: {
   key: SiteContentKey;
-  content: FacilityOverviewContent | GreetingContent | ContactInformationContent;
+  content: FacilityOverviewContent | GreetingContent | ContactInformationContent | DonationGuidanceContent;
   expectedUpdatedAt: Date | null;
   actor: AdminPrincipal;
   now?: Date;
@@ -135,6 +155,8 @@ export async function saveAdminSiteContent(input: {
               return validateGreetingInput(existing.content);
             case "contact-information":
               return validateContactInformationInput(existing.content);
+            case "donation-guidance":
+              return validateDonationGuidanceInput(existing.content);
           }
         })();
         if (!validation.ok) return { ok: false, reason: "invalid_document" };

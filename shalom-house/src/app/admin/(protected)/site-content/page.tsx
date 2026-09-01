@@ -13,6 +13,7 @@ export default async function SiteContentPage() {
       getAdminSiteContent("facility-overview"),
       getAdminSiteContent("greeting"),
       getAdminSiteContent("contact-information"),
+      getAdminSiteContent("donation-guidance"),
     ]),
     getAdminStaffCounts(),
     getAdminFacilitySpaceCounts(),
@@ -22,7 +23,7 @@ export default async function SiteContentPage() {
       <header>
         <h1 className="text-title font-bold">공식 콘텐츠 관리</h1>
         <p className="mt-2 text-muted-foreground">
-          시설개요, 원장 인사말, 연락처·찾아오시는 길, 함께하는 사람들과 생활공간을 관리합니다.
+          시설개요, 원장 인사말, 연락처·찾아오시는 길, 후원 안내, 함께하는 사람들과 생활공간을 관리합니다.
         </p>
       </header>
       <div className="grid gap-5">
@@ -33,7 +34,9 @@ export default async function SiteContentPage() {
                 ? "시설개요"
                 : item.key === "greeting"
                   ? "원장 인사말"
-                  : "연락처·찾아오시는 길"}
+                  : item.key === "contact-information"
+                    ? "연락처·찾아오시는 길"
+                    : "후원 안내"}
             </h2>
             <p className="mt-2">
               {item.persisted
@@ -51,7 +54,9 @@ export default async function SiteContentPage() {
                     ? "/about"
                     : item.key === "greeting"
                       ? "/about/greeting"
-                      : "/about/directions"
+                      : item.key === "contact-information"
+                        ? "/about/directions"
+                        : "/support/donation"
                 }
               >
                 공개 페이지 보기

@@ -1,4 +1,9 @@
-export const siteContentKeys = ["facility-overview", "greeting", "contact-information"] as const;
+export const siteContentKeys = [
+  "facility-overview",
+  "greeting",
+  "contact-information",
+  "donation-guidance",
+] as const;
 
 export type SiteContentKey = (typeof siteContentKeys)[number];
 
@@ -54,6 +59,17 @@ export type ContactInformationContent = {
   showInstagram: boolean;
 };
 
+export type DonationGuidanceContent = {
+  pageDescription: string;
+  notice: string;
+  steps: readonly [string, string, string];
+  contactTitle: string;
+  contactDescription: string;
+  transparencyLinkLabel: string;
+  donationInquiryLabel: string;
+  receiptInquiryLabel: string;
+};
+
 export function createTelephoneHref(phone: string): string {
   const leadingPlus = phone.trim().startsWith("+") ? "+" : "";
   return `tel:${leadingPlus}${phone.replace(/\D/g, "")}`;
@@ -75,4 +91,8 @@ export type GreetingDocument = SiteContentDocumentBase & {
 export type ContactInformationDocument = SiteContentDocumentBase & {
   key: "contact-information";
   content: ContactInformationContent;
+};
+export type DonationGuidanceDocument = SiteContentDocumentBase & {
+  key: "donation-guidance";
+  content: DonationGuidanceContent;
 };

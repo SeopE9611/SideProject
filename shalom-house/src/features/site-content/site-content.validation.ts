@@ -1,5 +1,6 @@
 import type {
   ContactInformationContent,
+  DonationGuidanceContent,
   FacilityOverviewContent,
   GreetingContent,
   SiteContentKey,
@@ -235,12 +236,55 @@ export function validateContactInformationInput(
   return Object.keys(errors).length ? { ok: false, fieldErrors: errors } : { ok: true, value: content };
 }
 
+export function validateDonationGuidanceInput(
+  value: unknown,
+): SiteContentValidationResult<DonationGuidanceContent> {
+  const errors: Record<string, string> = {};
+  const keys = [
+    "pageDescription",
+    "notice",
+    "steps",
+    "contactTitle",
+    "contactDescription",
+    "transparencyLinkLabel",
+    "donationInquiryLabel",
+    "receiptInquiryLabel",
+  ];
+  if (!exactObject(value, keys))
+    return { ok: false, fieldErrors: { content: "허용되지 않은 콘텐츠 구조입니다." } };
+
+  const donationText = (input: unknown, path: string, min: number, max: number, multiline: boolean) => {
+    const result = text(input, path, errors, min, max);
+    const forbidden = multiline ? /[<>\t\r\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/ : /[<>\n\t\r\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
+    if (forbidden.test(result))
+      errors[path] = multiline
+        ? "HTML, 탭, 캐리지 리턴과 제어문자 없이 입력해 주세요."
+        : "줄바꿈, HTML과 제어문자 없이 입력해 주세요.";
+    return result;
+  };
+  const steps =
+    Array.isArray(value.steps) && value.steps.length === 3
+      ? value.steps.map((step, index) => donationText(step, `steps.${index}`, 5, 400, false))
+      : ((errors.steps = "후원 절차는 정확히 3개여야 합니다."), []);
+  const content: DonationGuidanceContent = {
+    pageDescription: donationText(value.pageDescription, "pageDescription", 10, 400, true),
+    notice: donationText(value.notice, "notice", 1, 400, true),
+    steps: steps as unknown as DonationGuidanceContent["steps"],
+    contactTitle: donationText(value.contactTitle, "contactTitle", 1, 100, false),
+    contactDescription: donationText(value.contactDescription, "contactDescription", 10, 500, true),
+    transparencyLinkLabel: donationText(value.transparencyLinkLabel, "transparencyLinkLabel", 1, 100, false),
+    donationInquiryLabel: donationText(value.donationInquiryLabel, "donationInquiryLabel", 1, 100, false),
+    receiptInquiryLabel: donationText(value.receiptInquiryLabel, "receiptInquiryLabel", 1, 100, false),
+  };
+  return Object.keys(errors).length ? { ok: false, fieldErrors: errors } : { ok: true, value: content };
+}
+
 export function validateSiteContentSaveInput(
   key: SiteContentKey,
   value: unknown,
 ): SiteContentValidationResult<{
   expectedUpdatedAt: Date | null;
-  content: FacilityOverviewContent | GreetingContent | ContactInformationContent;
+  content: FacilityOverviewContent | GreetingContent | ContactInformationContent | DonationGuidanceContent;
 }> {
   if (!exactObject(value, ["expectedUpdatedAt", "saveConfirmed", "content"]))
     return {
@@ -268,6 +312,8 @@ export function validateSiteContentSaveInput(
         return validateGreetingInput(value.content);
       case "contact-information":
         return validateContactInformationInput(value.content);
+      case "donation-guidance":
+        return validateDonationGuidanceInput(value.content);
     }
   })();
   return validated.ok ? { ok: true, value: { expectedUpdatedAt, content: validated.value } } : validated;
