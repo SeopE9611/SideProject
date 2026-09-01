@@ -26,7 +26,7 @@ function responseError(response: Response, body: ResponseBody) {
   return body.error && messages[body.error] ? messages[body.error] : "요청을 처리하지 못했습니다. 다시 시도해 주세요.";
 }
 export function AdminNewsMediaForm(props: AdminNewsMediaFormProps) {
-  const expectedRedirect = `/admin/news/${props.newsId}`;
+  const expectedRedirect = `/admin/news/${props.newsId}?mediaUpdated=1`;
   const [coverId, setCoverId] = useState(props.currentCover?.id ?? ""); const [coverConfirmed, setCoverConfirmed] = useState(false);
   const [coverBusy, setCoverBusy] = useState(false); const [coverErrors, setCoverErrors] = useState<Record<string, string>>({});
   const [file, setFile] = useState<File | null>(null); const [label, setLabel] = useState(props.currentAttachment?.label ?? "");

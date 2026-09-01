@@ -314,11 +314,29 @@ function toAdminNewsListItem(document: WithId<MongoNewsPostDocument>, now: Date)
 }
 
 export function isValidAdminNewsId(value: unknown): value is string {
-  if (typeof value !== "string" || !/^[a-fA-F0-9]{24}$/.test(value)) {
+  if (typeof value !== "string" || !/^[a-f0-9]{24}$/.test(value)) {
     return false;
   }
 
-  return ObjectId.isValid(value) && new ObjectId(value).toHexString() === value.toLowerCase();
+  return ObjectId.isValid(value) && new ObjectId(value).toHexString() === value;
+}
+
+export type AdminNewsMediaTargetResult =
+  | { ok: true; editable: boolean }
+  | { ok: false; reason: "not_found" | "invalid_document" };
+
+export async function inspectAdminNewsMediaTarget(id: string): Promise<AdminNewsMediaTargetResult> {
+  if (!isValidAdminNewsId(id)) return { ok: false, reason: "not_found" };
+  const document = await (await getMongoDatabase()).collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
+    .findOne({ _id: new ObjectId(id), ...activeDocumentFilter });
+  if (!document) return { ok: false, reason: "not_found" };
+  if (!toAdminNewsListItem(document, new Date()) || !Array.isArray(document.body) ||
+      !document.body.every(isNonEmptyString) || !isValidStoredNewsMedia(document)) {
+    return { ok: false, reason: "invalid_document" };
+  }
+  return { ok: true, editable: isEditableDraftState(
+    document.publicationStatus, document.approvalStatus, document.publishedAt,
+  ) };
 }
 
 export async function findAdminNewsPostById(id: string, now: Date = new Date()): Promise<AdminNewsDetail | null> {
@@ -957,7 +975,7 @@ async function changeAdminNewsMedia(input: {
         !current.body.every(isNonEmptyString) || !isValidStoredNewsMedia(current))
       return { ok: false, reason: "invalid_document" };
     if ("attachment" in input.set && input.set.attachment !== null &&
-        !isValidStoredNewsAttachment(input.set.attachment, transitionAt))
+        !isValidStoredNewsAttachment(input.set.attachment, transitionAt, newsPostId.toHexString()))
       return { ok: false, reason: "invalid_document" };
     if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
       return { ok: false, reason: "not_editable" };

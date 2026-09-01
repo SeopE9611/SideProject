@@ -2,6 +2,12 @@ import { ObjectId, type Filter } from "mongodb";
 import { getMongoDatabase } from "@/lib/mongodb";
 import { GALLERY_ITEM_COLLECTION_NAME, type MongoGalleryItemDocument } from "./gallery.mongo-schema";
 import {
+  ADMIN_GALLERY_IMAGE_MAX_BYTES,
+  ADMIN_GALLERY_IMAGE_MAX_DIMENSION,
+  normalizeAdminGalleryOriginalFileName,
+} from "./gallery.admin-validation";
+import { getGalleryPrivateBucketName } from "./gallery.storage";
+import {
   getSeoulCalendarDate,
   isCanonicalGalleryDate,
   isGalleryConsentReadyForPublication,
@@ -74,20 +80,43 @@ const projection = {
 } as const;
 
 export function isValidStoredGalleryItem(document: MongoGalleryItemDocument): boolean {
-  const dates = [document.createdAt, document.updatedAt];
+  const validDate = (value: unknown): value is Date => value instanceof Date && !Number.isNaN(value.getTime());
+  const nullableDate = (value: unknown) => value === null || validDate(value);
+  const nullableCalendarDate = (value: unknown) => value === null || isCanonicalGalleryDate(value);
+  const validReference = document.consentReferenceCode === null ||
+    typeof document.consentReferenceCode === "string" && /^[A-Za-z0-9_-]{1,80}$/.test(document.consentReferenceCode);
+  const noConsentRequired = (document.subjectPresence === "none" || document.subjectPresence === "non_identifiable") &&
+    document.consentStatus === "not_required" && document.consentCheckedOn === null &&
+    document.consentReferenceCode === null && document.consentWithdrawnAt === null;
+  const identifiablePending = document.subjectPresence === "identifiable" && document.consentStatus === "pending" &&
+    document.consentCheckedOn === null && document.consentReferenceCode === null && document.consentWithdrawnAt === null;
+  const identifiableConfirmed = document.subjectPresence === "identifiable" && document.consentStatus === "confirmed" &&
+    isCanonicalGalleryDate(document.consentCheckedOn) && document.consentReferenceCode !== null &&
+    validReference && document.consentWithdrawnAt === null;
+  const identifiableWithdrawn = document.subjectPresence === "identifiable" && document.consentStatus === "withdrawn" &&
+    isCanonicalGalleryDate(document.consentCheckedOn) && document.consentReferenceCode !== null && validReference &&
+    validDate(document.consentWithdrawnAt) && validDate(document.updatedAt) && document.consentWithdrawnAt <= document.updatedAt;
+  const media = document.media;
   return document._id instanceof ObjectId && isValidGallerySlug(document.slug) &&
     [document.title, document.category, document.description, document.altText].every(
-      (value) => typeof value === "string" && value.trim().length > 0,
+      (value) => typeof value === "string" && value === value.trim() && value.length > 0,
     ) && isCanonicalGalleryDate(document.activityDate) &&
     isGallerySubjectPresence(document.subjectPresence) && isGalleryConsentStatus(document.consentStatus) &&
     isGalleryPublicationStatus(document.publicationStatus) && isGalleryApprovalStatus(document.approvalStatus) &&
-    dates.every((date) => date instanceof Date && !Number.isNaN(date.getTime())) &&
-    (document.publishedAt === null || document.publishedAt instanceof Date && !Number.isNaN(document.publishedAt.getTime())) &&
-    (document.archivedAt === null || document.archivedAt instanceof Date && !Number.isNaN(document.archivedAt.getTime())) &&
-    (document.deletedAt == null || document.deletedAt instanceof Date && !Number.isNaN(document.deletedAt.getTime())) &&
-    (document.consentWithdrawnAt === null || document.consentWithdrawnAt instanceof Date && !Number.isNaN(document.consentWithdrawnAt.getTime())) &&
-    Boolean(document.media) && Number.isInteger(document.media.width) && document.media.width > 0 &&
-    Number.isInteger(document.media.height) && document.media.height > 0;
+    validDate(document.createdAt) && validDate(document.updatedAt) && document.updatedAt >= document.createdAt &&
+    nullableDate(document.publishedAt) && nullableDate(document.archivedAt) &&
+    (document.deletedAt === undefined || nullableDate(document.deletedAt)) && nullableDate(document.consentWithdrawnAt) &&
+    nullableCalendarDate(document.displayStartOn) && nullableCalendarDate(document.displayEndOn) &&
+    (document.displayStartOn === null || document.displayEndOn === null || document.displayStartOn <= document.displayEndOn) &&
+    nullableCalendarDate(document.consentCheckedOn) && validReference &&
+    (noConsentRequired || identifiablePending || identifiableConfirmed || identifiableWithdrawn) &&
+    Boolean(media) && media.bucket === getGalleryPrivateBucketName() &&
+    media.objectPath === `shalom-house/gallery/${document._id.toHexString()}/image.webp` &&
+    media.mimeType === "image/webp" && Number.isSafeInteger(media.byteSize) && media.byteSize >= 1 &&
+    media.byteSize <= ADMIN_GALLERY_IMAGE_MAX_BYTES && Number.isSafeInteger(media.width) && media.width >= 1 &&
+    media.width <= ADMIN_GALLERY_IMAGE_MAX_DIMENSION && Number.isSafeInteger(media.height) && media.height >= 1 &&
+    media.height <= ADMIN_GALLERY_IMAGE_MAX_DIMENSION && /^[a-f0-9]{64}$/.test(media.sha256) &&
+    normalizeAdminGalleryOriginalFileName(media.originalFileName) === media.originalFileName;
 }
 
 export function toPublicGalleryItem(document: MongoGalleryItemDocument): PublicGalleryItem | null {

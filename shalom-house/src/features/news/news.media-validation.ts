@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import type { MongoNewsAttachment } from "./news.mongo-schema";
-import { getNewsPrivateBucketName, isValidPrivateNewsAttachmentPath } from "./news.storage";
+import { getNewsPrivateBucketName, isValidPrivateNewsAttachmentPathForNews } from "./news.storage";
 
 export const ADMIN_NEWS_ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
 export const ADMIN_NEWS_ATTACHMENT_REQUEST_MAX_BYTES = 11 * 1024 * 1024;
@@ -54,12 +54,13 @@ export function normalizeNewsAttachmentFileName(value: string): string {
   return name && name !== ".pdf" ? name : "attachment.pdf";
 }
 
-export function isValidStoredNewsAttachment(value: unknown, updatedAt: unknown): value is MongoNewsAttachment {
+export function isValidStoredNewsAttachment(value: unknown, updatedAt: unknown, newsPostId: string): value is MongoNewsAttachment {
+  if (!canonicalId(newsPostId)) return false;
   if (!value || typeof value !== "object") return false;
   const attachment = value as Record<string, unknown>;
   const storedAt = attachment.storedAt;
   return attachment.bucket === getNewsPrivateBucketName() &&
-    isValidPrivateNewsAttachmentPath(attachment.objectPath) &&
+    isValidPrivateNewsAttachmentPathForNews(newsPostId, attachment.objectPath) &&
     typeof attachment.originalFileName === "string" &&
     normalizeNewsAttachmentFileName(attachment.originalFileName) === attachment.originalFileName &&
     /\.pdf$/i.test(attachment.originalFileName) &&
@@ -72,12 +73,13 @@ export function isValidStoredNewsAttachment(value: unknown, updatedAt: unknown):
 }
 
 export function isValidStoredNewsMedia(document: {
-  coverGalleryItemId?: unknown; attachment?: unknown; updatedAt?: unknown;
+  _id?: unknown; coverGalleryItemId?: unknown; attachment?: unknown; updatedAt?: unknown;
 }): boolean {
   const coverValid = document.coverGalleryItemId === undefined || document.coverGalleryItemId === null ||
     document.coverGalleryItemId instanceof ObjectId;
   const attachmentValid = document.attachment === undefined || document.attachment === null ||
-    isValidStoredNewsAttachment(document.attachment, document.updatedAt);
+    document._id instanceof ObjectId &&
+    isValidStoredNewsAttachment(document.attachment, document.updatedAt, document._id.toHexString());
   return coverValid && attachmentValid;
 }
 

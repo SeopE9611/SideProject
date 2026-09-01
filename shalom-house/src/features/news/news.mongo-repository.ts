@@ -2,8 +2,7 @@ import { ObjectId, type Document, type Filter, type WithId } from "mongodb";
 
 import { getMongoDatabase } from "@/lib/mongodb";
 import { findPublicGalleryCoverById, findPublicGalleryCoversByIds, type PublicGalleryCoverReference } from "@/features/gallery/gallery.repository";
-import { ADMIN_NEWS_ATTACHMENT_MAX_BYTES, isValidNewsAttachmentLabel, normalizeNewsAttachmentFileName } from "./news.media-validation";
-import { isValidPrivateNewsAttachmentPath } from "./news.storage";
+import { isValidStoredNewsAttachment } from "./news.media-validation";
 
 import type { NewsRepository } from "./news.repository";
 import { NEWS_COLLECTION_NAME, type MongoNewsPostDocument } from "./news.mongo-schema";
@@ -34,17 +33,12 @@ function isNonEmptyString(value: unknown): value is string {
 function validAttachment(document: WithId<Document>) {
   const attachment = document.attachment;
   if (attachment == null) return attachment === null || attachment === undefined ? null : false;
-  return typeof attachment.bucket === "string" && attachment.bucket.trim().length > 0 &&
-    isValidPrivateNewsAttachmentPath(attachment.objectPath) &&
-    typeof attachment.originalFileName === "string" && normalizeNewsAttachmentFileName(attachment.originalFileName) === attachment.originalFileName &&
-    isValidNewsAttachmentLabel(attachment.label) && attachment.contentType === "application/pdf" &&
-    Number.isSafeInteger(attachment.byteSize) && attachment.byteSize >= 1 && attachment.byteSize <= ADMIN_NEWS_ATTACHMENT_MAX_BYTES &&
-    isValidDate(attachment.storedAt) && isValidDate(document.updatedAt) && attachment.storedAt <= document.updatedAt ? attachment : false;
+  return isValidStoredNewsAttachment(attachment, document.updatedAt, document._id.toHexString()) ? attachment : false;
 }
 
 function publicAttachment(document: WithId<Document>) {
   const attachment = validAttachment(document);
-  return attachment && attachment !== false ? { href: `/api/news/${encodeURIComponent(document.slug)}/attachment`,
+  return attachment ? { href: `/api/news/${encodeURIComponent(document.slug)}/attachment`,
     label: attachment.label, originalFileName: attachment.originalFileName, byteSize: attachment.byteSize } : null;
 }
 
@@ -211,7 +205,7 @@ export class MongoNewsRepository implements NewsRepository {
 export async function findPublishedNewsAttachmentBySlug(slug: string) {
   if (!isValidNewsSlug(slug)) return null;
   const document = await (await getMongoDatabase()).collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
-    .findOne({ ...createPublicFilter(new Date()), slug }, { projection: { slug: 1, updatedAt: 1, attachment: 1 } });
+    .findOne({ ...createPublicFilter(new Date()), slug }, { projection: { _id: 1, slug: 1, updatedAt: 1, attachment: 1 } });
   if (!document || validAttachment(document) === false) return null;
-  return document.attachment ?? null;
+  return document.attachment ? { newsPostId: document._id.toHexString(), ...document.attachment } : null;
 }
