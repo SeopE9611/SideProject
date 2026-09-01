@@ -2,14 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { SectionPageHeader } from "@/components/layout/section-page-header";
-import { siteConfig } from "@/config/site";
+import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
+import { createTelephoneHref } from "@/features/site-content/site-content.types";
 import { supportFixture } from "@/content/fixtures/support.fixture";
 
 export const metadata: Metadata = {
   title: "후원하기",
 };
 
-export default function DonationPage() {
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export default async function DonationPage() {
+  const contact = await getPublicContactInformation();
   return (
     <>
       <SectionPageHeader
@@ -31,13 +35,14 @@ export default function DonationPage() {
         </ol>
         <p className="mt-8">
           대표 전화{" "}
-          <a className="font-bold text-primary underline" href={`tel:${siteConfig.phone}`}>
-            {siteConfig.phone}
+          <a className="font-bold text-primary underline" href={createTelephoneHref(contact.phone)}>
+            {contact.phone}
           </a>
         </p>
         <Link className="mt-5 inline-flex font-bold text-primary underline" href="/transparency">
           후원금 자료공개 보기
         </Link>
+        <div className="mt-5 flex flex-wrap gap-5"><Link className="font-bold text-primary underline" href="/support/contact?kind=donation">후원 문의 접수</Link><Link className="font-bold text-primary underline" href="/support/contact?kind=donation_receipt">후원금 영수증·내역 문의</Link></div>
       </section>
     </>
   );

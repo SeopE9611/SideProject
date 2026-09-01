@@ -1,0 +1,6 @@
+import { MongoClient } from "mongodb";
+const uri = process.env.SHALOM_MONGODB_URI;
+const databaseName = process.env.SHALOM_MONGODB_DB || "shalom_house";
+if (!uri) throw new Error("SHALOM_MONGODB_URI가 설정되지 않았습니다.");
+const client = new MongoClient(uri);
+try { await client.connect(); const db = client.db(databaseName); await db.collection("inquiries").createIndexes([{ key: { reference: 1 }, unique: true, name: "inquiries_reference_unique" }, { key: { status: 1, kind: 1, createdAt: -1, _id: -1 }, name: "inquiries_admin_list" }, { key: { deleteAfter: 1 }, expireAfterSeconds: 0, name: "inquiries_retention_ttl" }]); await db.collection("inquiry_audit_events").createIndexes([{ key: { inquiryId: 1, toVersionAt: 1 }, unique: true, name: "inquiry_audit_events_version_unique" }, { key: { inquiryId: 1, occurredAt: -1, _id: -1 }, name: "inquiry_audit_events_timeline" }, { key: { deleteAfter: 1 }, expireAfterSeconds: 0, name: "inquiry_audit_events_retention_ttl" }]); await db.collection("inquiry_submission_limits").createIndexes([{ key: { keyHash: 1, windowStartedAt: 1 }, unique: true, name: "inquiry_submission_limits_window_unique" }, { key: { expiresAt: 1 }, expireAfterSeconds: 0, name: "inquiry_submission_limits_ttl" }]); console.log("문의 인덱스를 확인했습니다."); } finally { await client.close(); }

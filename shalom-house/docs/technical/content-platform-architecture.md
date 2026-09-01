@@ -366,3 +366,6 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 ## 공통 연락처 문서
 
 `contact-information`은 기존 `site_content_documents_key_unique` 인덱스와 collection을 재사용한다. 찾아오시는 길, 문의하기, 푸터는 공통 repository를 조회한다. 외부 지도 URL과 `tel:` URL은 저장하지 않고 검증된 주소와 전화로 서버 렌더링 시 생성한다. Instagram URL은 HTTPS의 `instagram.com` 또는 `www.instagram.com`만 허용한다. optimistic locking 및 감사 이벤트의 동일 transaction 원칙을 유지한다.
+# 문의 저장 구조
+
+`inquiries`, `inquiry_audit_events`, `inquiry_submission_limits` collection을 사용한다. 공개 접수번호는 unique index, 문의 및 감사 기록의 `deleteAfter`와 rate limit의 `expiresAt`은 TTL index를 사용한다. 관리자 수정과 감사 이벤트는 동일 transaction에 저장하고 `updatedAt` optimistic locking을 적용한다. 원본 IP 대신 짧은 window의 hash key만 저장한다.

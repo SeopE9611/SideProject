@@ -18,6 +18,7 @@ const preparedItems = [
   "주소·대표 전화·외부 연락 채널 관리",
   "직원 소개의 공개 범위·표시 순서 관리",
   "생활공간 설명의 공개 상태·표시 순서 관리",
+  "일반·방문·자원봉사·후원 문의 통합 관리",
 ] as const;
 
 const nextItems = ["이미지·첨부파일 공개 절차"] as const;
@@ -30,6 +31,7 @@ export default async function AdminDashboardPage({
   const forbidden = (await searchParams).forbidden === "1";
   const admin = await getCurrentAdmin();
   const canManageSiteContent = Boolean(admin && hasAdminPermission(admin, "site_content.manage"));
+  const canManageInquiries = Boolean(admin && hasAdminPermission(admin, "inquiries.manage"));
   return (
     <div className="space-y-8">
       {forbidden ? (
@@ -60,6 +62,7 @@ export default async function AdminDashboardPage({
         </section>
       </div>
       <div className="flex flex-wrap gap-3">
+        {canManageInquiries ? <Link href="/admin/inquiries" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">문의 관리 열기</Link> : null}
         {canManageSiteContent ? (
           <Link
             href="/admin/site-content"
