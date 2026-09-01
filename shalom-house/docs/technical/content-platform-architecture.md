@@ -354,3 +354,7 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 ## 공식 콘텐츠 CMS 1차
 
 시설개요와 원장 인사말은 MongoDB에서 관리하며 시스템 관리자만 수정할 수 있다. 문서가 없으면 기존 코드 기본 콘텐츠를 유지하지만 DB 장애는 기본 콘텐츠로 위장하지 않는다. 저장은 즉시 공개 페이지에 반영되고 optimistic locking을 적용하며 콘텐츠와 감사 이벤트를 같은 transaction에 기록한다. 공개 페이지의 편집 링크는 권한 있는 관리자에게만 보인다. 원장 이름은 명시적으로 공개를 설정한 경우에만 표시한다. 주민·입소자 개별 정보는 CMS 대상이 아니며 직원·생활공간 관리는 후속 단계다.
+
+## 직원 소개 저장 구조
+
+`staff_profiles`와 `staff_audit_events` collection을 분리하고 생성·수정을 동일 MongoDB transaction으로 처리한다. `updatedAt` 기반 optimistic locking을 사용하며 공개 repository는 공개 상태와 이름 공개 확인 조건을 runtime 검증한 최소 projection만 반환한다. 손상 문서는 개별 제외하지만 MongoDB 장애는 전파한다. 공개 페이지에는 권한 기반 관리자 편집 링크가 있으며 직원 사진과 생활공간 CMS는 후속 단계이고 입소자 프로필은 구현하지 않는다.

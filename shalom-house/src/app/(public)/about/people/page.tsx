@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
+import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
-import { aboutFixture } from "@/content/fixtures/about.fixture";
+import { listPublicStaffProfiles } from "@/features/staff/staff.repository";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "함께하는 사람들",
 };
 
-export default function PeoplePage() {
-  const officialProfiles = aboutFixture.staffProfiles.filter(
-    (profile) => profile.contentStatus === "official",
-  );
+export default async function PeoplePage() {
+  const profiles = await listPublicStaffProfiles();
 
   return (
     <>
@@ -28,22 +29,12 @@ export default function PeoplePage() {
         ]}
         notice="직원 정보는 당사자 확인과 홈페이지 공개 승인을 마친 범위에서만 안내합니다."
       />
+      <PublicAdminEditLink href="/admin/site-content/people" />
       <section className="mx-auto max-w-site px-page py-12 sm:px-page-wide">
-        {officialProfiles.length ? (
+        {profiles.length ? (
           <ul className="grid gap-6 lg:grid-cols-3">
-            {officialProfiles.map((profile) => (
+            {profiles.map((profile) => (
               <li key={profile.id} className="border-t-4 border-primary py-6">
-                {profile.media?.kind === "image" ? (
-                  <div className="aspect-[4/3] overflow-hidden">
-                    <Image
-                      className="h-full w-full object-cover"
-                      src={profile.media.src}
-                      alt={profile.media.alt}
-                      width={profile.media.width}
-                      height={profile.media.height}
-                    />
-                  </div>
-                ) : null}
                 {profile.name?.trim() ? (
                   <>
                     <h2 className="text-safe-wrap mt-5 font-bold">{profile.name}</h2>
