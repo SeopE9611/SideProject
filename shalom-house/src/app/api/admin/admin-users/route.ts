@@ -1,1 +1,37 @@
-import{authorizeCurrentAdmin}from"@/features/admin-auth/admin-authorization";import{isSameOriginRequest}from"@/features/admin-auth/admin-auth.service";import{createAdminUser}from"@/features/admin-users/admin-user.admin-repository";import{validateCreateAdminUser}from"@/features/admin-users/admin-user.validation";export const runtime="nodejs";const h={"Cache-Control":"no-store","Content-Type":"application/json; charset=utf-8"},json=(b:unknown,s:number)=>new Response(JSON.stringify(b),{status:s,headers:h});export async function POST(r:Request){if(!isSameOriginRequest(r))return json({ok:false,error:"forbidden"},403);const a=await authorizeCurrentAdmin("admin_users.manage");if(!a.ok)return json({ok:false,error:a.reason},a.reason==="unauthorized"?401:403);if(r.headers.get("content-type")?.split(";",1)[0]!=="application/json")return json({ok:false,error:"unsupported_media_type"},415);if(Number(r.headers.get("content-length"))>32768)return json({ok:false,error:"payload_too_large"},413);const t=await r.text();if(new TextEncoder().encode(t).length>32768)return json({ok:false,error:"payload_too_large"},413);let raw;try{raw=JSON.parse(t)}catch{return json({ok:false,error:"invalid_json"},400)}const v=validateCreateAdminUser(raw);if(!v.ok)return json({ok:false,error:"validation",fieldErrors:v.fieldErrors},400);try{const x=await createAdminUser({user:v.value,actor:a.admin});if(!x.ok)return json({ok:false,error:x.reason},409);return json({ok:true,redirectTo:`/admin/admin-users/${x.id}?created=1`},201)}catch(e){console.error("관리자 계정 관리 실패",{actorAdminUserId:a.admin.id,operation:"create",errorName:e instanceof Error?e.name:"UnknownError"});return json({ok:false,error:"unavailable"},503)}}
+import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
+import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
+import { createAdminUser } from "@/features/admin-users/admin-user.admin-repository";
+import { validateCreateAdminUser } from "@/features/admin-users/admin-user.validation";
+export const runtime = "nodejs";
+const h = { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" },
+  json = (b: unknown, s: number) => new Response(JSON.stringify(b), { status: s, headers: h });
+export async function POST(r: Request) {
+  if (!isSameOriginRequest(r)) return json({ ok: false, error: "forbidden" }, 403);
+  const a = await authorizeCurrentAdmin("admin_users.manage");
+  if (!a.ok) return json({ ok: false, error: a.reason }, a.reason === "unauthorized" ? 401 : 403);
+  if (r.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() !== "application/json")
+    return json({ ok: false, error: "unsupported_media_type" }, 415);
+  if (Number(r.headers.get("content-length")) > 32768) return json({ ok: false, error: "payload_too_large" }, 413);
+  const t = await r.text();
+  if (new TextEncoder().encode(t).length > 32768) return json({ ok: false, error: "payload_too_large" }, 413);
+  let raw;
+  try {
+    raw = JSON.parse(t);
+  } catch {
+    return json({ ok: false, error: "invalid_json" }, 400);
+  }
+  const v = validateCreateAdminUser(raw);
+  if (!v.ok) return json({ ok: false, error: "validation", fieldErrors: v.fieldErrors }, 400);
+  try {
+    const x = await createAdminUser({ user: v.value, actor: a.admin });
+    if (!x.ok) return json({ ok: false, error: x.reason }, 409);
+    return json({ ok: true, redirectTo: `/admin/admin-users/${x.id}?created=1` }, 201);
+  } catch (e) {
+    console.error("관리자 계정 관리 실패", {
+      actorAdminUserId: a.admin.id,
+      operation: "create",
+      errorName: e instanceof Error ? e.name : "UnknownError",
+    });
+    return json({ ok: false, error: "unavailable" }, 503);
+  }
+}
