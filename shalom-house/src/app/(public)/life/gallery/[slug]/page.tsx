@@ -29,7 +29,7 @@ export default async function GalleryDetail({ params }: Props) {
 
   return (
     <>
-      <JsonLd id="gallery-image-json-ld" data={{ "@context": "https://schema.org", "@type": "ImageObject", name: item.title, description: item.description, caption: item.altText, contentUrl: createAbsolutePublicUrl(`/api/gallery/${slug}/media`), url: createAbsolutePublicUrl(`/life/gallery/${slug}`), width: item.width, height: item.height, datePublished: item.publishedAt, dateCreated: item.activityDate, inLanguage: "ko-KR", copyrightHolder: "샬롬의 집" }} />
+      <JsonLd id="gallery-image-json-ld" data={{ "@context": "https://schema.org", "@type": "ImageObject", name: item.title, description: item.description, caption: item.altText, contentUrl: createAbsolutePublicUrl(`/api/gallery/${slug}/media`), url: createAbsolutePublicUrl(`/life/gallery/${slug}`), width: item.width, height: item.height, datePublished: item.publishedAt, dateCreated: item.activityDate, inLanguage: "ko-KR" }} />
       <JsonLd id="gallery-breadcrumb-json-ld" data={{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [["홈", "/"], ["활동사진", "/life/gallery"], [item.title, `/life/gallery/${slug}`]].map(([name, path], index) => ({ "@type": "ListItem", position: index + 1, name, item: createAbsolutePublicUrl(path) })) }} />
       <SectionPageHeader
         sectionHref="/life"

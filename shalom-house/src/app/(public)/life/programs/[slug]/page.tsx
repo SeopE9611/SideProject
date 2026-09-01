@@ -28,7 +28,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
   const modified = program.updatedAt !== program.publishedAt;
   return (
     <>
-      <JsonLd id="program-article-json-ld" data={{ "@context": "https://schema.org", "@type": "Article", headline: program.title, description: program.summary, url: createAbsolutePublicUrl(`/life/programs/${slug}`), mainEntityOfPage: createAbsolutePublicUrl(`/life/programs/${slug}`), datePublished: program.publishedAt, dateModified: program.updatedAt, inLanguage: "ko-KR", articleSection: program.category, publisher: { "@id": `${getSiteOrigin()}/#organization` }, ...(program.coverImage ? { image: program.coverImage.src } : {}) }} />
+      <JsonLd id="program-article-json-ld" data={{ "@context": "https://schema.org", "@type": "Article", headline: program.title, description: program.summary, url: createAbsolutePublicUrl(`/life/programs/${slug}`), mainEntityOfPage: createAbsolutePublicUrl(`/life/programs/${slug}`), datePublished: program.publishedAt, dateModified: program.updatedAt, inLanguage: "ko-KR", articleSection: program.category, publisher: { "@id": `${getSiteOrigin()}/#organization` }, ...(program.coverImage ? { image: createAbsolutePublicUrl(program.coverImage.src) } : {}) }} />
       <JsonLd id="program-breadcrumb-json-ld" data={{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [["홈", "/"], ["생활·프로그램", "/life"], ["프로그램", "/life/programs"], [program.title, `/life/programs/${slug}`]].map(([name, path], index) => ({ "@type": "ListItem", position: index + 1, name, item: createAbsolutePublicUrl(path) })) }} />
       <SectionPageHeader
         sectionHref="/life"

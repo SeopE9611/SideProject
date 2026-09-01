@@ -46,7 +46,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
 
   return (
     <div className="bg-surface">
-      <JsonLd id="news-article-json-ld" data={{ "@context": "https://schema.org", "@type": "NewsArticle", headline: post.title, description: post.summary, url: createAbsolutePublicUrl(`/news/${slug}`), mainEntityOfPage: createAbsolutePublicUrl(`/news/${slug}`), datePublished: post.publishedAt, dateModified: post.updatedAt, inLanguage: "ko-KR", articleSection: getNewsCategoryLabel(post.category), publisher: { "@id": `${getSiteOrigin()}/#organization` }, ...(post.coverImage ? { image: post.coverImage.src } : {}) }} />
+      <JsonLd id="news-article-json-ld" data={{ "@context": "https://schema.org", "@type": "NewsArticle", headline: post.title, description: post.summary, url: createAbsolutePublicUrl(`/news/${slug}`), mainEntityOfPage: createAbsolutePublicUrl(`/news/${slug}`), datePublished: post.publishedAt, dateModified: post.updatedAt, inLanguage: "ko-KR", articleSection: getNewsCategoryLabel(post.category), publisher: { "@id": `${getSiteOrigin()}/#organization` }, ...(post.coverImage ? { image: createAbsolutePublicUrl(post.coverImage.src) } : {}) }} />
       <JsonLd id="news-breadcrumb-json-ld" data={{ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [["홈", "/"], ["소식", "/news"], [post.title, `/news/${slug}`]].map(([name, path], index) => ({ "@type": "ListItem", position: index + 1, name, item: createAbsolutePublicUrl(path) })) }} />
       <article>
         <header className="border-b border-border">

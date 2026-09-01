@@ -1,8 +1,8 @@
 # SEO·검색 노출 운영 기준
 
-공식 canonical origin은 `SHALOM_SITE_URL`로 관리하며 기본값은 `https://shalom-house.vercel.app`이다. production은 공개 페이지의 색인을 허용하지만 Preview와 development, fixture 콘텐츠는 `noindex, nofollow`이며 관리자 화면도 계속 색인하지 않는다.
+공식 canonical origin은 `SHALOM_SITE_URL`로 관리하며 기본값은 `https://shalom-house.vercel.app`이다. `VERCEL_ENV`가 정의된 경우 `production`에서만 색인을 허용한다. Preview와 development는 전체 색인을 차단하고, fixture 콘텐츠는 production에서도 `noindex, nofollow`로 처리한다. production의 mongodb 콘텐츠와 empty 콘텐츠의 정적 공개 페이지는 색인을 허용하며 관리자 화면은 계속 색인하지 않는다. 알 수 없는 `VERCEL_ENV` 또는 `SHALOM_CONTENT_SOURCE` 값은 색인을 차단한다.
 
-정적 route는 단일 route 목록에서 title, description, query 없는 canonical을 생성한다. 소식·프로그램·활동사진 상세는 각각 `NewsArticle`, `Article`, `ImageObject`와 `BreadcrumbList`를 제공한다. 전역 `Organization`, `WebSite`에는 확인된 기관 정보만 포함한다. 사진 없는 `/api/social-image`가 기본 Open Graph·Twitter 이미지다.
+정적 route는 단일 route 목록에서 title, description, query 없는 canonical을 생성한다. 소식·프로그램·활동사진 상세는 각각 `NewsArticle`, `Article`, `ImageObject`와 `BreadcrumbList`를 제공한다. 소식·프로그램 Article 이미지 URL은 공식 canonical origin을 사용하는 절대 URL이다. 전역 `Organization`, `WebSite`에는 확인된 기관 정보만 포함하며, 확인되지 않은 저작권자·촬영자 정보는 JSON-LD에 포함하지 않는다. 사진 없는 `/api/social-image`가 기본 Open Graph·Twitter 이미지다.
 
 동적 sitemap은 repository의 sitemap 전용 조회로 공개 가능한 소식·프로그램과 공개 승인·동의·기간 검증을 통과한 활동사진만 포함한다. 공개 종료나 동의 철회는 sitemap에서도 제외되며 검색·필터·pagination query는 canonical이나 sitemap에 포함하지 않는다.
 
