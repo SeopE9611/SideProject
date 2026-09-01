@@ -28,8 +28,7 @@ export function isSearchIndexingEnabled(): boolean {
   if (vercelEnvironment !== undefined && vercelEnvironment !== "production") return false;
 
   const contentSource = process.env.SHALOM_CONTENT_SOURCE;
-  if (contentSource === "fixture") return false;
-  if (contentSource !== undefined && contentSource !== "empty" && contentSource !== "mongodb") return false;
+  if (contentSource !== "empty" && contentSource !== "mongodb") return false;
 
   return true;
 }
