@@ -301,6 +301,19 @@ function isPubliclyVisible(
   );
 }
 
+function hasValidActiveProgramState(document: Pick<MongoProgramDocument,
+  "publicationStatus" | "approvalStatus" | "publishedAt" | "createdAt" | "updatedAt">): boolean {
+  const publishedAt = document.publishedAt;
+  const validPublishedAt = isValidDate(publishedAt) && publishedAt >= document.createdAt && publishedAt <= document.updatedAt;
+  if (document.publicationStatus === "draft")
+    return (document.approvalStatus === "pending" || document.approvalStatus === "rejected") && publishedAt === null;
+  if (document.publicationStatus === "review")
+    return (document.approvalStatus === "pending" || document.approvalStatus === "approved") && publishedAt === null;
+  if (document.publicationStatus === "published" || document.publicationStatus === "archived")
+    return document.approvalStatus === "approved" && validPublishedAt;
+  return false;
+}
+
 function toAdminProgramListItem(document: WithId<MongoProgramDocument>, now: Date): AdminProgramListItem | null {
   if (
     !isValidProgramSlug(document.slug) ||
@@ -315,7 +328,8 @@ function toAdminProgramListItem(document: WithId<MongoProgramDocument>, now: Dat
     document.sortOrder > ADMIN_PROGRAM_SORT_ORDER_MAX ||
     !isValidDate(document.createdAt) ||
     !isValidDate(document.updatedAt) ||
-    (document.publishedAt !== null && !isValidDate(document.publishedAt))
+    document.updatedAt < document.createdAt ||
+    !hasValidActiveProgramState(document)
   ) {
     return null;
   }
@@ -337,6 +351,17 @@ function toAdminProgramListItem(document: WithId<MongoProgramDocument>, now: Dat
   };
 }
 
+function isValidActiveProgramDocument(document: WithId<MongoProgramDocument>): boolean {
+  return document._id instanceof ObjectId &&
+    (document.deletedAt === undefined || document.deletedAt === null) &&
+    toAdminProgramListItem(document, new Date()) !== null &&
+    isNonEmptyString(document.purpose) &&
+    Array.isArray(document.body) &&
+    document.body.length > 0 &&
+    document.body.every(isNonEmptyString) &&
+    isValidStoredProgramMedia(document);
+}
+
 export function isValidAdminProgramId(value: unknown): value is string {
   if (typeof value !== "string" || !/^[a-f0-9]{24}$/.test(value)) {
     return false;
@@ -354,8 +379,7 @@ export async function inspectAdminProgramMediaTarget(id: string): Promise<AdminP
   const document = await (await getMongoDatabase()).collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME)
     .findOne({ _id: new ObjectId(id), ...activeDocumentFilter });
   if (!document) return { ok: false, reason: "not_found" };
-  if (!toAdminProgramListItem(document, new Date()) || !isNonEmptyString(document.purpose) || !Array.isArray(document.body) ||
-      !document.body.every(isNonEmptyString) || !isValidStoredProgramMedia(document)) return { ok: false, reason: "invalid_document" };
+  if (!isValidActiveProgramDocument(document)) return { ok: false, reason: "invalid_document" };
   return { ok: true, editable: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt) };
 }
 
@@ -392,12 +416,7 @@ export async function findAdminProgramPostById(id: string, now: Date = new Date(
   if (!document) return null;
   const listItem = toAdminProgramListItem(document, now);
   if (
-    !listItem ||
-    !isNonEmptyString(document.purpose) ||
-    !Array.isArray(document.body) ||
-    document.body.length === 0 ||
-    !document.body.every(isNonEmptyString) ||
-    !isValidStoredProgramMedia(document)
+    !listItem || !isValidActiveProgramDocument(document)
   ) {
     console.error("관리자 프로그램 상세 문서 검증 실패", {
       documentId: document._id.toString(),
@@ -1021,8 +1040,7 @@ async function changeAdminProgramMedia(input: {
     const collection = database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME);
     const current = await collection.findOne({ _id: programId, ...activeDocumentFilter }, { session });
     if (!current) return { ok: false, reason: "not_found" };
-    if (!toAdminProgramListItem(current, transitionAt) || !isNonEmptyString(current.purpose) || !Array.isArray(current.body) ||
-        !current.body.every(isNonEmptyString) || !isValidStoredProgramMedia(current))
+    if (!isValidActiveProgramDocument(current))
       return { ok: false, reason: "invalid_document" };
     if ("attachment" in input.set && input.set.attachment !== null &&
         !isValidStoredProgramAttachment(input.set.attachment, transitionAt, programId.toHexString()))

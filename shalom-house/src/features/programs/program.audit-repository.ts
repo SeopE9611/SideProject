@@ -11,6 +11,7 @@ import {
   type ProgramAuditSnapshot,
 } from "./program.audit";
 import { isProgramApprovalStatus, isProgramPublicationStatus, isValidProgramSlug } from "./program.types";
+import { ADMIN_PROGRAM_ATTACHMENT_MAX_BYTES, isValidProgramAttachmentLabel, normalizeProgramAttachmentFileName } from "./program.media-validation";
 export const PROGRAM_AUDIT_COLLECTION_NAME = "program_audit_events";
 export type MongoProgramAuditEventDocument = {
   _id: ObjectId;
@@ -28,24 +29,43 @@ export type MongoProgramAuditEventDocument = {
 const validDate = (v: unknown): v is Date => v instanceof Date && !Number.isNaN(v.getTime());
 function validSnapshot(value: unknown): value is ProgramAuditSnapshot {
   if (!value || typeof value !== "object") return false;
-  const v = value as ProgramAuditSnapshot;
-  const coverValid = v.coverGalleryItemId === undefined || v.coverGalleryItemId === null || (typeof v.coverGalleryItemId === "string" && /^[a-f0-9]{24}$/.test(v.coverGalleryItemId));
-  const a = v.attachment;
-  const attachmentValid = a === undefined || a === null || (a.present === true && typeof a.originalFileName === "string" && typeof a.label === "string" && Number.isSafeInteger(a.byteSize) && a.contentType === "application/pdf");
-  return coverValid && attachmentValid && (
-    isValidProgramSlug(v.slug) &&
-    v.category.trim().length > 0 &&
-    v.title.trim().length > 0 &&
-    v.summary.trim().length > 0 &&
-    v.purpose.trim().length > 0 &&
-    Array.isArray(v.body) &&
-    v.body.length > 0 &&
-    (v.operationStatusLabel === null || v.operationStatusLabel.trim().length > 0) &&
-    Number.isInteger(v.sortOrder) &&
-    isProgramPublicationStatus(v.publicationStatus) &&
-    isProgramApprovalStatus(v.approvalStatus) &&
-    (v.publishedAt === null || validDate(v.publishedAt))
-  );
+  const snapshot = value as Record<string, unknown>;
+  const cover = snapshot.coverGalleryItemId;
+  const coverValid = cover === undefined || cover === null ||
+    typeof cover === "string" && /^[a-f0-9]{24}$/.test(cover) && ObjectId.isValid(cover) &&
+    new ObjectId(cover).toHexString() === cover;
+  const attachment = snapshot.attachment;
+  const attachmentValid = attachment === undefined || attachment === null || (() => {
+    if (!attachment || typeof attachment !== "object") return false;
+    const item = attachment as Record<string, unknown>;
+    const keys = ["present", "originalFileName", "label", "byteSize", "contentType"];
+    return Object.keys(item).length === keys.length && keys.every((key) => key in item) &&
+      item.present === true && typeof item.originalFileName === "string" &&
+      normalizeProgramAttachmentFileName(item.originalFileName) === item.originalFileName &&
+      /\.pdf$/i.test(item.originalFileName) && isValidProgramAttachmentLabel(item.label) &&
+      Number.isSafeInteger(item.byteSize) && Number(item.byteSize) >= 1 &&
+      Number(item.byteSize) <= ADMIN_PROGRAM_ATTACHMENT_MAX_BYTES && item.contentType === "application/pdf";
+  })();
+  const text = (item: unknown) => typeof item === "string" && item.trim().length > 0;
+  if (!coverValid || !attachmentValid || !isValidProgramSlug(snapshot.slug) ||
+      !text(snapshot.category) || !text(snapshot.title) || !text(snapshot.summary) || !text(snapshot.purpose) ||
+      !Array.isArray(snapshot.body) || snapshot.body.length === 0 || !snapshot.body.every(text) ||
+      !(snapshot.operationStatusLabel === null || text(snapshot.operationStatusLabel)) ||
+      !Number.isInteger(snapshot.sortOrder) || Number(snapshot.sortOrder) < 0 || Number(snapshot.sortOrder) > 9999 ||
+      !isProgramPublicationStatus(snapshot.publicationStatus) || !isProgramApprovalStatus(snapshot.approvalStatus) ||
+      !(snapshot.deletedAt === null || validDate(snapshot.deletedAt))) return false;
+  const publishedAt = snapshot.publishedAt;
+  const deletedAt = snapshot.deletedAt;
+  if (snapshot.publicationStatus === "draft")
+    return (snapshot.approvalStatus === "pending" || snapshot.approvalStatus === "rejected") && publishedAt === null && deletedAt === null;
+  if (snapshot.publicationStatus === "review")
+    return (snapshot.approvalStatus === "pending" || snapshot.approvalStatus === "approved") && publishedAt === null && deletedAt === null;
+  if (snapshot.publicationStatus === "published")
+    return snapshot.approvalStatus === "approved" && validDate(publishedAt) && deletedAt === null;
+  if (snapshot.publicationStatus === "archived" && snapshot.approvalStatus === "approved")
+    return validDate(publishedAt) && deletedAt === null;
+  return snapshot.publicationStatus === "archived" && snapshot.approvalStatus === "pending" &&
+    publishedAt === null && validDate(deletedAt);
 }
 function actor(value: AdminPrincipal): ProgramAuditActor {
   if (
@@ -77,10 +97,13 @@ export async function insertProgramAuditEvent(input: {
 }): Promise<void> {
   const changedFields = Array.from(input.changedFields);
   if (
+    !(input.eventId instanceof ObjectId) ||
+    !(input.programId instanceof ObjectId) ||
     !programAuditActions.includes(input.action) ||
     !validDate(input.occurredAt) ||
     (input.fromVersionAt !== null && !validDate(input.fromVersionAt)) ||
     !validDate(input.toVersionAt) ||
+    input.occurredAt.getTime() !== input.toVersionAt.getTime() ||
     (input.before !== null && !validSnapshot(input.before)) ||
     !validSnapshot(input.after) ||
     changedFields.some((f) => !programAuditChangedFields.includes(f)) ||
@@ -180,7 +203,6 @@ export async function listAdminProgramAuditHistory(input: {
     .limit(limit)
     .toArray();
   return documents.flatMap((event) => {
-    const fields = Array.isArray(event.changedFields) ? event.changedFields : [];
     const valid =
       event.schemaVersion === 1 && event._id instanceof ObjectId && event.programId instanceof ObjectId && event.programId.equals(contentId) &&
       event.occurredAt instanceof Date &&
@@ -189,9 +211,11 @@ export async function listAdminProgramAuditHistory(input: {
       programAuditActions.includes(event.action as never) &&
       typeof event.actor?.displayName === "string" && event.actor.displayName.trim().length > 0 &&
       (event.fromVersionAt === null || validDate(event.fromVersionAt)) && validDate(event.toVersionAt) &&
+      (event.occurredAt as Date).getTime() === (event.toVersionAt as Date).getTime() &&
       (event.before === null || validSnapshot(event.before)) && validSnapshot(event.after) &&
-      fields.every((field) => typeof field === "string" && programAuditChangedFields.includes(field as never)) &&
-      new Set(fields).size === fields.length;
+      Array.isArray(event.changedFields) &&
+      event.changedFields.every((field) => typeof field === "string" && programAuditChangedFields.includes(field as never)) &&
+      new Set(event.changedFields).size === event.changedFields.length;
     if (!valid) {
       console.error("관리자 감사 이벤트 검증에 실패했습니다.", {
         auditEventId: event._id instanceof ObjectId ? event._id.toHexString() : "unknown",
