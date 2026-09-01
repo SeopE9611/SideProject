@@ -378,3 +378,9 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 ## 후원 관리 저장 구조
 
 `donors`, `donations`, `donor_audit_events`, `donation_audit_events`를 기존 collection과 분리한다. 후원금 생성 시 active 후원자를 서버에서 다시 검증하고 참조번호·표시 이름·유형 snapshot을 저장하며 익명 후원은 `donorId: null`로 저장한다. 생성·수정은 MongoDB transaction 안에서 도메인 문서와 개인정보를 최소화한 감사 이벤트를 함께 기록한다. 수정은 `updatedAt` 기반 optimistic locking을 사용한다. `confirmed` 이후 후원자·날짜·금액·방식·목적은 불변이고 `voided` 기록은 복구하지 않는다. 확정 합계는 유효한 `confirmed` 문서만 포함한다. 법정 보유기간을 가정하지 않으며 실제 삭제나 TTL index를 두지 않는다.
+
+## 소식 미디어 저장 구조
+- `news_posts`는 `coverGalleryItemId` 참조와 선택적 PDF metadata만 보유한다. 기존 필드 부재 문서와 호환하며 새 collection 또는 index를 만들지 않는다.
+- PDF는 `SHALOM_SUPABASE_DOCUMENTS_PRIVATE_BUCKET`의 `shalom-house/news/<newsId>/attachments/<assetId>.pdf`에 저장하고 공개·관리자 다운로드 route가 현재 MongoDB 참조를 확인한 뒤 전달한다.
+- 미디어 변경과 감사 이벤트는 optimistic locking을 적용한 동일 MongoDB transaction에서 기록한다. 업로드 뒤 DB 실패 시 새 object를 보상 삭제하고, 교체·제거 성공 뒤 이전 object 삭제 실패는 안전한 식별 정보만 기록해 후속 정리 대상으로 남긴다.
+- 감사 snapshot에는 대표 참조와 PDF 존재 여부·파일명·label·크기·MIME만 포함하고 bucket, objectPath, PDF 본문은 제외한다. OCR, 내용 분석 및 다중 첨부는 범위 밖이다.

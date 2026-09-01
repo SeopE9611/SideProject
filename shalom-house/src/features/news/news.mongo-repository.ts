@@ -1,6 +1,9 @@
-import { type Document, type Filter, type WithId } from "mongodb";
+import { ObjectId, type Document, type Filter, type WithId } from "mongodb";
 
 import { getMongoDatabase } from "@/lib/mongodb";
+import { findPublicGalleryCoverById, findPublicGalleryCoversByIds, type PublicGalleryCoverReference } from "@/features/gallery/gallery.repository";
+import { ADMIN_NEWS_ATTACHMENT_MAX_BYTES, isValidNewsAttachmentLabel, normalizeNewsAttachmentFileName } from "./news.media-validation";
+import { isValidPrivateNewsAttachmentPath } from "./news.storage";
 
 import type { NewsRepository } from "./news.repository";
 import { NEWS_COLLECTION_NAME, type MongoNewsPostDocument } from "./news.mongo-schema";
@@ -28,14 +31,37 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function toPublicSummary(document: WithId<Document>): PublicNewsPostSummary | null {
+function validAttachment(document: WithId<Document>) {
+  const attachment = document.attachment;
+  if (attachment == null) return attachment === null || attachment === undefined ? null : false;
+  return typeof attachment.bucket === "string" && attachment.bucket.trim().length > 0 &&
+    isValidPrivateNewsAttachmentPath(attachment.objectPath) &&
+    typeof attachment.originalFileName === "string" && normalizeNewsAttachmentFileName(attachment.originalFileName) === attachment.originalFileName &&
+    isValidNewsAttachmentLabel(attachment.label) && attachment.contentType === "application/pdf" &&
+    Number.isSafeInteger(attachment.byteSize) && attachment.byteSize >= 1 && attachment.byteSize <= ADMIN_NEWS_ATTACHMENT_MAX_BYTES &&
+    isValidDate(attachment.storedAt) && isValidDate(document.updatedAt) && attachment.storedAt <= document.updatedAt ? attachment : false;
+}
+
+function publicAttachment(document: WithId<Document>) {
+  const attachment = validAttachment(document);
+  return attachment && attachment !== false ? { href: `/api/news/${encodeURIComponent(document.slug)}/attachment`,
+    label: attachment.label, originalFileName: attachment.originalFileName, byteSize: attachment.byteSize } : null;
+}
+
+function coverImage(cover?: PublicGalleryCoverReference | null) {
+  return cover ? { src: cover.mediaUrl, altText: cover.altText, width: cover.width, height: cover.height } : null;
+}
+
+function toPublicSummary(document: WithId<Document>, cover?: PublicGalleryCoverReference | null): PublicNewsPostSummary | null {
   if (
     !isValidNewsSlug(document.slug) ||
     !isNewsCategory(document.category) ||
     !isNonEmptyString(document.title) ||
     !isNonEmptyString(document.summary) ||
     !isValidDate(document.publishedAt) ||
-    !isValidDate(document.updatedAt)
+    !isValidDate(document.updatedAt) ||
+    (document.coverGalleryItemId !== undefined && document.coverGalleryItemId !== null && !(document.coverGalleryItemId instanceof ObjectId)) ||
+    validAttachment(document) === false
   ) {
     return null;
   }
@@ -49,11 +75,13 @@ function toPublicSummary(document: WithId<Document>): PublicNewsPostSummary | nu
     publishedAt: document.publishedAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
     isDemo: false,
+    coverImage: coverImage(cover),
+    attachment: publicAttachment(document),
   };
 }
 
-function toPublicPost(document: WithId<Document>): PublicNewsPost | null {
-  const summary = toPublicSummary(document);
+function toPublicPost(document: WithId<Document>, cover?: PublicGalleryCoverReference | null): PublicNewsPost | null {
+  const summary = toPublicSummary(document, cover);
   if (!summary || !Array.isArray(document.body) || !document.body.every(isNonEmptyString)) {
     return null;
   }
@@ -81,17 +109,16 @@ const publicSummaryProjection = {
   summary: 1,
   publishedAt: 1,
   updatedAt: 1,
+  coverGalleryItemId: 1,
+  attachment: 1,
 } as const;
 
-function mapPublicSummaries(documents: readonly WithId<Document>[]): PublicNewsPostSummary[] {
+async function mapPublicSummaries(documents: readonly WithId<Document>[]): Promise<PublicNewsPostSummary[]> {
+  const ids = documents.flatMap((document) => document.coverGalleryItemId instanceof ObjectId ? [document.coverGalleryItemId] : []);
+  const covers = await findPublicGalleryCoversByIds(ids);
   return documents.flatMap((document) => {
-    const post = toPublicSummary(document);
-    if (!post) {
-      console.error("공개 뉴스 문서 검증에 실패했습니다.", {
-        documentId: document._id.toString(),
-      });
-      return [];
-    }
+    const post = toPublicSummary(document, document.coverGalleryItemId instanceof ObjectId ? covers.get(document.coverGalleryItemId.toHexString()) : null);
+    if (!post) { console.error("공개 뉴스 문서 검증에 실패했습니다.", { documentId: document._id.toString() }); return []; }
     return [post];
   });
 }
@@ -110,7 +137,7 @@ export class MongoNewsRepository implements NewsRepository {
       .limit(normalizePublicNewsLimit(options?.limit))
       .toArray();
 
-    return mapPublicSummaries(documents);
+    return await mapPublicSummaries(documents);
   }
 
   async searchPublished(options?: PublicNewsSearchOptions): Promise<PublicNewsSearchResult> {
@@ -143,7 +170,7 @@ export class MongoNewsRepository implements NewsRepository {
       .toArray();
 
     return {
-      items: mapPublicSummaries(documents),
+      items: await mapPublicSummaries(documents),
       total,
       page,
       pageSize,
@@ -168,10 +195,23 @@ export class MongoNewsRepository implements NewsRepository {
           body: 1,
           publishedAt: 1,
           updatedAt: 1,
+          coverGalleryItemId: 1,
+          attachment: 1,
         },
       },
     );
 
-    return document ? toPublicPost(document) : null;
+    if (!document) return null;
+    const cover = document.coverGalleryItemId instanceof ObjectId ? await findPublicGalleryCoverById(document.coverGalleryItemId) : null;
+    return toPublicPost(document, cover);
   }
+}
+
+
+export async function findPublishedNewsAttachmentBySlug(slug: string) {
+  if (!isValidNewsSlug(slug)) return null;
+  const document = await (await getMongoDatabase()).collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
+    .findOne({ ...createPublicFilter(new Date()), slug }, { projection: { slug: 1, updatedAt: 1, attachment: 1 } });
+  if (!document || validAttachment(document) === false) return null;
+  return document.attachment ?? null;
 }

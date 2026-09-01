@@ -85,6 +85,10 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
             </aside>
           ) : null}
           <section aria-label="소식 본문" className="border-b border-border pb-12">
+            {post.coverImage ? (
+              <img className="mb-8 h-auto w-full rounded-card" src={post.coverImage.src} alt={post.coverImage.altText}
+                width={post.coverImage.width} height={post.coverImage.height} />
+            ) : null}
             <div className="space-y-6">
               {post.body.map((paragraph, index) => (
                 <p key={`${post.id}-${index}`} className="text-safe-wrap text-pretty text-body text-foreground">
@@ -97,7 +101,15 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
             <h2 id="attachments-heading" className="text-heading font-bold">
               첨부파일
             </h2>
-            <p className="mt-3 text-body text-muted-foreground">첨부파일이 없습니다.</p>
+            {post.attachment ? (
+              <div className="mt-3">
+                <p className="font-semibold">{post.attachment.label}</p>
+                <p className="mt-1 text-small text-muted-foreground">{post.attachment.originalFileName} · {post.attachment.byteSize >= 1024 * 1024
+                  ? `${(post.attachment.byteSize / 1024 / 1024).toFixed(1)} MB` : `${Math.ceil(post.attachment.byteSize / 1024)} KB`}</p>
+                <a className="mt-4 inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4"
+                  href={post.attachment.href} download>PDF 내려받기</a>
+              </div>
+            ) : <p className="mt-3 text-body text-muted-foreground">첨부파일이 없습니다.</p>}
           </section>
           <Link
             className="mt-8 inline-flex min-h-12 items-center border border-border-strong px-5 py-3 font-bold text-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"

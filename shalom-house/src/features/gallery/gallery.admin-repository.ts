@@ -18,7 +18,21 @@ import {
   isGalleryConsentWithdrawable,
   isGalleryPubliclyVisible,
 } from "./gallery.types";
+import { MongoGalleryRepository } from "./gallery.mongo-repository";
 const PAGE_SIZE = 20;
+export async function listAdminPublicGalleryCoverOptions() {
+  const documents = await (await getMongoDatabase()).collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
+    .find({ publicationStatus: "published", approvalStatus: "approved", archivedAt: null,
+      $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }] })
+    .sort({ activityDate: -1, publishedAt: -1, _id: -1 }).limit(100).toArray();
+  const repository = new MongoGalleryRepository();
+  const covers = await repository.findPublicCoversByIds(documents.map((document) => document._id));
+  return documents.flatMap((document) => {
+    const cover = covers.get(document._id.toHexString());
+    return cover ? [{ id: cover.id, slug: cover.slug, title: cover.title, activityDate: document.activityDate,
+      altText: cover.altText, mediaUrl: cover.mediaUrl }] : [];
+  });
+}
 export const isValidAdminGalleryItemId = (id: unknown): id is string =>
   typeof id === "string" && ObjectId.isValid(id) && new ObjectId(id).toHexString() === id.toLowerCase();
 export const normalizeAdminGalleryPage = (v: unknown) =>

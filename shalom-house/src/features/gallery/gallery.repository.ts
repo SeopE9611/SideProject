@@ -1,4 +1,15 @@
 import { MongoGalleryRepository } from "./gallery.mongo-repository";
+import type { ObjectId } from "mongodb";
+
+export type PublicGalleryCoverReference = {
+  id: string;
+  slug: string;
+  title: string;
+  altText: string;
+  width: number;
+  height: number;
+  mediaUrl: string;
+};
 
 export type PublicGallerySummary = {
   slug: string;
@@ -60,3 +71,15 @@ export const findPublicGalleryItems = () => getGalleryRepository().listPublished
 export const findPublicGalleryBySlug = (slug: string) => getGalleryRepository().findPublishedBySlug(slug);
 
 export const findPublicGalleryMediaBySlug = (slug: string) => getGalleryRepository().findMediaBySlug(slug);
+
+export async function findPublicGalleryCoverById(id: ObjectId): Promise<PublicGalleryCoverReference | null> {
+  if (process.env.SHALOM_CONTENT_SOURCE !== "mongodb") return null;
+  return new MongoGalleryRepository().findPublicCoverById(id);
+}
+
+export async function findPublicGalleryCoversByIds(
+  ids: readonly ObjectId[],
+): Promise<ReadonlyMap<string, PublicGalleryCoverReference>> {
+  if (process.env.SHALOM_CONTENT_SOURCE !== "mongodb") return new Map();
+  return new MongoGalleryRepository().findPublicCoversByIds(ids);
+}

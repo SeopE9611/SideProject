@@ -211,6 +211,8 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                 <li key={post.id} className="border-b border-border">
                   <article className="grid gap-3 py-6 md:grid-cols-[8rem_minmax(0,1fr)_10rem]">
                     <div>
+                      {post.coverImage ? <img className="mb-4 aspect-[16/9] w-full rounded-card object-cover" src={post.coverImage.src}
+                        alt={post.coverImage.altText} width={post.coverImage.width} height={post.coverImage.height} /> : null}
                       <p className="text-small font-bold text-primary">{getNewsCategoryLabel(post.category)}</p>
                       {post.isDemo ? <p className="mt-1 text-xs text-muted-foreground">시연 콘텐츠</p> : null}
                     </div>
@@ -224,6 +226,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                         </Link>
                       </h3>
                       <p className="text-safe-wrap mt-2 text-body text-muted-foreground">{post.summary}</p>
+                      {post.attachment ? <p className="mt-2 text-small font-semibold text-muted-foreground">PDF 첨부</p> : null}
                     </div>
                     <time className="text-small text-muted-foreground md:text-right" dateTime={post.publishedAt}>
                       {dateFormatter.format(new Date(post.publishedAt))}

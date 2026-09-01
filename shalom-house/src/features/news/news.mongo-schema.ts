@@ -4,6 +4,16 @@ import type { NewsApprovalStatus, NewsCategory, NewsPublicationStatus } from "./
 
 export const NEWS_COLLECTION_NAME = "news_posts";
 
+export type MongoNewsAttachment = {
+  bucket: string;
+  objectPath: string;
+  originalFileName: string;
+  label: string;
+  contentType: "application/pdf";
+  byteSize: number;
+  storedAt: Date;
+};
+
 export type MongoNewsPostDocument = {
   _id: ObjectId;
   slug: string;
@@ -17,4 +27,6 @@ export type MongoNewsPostDocument = {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
+  coverGalleryItemId?: ObjectId | null;
+  attachment?: MongoNewsAttachment | null;
 };

@@ -11,6 +11,9 @@ import {
   type NewsAuditChangedField,
 } from "./news.audit";
 import { NEWS_COLLECTION_NAME, type MongoNewsPostDocument } from "./news.mongo-schema";
+import type { MongoNewsAttachment } from "./news.mongo-schema";
+import { GALLERY_ITEM_COLLECTION_NAME, type MongoGalleryItemDocument } from "@/features/gallery/gallery.mongo-schema";
+import { findPublicGalleryCoverById } from "@/features/gallery/gallery.repository";
 import type {
   AdminNewsPublicationAction,
   AdminNewsReviewDecision,
@@ -49,6 +52,8 @@ export type AdminNewsDetail = AdminNewsListItem & {
   canDecideReview: boolean;
   canPublish: boolean;
   canManagePublicationState: boolean;
+  coverGalleryItemId: string | null;
+  attachment: MongoNewsAttachment | null;
 };
 
 export type AdminNewsListFilters = {
@@ -335,6 +340,8 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
         publishedAt: 1,
         createdAt: 1,
         updatedAt: 1,
+        coverGalleryItemId: 1,
+        attachment: 1,
       },
     },
   );
@@ -361,6 +368,8 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
       document.approvalStatus,
       document.publishedAt,
     ),
+    coverGalleryItemId: document.coverGalleryItemId?.toHexString() ?? null,
+    attachment: document.attachment ?? null,
   };
 }
 
@@ -406,6 +415,8 @@ async function changeNewsAndInsertAudit(input: {
     createdAt: before.createdAt,
     updatedAt: input.toVersionAt,
     deletedAt: before.deletedAt,
+    coverGalleryItemId: input.set.coverGalleryItemId === undefined ? before.coverGalleryItemId : input.set.coverGalleryItemId,
+    attachment: input.set.attachment === undefined ? before.attachment : input.set.attachment,
   };
   await insertNewsAuditEvent({
     database: input.database,
@@ -920,3 +931,48 @@ export const softDeleteAdminNews = (input: { id: string; expectedUpdatedAt: Date
   changeAdminNewsTrashState({ ...input, restore: false });
 export const restoreAdminNews = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) =>
   changeAdminNewsTrashState({ ...input, restore: true });
+
+export type AdminNewsMediaResult =
+  | { ok: true; id: string; updatedAt: string; previousAttachment?: MongoNewsAttachment | null }
+  | { ok: false; reason: "not_found" | "invalid_document" | "not_editable" | "edit_conflict" | "invalid_gallery_item" | "gallery_item_not_public" };
+
+async function changeAdminNewsMedia(input: {
+  id: string; expectedUpdatedAt: Date; actor: AdminPrincipal;
+  set: Pick<MongoNewsPostDocument, "coverGalleryItemId"> | Pick<MongoNewsPostDocument, "attachment">;
+  changedField: "coverImage" | "attachment";
+}): Promise<AdminNewsMediaResult> {
+  if (!isValidAdminNewsId(input.id)) return { ok: false, reason: "not_found" };
+  const newsPostId = new ObjectId(input.id);
+  const transitionAt = createNextUpdatedAt(input.expectedUpdatedAt, new Date());
+  return runNewsAdminTransaction(async ({ database, session }) => {
+    const collection = database.collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME);
+    const current = await collection.findOne({ _id: newsPostId, ...activeDocumentFilter }, { session });
+    if (!current) return { ok: false, reason: "not_found" };
+    if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
+      return { ok: false, reason: "not_editable" };
+    const change = await changeNewsAndInsertAudit({ database, session, newsPostId, eventId: new ObjectId(),
+      actor: input.actor, action: "draft_updated", toVersionAt: transitionAt,
+      filter: { _id: newsPostId, ...activeDocumentFilter, updatedAt: input.expectedUpdatedAt },
+      set: { ...input.set, updatedAt: transitionAt }, changedFields: [input.changedField] });
+    if (!change) return { ok: false, reason: "edit_conflict" };
+    return { ok: true, id: input.id, updatedAt: transitionAt.toISOString(),
+      previousAttachment: current.attachment ?? null };
+  });
+}
+
+export async function setAdminNewsCoverImage(input: { id: string; galleryItemId: string; expectedUpdatedAt: Date; actor: AdminPrincipal }): Promise<AdminNewsMediaResult> {
+  if (!ObjectId.isValid(input.galleryItemId) || new ObjectId(input.galleryItemId).toHexString() !== input.galleryItemId)
+    return { ok: false, reason: "invalid_gallery_item" };
+  const galleryId = new ObjectId(input.galleryItemId);
+  const raw = await (await getMongoDatabase()).collection<MongoGalleryItemDocument>(GALLERY_ITEM_COLLECTION_NAME)
+    .findOne({ _id: galleryId }, { projection: { _id: 1 } });
+  if (!raw) return { ok: false, reason: "invalid_gallery_item" };
+  if (!(await findPublicGalleryCoverById(galleryId))) return { ok: false, reason: "gallery_item_not_public" };
+  return changeAdminNewsMedia({ ...input, set: { coverGalleryItemId: galleryId }, changedField: "coverImage" });
+}
+export const removeAdminNewsCoverImage = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) =>
+  changeAdminNewsMedia({ ...input, set: { coverGalleryItemId: null }, changedField: "coverImage" });
+export const setAdminNewsAttachment = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal; attachment: MongoNewsAttachment }) =>
+  changeAdminNewsMedia({ ...input, set: { attachment: input.attachment }, changedField: "attachment" });
+export const removeAdminNewsAttachment = (input: { id: string; expectedUpdatedAt: Date; actor: AdminPrincipal }) =>
+  changeAdminNewsMedia({ ...input, set: { attachment: null }, changedField: "attachment" });

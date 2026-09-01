@@ -11,6 +11,10 @@ import { AdminNewsReviewRequestForm } from "@/components/admin/admin-news-review
 import { AdminNewsReviewDecisionForm } from "@/components/admin/admin-news-review-decision-form";
 import { AdminNewsPublishForm } from "@/components/admin/admin-news-publish-form";
 import { AdminNewsPublicationStateForm } from "@/components/admin/admin-news-publication-state-form";
+import { AdminNewsMediaForm } from "@/components/admin/admin-news-media-form";
+import { listAdminPublicGalleryCoverOptions } from "@/features/gallery/gallery.admin-repository";
+import { findPublicGalleryCoverById } from "@/features/gallery/gallery.repository";
+import { ObjectId } from "mongodb";
 import { listAdminNewsAuditHistory } from "@/features/news/news.audit-repository";
 import { findAdminNewsPostById } from "@/features/news/news.admin-repository";
 import {
@@ -49,6 +53,7 @@ export default async function AdminNewsDetailPage({
     published?: string | string[];
     directPublished?: string | string[];
     publication?: string | string[];
+    mediaUpdated?: string | string[];
   }>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
@@ -62,6 +67,8 @@ export default async function AdminNewsDetailPage({
   const canPublish = Boolean(admin && hasAdminPermission(admin, "content.publish"));
   const canDirectPublish = Boolean(admin && hasAdminPermission(admin, "content.direct_publish"));
   const auditHistory = await listAdminNewsAuditHistory({ contentId: post.id });
+  const coverOptions = await listAdminPublicGalleryCoverOptions();
+  const publicCover = post.coverGalleryItemId ? await findPublicGalleryCoverById(new ObjectId(post.coverGalleryItemId)) : null;
   const wasUpdated = typeof query.updated === "string" && query.updated === "1";
   const wasReviewRequested = typeof query.reviewRequested === "string" && query.reviewRequested === "1";
   const isPendingReview = post.publicationStatus === "review" && post.approvalStatus === "pending";
@@ -74,6 +81,7 @@ export default async function AdminNewsDetailPage({
   const wasDirectPublished = typeof query.directPublished === "string" && query.directPublished === "1";
   const publication = typeof query.publication === "string" ? query.publication : null;
   const isArchived = post.publicationStatus === "archived" && post.approvalStatus === "approved";
+  const wasMediaUpdated = query.mediaUpdated === "1";
 
   const details = [
     ["게시 상태", getNewsPublicationStatusLabel(post.publicationStatus)],
@@ -101,6 +109,7 @@ export default async function AdminNewsDetailPage({
           게시물 내용을 수정했습니다.
         </p>
       ) : null}
+      {wasMediaUpdated ? <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">대표 이미지 또는 첨부파일을 저장했습니다.</p> : null}
 
       {wasReviewRequested ? (
         <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
@@ -265,6 +274,13 @@ export default async function AdminNewsDetailPage({
           </div>
         </div>
       </section>
+
+      <AdminNewsMediaForm newsId={post.id} expectedUpdatedAt={post.updatedAt} editable={post.isEditable && canUpdate}
+        currentCover={post.coverGalleryItemId ? { id: post.coverGalleryItemId, title: publicCover?.title ?? "공개 불가 활동사진",
+          altText: publicCover?.altText ?? "", mediaUrl: publicCover?.mediaUrl ?? "", publiclyAvailable: Boolean(publicCover) } : null}
+        coverOptions={coverOptions} currentAttachment={post.attachment ? { label: post.attachment.label,
+          originalFileName: post.attachment.originalFileName, byteSize: post.attachment.byteSize,
+          downloadUrl: `/api/admin/news/${post.id}/attachment` } : null} />
 
       {post.canDirectPublish && canDirectPublish ? (
         <section
