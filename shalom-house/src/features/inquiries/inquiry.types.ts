@@ -9,3 +9,7 @@ export const inquiryStatusLabels = { received: "접수됨", in_review: "확인 �
 export const inquiryRetentionDays = 365;
 export const inquiryPrivacyConsentVersion = "inquiry-2026-09-01-v1" as const;
 export type InquiryDocument = { _id: ObjectId; reference: string; kind: InquiryKind; status: InquiryStatus; name: string; phone: string; email: string; message: string; privacyConsentVersion: typeof inquiryPrivacyConsentVersion; privacyConsentedAt: Date; internalNote: string; createdAt: Date; updatedAt: Date; completedAt: Date | null; archivedAt: Date | null; deleteAfter: Date | null };
+export function isInquiryKind(value: unknown): value is InquiryKind { return typeof value === "string" && inquiryKinds.some((candidate) => candidate === value); }
+export function isInquiryStatus(value: unknown): value is InquiryStatus { return typeof value === "string" && inquiryStatuses.some((candidate) => candidate === value); }
+export function isValidInquiryDate(value: unknown): value is Date { return value instanceof Date && !Number.isNaN(value.getTime()); }
+export function isInquiryReference(value: unknown): value is string { return typeof value === "string" && /^INQ-[A-Z0-9]{12}$/.test(value); }
