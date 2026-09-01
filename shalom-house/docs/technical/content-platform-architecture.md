@@ -384,3 +384,8 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 - PDF는 `SHALOM_SUPABASE_DOCUMENTS_PRIVATE_BUCKET`의 `shalom-house/news/<newsId>/attachments/<assetId>.pdf`에 저장하고 공개·관리자 다운로드 route가 현재 MongoDB 참조를 확인한 뒤 전달한다.
 - 미디어 변경과 감사 이벤트는 optimistic locking을 적용한 동일 MongoDB transaction에서 기록한다. 업로드 뒤 DB 실패 시 새 object를 보상 삭제하고, 교체·제거 성공 뒤 이전 object 삭제 실패는 안전한 식별 정보만 기록해 후속 정리 대상으로 남긴다.
 - 감사 snapshot에는 대표 참조와 PDF 존재 여부·파일명·label·크기·MIME만 포함하고 bucket, objectPath, PDF 본문은 제외한다. OCR, 내용 분석 및 다중 첨부는 범위 밖이다.
+
+## 프로그램 미디어 저장 경계
+- `program_posts`의 `coverGalleryItemId`는 `gallery_items` ObjectId만 보관하고 이미지 Storage 정보를 복제하지 않는다. `attachment`는 private documents bucket의 PDF metadata를 보관하며 필드가 없는 기존 문서도 지원한다.
+- PDF objectPath는 `shalom-house/programs/<programId>/attachments/<assetId>.pdf`로 제한한다. 공개 및 관리자 다운로드는 애플리케이션 route를 통하며 Supabase 원본 URL과 signed URL을 사용하지 않는다.
+- 변경은 `updatedAt` optimistic locking과 `program_audit_events`의 동일 MongoDB transaction을 사용한다. 업로드 실패 보상 삭제와 교체 후 이전 object 삭제를 응답 전에 기다리되, 이전 object 삭제 실패는 성공한 DB 참조를 유지한다.

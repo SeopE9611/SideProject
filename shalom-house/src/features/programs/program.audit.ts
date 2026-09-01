@@ -30,6 +30,8 @@ export const programAuditChangedFields = [
   "approvalStatus",
   "publishedAt",
   "deletedAt",
+  "coverImage",
+  "attachment",
 ] as const;
 export type ProgramAuditChangedField = (typeof programAuditChangedFields)[number];
 export type ProgramAuditSnapshot = {
@@ -45,6 +47,8 @@ export type ProgramAuditSnapshot = {
   approvalStatus: ProgramApprovalStatus;
   publishedAt: Date | null;
   deletedAt: Date | null;
+  coverGalleryItemId: string | null;
+  attachment: null | { present: true; originalFileName: string; label: string; byteSize: number; contentType: "application/pdf" };
 };
 export type ProgramAuditActor = {
   adminId: ObjectId;
@@ -65,6 +69,8 @@ export function createProgramAuditSnapshot(document: MongoProgramDocument): Prog
     approvalStatus: document.approvalStatus,
     publishedAt: document.publishedAt,
     deletedAt: document.deletedAt ?? null,
+    coverGalleryItemId: document.coverGalleryItemId?.toHexString() ?? null,
+    attachment: document.attachment ? { present: true, originalFileName: document.attachment.originalFileName, label: document.attachment.label, byteSize: document.attachment.byteSize, contentType: document.attachment.contentType } : null,
   };
 }
 export function getDraftChangedFields(

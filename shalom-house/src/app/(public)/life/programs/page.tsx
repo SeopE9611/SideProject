@@ -27,6 +27,7 @@ export default async function ProgramsPage() {
           <ul className="grid gap-x-10 border-t border-foreground lg:grid-cols-2">
             {programs.map((program) => (
               <li key={program.id} className="border-b border-border py-6">
+                {program.coverImage ? <img src={program.coverImage.src} alt={program.coverImage.altText} width={program.coverImage.width} height={program.coverImage.height} className="mb-5 aspect-video h-auto w-full rounded-card object-cover" /> : null}
                 <p className="text-safe-wrap text-small font-bold text-accent">{program.category}</p>
                 <h2 className="text-safe-wrap mt-2 text-heading font-bold">
                   <Link
@@ -40,6 +41,7 @@ export default async function ProgramsPage() {
                 <p className="text-safe-wrap mt-3">
                   <strong>목적</strong> {program.purpose}
                 </p>
+                {program.attachment ? <p className="mt-3 text-small font-semibold">PDF 첨부</p> : null}
                 {program.operationStatusLabel ? (
                   <p className="text-safe-wrap mt-3 text-small">
                     <strong>운영 상태</strong> {program.operationStatusLabel}

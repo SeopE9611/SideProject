@@ -3,6 +3,18 @@ export type ProgramPublicationStatus = (typeof programPublicationStatuses)[numbe
 export const programApprovalStatuses = ["pending", "approved", "rejected"] as const;
 export type ProgramApprovalStatus = (typeof programApprovalStatuses)[number];
 
+export type PublicProgramCoverImage = {
+  src: string;
+  altText: string;
+  width: number;
+  height: number;
+};
+export type PublicProgramAttachment = {
+  href: string;
+  label: string;
+  originalFileName: string;
+  byteSize: number;
+};
 export type PublicProgram = {
   id: string;
   slug: string;
@@ -15,6 +27,8 @@ export type PublicProgram = {
   sortOrder: number;
   publishedAt: string;
   updatedAt: string;
+  coverImage: PublicProgramCoverImage | null;
+  attachment: PublicProgramAttachment | null;
 };
 export type PublicProgramSummary = Omit<PublicProgram, "body">;
 
