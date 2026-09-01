@@ -1,5 +1,7 @@
 import "server-only";
-import { getGalleryPrivateBucketName, getSupabaseAdminClient } from "@/lib/supabase-admin";
+import { getGalleryPrivateBucketName as getConfiguredGalleryPrivateBucketName, getSupabaseAdminClient } from "@/lib/supabase-admin";
+
+export const getGalleryPrivateBucketName = () => getConfiguredGalleryPrivateBucketName();
 
 const privateGalleryObjectPathPattern = /^shalom-house\/gallery\/[a-f0-9]{24}\/image\.webp$/;
 

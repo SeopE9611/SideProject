@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin, isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
-import { findAdminNewsPostById, isValidAdminNewsId, removeAdminNewsAttachment, setAdminNewsAttachment } from "@/features/news/news.admin-repository";
+import { findAdminNewsPostById, inspectAdminNewsMediaTarget, isValidAdminNewsId, removeAdminNewsAttachment, setAdminNewsAttachment } from "@/features/news/news.admin-repository";
 import { ADMIN_NEWS_ATTACHMENT_REQUEST_MAX_BYTES, validateNewsAttachmentFile, validateNewsAttachmentMetadata, validateNewsMediaRemoveInput } from "@/features/news/news.media-validation";
 import { downloadPrivateNewsAttachment, removePrivateNewsAttachment, uploadPrivateNewsAttachment } from "@/features/news/news.storage";
 export const runtime = "nodejs"; const JSON_MAX = 16 * 1024;
@@ -9,14 +9,16 @@ const json = (body: unknown, status: number) => Response.json(body, { status, he
 const disposition = (name: string) => `attachment; filename="news-attachment.pdf"; filename*=UTF-8''${encodeURIComponent(name)}`;
 const errorName = (error: unknown) => error instanceof Error ? error.name : "UnknownError";
 async function cleanupAttachment(newsId: string, bucket: string, objectPath: string, message: string) {
-  try { await removePrivateNewsAttachment(bucket, objectPath); }
+  try { await removePrivateNewsAttachment(newsId, bucket, objectPath); }
   catch (error) { console.error(message, { newsId, errorName: errorName(error) }); }
 }
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params; if (!(await getCurrentAdmin())) return json({ ok: false, error: "unauthorized" }, 401);
   if (!isValidAdminNewsId(id)) return json({ ok: false, error: "not_found" }, 404);
-  try { const post = await findAdminNewsPostById(id); if (!post?.attachment) return json({ ok: false, error: "not_found" }, 404);
-    const blob = await downloadPrivateNewsAttachment(post.attachment.bucket, post.attachment.objectPath);
+  try { const target = await inspectAdminNewsMediaTarget(id);
+    if (!target.ok) return json({ ok: false, error: target.reason }, target.reason === "not_found" ? 404 : 503);
+    const post = await findAdminNewsPostById(id); if (!post?.attachment) return json({ ok: false, error: "not_found" }, 404);
+    const blob = await downloadPrivateNewsAttachment(id, post.attachment.bucket, post.attachment.objectPath);
     return new Response(await blob.arrayBuffer(), { headers: { "Content-Type": "application/pdf", "Content-Disposition": disposition(post.attachment.originalFileName),
       "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
   } catch { return json({ ok: false, error: "unavailable" }, 503); }
@@ -31,16 +33,17 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return json({ ok: false, error: "payload_too_large" }, 413);
     const form = await request.formData(); const metadata = validateNewsAttachmentMetadata({ expectedUpdatedAt: form.get("expectedUpdatedAt"), label: form.get("label"), contentSafetyConfirmed: form.get("contentSafetyConfirmed") === "true" });
     const file = await validateNewsAttachmentFile(form.get("file")); if (!metadata || !file) return json({ ok: false, error: "validation" }, 400);
-    const post = await findAdminNewsPostById(id); if (!post) return json({ ok: false, error: "not_found" }, 404);
-    if (!post.isEditable) return json({ ok: false, error: "not_editable" }, 409);
+    const target = await inspectAdminNewsMediaTarget(id);
+    if (!target.ok) return json({ ok: false, error: target.reason }, target.reason === "not_found" ? 404 : 503);
+    if (!target.editable) return json({ ok: false, error: "not_editable" }, 409);
     const objectPath = `shalom-house/news/${id}/attachments/${new ObjectId().toHexString()}.pdf`;
-    const uploaded = await uploadPrivateNewsAttachment(objectPath, file.buffer);
+    const uploaded = await uploadPrivateNewsAttachment(id, objectPath, file.buffer);
     const attachment = { ...uploaded, originalFileName: file.originalFileName, label: metadata.label, contentType: "application/pdf" as const, byteSize: file.byteSize, storedAt: new Date() };
     let result; try { result = await setAdminNewsAttachment({ id, expectedUpdatedAt: metadata.expectedUpdatedAt, actor: auth.admin, attachment }); }
     catch (error) { await cleanupAttachment(id, uploaded.bucket, uploaded.objectPath, "소식 PDF 보상 삭제 실패"); throw error; }
     if (!result.ok) { await cleanupAttachment(id, uploaded.bucket, uploaded.objectPath, "소식 PDF 보상 삭제 실패"); return json({ ok: false, error: result.reason }, result.reason === "not_found" ? 404 : result.reason === "invalid_document" ? 503 : 409); }
     if (result.previousAttachment) await cleanupAttachment(id, result.previousAttachment.bucket, result.previousAttachment.objectPath, "기존 소식 PDF 삭제 실패");
-    return json({ ok: true, redirectTo: `/admin/news/${id}` }, 200);
+    return json({ ok: true, redirectTo: `/admin/news/${id}?mediaUpdated=1` }, 200);
   } catch (error) { console.error("소식 PDF 저장 실패", { newsId: id, errorName: errorName(error) }); return json({ ok: false, error: "unavailable" }, 503); }
 }
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -56,6 +59,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try { const result = await removeAdminNewsAttachment({ id, expectedUpdatedAt: value.expectedUpdatedAt, actor: auth.admin });
     if (!result.ok) return json({ ok: false, error: result.reason }, result.reason === "not_found" ? 404 : result.reason === "invalid_document" ? 503 : 409);
     if (result.previousAttachment) await cleanupAttachment(id, result.previousAttachment.bucket, result.previousAttachment.objectPath, "기존 소식 PDF 삭제 실패");
-    return json({ ok: true, redirectTo: `/admin/news/${id}` }, 200);
+    return json({ ok: true, redirectTo: `/admin/news/${id}?mediaUpdated=1` }, 200);
   } catch { return json({ ok: false, error: "unavailable" }, 503); }
 }

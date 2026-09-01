@@ -26,7 +26,7 @@ async function handle(request: Request, id: string, remove: boolean) {
     return json({ ok: false, error: "unavailable" }, 503);
   }
   if (!result.ok) return json({ ok: false, error: result.reason }, result.reason === "not_found" ? 404 : result.reason === "invalid_document" ? 503 : 409);
-  return json({ ok: true, redirectTo: `/admin/news/${id}` }, 200);
+  return json({ ok: true, redirectTo: `/admin/news/${id}?mediaUpdated=1` }, 200);
 }
 export const PUT = (request: Request, { params }: { params: Promise<{ id: string }> }) => params.then(({ id }) => handle(request, id, false));
 export const DELETE = (request: Request, { params }: { params: Promise<{ id: string }> }) => params.then(({ id }) => handle(request, id, true));
