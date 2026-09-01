@@ -6,7 +6,12 @@ import {
   defaultGreetingContent,
 } from "./site-content.defaults";
 import { SITE_CONTENT_COLLECTION_NAME } from "./site-content.mongo-schema";
-import type { ContactInformationContent, FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
+import type {
+  ContactInformationContent,
+  FacilityOverviewContent,
+  GreetingContent,
+  SiteContentKey,
+} from "./site-content.types";
 import {
   validateContactInformationInput,
   validateFacilityOverviewInput,
@@ -32,9 +37,12 @@ async function getContent<T extends FacilityOverviewContent | GreetingContent | 
   if (!document) return fallback;
   const result = (() => {
     switch (key) {
-      case "facility-overview": return validateFacilityOverviewInput(document.content);
-      case "greeting": return validateGreetingInput(document.content);
-      case "contact-information": return validateContactInformationInput(document.content);
+      case "facility-overview":
+        return validateFacilityOverviewInput(document.content);
+      case "greeting":
+        return validateGreetingInput(document.content);
+      case "contact-information":
+        return validateContactInformationInput(document.content);
     }
   })();
   if (!result.ok) {

@@ -8,9 +8,25 @@ import type {
 export const siteContentAuditActions = ["created", "updated"] as const;
 export type SiteContentAuditAction = (typeof siteContentAuditActions)[number];
 export const siteContentAuditChangedFields = [
-  "pageDescription", "facts", "principles", "scenes", "policy", "notice", "statusLabel", "title", "paragraphs",
-  "signerRole", "signerName", "showSignerName", "directionsPageDescription", "address", "phone", "visitGuidance",
-  "contactPageDescription", "contactIntroduction", "instagram",
+  "pageDescription",
+  "facts",
+  "principles",
+  "scenes",
+  "policy",
+  "notice",
+  "statusLabel",
+  "title",
+  "paragraphs",
+  "signerRole",
+  "signerName",
+  "showSignerName",
+  "directionsPageDescription",
+  "address",
+  "phone",
+  "visitGuidance",
+  "contactPageDescription",
+  "contactIntroduction",
+  "instagram",
 ] as const;
 export type SiteContentAuditChangedField = (typeof siteContentAuditChangedFields)[number];
 type Content = FacilityOverviewContent | GreetingContent | ContactInformationContent;

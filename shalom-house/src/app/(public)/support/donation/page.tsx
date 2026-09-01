@@ -42,7 +42,14 @@ export default async function DonationPage() {
         <Link className="mt-5 inline-flex font-bold text-primary underline" href="/transparency">
           후원금 자료공개 보기
         </Link>
-        <div className="mt-5 flex flex-wrap gap-5"><Link className="font-bold text-primary underline" href="/support/contact?kind=donation">후원 문의 접수</Link><Link className="font-bold text-primary underline" href="/support/contact?kind=donation_receipt">후원금 영수증·내역 문의</Link></div>
+        <div className="mt-5 flex flex-wrap gap-5">
+          <Link className="font-bold text-primary underline" href="/support/contact?kind=donation">
+            후원 문의 접수
+          </Link>
+          <Link className="font-bold text-primary underline" href="/support/contact?kind=donation_receipt">
+            후원금 영수증·내역 문의
+          </Link>
+        </div>
       </section>
     </>
   );

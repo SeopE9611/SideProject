@@ -1,12 +1,25 @@
 import { MongoServerError, ObjectId, type ClientSession, type Db } from "mongodb";
 import { getMongoClient, getMongoDatabase } from "@/lib/mongodb";
 import type { AdminPrincipal } from "@/features/admin-auth/admin-auth.types";
-import { defaultContactInformationContent, defaultFacilityOverviewContent, defaultGreetingContent } from "./site-content.defaults";
+import {
+  defaultContactInformationContent,
+  defaultFacilityOverviewContent,
+  defaultGreetingContent,
+} from "./site-content.defaults";
 import { insertSiteContentAuditEvent } from "./site-content.audit-repository";
 import { getSiteContentChangedFields } from "./site-content.audit";
 import { SITE_CONTENT_COLLECTION_NAME, type MongoSiteContentDocument } from "./site-content.mongo-schema";
-import type { ContactInformationContent, FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
-import { validateContactInformationInput, validateFacilityOverviewInput, validateGreetingInput } from "./site-content.validation";
+import type {
+  ContactInformationContent,
+  FacilityOverviewContent,
+  GreetingContent,
+  SiteContentKey,
+} from "./site-content.types";
+import {
+  validateContactInformationInput,
+  validateFacilityOverviewInput,
+  validateGreetingInput,
+} from "./site-content.validation";
 
 export type AdminSiteContentDetail =
   | {
@@ -67,9 +80,12 @@ export async function getAdminSiteContent(key: SiteContentKey): Promise<AdminSit
   if (!validDate(document.updatedAt)) throw new Error("공식 콘텐츠 수정 시각이 유효하지 않습니다.");
   const result = (() => {
     switch (key) {
-      case "facility-overview": return validateFacilityOverviewInput(document.content);
-      case "greeting": return validateGreetingInput(document.content);
-      case "contact-information": return validateContactInformationInput(document.content);
+      case "facility-overview":
+        return validateFacilityOverviewInput(document.content);
+      case "greeting":
+        return validateGreetingInput(document.content);
+      case "contact-information":
+        return validateContactInformationInput(document.content);
     }
   })();
   if (!result.ok) throw new Error("공식 콘텐츠 문서가 유효하지 않습니다.");
@@ -113,9 +129,12 @@ export async function saveAdminSiteContent(input: {
         if (!validDate(existing.updatedAt)) return { ok: false, reason: "invalid_document" };
         const validation = (() => {
           switch (input.key) {
-            case "facility-overview": return validateFacilityOverviewInput(existing.content);
-            case "greeting": return validateGreetingInput(existing.content);
-            case "contact-information": return validateContactInformationInput(existing.content);
+            case "facility-overview":
+              return validateFacilityOverviewInput(existing.content);
+            case "greeting":
+              return validateGreetingInput(existing.content);
+            case "contact-information":
+              return validateContactInformationInput(existing.content);
           }
         })();
         if (!validation.ok) return { ok: false, reason: "invalid_document" };
@@ -133,11 +152,13 @@ export async function saveAdminSiteContent(input: {
           { session },
         );
       else {
-        const updated = await database.collection(SITE_CONTENT_COLLECTION_NAME).updateOne(
-          { key: input.key, updatedAt: input.expectedUpdatedAt! },
-          { $set: { content: input.content, updatedAt: transitionAt } },
-          { session },
-        );
+        const updated = await database
+          .collection(SITE_CONTENT_COLLECTION_NAME)
+          .updateOne(
+            { key: input.key, updatedAt: input.expectedUpdatedAt! },
+            { $set: { content: input.content, updatedAt: transitionAt } },
+            { session },
+          );
         if (updated.matchedCount !== 1) return { ok: false, reason: "edit_conflict" };
       }
       await insertSiteContentAuditEvent({

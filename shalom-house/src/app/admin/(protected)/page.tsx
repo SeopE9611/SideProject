@@ -62,7 +62,14 @@ export default async function AdminDashboardPage({
         </section>
       </div>
       <div className="flex flex-wrap gap-3">
-        {canManageInquiries ? <Link href="/admin/inquiries" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">문의 관리 열기</Link> : null}
+        {canManageInquiries ? (
+          <Link
+            href="/admin/inquiries"
+            className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground"
+          >
+            문의 관리 열기
+          </Link>
+        ) : null}
         {canManageSiteContent ? (
           <Link
             href="/admin/site-content"

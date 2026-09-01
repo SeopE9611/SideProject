@@ -16,7 +16,10 @@ export const dynamic = "force-dynamic";
 export default async function DirectionsPage() {
   const contact = await getPublicContactInformation();
   const mapLinks = [
-    { label: "네이버 지도에서 보기(새 창)", href: `https://map.naver.com/p/search/${encodeURIComponent(contact.address)}` },
+    {
+      label: "네이버 지도에서 보기(새 창)",
+      href: `https://map.naver.com/p/search/${encodeURIComponent(contact.address)}`,
+    },
     { label: "카카오맵에서 보기(새 창)", href: `https://map.kakao.com/?q=${encodeURIComponent(contact.address)}` },
   ];
   return (

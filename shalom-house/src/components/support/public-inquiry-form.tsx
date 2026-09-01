@@ -1,5 +1,207 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { inquiryKindLabels, inquiryKinds, isInquiryReference, type InquiryKind } from "@/features/inquiries/inquiry.types";
-function joinDescriptionIds(...ids: Array<string | false | null | undefined>): string | undefined { const value = ids.filter(Boolean).join(" "); return value || undefined; }
-export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind: InquiryKind; phoneFallback: string }) { const [kind, setKind] = useState(initialKind); const [consent, setConsent] = useState(false); const [busy, setBusy] = useState(false); const [errors, setErrors] = useState<Record<string, string>>({}); const [result, setResult] = useState(""); async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (busy || !consent) return; setBusy(true); setErrors({}); setResult(""); const form = event.currentTarget; const data = Object.fromEntries(new FormData(form)); try { const response = await fetch("/api/inquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...data, privacyConsent: consent }) }); const body = await response.json().catch(() => null); if (response.ok && body?.ok && isInquiryReference(body.reference)) { setResult(`문의가 접수되었습니다.\n접수번호: ${body.reference}\n담당자가 입력한 연락처로 확인 후 안내드리겠습니다.`); form.reset(); setConsent(false); } else if (body?.error === "validation") { setErrors(body.fieldErrors ?? {}); setResult("입력 내용을 확인해 주세요."); } else setResult(body?.error === "rate_limited" ? "문의가 짧은 시간에 여러 번 접수됐습니다. 잠시 후 다시 시도하거나 대표 전화로 문의해 주세요." : "문의를 접수하지 못했습니다. 잠시 후 다시 시도해 주세요."); } catch { setResult("네트워크 연결을 확인한 뒤 다시 시도해 주세요."); } finally { setBusy(false); } } const error = (key: string, id = `${key}-error`) => errors[key] ? <p id={id} role="alert" className="mt-1 text-small text-danger">{errors[key]}</p> : null; const described = (key: string) => errors[key] ? `${key}-error` : undefined; return <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-5 rounded-card border border-border p-5 sm:p-7"><div><label className="font-bold" htmlFor="inquiry-kind">문의 종류</label><select id="inquiry-kind" name="kind" value={kind} onChange={(e) => setKind(e.target.value as InquiryKind)} aria-invalid={errors.kind ? true : undefined} aria-describedby={errors.kind ? "inquiry-kind-error" : undefined} className="mt-2 block min-h-11 w-full rounded-control border p-2">{inquiryKinds.map((value) => <option key={value} value={value}>{inquiryKindLabels[value]}</option>)}</select>{error("kind", "inquiry-kind-error")}</div><div><label className="font-bold" htmlFor="inquiry-name">이름</label><input id="inquiry-name" name="name" autoComplete="name" className="mt-2 block min-h-11 w-full rounded-control border p-2" aria-invalid={errors.name ? true : undefined} aria-describedby={described("name")} />{error("name")}</div><fieldset className="space-y-4" aria-describedby={errors.contact ? "inquiry-contact-error" : undefined}><legend className="font-bold">연락처 (전화번호 또는 이메일 중 하나 이상)</legend><div><label htmlFor="inquiry-phone">전화번호</label><input id="inquiry-phone" name="phone" autoComplete="tel" className="mt-2 block min-h-11 w-full rounded-control border p-2" aria-invalid={errors.phone || errors.contact ? true : undefined} aria-describedby={joinDescriptionIds(errors.phone && "phone-error", errors.contact && "inquiry-contact-error")} />{error("phone")}</div><div><label htmlFor="inquiry-email">이메일</label><input id="inquiry-email" name="email" type="email" autoComplete="email" className="mt-2 block min-h-11 w-full rounded-control border p-2" aria-invalid={errors.email || errors.contact ? true : undefined} aria-describedby={joinDescriptionIds(errors.email && "email-error", errors.contact && "inquiry-contact-error")} />{error("email")}</div>{error("contact", "inquiry-contact-error")}</fieldset><div><label className="font-bold" htmlFor="inquiry-message">문의 내용</label><textarea id="inquiry-message" name="message" rows={8} className="mt-2 block w-full rounded-control border p-2" aria-invalid={errors.message ? true : undefined} aria-describedby={described("message")} />{error("message")}</div><div className="sr-only" aria-hidden="true"><label htmlFor="inquiry-website">웹사이트</label><input id="inquiry-website" name="website" tabIndex={-1} autoComplete="off" /></div><div className="rounded-control bg-surface-subtle p-4 text-small"><dl className="space-y-2"><div><dt className="font-bold">수집 목적</dt><dd>문의 확인, 담당자 연락과 처리 결과 관리</dd></div><div><dt className="font-bold">수집 항목</dt><dd>이름, 전화번호 또는 이메일, 문의 종류, 문의 내용</dd></div><div><dt className="font-bold">보유 기간</dt><dd>문의 처리 완료 후 1년</dd></div><div><dt className="font-bold">동의 거부</dt><dd>개인정보 수집·이용에 동의하지 않을 수 있으나 온라인 문의 접수는 이용할 수 없습니다.<br />대표 전화를 통한 문의는 가능합니다. ({phoneFallback})</dd></div></dl><p className="mt-4 font-bold">주민등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보는 입력하지 마세요.<br />후원금 영수증 발급에 추가 정보가 필요한 경우 담당자가 별도로 안내합니다.</p></div><div><label className="flex gap-3" htmlFor="inquiry-privacy-consent"><input id="inquiry-privacy-consent" type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} aria-invalid={errors.privacyConsent ? true : undefined} aria-describedby={errors.privacyConsent ? "inquiry-privacy-consent-error" : undefined} /><span>위 개인정보 수집·이용 내용을 확인했으며 이에 동의합니다.</span></label>{error("privacyConsent", "inquiry-privacy-consent-error")}</div><button type="submit" disabled={busy || !consent} className="min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground disabled:opacity-50">{busy ? "접수 중…" : "문의 접수"}</button><p aria-live="polite" className="whitespace-pre-wrap font-semibold">{result}</p></form>; }
+import {
+  inquiryKindLabels,
+  inquiryKinds,
+  isInquiryReference,
+  type InquiryKind,
+} from "@/features/inquiries/inquiry.types";
+function joinDescriptionIds(...ids: Array<string | false | null | undefined>): string | undefined {
+  const value = ids.filter(Boolean).join(" ");
+  return value || undefined;
+}
+export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind: InquiryKind; phoneFallback: string }) {
+  const [kind, setKind] = useState(initialKind);
+  const [consent, setConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [result, setResult] = useState("");
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy || !consent) return;
+    setBusy(true);
+    setErrors({});
+    setResult("");
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form));
+    try {
+      const response = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, privacyConsent: consent }),
+      });
+      const body = await response.json().catch(() => null);
+      if (response.ok && body?.ok && isInquiryReference(body.reference)) {
+        setResult(
+          `문의가 접수되었습니다.\n접수번호: ${body.reference}\n담당자가 입력한 연락처로 확인 후 안내드리겠습니다.`,
+        );
+        form.reset();
+        setConsent(false);
+      } else if (body?.error === "validation") {
+        setErrors(body.fieldErrors ?? {});
+        setResult("입력 내용을 확인해 주세요.");
+      } else
+        setResult(
+          body?.error === "rate_limited"
+            ? "문의가 짧은 시간에 여러 번 접수됐습니다. 잠시 후 다시 시도하거나 대표 전화로 문의해 주세요."
+            : "문의를 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+        );
+    } catch {
+      setResult("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  const error = (key: string, id = `${key}-error`) =>
+    errors[key] ? (
+      <p id={id} role="alert" className="mt-1 text-small text-danger">
+        {errors[key]}
+      </p>
+    ) : null;
+  const described = (key: string) => (errors[key] ? `${key}-error` : undefined);
+  return (
+    <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-5 rounded-card border border-border p-5 sm:p-7">
+      <div>
+        <label className="font-bold" htmlFor="inquiry-kind">
+          문의 종류
+        </label>
+        <select
+          id="inquiry-kind"
+          name="kind"
+          value={kind}
+          onChange={(e) => setKind(e.target.value as InquiryKind)}
+          aria-invalid={errors.kind ? true : undefined}
+          aria-describedby={errors.kind ? "inquiry-kind-error" : undefined}
+          className="mt-2 block min-h-11 w-full rounded-control border p-2"
+        >
+          {inquiryKinds.map((value) => (
+            <option key={value} value={value}>
+              {inquiryKindLabels[value]}
+            </option>
+          ))}
+        </select>
+        {error("kind", "inquiry-kind-error")}
+      </div>
+      <div>
+        <label className="font-bold" htmlFor="inquiry-name">
+          이름
+        </label>
+        <input
+          id="inquiry-name"
+          name="name"
+          autoComplete="name"
+          className="mt-2 block min-h-11 w-full rounded-control border p-2"
+          aria-invalid={errors.name ? true : undefined}
+          aria-describedby={described("name")}
+        />
+        {error("name")}
+      </div>
+      <fieldset className="space-y-4" aria-describedby={errors.contact ? "inquiry-contact-error" : undefined}>
+        <legend className="font-bold">연락처 (전화번호 또는 이메일 중 하나 이상)</legend>
+        <div>
+          <label htmlFor="inquiry-phone">전화번호</label>
+          <input
+            id="inquiry-phone"
+            name="phone"
+            autoComplete="tel"
+            className="mt-2 block min-h-11 w-full rounded-control border p-2"
+            aria-invalid={errors.phone || errors.contact ? true : undefined}
+            aria-describedby={joinDescriptionIds(
+              errors.phone && "phone-error",
+              errors.contact && "inquiry-contact-error",
+            )}
+          />
+          {error("phone")}
+        </div>
+        <div>
+          <label htmlFor="inquiry-email">이메일</label>
+          <input
+            id="inquiry-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            className="mt-2 block min-h-11 w-full rounded-control border p-2"
+            aria-invalid={errors.email || errors.contact ? true : undefined}
+            aria-describedby={joinDescriptionIds(
+              errors.email && "email-error",
+              errors.contact && "inquiry-contact-error",
+            )}
+          />
+          {error("email")}
+        </div>
+        {error("contact", "inquiry-contact-error")}
+      </fieldset>
+      <div>
+        <label className="font-bold" htmlFor="inquiry-message">
+          문의 내용
+        </label>
+        <textarea
+          id="inquiry-message"
+          name="message"
+          rows={8}
+          className="mt-2 block w-full rounded-control border p-2"
+          aria-invalid={errors.message ? true : undefined}
+          aria-describedby={described("message")}
+        />
+        {error("message")}
+      </div>
+      <div className="sr-only" aria-hidden="true">
+        <label htmlFor="inquiry-website">웹사이트</label>
+        <input id="inquiry-website" name="website" tabIndex={-1} autoComplete="off" />
+      </div>
+      <div className="rounded-control bg-surface-subtle p-4 text-small">
+        <dl className="space-y-2">
+          <div>
+            <dt className="font-bold">수집 목적</dt>
+            <dd>문의 확인, 담당자 연락과 처리 결과 관리</dd>
+          </div>
+          <div>
+            <dt className="font-bold">수집 항목</dt>
+            <dd>이름, 전화번호 또는 이메일, 문의 종류, 문의 내용</dd>
+          </div>
+          <div>
+            <dt className="font-bold">보유 기간</dt>
+            <dd>문의 처리 완료 후 1년</dd>
+          </div>
+          <div>
+            <dt className="font-bold">동의 거부</dt>
+            <dd>
+              개인정보 수집·이용에 동의하지 않을 수 있으나 온라인 문의 접수는 이용할 수 없습니다.
+              <br />
+              대표 전화를 통한 문의는 가능합니다. ({phoneFallback})
+            </dd>
+          </div>
+        </dl>
+        <p className="mt-4 font-bold">
+          주민등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보는 입력하지 마세요.
+          <br />
+          후원금 영수증 발급에 추가 정보가 필요한 경우 담당자가 별도로 안내합니다.
+        </p>
+      </div>
+      <div>
+        <label className="flex gap-3" htmlFor="inquiry-privacy-consent">
+          <input
+            id="inquiry-privacy-consent"
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            aria-invalid={errors.privacyConsent ? true : undefined}
+            aria-describedby={errors.privacyConsent ? "inquiry-privacy-consent-error" : undefined}
+          />
+          <span>위 개인정보 수집·이용 내용을 확인했으며 이에 동의합니다.</span>
+        </label>
+        {error("privacyConsent", "inquiry-privacy-consent-error")}
+      </div>
+      <button
+        type="submit"
+        disabled={busy || !consent}
+        className="min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground disabled:opacity-50"
+      >
+        {busy ? "접수 중…" : "문의 접수"}
+      </button>
+      <p aria-live="polite" className="whitespace-pre-wrap font-semibold">
+        {result}
+      </p>
+    </form>
+  );
+}

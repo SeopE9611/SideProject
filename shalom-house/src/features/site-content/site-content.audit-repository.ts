@@ -9,7 +9,12 @@ import {
   type SiteContentAuditAction,
   type SiteContentAuditChangedField,
 } from "./site-content.audit";
-import type { ContactInformationContent, FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
+import type {
+  ContactInformationContent,
+  FacilityOverviewContent,
+  GreetingContent,
+  SiteContentKey,
+} from "./site-content.types";
 
 export const SITE_CONTENT_AUDIT_COLLECTION_NAME = "site_content_audit_events";
 type Snapshot = FacilityOverviewContent | GreetingContent | ContactInformationContent;

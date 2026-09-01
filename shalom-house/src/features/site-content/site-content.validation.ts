@@ -192,8 +192,7 @@ export function validateContactInformationInput(
     "instagramUrl",
     "showInstagram",
   ];
-  if (!exactObject(value, keys))
-    return { ok: false, fieldErrors: { content: "허용되지 않은 콘텐츠 구조입니다." } };
+  if (!exactObject(value, keys)) return { ok: false, fieldErrors: { content: "허용되지 않은 콘텐츠 구조입니다." } };
 
   const safeText = (input: unknown, path: string, min: number, max: number, allowEmpty = false) => {
     const result = text(input, path, errors, min, max, allowEmpty);

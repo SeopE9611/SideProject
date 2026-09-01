@@ -40,7 +40,9 @@ export default async function VolunteerPage() {
         <a className="mt-5 inline-flex font-bold text-primary underline" href={createTelephoneHref(contact.phone)}>
           대표 전화 {contact.phone}
         </a>
-        <Link className="ml-5 mt-5 inline-flex font-bold text-primary underline" href="/support/contact?kind=volunteer">자원봉사 문의 접수</Link>
+        <Link className="ml-5 mt-5 inline-flex font-bold text-primary underline" href="/support/contact?kind=volunteer">
+          자원봉사 문의 접수
+        </Link>
       </section>
     </>
   );

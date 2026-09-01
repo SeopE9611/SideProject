@@ -38,16 +38,16 @@ export async function SiteFooter() {
                 </li>
               ))}
               {contact.showInstagram && contact.instagramUrl ? (
-              <li>
-                <a
-                  className="text-safe-wrap inline-flex min-h-10 items-center text-small font-semibold text-hero-muted underline decoration-hero-on-dark/50 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
-                  href={contact.instagramUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  인스타그램
-                </a>
-              </li>
+                <li>
+                  <a
+                    className="text-safe-wrap inline-flex min-h-10 items-center text-small font-semibold text-hero-muted underline decoration-hero-on-dark/50 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+                    href={contact.instagramUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    인스타그램
+                  </a>
+                </li>
               ) : null}
             </ul>
           </nav>

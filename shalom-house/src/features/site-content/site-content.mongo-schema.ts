@@ -8,6 +8,4 @@ export type MongoFacilityOverviewDocument = FacilityOverviewDocument & {
 export type MongoGreetingDocument = GreetingDocument & { _id: ObjectId };
 export type MongoContactInformationDocument = ContactInformationDocument & { _id: ObjectId };
 export type MongoSiteContentDocument =
-  | MongoFacilityOverviewDocument
-  | MongoGreetingDocument
-  | MongoContactInformationDocument;
+  MongoFacilityOverviewDocument | MongoGreetingDocument | MongoContactInformationDocument;
