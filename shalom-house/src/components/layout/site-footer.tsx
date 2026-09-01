@@ -1,8 +1,11 @@
 import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
+import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
+import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const contact = await getPublicContactInformation();
   return (
     <footer className="border-t border-hero-night bg-hero-night text-hero-on-dark">
       <div className="mx-auto w-full max-w-site px-page py-10 sm:px-page-wide sm:py-12">
@@ -34,14 +37,18 @@ export function SiteFooter() {
                   </Link>
                 </li>
               ))}
+              {contact.showInstagram && contact.instagramUrl ? (
               <li>
                 <a
                   className="text-safe-wrap inline-flex min-h-10 items-center text-small font-semibold text-hero-muted underline decoration-hero-on-dark/50 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
-                  href={siteConfig.instagram}
+                  href={contact.instagramUrl}
+                  target="_blank"
+                  rel="noreferrer"
                 >
                   인스타그램
                 </a>
               </li>
+              ) : null}
             </ul>
           </nav>
 
@@ -56,16 +63,16 @@ export function SiteFooter() {
                   className="text-safe-wrap mt-1 inline-flex min-h-10 items-center underline decoration-hero-on-dark/60 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
                   href="/about/directions"
                 >
-                  {siteConfig.address}
+                  {contact.address}
                 </Link>
               </p>
               <p>
                 <span className="block font-bold text-hero-on-dark">대표 전화</span>
                 <a
                   className="text-safe-wrap mt-1 inline-flex min-h-10 items-center underline decoration-hero-on-dark/60 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
-                  href={`tel:${siteConfig.phone}`}
+                  href={createTelephoneHref(contact.phone)}
                 >
-                  {siteConfig.phone}
+                  {contact.phone}
                 </a>
               </p>
             </address>

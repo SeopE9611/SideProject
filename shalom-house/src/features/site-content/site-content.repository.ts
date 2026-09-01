@@ -1,8 +1,17 @@
 import { getMongoDatabase } from "@/lib/mongodb";
-import { defaultFacilityOverviewContent, defaultGreetingContent } from "./site-content.defaults";
+import { cache } from "react";
+import {
+  defaultContactInformationContent,
+  defaultFacilityOverviewContent,
+  defaultGreetingContent,
+} from "./site-content.defaults";
 import { SITE_CONTENT_COLLECTION_NAME } from "./site-content.mongo-schema";
-import type { FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
-import { validateFacilityOverviewInput, validateGreetingInput } from "./site-content.validation";
+import type { ContactInformationContent, FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
+import {
+  validateContactInformationInput,
+  validateFacilityOverviewInput,
+  validateGreetingInput,
+} from "./site-content.validation";
 
 function source(): "mongodb" | "fixture" | "empty" {
   const value = (process.env.SHALOM_CONTENT_SOURCE ?? "fixture").trim().toLowerCase();
@@ -10,7 +19,7 @@ function source(): "mongodb" | "fixture" | "empty" {
   throw new Error(`지원하지 않는 SHALOM_CONTENT_SOURCE 설정입니다: ${value}`);
 }
 
-async function getContent<T extends FacilityOverviewContent | GreetingContent>(
+async function getContent<T extends FacilityOverviewContent | GreetingContent | ContactInformationContent>(
   key: SiteContentKey,
   fallback: T,
 ): Promise<T> {
@@ -21,10 +30,13 @@ async function getContent<T extends FacilityOverviewContent | GreetingContent>(
     .collection(SITE_CONTENT_COLLECTION_NAME)
     .findOne({ key }, { projection: { content: 1 } });
   if (!document) return fallback;
-  const result =
-    key === "facility-overview"
-      ? validateFacilityOverviewInput(document.content)
-      : validateGreetingInput(document.content);
+  const result = (() => {
+    switch (key) {
+      case "facility-overview": return validateFacilityOverviewInput(document.content);
+      case "greeting": return validateGreetingInput(document.content);
+      case "contact-information": return validateContactInformationInput(document.content);
+    }
+  })();
   if (!result.ok) {
     console.error("공식 콘텐츠 문서 검증 실패", {
       siteContentKey: key,
@@ -43,3 +55,8 @@ export async function getPublicGreeting(): Promise<GreetingContent> {
   const content = await getContent("greeting", defaultGreetingContent);
   return content.showSignerName ? content : { ...content, signerName: "" };
 }
+
+export const getPublicContactInformation = cache(async (): Promise<ContactInformationContent> => {
+  const content = await getContent("contact-information", defaultContactInformationContent);
+  return content.showInstagram ? content : { ...content, instagramUrl: "" };
+});

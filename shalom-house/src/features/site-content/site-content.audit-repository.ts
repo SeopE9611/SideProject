@@ -9,10 +9,10 @@ import {
   type SiteContentAuditAction,
   type SiteContentAuditChangedField,
 } from "./site-content.audit";
-import type { FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
+import type { ContactInformationContent, FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
 
 export const SITE_CONTENT_AUDIT_COLLECTION_NAME = "site_content_audit_events";
-type Snapshot = FacilityOverviewContent | GreetingContent;
+type Snapshot = FacilityOverviewContent | GreetingContent | ContactInformationContent;
 type AuditDocument = {
   _id: ObjectId;
   siteContentKey: SiteContentKey;
@@ -84,6 +84,13 @@ const fieldLabels: Record<SiteContentAuditChangedField, string> = {
   signerRole: "서명 직책",
   signerName: "서명 이름",
   showSignerName: "이름 공개 여부",
+  directionsPageDescription: "찾아오시는 길 페이지 설명",
+  address: "시설 주소",
+  phone: "대표 전화",
+  visitGuidance: "방문 전 문의 안내",
+  contactPageDescription: "문의하기 페이지 설명",
+  contactIntroduction: "문의 경로 소개",
+  instagram: "인스타그램 공개 설정",
 };
 
 export async function listAdminSiteContentAuditHistory(input: {
@@ -112,6 +119,7 @@ export async function listAdminSiteContentAuditHistory(input: {
     if (
       !(event._id instanceof ObjectId) ||
       !(event.occurredAt instanceof Date) ||
+      Number.isNaN(event.occurredAt.getTime()) ||
       typeof event.action !== "string" ||
       !siteContentAuditActions.includes(event.action as SiteContentAuditAction) ||
       typeof event.actor?.displayName !== "string" ||

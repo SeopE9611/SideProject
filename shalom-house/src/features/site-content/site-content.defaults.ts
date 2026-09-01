@@ -1,5 +1,6 @@
 import { aboutFixture } from "@/content/fixtures/about.fixture";
-import type { FacilityOverviewContent, GreetingContent } from "./site-content.types";
+import { siteConfig } from "@/config/site";
+import type { ContactInformationContent, FacilityOverviewContent, GreetingContent } from "./site-content.types";
 
 export const defaultFacilityOverviewContent: FacilityOverviewContent = {
   pageDescription:
@@ -70,4 +71,16 @@ export const defaultGreetingContent: GreetingContent = {
   signerRole: "",
   signerName: "",
   showSignerName: false,
+};
+
+export const defaultContactInformationContent: ContactInformationContent = {
+  directionsPageDescription: "샬롬의 집 방문에 필요한 주소와 연락처를 안내합니다.",
+  address: siteConfig.address,
+  phone: siteConfig.phone,
+  visitInquiryTitle: "방문 전 문의",
+  visitInquiryDescription: "방문 일정과 시설 출입 안내는 대표 전화로 확인할 수 있습니다.",
+  contactPageDescription: "현재 공식 설정에서 확인된 연락 경로만 안내합니다.",
+  contactIntroduction: "대표 전화와 방문 안내, 공식 외부 채널을 통해 문의할 수 있습니다.",
+  instagramUrl: siteConfig.instagram,
+  showInstagram: true,
 };

@@ -1,4 +1,9 @@
-import type { FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
+import type {
+  ContactInformationContent,
+  FacilityOverviewContent,
+  GreetingContent,
+  SiteContentKey,
+} from "./site-content.types";
 
 export type SiteContentValidationResult<T> =
   { ok: true; value: T } | { ok: false; fieldErrors: Record<string, string>; formError?: string };
@@ -172,12 +177,71 @@ export function validateGreetingInput(value: unknown): SiteContentValidationResu
   return Object.keys(errors).length ? { ok: false, fieldErrors: errors } : { ok: true, value: content };
 }
 
+export function validateContactInformationInput(
+  value: unknown,
+): SiteContentValidationResult<ContactInformationContent> {
+  const errors: Record<string, string> = {};
+  const keys = [
+    "directionsPageDescription",
+    "address",
+    "phone",
+    "visitInquiryTitle",
+    "visitInquiryDescription",
+    "contactPageDescription",
+    "contactIntroduction",
+    "instagramUrl",
+    "showInstagram",
+  ];
+  if (!exactObject(value, keys))
+    return { ok: false, fieldErrors: { content: "허용되지 않은 콘텐츠 구조입니다." } };
+
+  const safeText = (input: unknown, path: string, min: number, max: number, allowEmpty = false) => {
+    const result = text(input, path, errors, min, max, allowEmpty);
+    if (/[<>]/.test(result) || /[\u0000-\u001F\u007F]/.test(result))
+      errors[path] = "HTML과 제어문자 없이 입력해 주세요.";
+    return result;
+  };
+  const address = safeText(value.address, "address", 5, 200);
+  const phone = safeText(value.phone, "phone", 8, 30);
+  if (!/^\+?[0-9 ()-]+$/.test(phone) || (phone.match(/\d/g)?.length ?? 0) < 8)
+    errors.phone = "숫자, 공백, 하이픈, 괄호와 맨 앞의 +만 사용해 숫자 8개 이상을 입력해 주세요.";
+  if (typeof value.showInstagram !== "boolean") errors.showInstagram = "인스타그램 공개 여부를 선택해 주세요.";
+  const instagramUrl = safeText(value.instagramUrl, "instagramUrl", 0, 500, true);
+  if (value.showInstagram === true && !instagramUrl) errors.instagramUrl = "공개할 인스타그램 URL을 입력해 주세요.";
+  if (instagramUrl) {
+    try {
+      const url = new URL(instagramUrl);
+      if (
+        url.protocol !== "https:" ||
+        !["instagram.com", "www.instagram.com"].includes(url.hostname.toLowerCase()) ||
+        url.username ||
+        url.password
+      )
+        errors.instagramUrl = "Instagram 공식 HTTPS URL을 입력해 주세요.";
+    } catch {
+      errors.instagramUrl = "유효한 Instagram URL을 입력해 주세요.";
+    }
+  }
+  const content: ContactInformationContent = {
+    directionsPageDescription: safeText(value.directionsPageDescription, "directionsPageDescription", 10, 400),
+    address,
+    phone,
+    visitInquiryTitle: safeText(value.visitInquiryTitle, "visitInquiryTitle", 1, 100),
+    visitInquiryDescription: safeText(value.visitInquiryDescription, "visitInquiryDescription", 10, 500),
+    contactPageDescription: safeText(value.contactPageDescription, "contactPageDescription", 10, 400),
+    contactIntroduction: safeText(value.contactIntroduction, "contactIntroduction", 10, 500),
+    instagramUrl,
+    showInstagram: value.showInstagram === true,
+  };
+  return Object.keys(errors).length ? { ok: false, fieldErrors: errors } : { ok: true, value: content };
+}
+
 export function validateSiteContentSaveInput(
   key: SiteContentKey,
   value: unknown,
 ): SiteContentValidationResult<{
   expectedUpdatedAt: Date | null;
-  content: FacilityOverviewContent | GreetingContent;
+  content: FacilityOverviewContent | GreetingContent | ContactInformationContent;
 }> {
   if (!exactObject(value, ["expectedUpdatedAt", "saveConfirmed", "content"]))
     return {
@@ -197,7 +261,15 @@ export function validateSiteContentSaveInput(
     if (Number.isNaN(expectedUpdatedAt.getTime()) || expectedUpdatedAt.toISOString() !== value.expectedUpdatedAt)
       return { ok: false, fieldErrors: {}, formError: "invalid_version" };
   }
-  const validated =
-    key === "facility-overview" ? validateFacilityOverviewInput(value.content) : validateGreetingInput(value.content);
+  const validated = (() => {
+    switch (key) {
+      case "facility-overview":
+        return validateFacilityOverviewInput(value.content);
+      case "greeting":
+        return validateGreetingInput(value.content);
+      case "contact-information":
+        return validateContactInformationInput(value.content);
+    }
+  })();
   return validated.ok ? { ok: true, value: { expectedUpdatedAt, content: validated.value } } : validated;
 }

@@ -9,7 +9,7 @@ export default async function SiteContentPage() {
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "site_content.manage")) redirect("/admin?forbidden=1");
   const [items, counts, spaceCounts] = await Promise.all([
-    Promise.all([getAdminSiteContent("facility-overview"), getAdminSiteContent("greeting")]),
+    Promise.all([getAdminSiteContent("facility-overview"), getAdminSiteContent("greeting"), getAdminSiteContent("contact-information")]),
     getAdminStaffCounts(),
     getAdminFacilitySpaceCounts(),
   ]);
@@ -17,12 +17,12 @@ export default async function SiteContentPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-title font-bold">공식 콘텐츠 관리</h1>
-        <p className="mt-2 text-muted-foreground">시설개요, 원장 인사말, 함께하는 사람들과 생활공간을 관리합니다.</p>
+        <p className="mt-2 text-muted-foreground">시설개요, 원장 인사말, 연락처·찾아오시는 길, 함께하는 사람들과 생활공간을 관리합니다.</p>
       </header>
       <div className="grid gap-5">
         {items.map((item) => (
           <section key={item.key} className="rounded-card border p-5">
-            <h2 className="text-heading font-bold">{item.key === "facility-overview" ? "시설개요" : "원장 인사말"}</h2>
+            <h2 className="text-heading font-bold">{item.key === "facility-overview" ? "시설개요" : item.key === "greeting" ? "원장 인사말" : "연락처·찾아오시는 길"}</h2>
             <p className="mt-2">
               {item.persisted
                 ? `MongoDB 저장됨 · 최근 수정 ${item.updatedAt}`
@@ -34,7 +34,7 @@ export default async function SiteContentPage() {
               </Link>
               <Link
                 className="min-h-11 underline"
-                href={item.key === "facility-overview" ? "/about" : "/about/greeting"}
+                href={item.key === "facility-overview" ? "/about" : item.key === "greeting" ? "/about/greeting" : "/about/directions"}
               >
                 공개 페이지 보기
               </Link>

@@ -1,117 +1,52 @@
-import type { FacilityOverviewContent, GreetingContent, SiteContentKey } from "./site-content.types";
+import type {
+  ContactInformationContent,
+  FacilityOverviewContent,
+  GreetingContent,
+  SiteContentKey,
+} from "./site-content.types";
 
 export const siteContentAuditActions = ["created", "updated"] as const;
 export type SiteContentAuditAction = (typeof siteContentAuditActions)[number];
 export const siteContentAuditChangedFields = [
-  "pageDescription",
-  "facts",
-  "principles",
-  "scenes",
-  "policy",
-  "notice",
-  "statusLabel",
-  "title",
-  "paragraphs",
-  "signerRole",
-  "signerName",
-  "showSignerName",
+  "pageDescription", "facts", "principles", "scenes", "policy", "notice", "statusLabel", "title", "paragraphs",
+  "signerRole", "signerName", "showSignerName", "directionsPageDescription", "address", "phone", "visitGuidance",
+  "contactPageDescription", "contactIntroduction", "instagram",
 ] as const;
 export type SiteContentAuditChangedField = (typeof siteContentAuditChangedFields)[number];
+type Content = FacilityOverviewContent | GreetingContent | ContactInformationContent;
 
-const facilityFields: readonly SiteContentAuditChangedField[] = [
-  "pageDescription",
-  "facts",
-  "principles",
-  "scenes",
-  "policy",
-];
-const greetingFields: readonly SiteContentAuditChangedField[] = [
-  "pageDescription",
-  "notice",
-  "statusLabel",
-  "title",
-  "paragraphs",
-  "signerRole",
-  "signerName",
-  "showSignerName",
-];
+function sections(key: SiteContentKey, content: Content): Partial<Record<SiteContentAuditChangedField, unknown>> {
+  if (key === "facility-overview") {
+    const value = content as FacilityOverviewContent;
+    return {
+      pageDescription: value.pageDescription,
+      facts: value.facts,
+      principles: [value.principlesEyebrow, value.principlesTitle, value.principlesDescription, value.principles],
+      scenes: [value.scenesEyebrow, value.scenesTitle, value.scenesDescription, value.scenes],
+      policy: [value.policyEyebrow, value.policyTitle, value.policyItems],
+    };
+  }
+  if (key === "greeting") return content as GreetingContent;
+  const value = content as ContactInformationContent;
+  return {
+    directionsPageDescription: value.directionsPageDescription,
+    address: value.address,
+    phone: value.phone,
+    visitGuidance: [value.visitInquiryTitle, value.visitInquiryDescription],
+    contactPageDescription: value.contactPageDescription,
+    contactIntroduction: value.contactIntroduction,
+    instagram: [value.instagramUrl, value.showInstagram],
+  };
+}
 
 export function getSiteContentChangedFields(
   key: SiteContentKey,
-  before: FacilityOverviewContent | GreetingContent | null,
-  after: FacilityOverviewContent | GreetingContent,
+  before: Content | null,
+  after: Content,
 ): SiteContentAuditChangedField[] {
-  const fields = key === "facility-overview" ? facilityFields : greetingFields;
-  if (!before) return [...fields];
-  const sections: Record<SiteContentAuditChangedField, unknown> =
-    key === "facility-overview"
-      ? {
-          pageDescription: (after as FacilityOverviewContent).pageDescription,
-          facts: (after as FacilityOverviewContent).facts,
-          principles: {
-            eyebrow: (after as FacilityOverviewContent).principlesEyebrow,
-            title: (after as FacilityOverviewContent).principlesTitle,
-            description: (after as FacilityOverviewContent).principlesDescription,
-            items: (after as FacilityOverviewContent).principles,
-          },
-          scenes: {
-            eyebrow: (after as FacilityOverviewContent).scenesEyebrow,
-            title: (after as FacilityOverviewContent).scenesTitle,
-            description: (after as FacilityOverviewContent).scenesDescription,
-            items: (after as FacilityOverviewContent).scenes,
-          },
-          policy: {
-            eyebrow: (after as FacilityOverviewContent).policyEyebrow,
-            title: (after as FacilityOverviewContent).policyTitle,
-            items: (after as FacilityOverviewContent).policyItems,
-          },
-          notice: null,
-          statusLabel: null,
-          title: null,
-          paragraphs: null,
-          signerRole: null,
-          signerName: null,
-          showSignerName: null,
-        }
-      : {
-          ...(after as GreetingContent),
-          facts: null,
-          principles: null,
-          scenes: null,
-          policy: null,
-        };
-  const previous =
-    key === "facility-overview"
-      ? getSiteContentChangedFields(key, null, before).reduce<Record<string, unknown>>(
-          (result, field) => ({
-            ...result,
-            [field]:
-              field === "pageDescription"
-                ? (before as FacilityOverviewContent).pageDescription
-                : field === "facts"
-                  ? (before as FacilityOverviewContent).facts
-                  : field === "principles"
-                    ? {
-                        eyebrow: (before as FacilityOverviewContent).principlesEyebrow,
-                        title: (before as FacilityOverviewContent).principlesTitle,
-                        description: (before as FacilityOverviewContent).principlesDescription,
-                        items: (before as FacilityOverviewContent).principles,
-                      }
-                    : field === "scenes"
-                      ? {
-                          eyebrow: (before as FacilityOverviewContent).scenesEyebrow,
-                          title: (before as FacilityOverviewContent).scenesTitle,
-                          description: (before as FacilityOverviewContent).scenesDescription,
-                          items: (before as FacilityOverviewContent).scenes,
-                        }
-                      : {
-                          eyebrow: (before as FacilityOverviewContent).policyEyebrow,
-                          title: (before as FacilityOverviewContent).policyTitle,
-                          items: (before as FacilityOverviewContent).policyItems,
-                        },
-          }),
-          {},
-        )
-      : (before as unknown as Record<string, unknown>);
-  return fields.filter((field) => JSON.stringify(previous[field]) !== JSON.stringify(sections[field]));
+  const next = sections(key, after);
+  const previous = before ? sections(key, before) : {};
+  return (Object.keys(next) as SiteContentAuditChangedField[]).filter(
+    (field) => !before || JSON.stringify(previous[field]) !== JSON.stringify(next[field]),
+  );
 }
