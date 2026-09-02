@@ -2,6 +2,8 @@
 
 ## 브랜드 방향
 
+시각 방향의 비중은 **Institutional Portal 60 / Welfare Warmth 25 / Editorial 15**로 유지한다. 공공기관 포털의 명확한 과업 구조를 중심에 두고, 웜 뉴트럴 표면과 생활 콘텐츠로 복지기관의 온기를 더하며, 편집적 표현은 정보 위계를 돕는 범위로 제한한다.
+
 - 공공기관의 명확성과 복지기관의 존중·따뜻함을 함께 전달한다.
 - 장식보다 기관 신뢰와 사용자 과업, 실제 정보를 우선하고 감정적인 후원 유도를 하지 않는다.
 - 일반 감성 문구 대신 승인된 시설 정보와 실제 생활·관계를 구체적으로 설명한다.
@@ -80,6 +82,18 @@
 ## 간격과 밀도
 
 현재 spacing 토큰과 기존 spacing 시스템 안에서 페이지 시작, 일반 섹션, 기능 섹션, 목록 내부 간격을 구분한다. 모든 섹션에 같은 상하 간격을 반복하거나 빈 콘텐츠를 큰 여백으로 채우지 않는다. 정보량이 섹션 높이를 자연스럽게 결정해야 하며 고정 높이로 본문을 자르지 않는다. `min-height`는 목적이 명확한 히어로·상태 영역에만 사용한다.
+
+### Media Absence Rule
+
+공식 media가 없으면 큰 placeholder를 공개 화면의 focal point로 사용하지 않는다. Hero와 생활 영역은 text, service, information 중심의 완성된 fallback composition으로 전환한다.
+
+### Density Rule
+
+콘텐츠 양이 적으면 section도 compact해야 한다. 큰 빈 표면과 과도한 여백을 디자인 품질로 오해하지 않으며, 실제 정보량이 높이를 결정하게 한다.
+
+### Wireframe Smell
+
+grid placeholder, thin lines, tiny labels, numbered navigation, large empty surfaces가 동시에 반복되면 visual defect로 판정한다. 선과 번호를 줄이고 배경, 타이포그래피, 정보 우선순위로 구조를 전달한다.
 
 ## 표면과 카드
 

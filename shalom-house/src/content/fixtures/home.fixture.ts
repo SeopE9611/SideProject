@@ -22,7 +22,7 @@ type HomeQuickLink = {
 
 type HomeFixture = {
   heroMedia: HomeMedia;
-  lifeMedia: Extract<HomeMedia, { kind: "placeholder" }>;
+  lifeMedia: HomeMedia;
   quickLinks: readonly HomeQuickLink[];
   lifeLinks: readonly HomeQuickLink[];
   participationLinks: readonly Pick<HomeQuickLink, "label" | "href">[];
