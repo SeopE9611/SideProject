@@ -45,7 +45,9 @@ export async function SiteHeader() {
             </span>
           </span>
         </Link>
-        <div className="lg:col-span-9 lg:h-full lg:pl-8"><SiteNavigation /></div>
+        <div className="lg:col-span-9 lg:h-full lg:pl-8">
+          <SiteNavigation telephoneHref={createTelephoneHref(contact.phone)} />
+        </div>
       </div>
     </header>
   );

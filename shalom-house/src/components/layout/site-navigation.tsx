@@ -24,9 +24,10 @@ function isCurrentNavigationItem(pathname: string, item: NavigationItem) {
 
 type SiteNavigationContentProps = {
   pathname: string;
+  telephoneHref: string;
 };
 
-function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
+function SiteNavigationContent({ pathname, telephoneHref }: SiteNavigationContentProps) {
   const mobileMenuId = useId();
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const navigationRef = useRef<HTMLDivElement>(null);
@@ -354,7 +355,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
           <li>
             <a
               className="inline-flex min-h-11 w-full items-center justify-center font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring"
-              href={`tel:${siteConfig.phone}`}
+              href={telephoneHref}
               onClick={closeMobileMenu}
             >
               전화하기
@@ -375,8 +376,12 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
   );
 }
 
-export function SiteNavigation() {
+type SiteNavigationProps = {
+  telephoneHref: string;
+};
+
+export function SiteNavigation({ telephoneHref }: SiteNavigationProps) {
   const pathname = usePathname();
 
-  return <SiteNavigationContent key={pathname} pathname={pathname} />;
+  return <SiteNavigationContent key={pathname} pathname={pathname} telephoneHref={telephoneHref} />;
 }
