@@ -166,6 +166,42 @@ const CONCIERGE_CHOICES: Array<{
   },
 ];
 
+const PROMO_BANNERS = (() => {
+  const raw = process.env.NEXT_PUBLIC_HOME_PROMO_BANNERS_JSON;
+  if (!raw) return [];
+
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map((value, index) => {
+        if (!value || typeof value !== "object") return null;
+        const item = value as Record<string, unknown>;
+        const label = typeof item.label === "string" ? item.label.trim() : "";
+        if (!label) return null;
+
+        return {
+          key: typeof item.key === "string" && item.key.trim() ? item.key : `home-promo-${index}`,
+          label,
+          href: typeof item.href === "string" ? item.href : undefined,
+        };
+      })
+      .filter(
+        (
+          value,
+        ): value is {
+          key: string;
+          label: string;
+          href: string | undefined;
+        } => Boolean(value),
+      )
+      .slice(0, 4);
+  } catch {
+    return [];
+  }
+})();
+
 const isTruthy = (value: unknown) => value === true || value === "true" || value === 1;
 const formatPrice = (value: number) =>
   `${Math.max(0, Number(value) || 0).toLocaleString("ko-KR")}원`;
@@ -196,6 +232,7 @@ export default function HomePageRedesign({
 }: HomePageRedesignProps) {
   const router = useRouter();
   const [activeHero, setActiveHero] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
   const [activeProductFilter, setActiveProductFilter] = useState<ProductFilter>("curated");
   const [activeConcierge, setActiveConcierge] = useState<ConciergeKey>("comfort");
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
@@ -369,6 +406,16 @@ export default function HomePageRedesign({
     [],
   );
 
+  useEffect(() => {
+    if (heroPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const timer = window.setInterval(() => {
+      setActiveHero((current) => (current + 1) % HERO_SLIDES.length);
+    }, 6500);
+
+    return () => window.clearInterval(timer);
+  }, [heroPaused]);
+
   const loadRackets = async (brand: BrandKey) => {
     const currentStatus = racketRequestStatusRef.current[brand];
     if (currentStatus === "loading" || currentStatus === "success") return;
@@ -509,6 +556,8 @@ export default function HomePageRedesign({
       <section
         className={styles.heroSection}
         aria-label="주요 캠페인"
+        onMouseEnter={() => setHeroPaused(true)}
+        onMouseLeave={() => setHeroPaused(false)}
       >
         <SiteContainer variant="wide" className={styles.wrap}>
           <div className={styles.heroStage}>
@@ -578,6 +627,22 @@ export default function HomePageRedesign({
             </div>
           </div>
 
+          {PROMO_BANNERS.length > 0 && (
+            <div className={`${styles.horizontalRailCue} ${styles.promoRailCue}`}>
+              <div className={styles.promoStrip} aria-label="진행 중인 프로모션">
+                {PROMO_BANNERS.map((promo) =>
+                  promo.href ? (
+                    <Link key={promo.key} href={promo.href}>
+                      {promo.label.split("\n")[0]}
+                      <ArrowRight aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <span key={promo.key}>{promo.label.split("\n")[0]}</span>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
         </SiteContainer>
       </section>
 
