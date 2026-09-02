@@ -360,16 +360,15 @@ breadcrumb 또는 목록 복귀 경로, 분류, 제목, 요약, 게시일, 수�
 ### 10. 완료 기준
 
 사용자가 승인 정보와 미확정 정보를 구분하고 지도 없이도 주소·전화·방문 전 확인 과업을 수행할 수 있다.
-# Home `/` — Design V3
+# Home `/` — Macro Reset V3-2
 
-`HomeHero`의 현재 구현은 보존 근거가 아니다. 홈은 아래 순서와 서로 다른 composition으로 기관 정보와 과업을 전개한다.
+홈의 canonical pattern은 작은 landing section 일곱 개의 연속이 아니라 다음 세 개의 큰 정보 영역과 Footer다.
 
-| 영역 | 목적·밀도 | Desktop | Mobile | fixture·empty state | 금지 패턴 |
-| --- | --- | --- | --- | --- | --- |
-| 01 Institutional Intro / Hero | 5초 안에 시설 유형과 기관명 인지, 대표 행동 2개 | 12-column 비대칭 split과 공식 정보 cue | 텍스트 다음 media, 첫 화면을 media가 점유하지 않음 | 승인 전용 media slot, fixture 명시 | carousel, 광고 slogan, full viewport |
-| 02 Quick Tasks | 6개 핵심 업무를 고밀도로 탐색 | 번호가 있는 6-column 또는 3×2 divided rail | 2-column, DOM 순서 유지 | 모든 링크는 실제 route 사용 | 독립 rounded card 6개 |
-| 03 Latest News | 실제 최신 공지·활동을 빠르게 스캔 | 첫 게시물 feature + 나머지 dense list | 한 열에서 feature 다음 목록 | 게시물이 없으면 정식 안내와 소식 경로 | 동일 카드 3개, 큰 빈 카드 |
-| 04 Life & Program Feature | 생활 기록과 서비스 탐색을 구분 | media 7 / structured links 5 split | media 다음 구조화된 링크 | 승인 사진 전 fixture 상태 명시 | 가짜 활동·프로그램 |
-| 05 Transparency / Trust | 자료공개를 공식 신뢰 정보로 전달 | restrained document row와 CTA | 제목·상태·경로 순서 | 자료 없음 상태를 정식 문서 상태로 표시 | marketing card, 가짜 PDF·숫자 |
-| 06 Participation | 참여 방법과 문의 경로 제공 | dark CTA band, 대표 행동과 보조 링크 구분 | 설명 다음 세로 action list | 실제 route와 대표 전화만 사용 | 감정적 압박, 거대한 버튼 반복 |
-| 07 Contact | 주소·전화·방문 과업 완료 | utility definition grid + actions | 한 열, 44px 이상 touch target | contact 계약의 실제 값 사용 | decorative panel, 정보보다 장식 우선 |
+| Macro region | 포함 정보 | Desktop | Mobile |
+| --- | --- | --- | --- |
+| A. Institutional Overview Hub | 기관 소개, 6개 주요 업무, 연락처, 최신 공지 | intro 7 / utility 5와 하단 full-width 공지 행 | 소개 → 업무 → 연락처 → 최신 공지 |
+| B. News + Life Information Hub | 실제 공지·활동 목록, 생활이야기·프로그램·활동사진 | news 7 / life 5 | 소식 → 생활 탐색 |
+| C. Participation + Trust + Contact Hub | 후원·봉사·문의, 자료공개, 방문·전화 | participation 7 / trust·contact 5 | 참여 → 자료공개 → 연락 |
+| Footer | 공식 정보와 secondary navigation | 다열 정보 구조 | 단일 열 |
+
+별도 Quick Service band, 동일 카드 세 개로 만든 Life 또는 Participation, 자료공개와 Contact의 독립 대형 패널은 canonical Home pattern이 아니다. 뉴스가 한 개면 news column 전체를 사용하며 비어 있는 보조 column을 만들지 않는다. 승인 이미지가 없는 상태에서는 placeholder를 노출하지 않고 정보 중심 composition만으로 완성한다.

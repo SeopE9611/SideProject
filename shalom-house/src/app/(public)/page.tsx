@@ -5,7 +5,6 @@ export const metadata = createPublicPageMetadata("/");
 import Image from "next/image";
 import Link from "next/link";
 
-import { HomeHero } from "@/components/home/home-hero";
 import { siteConfig } from "@/config/site";
 import { homeFixture } from "@/content/fixtures/home.fixture";
 import { getNewsRepository } from "@/features/news/news.repository";
@@ -15,7 +14,12 @@ import { createTelephoneHref } from "@/features/site-content/site-content.types"
 
 export const dynamic = "force-dynamic";
 
-const dateFormatter = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
 
 async function getHomeNewsPosts(): Promise<readonly PublicNewsPostSummary[]> {
   try {
@@ -27,49 +31,105 @@ async function getHomeNewsPosts(): Promise<readonly PublicNewsPostSummary[]> {
   }
 }
 
-const textLink = "text-safe-wrap inline-flex min-h-11 items-center gap-2 font-bold text-primary underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
+const focusClass = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
+const arrowLink = `group flex min-h-12 items-center justify-between gap-4 py-3 font-bold transition-colors hover:text-primary ${focusClass}`;
 
 export default async function Home() {
   const [newsPosts, contact] = await Promise.all([getHomeNewsPosts(), getPublicContactInformation()]);
-  const [featuredPost, ...otherPosts] = newsPosts;
+  const featuredPost = newsPosts[0];
 
-  return <>
-    <HomeHero siteName={siteConfig.name} facilityType="장애인거주시설" address={contact.address} phone={contact.phone} description={siteConfig.description} media={homeFixture.heroMedia} />
+  return (
+    <>
+      <section aria-labelledby="home-heading" className="bg-background">
+        <div className="mx-auto max-w-site px-page py-10 sm:px-page-wide sm:py-14 lg:py-16">
+          <div className="grid border-y border-border-strong lg:grid-cols-12">
+            <div className="py-10 lg:col-span-7 lg:border-r lg:border-border lg:pr-14">
+              <p className="text-body font-bold text-accent">장애인거주시설</p>
+              <h1 id="home-heading" className="text-safe-wrap mt-3 text-display-lg font-bold lg:text-hero">
+                {siteConfig.name}
+              </h1>
+              <p className="text-safe-wrap mt-5 max-w-2xl text-body text-muted-foreground">{siteConfig.description}</p>
+              <div className="mt-7 flex flex-wrap gap-x-6 gap-y-2">
+                <Link className={`inline-flex min-h-12 items-center rounded-control bg-primary px-6 py-3 font-bold text-primary-foreground hover:bg-primary-hover ${focusClass}`} href="/about">시설소개</Link>
+                <Link className={`inline-flex min-h-12 items-center font-bold text-primary underline decoration-border-strong underline-offset-4 hover:text-primary-hover ${focusClass}`} href="/about/directions">찾아오시는 길</Link>
+              </div>
+              {homeFixture.heroMedia.kind === "image" ? (
+                <Image className="mt-9 aspect-[3/2] w-full object-cover" src={homeFixture.heroMedia.src} alt={homeFixture.heroMedia.alt} width={homeFixture.heroMedia.width} height={homeFixture.heroMedia.height} priority />
+              ) : null}
+            </div>
 
-    <nav aria-labelledby="quick-heading" className="bg-surface pb-5 sm:pb-7">
-      <div className="mx-auto max-w-site px-page sm:px-page-wide">
-        <div className="rounded-panel border border-border bg-surface px-4 py-4 shadow-card sm:px-6">
-          <h2 id="quick-heading" className="text-small font-bold text-muted-foreground">빠른 서비스</h2>
-          <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-            {homeFixture.quickLinks.map((item) => <li key={item.href}><Link className="group flex min-h-16 items-center justify-between gap-2 rounded-control px-3 py-2 text-base font-bold hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:min-h-20" href={item.href}><span className="text-safe-wrap">{item.label}</span><span aria-hidden="true" className="text-primary transition-transform group-hover:translate-x-1">→</span></Link></li>)}
-          </ul>
+            <div className="py-8 lg:col-span-5 lg:py-10 lg:pl-12">
+              <h2 className="text-heading font-bold">주요 이용 안내</h2>
+              <ul className="mt-4 grid grid-cols-1 border-t border-border sm:grid-cols-2">
+                {homeFixture.quickLinks.map((item) => (
+                  <li key={item.href} className="border-b border-border sm:odd:pr-5 sm:even:border-l sm:even:pl-5">
+                    <Link className={arrowLink} href={item.href}><span className="text-safe-wrap">{item.label}</span><span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span></Link>
+                  </li>
+                ))}
+              </ul>
+              <dl className="mt-7 border-t border-border">
+                <div className="grid gap-1 border-b border-border py-4 sm:grid-cols-[6.5rem_1fr]"><dt className="font-bold text-muted-foreground">주소</dt><dd className="text-safe-wrap font-bold">{contact.address}</dd></div>
+                <div className="grid gap-1 border-b border-border py-4 sm:grid-cols-[6.5rem_1fr]"><dt className="font-bold text-muted-foreground">대표 전화</dt><dd><a className={`inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 ${focusClass}`} href={createTelephoneHref(contact.phone)}>{contact.phone}</a></dd></div>
+              </dl>
+            </div>
+          </div>
+
+          <div className="grid gap-3 border-b border-border-strong py-5 md:grid-cols-[10rem_1fr_auto] md:items-center">
+            <p className="font-bold text-primary">최신 공지</p>
+            {featuredPost ? (
+              <>
+                <Link className={`text-safe-wrap min-h-11 py-2 text-lg font-bold hover:text-primary ${focusClass}`} href={`/news/${featuredPost.slug}`}>{featuredPost.title}</Link>
+                <time className="text-small text-muted-foreground" dateTime={featuredPost.publishedAt}>{dateFormatter.format(new Date(featuredPost.publishedAt))}</time>
+              </>
+            ) : <p className="text-safe-wrap py-2 text-muted-foreground md:col-span-2">공개된 새 소식은 소식 페이지에서 안내합니다.</p>}
+          </div>
         </div>
-      </div>
-    </nav>
+      </section>
 
-    <section aria-labelledby="news-heading" className="bg-surface py-14 sm:py-20">
-      <div className="mx-auto max-w-site px-page sm:px-page-wide">
-        <header className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-small font-bold text-accent">SHALOM NEWS</p><h2 id="news-heading" className="mt-2 text-title font-bold">공지와 활동 소식</h2></div><Link className={textLink} href="/news">전체보기 <span aria-hidden="true">→</span></Link></header>
-        {featuredPost ? <div className="mt-7 grid gap-6 lg:grid-cols-[1.25fr_1fr] lg:gap-10">
-          <article className="rounded-card bg-primary-soft p-6 sm:p-8"><p className="text-small font-bold text-primary">{getNewsCategoryLabel(featuredPost.category)} · 최신 소식</p><h3 className="mt-3 text-heading font-bold"><Link className="text-safe-wrap hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={`/news/${featuredPost.slug}`}>{featuredPost.title}</Link></h3><p className="text-safe-wrap mt-3 text-body text-muted-foreground">{featuredPost.summary}</p><time className="mt-5 block text-small text-muted-foreground" dateTime={featuredPost.publishedAt}>{dateFormatter.format(new Date(featuredPost.publishedAt))}</time></article>
-          {otherPosts.length ? <ul className="divide-y divide-border">{otherPosts.map((post) => <li key={post.id}><article className="py-5"><div className="flex flex-wrap justify-between gap-3 text-small text-muted-foreground"><span className="font-bold text-primary">{getNewsCategoryLabel(post.category)}</span><time dateTime={post.publishedAt}>{dateFormatter.format(new Date(post.publishedAt))}</time></div><h3 className="mt-2 text-xl font-bold"><Link className="text-safe-wrap hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}>{post.title}</Link></h3></article></li>)}</ul> : null}
-        </div> : <div className="mt-7 rounded-card bg-background px-6 py-5"><h3 className="text-xl font-bold">새로운 소식을 준비하고 있습니다.</h3><p className="text-safe-wrap mt-1 text-muted-foreground">공개된 공지사항과 활동소식은 소식 페이지에서 안내합니다.</p></div>}
-      </div>
-    </section>
+      <section aria-labelledby="information-heading" className="bg-surface py-14 sm:py-20">
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-7">
+              <header className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-foreground pb-5">
+                <div><h2 id="information-heading" className="text-title font-bold sm:text-display">공지와 활동 소식</h2><p className="text-safe-wrap mt-2 text-muted-foreground">시설의 공식 공지와 공개 승인된 활동 소식입니다.</p></div>
+                <Link className={`inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 ${focusClass}`} href="/news">전체보기</Link>
+              </header>
+              {newsPosts.length ? (
+                <ul className="divide-y divide-border">
+                  {newsPosts.map((post) => (
+                    <li key={post.id}><article className="py-5"><div className="flex flex-wrap items-center justify-between gap-3 text-small"><span className="font-bold text-primary">{getNewsCategoryLabel(post.category)}</span><time className="text-muted-foreground" dateTime={post.publishedAt}>{dateFormatter.format(new Date(post.publishedAt))}</time></div><h3 className="mt-2 text-xl font-bold"><Link className={`text-safe-wrap hover:text-primary ${focusClass}`} href={`/news/${post.slug}`}>{post.title}</Link></h3>{newsPosts.length === 1 ? <p className="text-safe-wrap mt-2 text-muted-foreground">{post.summary}</p> : null}</article></li>
+                  ))}
+                </ul>
+              ) : <div className="border-b border-border py-6"><h3 className="text-xl font-bold">새로운 소식을 준비하고 있습니다.</h3><p className="text-safe-wrap mt-2 text-muted-foreground">공개된 공지사항과 활동소식은 소식 페이지에서 안내합니다.</p></div>}
+            </div>
 
-    <section aria-labelledby="life-heading" className="bg-accent-soft py-14 sm:py-20">
-      <div className={`mx-auto max-w-site px-page sm:px-page-wide ${homeFixture.lifeMedia.kind === "image" ? "grid gap-10 lg:grid-cols-2 lg:items-center" : ""}`}>
-        {homeFixture.lifeMedia.kind === "image" ? <Image className="aspect-[3/2] w-full rounded-panel object-cover" src={homeFixture.lifeMedia.src} alt={homeFixture.lifeMedia.alt} width={homeFixture.lifeMedia.width} height={homeFixture.lifeMedia.height} /> : null}
-        <div><p className="text-small font-bold text-accent">생활 안내</p><h2 id="life-heading" className="mt-2 text-title font-bold">생활과 프로그램</h2><p className="text-safe-wrap mt-3 max-w-2xl text-body text-muted-foreground">일상생활과 프로그램, 공개 승인을 마친 활동 기록을 구분해 안내합니다.</p>
-          <ul className="mt-7 grid gap-3 md:grid-cols-3">{homeFixture.lifeLinks.map((item) => <li key={item.href}><Link className="group flex h-full min-h-36 flex-col justify-between rounded-card bg-surface p-5 shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={item.href}><span><strong className="text-xl">{item.label}</strong><span className="text-safe-wrap mt-2 block text-small text-muted-foreground">{item.description}</span></span><span aria-hidden="true" className="mt-4 text-primary transition-transform group-hover:translate-x-1">→</span></Link></li>)}</ul>
+            <div className="lg:col-span-5">
+              <h2 className="border-b-2 border-foreground pb-5 text-title font-bold sm:text-display">생활·프로그램</h2>
+              <p className="text-safe-wrap mt-5 text-body text-muted-foreground">일상생활과 프로그램, 공개 승인을 마친 활동 기록을 구분해 안내합니다.</p>
+              <ul className="mt-5 border-t border-border">
+                {homeFixture.lifeLinks.map((item) => <li key={item.href} className="border-b border-border"><Link className={`${arrowLink} py-4`} href={item.href}><span><strong className="block text-xl">{item.label}</strong><span className="text-safe-wrap mt-1 block text-small font-normal text-muted-foreground">{item.description}</span></span><span aria-hidden="true">→</span></Link></li>)}
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section aria-labelledby="participation-heading" className="bg-background py-14 sm:py-20"><div className="mx-auto grid max-w-site gap-8 px-page sm:px-page-wide lg:grid-cols-[1fr_1.4fr] lg:items-center"><div><p className="text-small font-bold text-accent">참여 안내</p><h2 id="participation-heading" className="mt-2 text-title font-bold">함께할 수 있는 방법</h2><p className="text-safe-wrap mt-3 text-body text-muted-foreground">후원과 자원봉사에 참여하기 전 안내 절차를 확인하거나 담당자에게 문의해 주세요.</p></div><ul className="grid gap-3 sm:grid-cols-3">{homeFixture.participationLinks.map((item, index) => <li key={item.href}><Link className={`flex min-h-24 items-center justify-between rounded-card p-5 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${index === 0 ? "bg-primary text-primary-foreground hover:bg-primary-hover" : "bg-surface text-foreground shadow-card hover:text-primary"}`} href={item.href}>{item.label}<span aria-hidden="true">→</span></Link></li>)}</ul></div></section>
-
-    <section aria-labelledby="documents-heading" className="bg-surface py-12 sm:py-16"><div className="mx-auto max-w-site px-page sm:px-page-wide"><div className="flex flex-col gap-5 rounded-panel bg-primary-soft p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8"><div><h2 id="documents-heading" className="text-heading font-bold">자료공개</h2><p className="text-safe-wrap mt-2 text-body text-muted-foreground">시설 운영과 관련하여 공개가 승인된 자료를 확인할 수 있습니다.</p></div><Link className={`${textLink} shrink-0`} href="/transparency">자료공개 바로가기 <span aria-hidden="true">→</span></Link></div></div></section>
-
-    <section aria-labelledby="contact-heading" className="bg-surface pb-16 pt-4 sm:pb-20"><div className="mx-auto max-w-site px-page sm:px-page-wide"><div className="grid gap-6 rounded-panel bg-foreground p-6 text-on-dark sm:p-8 lg:grid-cols-[1fr_2fr] lg:items-center"><div><p className="text-small font-bold text-white/65">CONTACT</p><h2 id="contact-heading" className="mt-2 text-title font-bold">방문·연락 안내</h2></div><div className="grid gap-5 sm:grid-cols-2"><address className="not-italic"><p className="text-small font-bold text-white/65">주소</p><p className="text-safe-wrap mt-1 text-body font-bold">{contact.address}</p><Link className="mt-2 inline-flex min-h-11 items-center font-bold underline underline-offset-4" href="/about/directions">찾아오시는 길</Link></address><div><p className="text-small font-bold text-white/65">대표 전화</p><p className="mt-1 text-body font-bold">{contact.phone}</p><a className="mt-2 inline-flex min-h-11 items-center font-bold underline underline-offset-4" href={createTelephoneHref(contact.phone)}>전화 연결</a></div></div></div></div></section>
-  </>;
+      <section aria-labelledby="participation-heading" className="bg-primary-soft py-14 sm:py-20">
+        <div className="mx-auto grid max-w-site gap-12 px-page sm:px-page-wide lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-7">
+            <h2 id="participation-heading" className="text-title font-bold sm:text-display">함께할 수 있는 방법</h2>
+            <p className="text-safe-wrap mt-4 max-w-2xl text-body text-muted-foreground">후원과 자원봉사에 참여하기 전 안내 절차를 확인하거나 담당자에게 문의해 주세요.</p>
+            <Link className={`mt-8 inline-flex min-h-12 items-center rounded-control bg-primary px-7 py-3 font-bold text-primary-foreground hover:bg-primary-hover ${focusClass}`} href={homeFixture.participationLinks[0].href}>후원하기 <span aria-hidden="true" className="ml-3">→</span></Link>
+            <ul className="mt-6 max-w-2xl border-t border-border-strong">
+              {homeFixture.participationLinks.slice(1).map((item) => <li key={item.href} className="border-b border-border-strong"><Link className={arrowLink} href={item.href}>{item.label}<span aria-hidden="true">→</span></Link></li>)}
+            </ul>
+          </div>
+          <div className="divide-y divide-border-strong border-y border-border-strong lg:col-span-5">
+            <section aria-labelledby="trust-heading" className="py-7"><h2 id="trust-heading" className="text-heading font-bold">자료공개</h2><p className="text-safe-wrap mt-2 text-muted-foreground">시설 운영과 관련하여 공개가 승인된 자료를 확인할 수 있습니다.</p><Link className={`mt-3 inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 ${focusClass}`} href="/transparency">자료공개 바로가기 →</Link></section>
+            <section aria-labelledby="contact-heading" className="py-7"><h2 id="contact-heading" className="text-heading font-bold">방문·연락 안내</h2><address className="mt-4 not-italic"><dl><div className="grid gap-1 py-2 sm:grid-cols-[6rem_1fr]"><dt className="font-bold">주소</dt><dd className="text-safe-wrap">{contact.address}</dd></div><div className="grid gap-1 py-2 sm:grid-cols-[6rem_1fr]"><dt className="font-bold">전화</dt><dd>{contact.phone}</dd></div></dl></address><div className="mt-3 flex flex-wrap gap-x-6"><Link className={`inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 ${focusClass}`} href="/about/directions">찾아오시는 길</Link><a className={`inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 ${focusClass}`} href={createTelephoneHref(contact.phone)}>전화 연결</a></div></section>
+          </div>
+        </div>
+      </section>
+    </>
+  );
 }

@@ -24,9 +24,10 @@ function isCurrentNavigationItem(pathname: string, item: NavigationItem) {
 
 type SiteNavigationContentProps = {
   pathname: string;
+  telephoneHref: string;
 };
 
-function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
+function SiteNavigationContent({ pathname, telephoneHref }: SiteNavigationContentProps) {
   const mobileMenuId = useId();
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const navigationRef = useRef<HTMLDivElement>(null);
@@ -94,9 +95,9 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
   }
 
   return (
-    <div ref={navigationRef}>
-      <nav aria-label="주요 메뉴" className="hidden lg:block">
-        <ul className="flex items-center gap-2">
+    <div ref={navigationRef} className="lg:h-full">
+      <nav aria-label="주요 메뉴" className="hidden h-full lg:block">
+        <ul className="grid h-full grid-cols-4 items-stretch">
           {siteConfig.mainNavigation.map((item, index) => {
             const hasChildren = item.children.length > 0;
             const isActive = isCurrentNavigationItem(pathname, item);
@@ -109,7 +110,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
             return (
               <li
                 key={item.href}
-                className="relative"
+                className="relative flex items-stretch"
                 onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget)) {
                     setOpenDesktopHref((current) => (current === item.href ? null : current));
@@ -125,17 +126,17 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                 }}
               >
                 <div
-                  className={`flex min-h-11 items-stretch border-b-2 transition-colors duration-[var(--motion-duration-fast)] ease-standard ${
+                  className={`flex min-h-11 w-full items-stretch border-b-2 transition-colors duration-[var(--motion-duration-fast)] ease-standard ${
                     isActive
                       ? item.emphasis
                         ? "border-primary bg-primary-soft text-primary"
                         : "border-primary text-primary"
-                      : `${item.emphasis ? "ml-2 rounded-control border" : ""} ${inactiveClassName}`
+                      : inactiveClassName
                   }`}
                 >
                   <Link
                     aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
-                    className="text-safe-wrap inline-flex min-h-11 items-center whitespace-nowrap px-3 py-2 text-base font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3"
+                    className="text-safe-wrap inline-flex min-h-11 min-w-0 flex-1 items-center justify-center whitespace-nowrap px-2 py-2 text-base font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-4"
                     href={item.href}
                   >
                     {item.label}
@@ -354,7 +355,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
           <li>
             <a
               className="inline-flex min-h-11 w-full items-center justify-center font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring"
-              href={`tel:${siteConfig.phone}`}
+              href={telephoneHref}
               onClick={closeMobileMenu}
             >
               전화하기
@@ -375,8 +376,12 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
   );
 }
 
-export function SiteNavigation() {
+type SiteNavigationProps = {
+  telephoneHref: string;
+};
+
+export function SiteNavigation({ telephoneHref }: SiteNavigationProps) {
   const pathname = usePathname();
 
-  return <SiteNavigationContent key={pathname} pathname={pathname} />;
+  return <SiteNavigationContent key={pathname} pathname={pathname} telephoneHref={telephoneHref} />;
 }

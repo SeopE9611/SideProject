@@ -54,3 +54,14 @@ typecheck 통과를 UI 완료로 오해하지 않기 위한 장기 검증표다.
 - [ ] dark green surface가 연속적으로 과도하게 사용되지 않는가
 - [ ] wireframe/design-system-demo 인상이 없는가
 - [ ] 실제 기관 사이트로 보이는가
+
+## V3-2 Home Macro Reset 점검
+
+- [ ] Before/After에서 section 배치 자체가 달라졌는가
+- [ ] Header의 brand/navigation 비율이 실제로 달라졌는가
+- [ ] 첫 viewport에 기관 정보 + 주요 업무가 함께 보이는가
+- [ ] 별도 Quick Service band가 사라졌는가
+- [ ] Home에 shadow content card가 없는가
+- [ ] 동일 rounded card 3개 이상의 반복이 없는가
+- [ ] 7개의 full-width section band가 다시 만들어지지 않았는가
+- [ ] 색상 변경만으로 구분한 section 반복이 없는가
