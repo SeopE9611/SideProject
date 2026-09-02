@@ -44,3 +44,13 @@ typecheck 통과를 UI 완료로 오해하지 않기 위한 장기 검증표다.
 ## Validation result
 
 검증 결과는 추정하지 않는다. 실제 화면에서 확인한 항목만 `PASS`, 결함은 `FAIL`, 도구나 조건 때문에 확인하지 못한 항목은 `NOT VERIFIED`로 기록한다.
+
+
+## V3-1.5 기관 포털 점검
+
+- [ ] 개발 placeholder가 visual focal point가 아닌가
+- [ ] 1440px에서 body/navigation이 지나치게 작지 않은가
+- [ ] 콘텐츠가 적은 section이 불필요하게 크지 않은가
+- [ ] dark green surface가 연속적으로 과도하게 사용되지 않는가
+- [ ] wireframe/design-system-demo 인상이 없는가
+- [ ] 실제 기관 사이트로 보이는가

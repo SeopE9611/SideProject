@@ -96,14 +96,14 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
   return (
     <div ref={navigationRef}>
       <nav aria-label="주요 메뉴" className="hidden lg:block">
-        <ul className="flex items-center gap-1">
+        <ul className="flex items-center gap-2">
           {siteConfig.mainNavigation.map((item, index) => {
             const hasChildren = item.children.length > 0;
             const isActive = isCurrentNavigationItem(pathname, item);
             const isSubmenuOpen = openDesktopHref === item.href;
             const submenuId = `${mobileMenuId}-desktop-${index}`;
             const inactiveClassName = item.emphasis
-              ? "border-accent bg-accent text-primary-foreground hover:border-accent-hover hover:bg-accent-hover"
+              ? "border-primary bg-primary-soft text-primary hover:border-primary-hover hover:bg-primary hover:text-primary-foreground"
               : "border-transparent text-foreground hover:border-primary hover:text-primary";
 
             return (
@@ -128,14 +128,14 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                   className={`flex min-h-11 items-stretch border-b-2 transition-colors duration-[var(--motion-duration-fast)] ease-standard ${
                     isActive
                       ? item.emphasis
-                        ? "border-accent bg-accent text-primary-foreground"
+                        ? "border-primary bg-primary-soft text-primary"
                         : "border-primary text-primary"
-                      : `${item.emphasis ? "ml-2 border" : ""} ${inactiveClassName}`
+                      : `${item.emphasis ? "ml-2 rounded-control border" : ""} ${inactiveClassName}`
                   }`}
                 >
                   <Link
                     aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
-                    className="text-safe-wrap inline-flex min-h-11 items-center whitespace-nowrap px-2 py-2 text-small font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3"
+                    className="text-safe-wrap inline-flex min-h-11 items-center whitespace-nowrap px-3 py-2 text-base font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3"
                     href={item.href}
                   >
                     {item.label}
