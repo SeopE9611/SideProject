@@ -189,3 +189,12 @@ typecheck는 시각 완료 조건이 아니다. `visual-quality-gate.md`에 따�
 ## Legacy Token Retirement
 
 새 공개 UI는 `background`, `surface`, `surface-subtle`, `foreground`, `muted-foreground`, `border`, `border-strong`, `primary`, `primary-hover`, `primary-soft`, `accent`, `accent-soft`, `on-dark`, `focus-ring`을 우선한다. `home-*`, `hero-*` 토큰은 기존 하위 페이지 호환 영역으로 격리하고 새 호출을 추가하지 않으며 호출부가 사라진 뒤 제거한다.
+
+## Home Macro Composition Rule
+
+홈은 작은 landing section의 연속이 아니라 소수의 큰 information region으로 구성한다. 기관 소개와 주요 업무, 뉴스와 생활 정보, 참여와 신뢰·연락처럼 사용자의 과업 관계를 기준으로 묶으며 색상 교대만으로 영역을 구분하지 않는다.
+
+- **Card budget**: Home content의 shadow content card는 `0`, large rounded content container는 최대 `2`다.
+- **Background budget**: Home main macro surface는 최대 `3`개 background zone을 사용한다.
+- **Eyebrow budget**: decorative eyebrow는 Home 전체에서 최대 `2`개다. 주소·전화 같은 semantic label은 제외한다.
+- **No Incremental Redesign**: design reset task에서 기존 JSX section 순서를 유지한 채 색, radius, typography만 변경한 결과는 완료로 인정하지 않는다.

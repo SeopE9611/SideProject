@@ -30,14 +30,14 @@ export async function SiteHeader() {
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-16 w-full max-w-site items-center justify-between gap-5 px-page py-2 sm:min-h-24 sm:px-page-wide">
+      <div className="mx-auto grid min-h-16 w-full max-w-site grid-cols-[1fr_auto] items-center gap-5 px-page py-2 sm:min-h-24 sm:px-page-wide lg:grid-cols-12 lg:gap-0 lg:py-0">
         <Link
           aria-label={`${siteConfig.name} 홈`}
-          className="group inline-flex min-w-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+          className="group inline-flex min-w-0 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring lg:col-span-3 lg:border-r lg:border-border lg:pr-8"
           href="/"
         >
           <span className="min-w-0">
-            <span className="block text-2xl font-bold tracking-[-0.03em] text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard group-hover:text-primary sm:text-[1.75rem]">
+            <span className="block text-2xl font-bold tracking-[-0.03em] text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard group-hover:text-primary sm:text-title">
               {siteConfig.name}
             </span>
             <span className="mt-1 hidden text-xs font-semibold tracking-[0.1em] text-muted-foreground xl:block">
@@ -45,7 +45,7 @@ export async function SiteHeader() {
             </span>
           </span>
         </Link>
-        <SiteNavigation />
+        <div className="lg:col-span-9 lg:h-full lg:pl-8"><SiteNavigation /></div>
       </div>
     </header>
   );
