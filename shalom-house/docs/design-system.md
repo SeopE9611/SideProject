@@ -135,3 +135,43 @@
 기관 헤더·내비게이션, 브레드크럼과 소형 페이지 헤더, 홈 인트로, 공지 목록·활동 카드, 지원 영역, 문서 목록·절차, 연락·방문 패널과 푸터를 역할과 과업 기준으로 공유한다. 기존 `PageHero`를 모든 페이지의 필수 패턴으로 정의하지 않으며 `HomeHero`도 홈에 반복 적용할 일반 패턴이 아니다.
 
 hover는 상호작용 요소에만 사용한다. 자동 재생 캐러셀, 배경 영상과 패럴랙스를 사용하지 않으며 모션을 제거해도 정보와 기능이 유지되어야 한다.
+# Design V3 공개 UI 방향
+
+## Visual Direction과 Institutional Trust
+
+공개 화면은 `Institutional`, `Editorial`, `Calm`, `Trustworthy`, `Human`을 지향한다. 기관명·시설 유형·주소·연락·공지·활동·프로그램·공개자료·방문 경로를 장식보다 먼저 제시하고, 흰 정보 surface와 neutral canvas를 중심으로 deep forest primary와 소량의 clay accent를 쓴다.
+
+## Editorial Composition과 Component Diversity
+
+정보 성격에 따라 다음 composition archetype을 선택한다.
+
+- A. Institutional Intro: 기관 정체성과 대표 행동을 담는 비대칭 도입부
+- B. Quick Action Rail: 구분선과 번호로 구성한 업무 탐색
+- C. Dense Notice List: feature 항목과 스캔 가능한 행 목록
+- D. Editorial Media Feature: 승인 이미지 또는 명시적 fixture를 중심으로 한 생활 기록
+- E. Program/Service Split: media와 구조화된 서비스 링크의 분할
+- F. Transparency / Document List: 문서 상태와 공개 경로를 명확히 하는 공식 목록
+- G. Participation CTA Band: 한정된 dark surface 위 참여 행동 위계
+- H. Contact Utility Block: 주소·전화·방문 행동의 실용 정보 블록
+
+홈은 최소 5종을 사용하며 연속된 3개 이상의 섹션에 같은 layout 문법을 쓰지 않는다.
+
+## Photography & Media
+
+실제 승인 이미지만 기관 사진으로 표시한다. 승인 이미지가 없으면 fixture임을 데이터에서 구분하고, 실제 이미지와 같은 비율을 유지하되 사람이나 시설 사진으로 오해할 묘사를 만들지 않는다. 교체 시 layout이 이동하지 않아야 한다.
+
+## Anti-AI UI Patterns
+
+동일한 rounded card grid, 모든 제목의 eyebrow, 의미 없는 아이콘·통계·후기, 과도한 pill·gradient·shadow, `제목 → 설명 → 화살표`의 기계적 반복을 피한다. 목록은 목록으로, 문서는 문서로, 생활 콘텐츠는 media/editorial module로 표현한다.
+
+## Density & Rhythm
+
+첫 화면 이후 실제 업무와 최신 정보가 즉시 이어져야 한다. split, dense list, information band, action rail의 밀도를 의도적으로 달리하며 콘텐츠 부족을 큰 빈 여백으로 감추지 않는다.
+
+## Visual Quality Validation
+
+typecheck는 시각 완료 조건이 아니다. `visual-quality-gate.md`에 따라 320, 390, 768, 1024, 1440 viewport와 keyboard/focus 상태를 실제 화면에서 확인한다. 미확인 항목은 PASS로 기록하지 않는다.
+
+## Legacy Token Retirement
+
+새 공개 UI는 `background`, `surface`, `surface-subtle`, `foreground`, `muted-foreground`, `border`, `border-strong`, `primary`, `primary-hover`, `primary-soft`, `accent`, `accent-soft`, `on-dark`, `focus-ring`을 우선한다. `home-*`, `hero-*` 토큰은 기존 하위 페이지 호환 영역으로 격리하고 새 호출을 추가하지 않으며 호출부가 사라진 뒤 제거한다.

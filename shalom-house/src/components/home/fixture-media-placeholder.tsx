@@ -6,11 +6,12 @@ type FixtureMediaPlaceholderProps = {
 
 export function FixtureMediaPlaceholder({ label, description, compact = false }: FixtureMediaPlaceholderProps) {
   return (
-    <div className={`aspect-[3/2] border border-border bg-surface-subtle ${compact ? "p-4" : "p-6 sm:p-8"}`}>
-      <div className="flex h-full flex-col">
+    <div className={`relative aspect-[3/2] overflow-hidden border border-border-strong bg-primary-soft ${compact ? "p-4" : "p-6 sm:p-8"}`}>
+      <div aria-hidden="true" className="absolute inset-0 opacity-50 [background-image:linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] [background-size:3rem_3rem]" />
+      <div className="relative flex h-full flex-col justify-between border-l-2 border-primary pl-5">
         <p className="text-safe-wrap text-small font-bold text-primary">{label}</p>
-        <div className="my-auto border-t border-border pt-4">
-          <p className={`text-safe-wrap text-muted-foreground ${compact ? "text-small" : "text-body"}`}>
+        <div className="max-w-md bg-surface/90 p-4">
+          <p className={`text-safe-wrap text-foreground ${compact ? "text-small" : "text-body"}`}>
             {description}
           </p>
         </div>

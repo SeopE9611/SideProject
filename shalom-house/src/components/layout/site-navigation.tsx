@@ -128,9 +128,9 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                   className={`flex min-h-11 items-stretch border-b-2 transition-colors duration-[var(--motion-duration-fast)] ease-standard ${
                     isActive
                       ? item.emphasis
-                        ? "rounded-control border-accent bg-accent text-primary-foreground"
+                        ? "border-accent bg-accent text-primary-foreground"
                         : "border-primary text-primary"
-                      : `${item.emphasis ? "ml-2 rounded-control border" : ""} ${inactiveClassName}`
+                      : `${item.emphasis ? "ml-2 border" : ""} ${inactiveClassName}`
                   }`}
                 >
                   <Link
@@ -174,9 +174,9 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                 </div>
 
                 {hasChildren ? (
-                  <div id={submenuId} className="absolute left-0 top-full w-72 pt-3" hidden={!isSubmenuOpen}>
-                    <div className="border border-border bg-surface p-3 shadow-elevated">
-                      <p className="text-safe-wrap border-b border-border px-3 pb-3 pt-1 text-xs font-semibold text-muted-foreground">
+                  <div id={submenuId} className="absolute right-0 top-full w-80 pt-3" hidden={!isSubmenuOpen}>
+                    <div className="border-t-4 border-primary bg-surface p-4 shadow-elevated">
+                      <p className="text-safe-wrap border-b border-border px-3 pb-4 pt-1 text-xs font-semibold text-muted-foreground">
                         {item.description}
                       </p>
                       <ul className="space-y-1">

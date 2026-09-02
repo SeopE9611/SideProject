@@ -23,6 +23,7 @@
   --color-warning-soft: #fff4d9;
   --color-danger: #a23b3b;
   --color-danger-soft: #fbecec;
+  /* Legacy compatibility: 기존 하위 페이지가 전환될 때까지만 유지 */
   --color-hero-forest: #1f493f;
   --color-hero-clay: #85452f;
   --color-hero-night: #19363a;
