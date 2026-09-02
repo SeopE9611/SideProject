@@ -10,6 +10,8 @@ import { siteConfig } from "@/config/site";
 import { homeFixture } from "@/content/fixtures/home.fixture";
 import { getNewsRepository } from "@/features/news/news.repository";
 import { getNewsCategoryLabel, type PublicNewsPostSummary } from "@/features/news/news.types";
+import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
+import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
 export const dynamic = "force-dynamic";
 
@@ -33,8 +35,16 @@ async function getHomeNewsPosts(): Promise<readonly PublicNewsPostSummary[]> {
 const textLink =
   "text-safe-wrap inline-flex min-h-11 items-center gap-2 font-bold text-primary underline decoration-border-strong underline-offset-4 transition-colors hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
 
+function getQuickLinkBorderClasses(index: number): string {
+  const mobile = [index % 2 === 0 ? "border-r" : "", index < 4 ? "border-b" : ""];
+  const tablet = [index % 3 !== 2 ? "sm:border-r" : "sm:border-r-0", index < 3 ? "sm:border-b" : "sm:border-b-0"];
+  const desktop = [index < 5 ? "lg:border-r" : "lg:border-r-0", "lg:border-b-0"];
+
+  return [...mobile, ...tablet, ...desktop, "border-white/20"].filter(Boolean).join(" ");
+}
+
 export default async function Home() {
-  const newsPosts = await getHomeNewsPosts();
+  const [newsPosts, contact] = await Promise.all([getHomeNewsPosts(), getPublicContactInformation()]);
   const [featuredPost, ...otherPosts] = newsPosts;
 
   return (
@@ -42,6 +52,7 @@ export default async function Home() {
       <HomeHero
         siteName={siteConfig.name}
         facilityType="장애인거주시설"
+        address={contact.address}
         description={siteConfig.description}
         media={homeFixture.heroMedia}
       />
@@ -54,7 +65,7 @@ export default async function Home() {
             </h2>
             <ol className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
               {homeFixture.quickLinks.map((item, index) => (
-                <li key={item.href} className="border-b border-r border-white/20 sm:nth-[n+4]:border-b-0 lg:border-b-0">
+                <li key={item.href} className={getQuickLinkBorderClasses(index)}>
                   <Link className="group flex min-h-24 flex-col justify-between p-4 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-white" href={item.href}>
                     <span className="text-xs text-white/65">0{index + 1}</span>
                     <strong className="text-safe-wrap flex items-end justify-between gap-2 text-small">
@@ -78,8 +89,8 @@ export default async function Home() {
             </header>
             <div className="lg:col-span-8">
               {featuredPost ? (
-                <div className="grid border-t-4 border-foreground md:grid-cols-2">
-                  <article className="border-b border-border bg-primary-soft p-6 md:border-r md:p-8">
+                <div className={`grid border-t-4 border-foreground ${otherPosts.length > 0 ? "md:grid-cols-2" : ""}`}>
+                  <article className={`border-b border-border bg-primary-soft p-6 md:p-8 ${otherPosts.length > 0 ? "md:border-r" : ""}`}>
                     <p className="text-small font-bold text-primary">{getNewsCategoryLabel(featuredPost.category)}</p>
                     <h3 className="mt-5 text-heading font-bold">
                       <Link className="text-safe-wrap hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={`/news/${featuredPost.slug}`}>{featuredPost.title}</Link>
@@ -87,7 +98,7 @@ export default async function Home() {
                     <p className="text-safe-wrap mt-4 text-body text-muted-foreground">{featuredPost.summary}</p>
                     <time className="mt-7 block text-small text-muted-foreground" dateTime={featuredPost.publishedAt}>{dateFormatter.format(new Date(featuredPost.publishedAt))}</time>
                   </article>
-                  <ul>
+                  {otherPosts.length > 0 ? <ul>
                     {otherPosts.map((post) => (
                       <li key={post.id} className="border-b border-border">
                         <article className="px-1 py-5 md:px-6">
@@ -97,7 +108,7 @@ export default async function Home() {
                         </article>
                       </li>
                     ))}
-                  </ul>
+                  </ul> : null}
                 </div>
               ) : (
                 <div className="border-y-2 border-foreground py-7">
@@ -154,7 +165,7 @@ export default async function Home() {
       <section aria-labelledby="contact-heading" className="bg-surface py-12 sm:py-16">
         <div className="mx-auto max-w-site px-page sm:px-page-wide"><div className="grid gap-7 border-t-4 border-primary pt-7 lg:grid-cols-[1fr_2fr]">
           <h2 id="contact-heading" className="text-title font-bold">방문·연락 안내</h2>
-          <div className="grid gap-7 sm:grid-cols-2"><address className="not-italic"><p className="text-small font-bold text-muted-foreground">주소</p><p className="text-safe-wrap mt-2 text-body font-bold">{siteConfig.address}</p><Link className={`${textLink} mt-3`} href="/about/directions">찾아오시는 길</Link></address><div><p className="text-small font-bold text-muted-foreground">대표 전화</p><p className="mt-2 text-body font-bold">{siteConfig.phone}</p><a className={`${textLink} mt-3`} href={`tel:${siteConfig.phone}`}>전화 연결</a></div></div>
+          <div className="grid gap-7 sm:grid-cols-2"><address className="not-italic"><p className="text-small font-bold text-muted-foreground">주소</p><p className="text-safe-wrap mt-2 text-body font-bold">{contact.address}</p><Link className={`${textLink} mt-3`} href="/about/directions">찾아오시는 길</Link></address><div><p className="text-small font-bold text-muted-foreground">대표 전화</p><p className="text-safe-wrap mt-2 text-body font-bold">{contact.phone}</p><a className={`${textLink} mt-3`} href={createTelephoneHref(contact.phone)}>전화 연결</a></div></div>
         </div></div>
       </section>
     </>
