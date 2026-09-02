@@ -7,11 +7,12 @@ import type { HomeMedia } from "@/content/fixtures/home.fixture";
 type HomeHeroProps = {
   siteName: string;
   facilityType: string;
+  address: string;
   description: string;
   media: HomeMedia;
 };
 
-export function HomeHero({ siteName, facilityType, description, media }: HomeHeroProps) {
+export function HomeHero({ siteName, facilityType, address, description, media }: HomeHeroProps) {
   return (
     <section className="overflow-hidden border-b border-border bg-background">
       <div className="mx-auto grid w-full max-w-site lg:grid-cols-12">
@@ -35,7 +36,7 @@ export function HomeHero({ siteName, facilityType, description, media }: HomeHer
               찾아오시는 길
             </Link>
           </div>
-          <dl className="mt-10 grid grid-cols-2 border-y border-border py-4 text-small"><div><dt className="text-muted-foreground">시설 유형</dt><dd className="mt-1 font-bold">{facilityType}</dd></div><div className="border-l border-border pl-5"><dt className="text-muted-foreground">소재지</dt><dd className="mt-1 font-bold">서울 강서구</dd></div></dl>
+          <dl className="mt-10 grid gap-4 border-y border-border py-4 text-small sm:grid-cols-2 sm:gap-0"><div><dt className="text-muted-foreground">시설 유형</dt><dd className="mt-1 font-bold">{facilityType}</dd></div><div className="border-t border-border pt-4 sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0"><dt className="text-muted-foreground">소재지</dt><dd className="text-safe-wrap mt-1 font-bold">{address}</dd></div></dl>
         </header>
         <figure className="relative bg-primary p-page sm:p-page-wide lg:col-span-7 lg:flex lg:flex-col lg:justify-center lg:px-14">
           {media.kind === "image" ? (

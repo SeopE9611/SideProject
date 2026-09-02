@@ -2,13 +2,17 @@ import Link from "next/link";
 
 import { SiteNavigation } from "@/components/layout/site-navigation";
 import { siteConfig } from "@/config/site";
+import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
+import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const contact = await getPublicContactInformation();
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-surface/95 shadow-nav backdrop-blur-md">
       <div className="hidden border-b border-white/15 bg-foreground text-white/80 lg:block">
         <div className="mx-auto flex min-h-8 w-full max-w-site items-center justify-between gap-8 px-page-wide text-xs">
-          <p className="text-safe-wrap">서울 강서구 장애인거주시설</p>
+          <p className="text-safe-wrap">장애인거주시설</p>
           <div className="flex items-center gap-6">
             <Link
               className="underline decoration-white/40 underline-offset-4 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
@@ -18,9 +22,9 @@ export function SiteHeader() {
             </Link>
             <a
               className="underline decoration-white/40 underline-offset-4 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              href={`tel:${siteConfig.phone}`}
+              href={createTelephoneHref(contact.phone)}
             >
-              대표 전화 {siteConfig.phone}
+              대표 전화 {contact.phone}
             </a>
           </div>
         </div>
