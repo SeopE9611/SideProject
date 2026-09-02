@@ -9,8 +9,8 @@
   --home-highlight-text: hsl(var(--brand-highlight-foreground));
   --home-highlight-muted: hsl(var(--brand-highlight-muted));
   --home-highlight-ink: hsl(var(--brand-highlight-ink));
-  --home-page-surface: color-mix(in srgb, hsl(var(--background)) 46%, hsl(var(--secondary)) 54%);
-  --home-soft: color-mix(in srgb, hsl(var(--secondary)) 78%, hsl(var(--background)) 22%);
+  --home-page-surface: color-mix(in srgb, hsl(var(--background)) 82%, hsl(var(--secondary)) 18%);
+  --home-soft: color-mix(in srgb, hsl(var(--secondary)) 58%, hsl(var(--background)) 42%);
   --home-font:
     "GmarketSans", "Spoqa Han Sans Neo", system-ui, -apple-system, "Segoe UI", "Noto Sans KR",
     "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
@@ -47,7 +47,7 @@
   position: relative;
   min-height: 520px;
   overflow: hidden;
-  border-radius: 28px;
+  border-radius: 16px;
   background: var(--home-inverse);
   color: var(--home-inverse-text);
   isolation: isolate;
@@ -84,7 +84,7 @@
     "Apple SD Gothic Neo",
     "Malgun Gothic",
     sans-serif;
-  font-size: clamp(56px, 4.8vw, 70px);
+  font-size: clamp(40px, 3.5vw, 48px);
   font-weight: 700;
   font-synthesis: none;
   line-height: 1.04;
@@ -111,7 +111,6 @@
   position: absolute;
   z-index: 1;
   inset: 0 0 72px 45%;
-  animation: heroReveal 550ms ease both;
 }
 
 .heroImage,
@@ -149,7 +148,6 @@
   align-items: center;
   border-top: 1px solid color-mix(in srgb, var(--home-inverse-text) 13%, transparent);
   background: color-mix(in srgb, var(--home-inverse) 88%, transparent);
-  backdrop-filter: blur(16px);
 }
 
 .heroDots {
@@ -248,7 +246,7 @@ transition: width 180ms ease;
 .racketSection,
 .packageSection,
 .supportSection {
-  padding-block: 76px 88px;
+  padding-block: 56px 64px;
 }
 
 .sectionHeader h2,
@@ -256,7 +254,7 @@ transition: width 180ms ease;
 .trustIntro h2 {
   margin: 12px 0 0;
   font-family: var(--home-font);
-  font-size: clamp(44px, 3.6vw, 52px);
+  font-size: clamp(32px, 3vw, 40px);
   font-weight: 700;
   font-synthesis: none;
   line-height: 1.12;
@@ -336,12 +334,7 @@ transition: width 180ms ease;
 .containImage {
   object-fit: contain;
   padding: 20px;
-  transition: transform 260ms ease;
-}
-
-.productCard:hover .containImage,
-.racketCard:hover .containImage {
-  transform: scale(1.025);
+  transition: opacity 120ms ease;
 }
 
 .productBadges,
@@ -427,7 +420,7 @@ transition: width 180ms ease;
 .conciergeSection {
   background: var(--home-inverse);
   color: var(--home-inverse-text);
-  padding-block: 92px;
+  padding-block: 64px;
 }
 
 .conciergeGrid {
@@ -514,7 +507,6 @@ transition: padding 180ms ease;
   flex-direction: column;
   justify-content: center;
   padding: 42px 36px;
-  animation: resultReveal 300ms ease both;
 }
 
 @keyframes resultReveal {
@@ -640,7 +632,7 @@ transition: padding 180ms ease;
 
 .experienceSection {
   background: var(--home-soft);
-  padding-block: 92px;
+  padding-block: 64px;
 }
 
 .experienceHeader {
@@ -675,12 +667,6 @@ transition: padding 180ms ease;
 .experienceCard :global(img),
 .experienceCardWide :global(img) {
   z-index: -2;
-  transition: transform 500ms ease;
-}
-
-.experienceCard:hover :global(img),
-.experienceCardWide:hover :global(img) {
-  transform: scale(1.025);
 }
 
 .experienceShade {
