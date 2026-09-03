@@ -97,14 +97,14 @@ function SiteNavigationContent({ pathname, telephoneHref }: SiteNavigationConten
   return (
     <div ref={navigationRef} className="lg:h-full">
       <nav aria-label="주요 메뉴" className="hidden h-full lg:block">
-        <ul className="grid h-full grid-cols-4 items-stretch">
+        <ul className="flex h-full items-stretch gap-10">
           {siteConfig.mainNavigation.map((item, index) => {
             const hasChildren = item.children.length > 0;
             const isActive = isCurrentNavigationItem(pathname, item);
             const isSubmenuOpen = openDesktopHref === item.href;
             const submenuId = `${mobileMenuId}-desktop-${index}`;
             const inactiveClassName = item.emphasis
-              ? "border-primary bg-primary-soft text-primary hover:border-primary-hover hover:bg-primary hover:text-primary-foreground"
+              ? "border-primary bg-primary-soft text-primary hover:border-primary-hover hover:bg-primary-soft hover:text-primary-hover"
               : "border-transparent text-foreground hover:border-primary hover:text-primary";
 
             return (
@@ -150,7 +150,7 @@ function SiteNavigationContent({ pathname, telephoneHref }: SiteNavigationConten
                       aria-controls={submenuId}
                       aria-expanded={isSubmenuOpen}
                       aria-label={`${item.label} 하위 메뉴 ${isSubmenuOpen ? "닫기" : "열기"}`}
-                      className="inline-flex min-h-11 min-w-9 items-center justify-center border-l border-current/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                      className="inline-flex min-h-11 min-w-9 items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                       onClick={() => setOpenDesktopHref((current) => (current === item.href ? null : item.href))}
                     >
                       <svg
