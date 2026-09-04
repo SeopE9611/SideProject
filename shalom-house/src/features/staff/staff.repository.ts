@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { getVisualAboutFixtures, isVisualFixtureEnabled, visualStaffFixtures } from "@/content/fixtures/visual.fixture";
 import { getMongoDatabase } from "@/lib/mongodb";
 import { STAFF_COLLECTION_NAME, type MongoStaffProfileDocument } from "./staff.mongo-schema";
 import { validateStaffProfileInput } from "./staff.validation";
@@ -10,6 +11,7 @@ export type PublicStaffProfile = {
   name?: string;
 };
 export async function listPublicStaffProfiles(): Promise<readonly PublicStaffProfile[]> {
+  if (isVisualFixtureEnabled()) return getVisualAboutFixtures(visualStaffFixtures);
   const source = process.env.SHALOM_CONTENT_SOURCE || "fixture";
   if (source === "fixture" || source === "empty") return [];
   if (source !== "mongodb") throw new Error(`지원하지 않는 SHALOM_CONTENT_SOURCE입니다: ${source}`);

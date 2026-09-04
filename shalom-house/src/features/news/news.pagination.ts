@@ -67,6 +67,22 @@ export function normalizePublicNewsSearchQuery(value?: string): string {
   return typeof value === "string" ? value.trim().slice(0, PUBLIC_NEWS_SEARCH_QUERY_MAX_LENGTH) : "";
 }
 
+export function getPublicNewsReturnHref(value?: string): string {
+  if (!value || value.length > 2048) return "/news";
+  const match = /^(\/news(?:\/notices|\/activities)?)(?:\?([^#]*))?$/.exec(value);
+  if (!match) return "/news";
+  const path = match[1];
+  const source = new URLSearchParams(match[2]);
+  const params = new URLSearchParams();
+  const query = normalizePublicNewsSearchQuery(source.get("q") ?? undefined);
+  const category = source.get("category");
+  const page = normalizePublicNewsPage(Number(source.get("page")));
+  if (query) params.set("q", query);
+  if (path === "/news" && (category === "notice" || category === "activity")) params.set("category", category);
+  if (page > 1) params.set("page", String(page));
+  return params.size ? path + "?" + params.toString() : path;
+}
+
 export function normalizePublicNewsPage(value?: number): number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0 ? value : 1;
 }

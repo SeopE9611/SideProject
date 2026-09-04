@@ -6,6 +6,10 @@ import {
   isInquiryReference,
   type InquiryKind,
 } from "@/features/inquiries/inquiry.types";
+
+const fieldClassName =
+  "mt-2 block min-h-12 w-full rounded-control border border-border-strong bg-surface px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
+
 function joinDescriptionIds(...ids: Array<string | false | null | undefined>): string | undefined {
   const value = ids.filter(Boolean).join(" ");
   return value || undefined;
@@ -60,74 +64,81 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
     ) : null;
   const described = (key: string) => (errors[key] ? `${key}-error` : undefined);
   return (
-    <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-5 rounded-card border border-border p-5 sm:p-7">
-      <div>
-        <label className="font-bold" htmlFor="inquiry-kind">
-          문의 종류
-        </label>
-        <select
-          id="inquiry-kind"
-          name="kind"
-          value={kind}
-          onChange={(e) => setKind(e.target.value as InquiryKind)}
-          aria-invalid={errors.kind ? true : undefined}
-          aria-describedby={errors.kind ? "inquiry-kind-error" : undefined}
-          className="mt-2 block min-h-11 w-full rounded-control border p-2"
-        >
-          {inquiryKinds.map((value) => (
-            <option key={value} value={value}>
-              {inquiryKindLabels[value]}
-            </option>
-          ))}
-        </select>
-        {error("kind", "inquiry-kind-error")}
-      </div>
-      <div>
-        <label className="font-bold" htmlFor="inquiry-name">
-          이름
-        </label>
-        <input
-          id="inquiry-name"
-          name="name"
-          autoComplete="name"
-          className="mt-2 block min-h-11 w-full rounded-control border p-2"
-          aria-invalid={errors.name ? true : undefined}
-          aria-describedby={described("name")}
-        />
-        {error("name")}
-      </div>
-      <fieldset className="space-y-4" aria-describedby={errors.contact ? "inquiry-contact-error" : undefined}>
-        <legend className="font-bold">연락처 (전화번호 또는 이메일 중 하나 이상)</legend>
+    <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-6 border-t-2 border-foreground pt-6">
+      <div className="grid gap-5 sm:grid-cols-2">
         <div>
-          <label htmlFor="inquiry-phone">전화번호</label>
-          <input
-            id="inquiry-phone"
-            name="phone"
-            autoComplete="tel"
-            className="mt-2 block min-h-11 w-full rounded-control border p-2"
-            aria-invalid={errors.phone || errors.contact ? true : undefined}
-            aria-describedby={joinDescriptionIds(
-              errors.phone && "phone-error",
-              errors.contact && "inquiry-contact-error",
-            )}
-          />
-          {error("phone")}
+          <label className="font-bold" htmlFor="inquiry-kind">
+            문의 종류
+          </label>
+          <select
+            id="inquiry-kind"
+            name="kind"
+            value={kind}
+            onChange={(e) => setKind(e.target.value as InquiryKind)}
+            aria-invalid={errors.kind ? true : undefined}
+            aria-describedby={errors.kind ? "inquiry-kind-error" : undefined}
+            className={fieldClassName}
+          >
+            {inquiryKinds.map((value) => (
+              <option key={value} value={value}>
+                {inquiryKindLabels[value]}
+              </option>
+            ))}
+          </select>
+          {error("kind", "inquiry-kind-error")}
         </div>
         <div>
-          <label htmlFor="inquiry-email">이메일</label>
+          <label className="font-bold" htmlFor="inquiry-name">
+            이름
+          </label>
           <input
-            id="inquiry-email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            className="mt-2 block min-h-11 w-full rounded-control border p-2"
-            aria-invalid={errors.email || errors.contact ? true : undefined}
-            aria-describedby={joinDescriptionIds(
-              errors.email && "email-error",
-              errors.contact && "inquiry-contact-error",
-            )}
+            id="inquiry-name"
+            name="name"
+            autoComplete="name"
+            className={fieldClassName}
+            aria-invalid={errors.name ? true : undefined}
+            aria-describedby={described("name")}
           />
-          {error("email")}
+          {error("name")}
+        </div>
+      </div>
+      <fieldset
+        className="border-t border-border pt-5"
+        aria-describedby={errors.contact ? "inquiry-contact-error" : undefined}
+      >
+        <legend className="font-bold">연락처 (전화번호 또는 이메일 중 하나 이상)</legend>
+        <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <div>
+            <label htmlFor="inquiry-phone">전화번호</label>
+            <input
+              id="inquiry-phone"
+              name="phone"
+              autoComplete="tel"
+              className={fieldClassName}
+              aria-invalid={errors.phone || errors.contact ? true : undefined}
+              aria-describedby={joinDescriptionIds(
+                errors.phone && "phone-error",
+                errors.contact && "inquiry-contact-error",
+              )}
+            />
+            {error("phone")}
+          </div>
+          <div>
+            <label htmlFor="inquiry-email">이메일</label>
+            <input
+              id="inquiry-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              className={fieldClassName}
+              aria-invalid={errors.email || errors.contact ? true : undefined}
+              aria-describedby={joinDescriptionIds(
+                errors.email && "email-error",
+                errors.contact && "inquiry-contact-error",
+              )}
+            />
+            {error("email")}
+          </div>
         </div>
         {error("contact", "inquiry-contact-error")}
       </fieldset>
@@ -139,7 +150,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
           id="inquiry-message"
           name="message"
           rows={8}
-          className="mt-2 block w-full rounded-control border p-2"
+          className="mt-2 block w-full rounded-control border border-border-strong bg-surface px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           aria-invalid={errors.message ? true : undefined}
           aria-describedby={described("message")}
         />
@@ -149,7 +160,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
         <label htmlFor="inquiry-website">웹사이트</label>
         <input id="inquiry-website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
-      <div className="rounded-control bg-surface-subtle p-4 text-small">
+      <div className="border-l-4 border-accent bg-surface-subtle p-5 text-small">
         <dl className="space-y-2">
           <div>
             <dt className="font-bold">수집 목적</dt>
@@ -179,7 +190,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
         </p>
       </div>
       <div>
-        <label className="flex gap-3" htmlFor="inquiry-privacy-consent">
+        <label className="flex min-h-11 items-start gap-3" htmlFor="inquiry-privacy-consent">
           <input
             id="inquiry-privacy-consent"
             type="checkbox"
@@ -187,6 +198,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
             onChange={(e) => setConsent(e.target.checked)}
             aria-invalid={errors.privacyConsent ? true : undefined}
             aria-describedby={errors.privacyConsent ? "inquiry-privacy-consent-error" : undefined}
+            className="mt-1 size-5 shrink-0 accent-accent"
           />
           <span>위 개인정보 수집·이용 내용을 확인했으며 이에 동의합니다.</span>
         </label>
@@ -195,7 +207,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
       <button
         type="submit"
         disabled={busy || !consent}
-        className="min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground disabled:opacity-50"
+        className="min-h-12 rounded-control bg-primary px-6 py-3 font-bold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50"
       >
         {busy ? "접수 중…" : "문의 접수"}
       </button>

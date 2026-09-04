@@ -1,199 +1,225 @@
+import Link from "next/link";
+import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { createPublicPageMetadata } from "@/features/seo/metadata";
+import { findPublicTransparencyDocuments } from "@/features/transparency/transparency.repository";
+import {
+  isTransparencyCategory,
+  transparencyCategories,
+  transparencyCategoryLabels,
+} from "@/features/transparency/transparency.types";
 
 export const metadata = createPublicPageMetadata("/transparency");
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-import { SectionPageHeader } from "@/components/layout/section-page-header";
-import { findPublicTransparencyDocuments } from "@/features/transparency/transparency.repository";
-import { transparencyCategoryLabels } from "@/features/transparency/transparency.types";
+type SearchParams = { category?: string | string[]; period?: string | string[] };
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: "UTC",
+});
 
-const disclosureCategories = [
-  {
-    number: "01",
-    title: "운영 보고",
-    description: "시설 운영과 주요 사업을 이해할 수 있는 자료",
-  },
-  {
-    number: "02",
-    title: "예산·결산",
-    description: "기준 기간과 승인 여부가 확인된 회계 자료",
-  },
-  {
-    number: "03",
-    title: "후원금",
-    description: "후원금 사용과 관련해 공개가 가능한 자료",
-  },
-  {
-    number: "04",
-    title: "기타 공시",
-    description: "관련 기준에 따라 공개가 필요한 안내 자료",
-  },
-] as const;
+export default async function TransparencyPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const [raw, documents] = await Promise.all([
+    searchParams,
+    findPublicTransparencyDocuments().catch(() => {
+      console.error("공개 자료 목록 조회 실패");
+      return null;
+    }),
+  ]);
+  const categoryValue = first(raw.category);
+  const category = isTransparencyCategory(categoryValue) ? categoryValue : "";
+  const period = (first(raw.period) ?? "").trim().slice(0, 100);
+  const periods = Array.from(new Set((documents ?? []).map((document) => document.periodLabel)));
+  const filtered = (documents ?? []).filter(
+    (document) => (!category || document.category === category) && (!period || document.periodLabel === period),
+  );
+  const hasFilter = Boolean(category || period);
+  const retryParams = new URLSearchParams();
+  if (category) retryParams.set("category", category);
+  if (period) retryParams.set("period", period);
+  const retryHref = retryParams.size ? "/transparency?" + retryParams.toString() : "/transparency";
 
-const publicationPrinciples = [
-  {
-    number: "01",
-    title: "확인된 최종본",
-    description: "담당자 확인과 공개 승인을 마친 자료를 게시합니다.",
-  },
-  {
-    number: "02",
-    title: "개인정보 보호",
-    description: "개인정보와 공개가 제한된 내부 정보를 먼저 검수합니다.",
-  },
-  {
-    number: "03",
-    title: "읽기 쉬운 형식",
-    description: "자료명, 기준 기간, 파일 형식을 분명하게 표시합니다.",
-  },
-] as const;
-
-
-const canonicalDateLabel = (value: string) => value.replace(/-/g, ".");
-const publishedDateLabel = (value: string) => {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? "-"
-    : `${date.getUTCFullYear()}.${String(date.getUTCMonth() + 1).padStart(2, "0")}.${String(date.getUTCDate()).padStart(2, "0")}`;
-};
-export default async function TransparencyPage() {
-  const transparencyDocuments = await findPublicTransparencyDocuments();
   return (
-    <>
+    <div className="bg-surface">
       <SectionPageHeader
+        compact
         sectionHref="/news"
         eyebrow="소식"
         title="자료공개"
-        description="운영 보고, 예산·결산, 후원금 관련 자료를 분류와 기준 기간에 맞춰 안내합니다. 담당자 확인과 개인정보 검토를 마친 최종 자료만 게시합니다."
+        description="운영 보고, 예산·결산, 후원금 자료를 분류와 기준 기간별로 확인합니다."
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "소식", href: "/news" }, { label: "자료공개" }]}
       />
-      <section className="bg-surface py-12 sm:py-16" aria-labelledby="transparency-summary-heading">
-        <div className="mx-auto max-w-site px-page sm:px-page-wide">
-          <h2 id="transparency-summary-heading" className="text-safe-wrap sr-only">
-            자료 현황
-          </h2>
-          <dl className="grid border-y border-border sm:grid-cols-3">
-            {[
-              {
-                label: "공개 범위",
-                value: "운영 보고 · 예산과 결산 · 후원금 · 기타 공시",
-              },
-              {
-                label: "표시 정보",
-                value: "자료명 · 기준 기간 · 게시일 · 파일 형식",
-              },
-              {
-                label: "현재 자료",
-                value: `${transparencyDocuments.length}건`,
-              },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="border-b border-border py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:px-6 sm:first:pl-0 sm:last:border-r-0"
-              >
-                <dt className="text-safe-wrap text-small font-bold text-primary">{item.label}</dt>
-                <dd className="mt-2 text-safe-wrap">{item.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </section>
-      <section id="public-documents" aria-labelledby="documents-heading" className="bg-surface-subtle py-12 sm:py-16">
-        <div className="mx-auto max-w-site px-page sm:px-page-wide">
-          <p className="text-safe-wrap text-small font-bold text-accent">공개 자료</p>
-          <h2 id="documents-heading" className="text-safe-wrap mt-3 text-display font-bold">
-            필요한 운영 자료를 확인하세요
-          </h2>
-          {transparencyDocuments.length > 0 ? (
-            <ul className="mt-8 border-t-2 border-foreground">
-              {transparencyDocuments.map((document) => (
-                <li key={document.slug} className="border-b border-border py-5">
-                  <article className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                    <div>
-                      <p className="text-small font-bold text-accent">
-                        {transparencyCategoryLabels[document.category]}
+      <div className="mx-auto max-w-site px-page py-9 sm:px-page-wide sm:py-12">
+        <form
+          key={retryHref}
+          action="/transparency"
+          method="get"
+          role="search"
+          aria-label="공개 자료 찾기"
+          className="grid grid-cols-2 items-end gap-4 border-t-4 border-accent bg-surface-subtle p-5 sm:grid-cols-[14rem_minmax(0,1fr)_auto] sm:p-6"
+        >
+          <div className="min-w-0">
+            <label className="block text-small font-semibold" htmlFor="document-category">
+              자료 분류
+            </label>
+            <select
+              id="document-category"
+              name="category"
+              defaultValue={category}
+              className="mt-2 min-h-12 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
+              <option value="">전체</option>
+              {transparencyCategories.map((item) => (
+                <option key={item} value={item}>
+                  {transparencyCategoryLabels[item]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="min-w-0">
+            <label className="block text-small font-semibold" htmlFor="document-period">
+              기준 기간
+            </label>
+            <select
+              id="document-period"
+              name="period"
+              defaultValue={period}
+              className="mt-2 min-h-12 w-full min-w-0 rounded-control border border-border-strong bg-surface px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
+              <option value="">전체</option>
+              {period && !periods.includes(period) ? <option value={period}>{period}</option> : null}
+              {periods.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="col-span-2 min-h-12 rounded-control bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring sm:col-span-1"
+          >
+            자료 찾기
+          </button>
+        </form>
+        <section id="public-documents" aria-labelledby="documents-heading" className="mt-9">
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-foreground pb-4">
+            <div className="min-w-0">
+              <p className="text-small font-bold text-accent">문서 목록</p>
+              <h2 id="documents-heading" className="mt-1 text-heading font-bold">
+                {documents === null ? "공개 자료" : hasFilter ? "검색 결과" : "전체 자료"}{" "}
+                {documents !== null ? <span className="text-primary">{filtered.length}건</span> : null}
+              </h2>
+              {hasFilter ? (
+                <p className="text-safe-wrap mt-1 text-small text-muted-foreground">
+                  {category ? transparencyCategoryLabels[category] : "전체 분류"}
+                  {period ? " · " + period : ""}
+                </p>
+              ) : null}
+            </div>
+            {hasFilter ? (
+              <Link className="institution-link text-small" href="/transparency">
+                조건 초기화
+              </Link>
+            ) : null}
+          </div>
+          {documents === null ? (
+            <div className="border-b border-border py-6" role="status">
+              <h3 className="font-semibold">자료를 불러오지 못했습니다.</h3>
+              <p className="mt-2 text-small text-muted-foreground">
+                잠시 후 다시 시도해 주세요. 선택한 조건은 유지됩니다.
+              </p>
+              <a className="institution-link mt-3" href={retryHref}>
+                다시 불러오기
+              </a>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="border-b border-border py-6">
+              <h3 className="text-safe-wrap font-semibold">
+                {hasFilter ? "선택한 조건에 맞는 자료가 없습니다." : "현재 공개된 운영 자료가 없습니다."}
+              </h3>
+              <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
+                {hasFilter
+                  ? "조건을 바꾸거나 전체 자료를 확인해 주세요."
+                  : "새로운 자료가 게시되면 이 목록에서 안내합니다."}
+              </p>
+              <Link className="institution-link mt-3" href={hasFilter ? "/transparency" : "/support/contact"}>
+                {hasFilter ? "전체 자료 보기" : "자료 문의하기"}
+              </Link>
+            </div>
+          ) : (
+            <ul className="border-b border-border">
+              {filtered.map((document) => (
+                <li
+                  key={document.slug}
+                  className="grid min-w-0 gap-4 border-b border-border py-6 last:border-b-0 lg:grid-cols-[7rem_minmax(0,1fr)_13rem] lg:gap-7"
+                >
+                  <p className="text-small font-bold text-accent">{transparencyCategoryLabels[document.category]}</p>
+                  <article className="min-w-0">
+                    <h3 className="text-safe-wrap text-[1.2rem] font-bold leading-7">{document.title}</h3>
+                    {document.summary.trim() && document.summary.trim() !== document.title.trim() ? (
+                      <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">
+                        {document.summary}
                       </p>
-                      <h3 className="text-safe-wrap mt-1 text-heading font-bold">{document.title}</h3>
-                      {document.summary ? (
-                        <p className="text-safe-wrap mt-2 text-muted-foreground">{document.summary}</p>
-                      ) : null}
-                    </div>
-                    <dl className="grid gap-x-5 gap-y-2 text-small sm:grid-cols-2">
-                      <div>
-                        <dt className="font-semibold">기준 기간</dt>
-                        <dd>{document.periodLabel}</dd>
+                    ) : null}
+                    <dl className="mt-4 grid gap-x-6 gap-y-3 text-small sm:grid-cols-3">
+                      <div className="min-w-0 border-l border-border pl-3">
+                        <dt className="text-muted-foreground">기준 기간</dt>
+                        <dd className="text-safe-wrap mt-1 font-medium">{document.periodLabel}</dd>
                       </div>
-                      <div>
-                        <dt className="font-semibold">문서일</dt>
-                        <dd>{canonicalDateLabel(document.documentDate)}</dd>
+                      <div className="border-l border-border pl-3">
+                        <dt className="text-muted-foreground">문서일</dt>
+                        <dd className="mt-1 font-medium">
+                          <time dateTime={document.documentDate}>{document.documentDate.replace(/-/g, ".")}</time>
+                        </dd>
                       </div>
-                      <div>
-                        <dt className="font-semibold">게시일</dt>
-                        <dd>{publishedDateLabel(document.publishedAt)}</dd>
-                      </div>
-                      <div>
-                        <dt className="font-semibold">파일</dt>
-                        <dd>
-                          {document.fileType} · {document.byteSize.toLocaleString()} bytes
+                      <div className="border-l border-border pl-3">
+                        <dt className="text-muted-foreground">게시일</dt>
+                        <dd className="mt-1 font-medium">
+                          <time dateTime={document.publishedAt}>
+                            {dateFormatter.format(new Date(document.publishedAt))}
+                          </time>
                         </dd>
                       </div>
                     </dl>
+                  </article>
+                  <div className="border-t border-border pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
+                    <p className="text-small font-medium text-muted-foreground">
+                      {document.fileType} ·{" "}
+                      {document.byteSize >= 1024 * 1024
+                        ? (document.byteSize / 1024 / 1024).toFixed(1) + " MB"
+                        : Math.ceil(document.byteSize / 1024) + " KB"}
+                    </p>
                     <a
-                      className="text-safe-wrap font-bold text-primary underline sm:col-span-2"
-                      href={`/api/transparency/${document.slug}/document`}
+                      className="mt-3 inline-flex min-h-11 items-center justify-center rounded-control border border-primary px-4 py-2 font-semibold text-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring"
+                      href={"/api/transparency/" + document.slug + "/document"}
                       target="_blank"
                       rel="noreferrer"
+                      aria-label={document.title + " PDF 열기 (새 창)"}
                     >
-                      {document.title} PDF 열기
+                      PDF 열기 <span className="text-xs">(새 창)</span>
                     </a>
-                  </article>
+                  </div>
                 </li>
               ))}
             </ul>
-          ) : (
-            <div className="mt-8 border-y border-border py-6">
-              <p className="text-safe-wrap text-small font-bold text-accent">등록된 자료 0건</p>
-              <h3 className="text-safe-wrap mt-2 text-heading font-bold">현재 공개된 운영 자료가 없습니다.</h3>
-              <p className="text-safe-wrap mt-3 text-muted-foreground">
-                확인을 마친 자료가 게시되면 이 목록에서 안내합니다.
-              </p>
-            </div>
           )}
-        </div>
-      </section>
-      <section aria-labelledby="categories-heading" className="bg-surface py-12 sm:py-16">
-        <div className="mx-auto max-w-site px-page sm:px-page-wide">
-          <p className="text-safe-wrap text-small font-bold text-accent">자료 분류</p>
-          <h2 id="categories-heading" className="text-safe-wrap mt-3 text-display font-bold">
-            다음과 같은 자료를 안내합니다
-          </h2>
-          <div className="mt-8 grid border-t-2 border-foreground sm:grid-cols-2 lg:grid-cols-4">
-            {disclosureCategories.map((item) => (
-              <article key={item.number} className="border-b border-border py-6 sm:px-5 sm:first:pl-0 sm:last:pr-0">
-                <p className="text-small font-bold text-accent">{item.number}</p>
-                <h3 className="text-safe-wrap mt-3 text-heading font-bold">{item.title}</h3>
-                <p className="text-safe-wrap mt-3 text-muted-foreground">{item.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section aria-labelledby="principles-heading" className="bg-surface-subtle py-12 sm:py-16">
-        <div className="mx-auto max-w-site px-page sm:px-page-wide">
-          <p className="text-safe-wrap text-small font-bold text-primary">게시 원칙</p>
-          <h2 id="principles-heading" className="text-safe-wrap mt-3 text-display font-bold">
-            확인하기 쉬운 자료를 제공합니다
-          </h2>
-          <ol className="mt-8 border-t-4 border-primary">
-            {publicationPrinciples.map((item) => (
-              <li key={item.number} className="grid gap-3 border-b border-border py-5 sm:grid-cols-[3rem_0.8fr_1.2fr]">
-                <span className="text-small font-bold text-accent">{item.number}</span>
-                <h3 className="text-safe-wrap font-bold">{item.title}</h3>
-                <p className="text-safe-wrap text-muted-foreground">{item.description}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-    </>
+        </section>
+        <aside
+          aria-label="자료 이용 안내"
+          className="mt-8 border-l-4 border-accent bg-accent-soft px-5 py-4 text-small text-muted-foreground"
+        >
+          <p className="text-safe-wrap">
+            PDF를 읽기 어렵거나 자료에 관해 궁금한 점이 있으면{" "}
+            <Link className="institution-link" href="/support/contact">
+              문의해 주세요.
+            </Link>
+          </p>
+        </aside>
+      </div>
+    </div>
   );
 }

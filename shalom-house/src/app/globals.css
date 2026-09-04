@@ -1,22 +1,23 @@
 @import "tailwindcss";
 
 @theme {
+  --font-sans: var(--font-pretendard), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   /* 색상 */
-  --color-background: #f7f4ed;
+  --color-background: #ffffff;
   --color-surface: #ffffff;
-  --color-surface-subtle: #eef2ee;
-  --color-foreground: #202f35;
-  --color-muted-foreground: #58655f;
-  --color-border: #d7ddd7;
-  --color-border-strong: #6f7d76;
-  --color-primary: #245246;
-  --color-primary-hover: #193f36;
-  --color-primary-soft: #e6efea;
+  --color-surface-subtle: #f2f5f7;
+  --color-foreground: #1b2c3d;
+  --color-muted-foreground: #566371;
+  --color-border: #dce3e8;
+  --color-border-strong: #72818d;
+  --color-primary: #17384d;
+  --color-primary-hover: #102b3c;
+  --color-primary-soft: #eaf1f5;
   --color-primary-foreground: #ffffff;
-  --color-accent: #a95336;
-  --color-accent-hover: #874027;
-  --color-accent-soft: #f4e9e3;
-  --color-focus-ring: #a95336;
+  --color-accent: #087e83;
+  --color-accent-hover: #06656a;
+  --color-accent-soft: #e7f3f2;
+  --color-focus-ring: #087e83;
   --color-success: #2f6b4f;
   --color-success-soft: #eaf4ee;
   --color-warning: #7a520f;
@@ -63,10 +64,10 @@
   --text-small--line-height: 1.6;
 
   /* 컨테이너와 간격 */
-  --container-site: 80rem;
+  --container-site: 84rem;
   --container-content: 46rem;
   --spacing-page: 1.25rem;
-  --spacing-page-wide: 3rem;
+  --spacing-page-wide: 2.5rem;
   --spacing-section: 5rem;
   --spacing-section-wide: 7rem;
 
@@ -92,7 +93,7 @@
 
 @layer base {
   html {
-    scroll-padding-top: 7rem;
+    scroll-padding-top: 9rem;
     background: var(--color-background);
   }
 
@@ -116,6 +117,26 @@
 @utility text-safe-wrap {
   word-break: keep-all;
   overflow-wrap: break-word;
+}
+
+@utility institution-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-underline-offset: 0.25rem;
+
+  &:hover {
+    color: var(--color-primary-hover);
+    text-decoration-line: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 3px;
+  }
 }
 
 @keyframes hero-enter {

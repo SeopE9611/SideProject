@@ -1,7 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 
-import { SectionLocalNavigation } from "@/components/layout/section-local-navigation";
-import { siteConfig } from "@/config/site";
+import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { getNewsRepository } from "@/features/news/news.repository";
 import {
   getPublicNewsPaginationItems,
@@ -52,13 +52,23 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
   const categoryValue = first(raw.category);
   const category = fixedCategory ?? (isNewsCategory(categoryValue) ? categoryValue : undefined);
   const parsedPage = Number(first(raw.page));
-  const result = await getNewsRepository().searchPublished({
-    q,
-    category,
-    page: normalizePublicNewsPage(parsedPage),
-    pageSize: PAGE_SIZE,
-  });
-  const { items: posts, total, totalPages, page: currentPage } = result;
+  const result = await getNewsRepository()
+    .searchPublished({
+      q,
+      category,
+      page: normalizePublicNewsPage(parsedPage),
+      pageSize: PAGE_SIZE,
+    })
+    .catch(() => {
+      console.error("소식 목록 조회 실패");
+      return null;
+    });
+  const {
+    items: posts,
+    total,
+    totalPages,
+    page: currentPage,
+  } = result ?? { items: [], total: 0, totalPages: 0, page: normalizePublicNewsPage(parsedPage) };
   const hasFixture = posts.some((post) => post.isDemo);
   const categoryLabel = category ? getNewsCategoryLabel(category) : "전체";
   const hasUserFilter = Boolean(q) || (!fixedCategory && Boolean(category));
@@ -66,45 +76,38 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
 
   return (
     <div className="bg-surface">
-      <header className="border-b border-border">
-        <div className="mx-auto max-w-site px-page py-10 sm:px-page-wide sm:py-14">
-          <nav aria-label="breadcrumb" className="flex flex-wrap gap-3 text-small">
-            <Link
-              className="text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              href="/"
-            >
-              홈
-            </Link>
-            {basePath !== "/news" ? (
-              <Link className="text-primary underline underline-offset-4" href="/news">
-                소식
-              </Link>
-            ) : null}
-            <span aria-current="page">{title}</span>
-          </nav>
-          <p className="mt-7 text-small font-bold text-accent">소식</p>
-          <div className="mt-2">
-            <h1 className="text-safe-wrap text-title font-bold sm:text-[2.5rem]">{title}</h1>
-            <p className="text-safe-wrap mt-3 max-w-2xl text-body text-muted-foreground">{description}</p>
-          </div>
-        </div>
-        <SectionLocalNavigation sectionHref="/news" />
-      </header>
+      <SectionPageHeader
+        compact
+        sectionHref="/news"
+        eyebrow="소식"
+        title={title}
+        description={description}
+        breadcrumbs={[
+          { label: "홈", href: "/" },
+          ...(basePath !== "/news" ? [{ label: "소식", href: "/news" }] : []),
+          { label: title },
+        ]}
+      />
 
-      <div className="mx-auto max-w-site px-page py-10 sm:px-page-wide sm:py-14">
+      <div className="mx-auto max-w-site px-page py-6 sm:px-page-wide sm:py-8">
         <form
+          key={queryHref(basePath, currentPage, q, category)}
           action={basePath}
           method="get"
-          className={`grid gap-5 border border-border bg-surface-subtle p-5 md:items-end ${
-            fixedCategory ? "md:grid-cols-[minmax(0,1fr)_auto]" : "md:grid-cols-[minmax(0,1fr)_14rem_auto]"
+          role="search"
+          aria-label="소식 검색"
+          className={`grid items-end gap-3 border border-border bg-surface-subtle p-5 sm:px-7 sm:py-5 ${
+            fixedCategory
+              ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]"
+              : "grid-cols-2 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
           }`}
         >
-          <div>
+          <div className={fixedCategory ? "min-w-0" : "col-span-2 min-w-0 sm:col-span-1"}>
             <label className="block text-small font-bold" htmlFor="news-query">
               검색어
             </label>
             <input
-              className="mt-2 min-h-12 w-full rounded-control border border-border-strong bg-surface px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              className="mt-2 min-h-12 w-full border border-border-strong bg-surface px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               id="news-query"
               name="q"
               type="search"
@@ -118,7 +121,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                 분류
               </label>
               <select
-                className="mt-2 min-h-12 w-full rounded-control border border-border-strong bg-surface px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                className="mt-2 min-h-12 w-full border border-border-strong bg-surface px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                 id="news-category"
                 name="category"
                 defaultValue={category ?? ""}
@@ -130,23 +133,26 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             </div>
           ) : null}
           <button
-            className="min-h-12 bg-primary px-6 py-3 font-bold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+            className="min-h-12 bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
             type="submit"
           >
             소식 검색
           </button>
         </form>
 
-        <section aria-labelledby="results-heading" className="mt-9">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-foreground pb-5">
+        <section aria-labelledby="results-heading" className="mt-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-primary pb-4">
             <div>
-              <h2 id="results-heading" className="text-heading font-bold">
-                검색 결과
+              <h2 id="results-heading" className="text-lg font-semibold">
+                {result === null ? "소식 목록" : hasUserFilter ? "검색 결과" : "전체"}{" "}
+                {result !== null ? <span className="font-bold text-accent">{total}건</span> : null}
               </h2>
-              <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
-                적용 분류: {categoryLabel}
-                {q ? ` · 검색어: “${q}”` : " · 검색어 없음"} · 전체 {total}건
-              </p>
+              {hasUserFilter ? (
+                <p className="text-safe-wrap mt-1 text-small text-muted-foreground">
+                  {categoryLabel}
+                  {q ? ` · “${q}”` : ""}
+                </p>
+              ) : null}
             </div>
             {hasUserFilter ? (
               <Link
@@ -158,11 +164,24 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             ) : null}
           </div>
           {hasFixture ? (
-            <aside className="mt-5 border-l-4 border-primary bg-primary-soft px-4 py-3 text-small">
-              현재 표시된 게시물은 공식 시설 소식이 아닙니다.
+            <aside className="border-b border-border py-3 text-small text-muted-foreground">
+              미리보기 · 아래 예시 소식은 레이아웃 검증용입니다.
             </aside>
           ) : null}
-          {!hasUserFilter && total === 0 ? (
+          {result === null ? (
+            <div className="border-b border-border py-8" role="status">
+              <h3 className="font-semibold">소식을 불러오지 못했습니다.</h3>
+              <p className="mt-2 text-small text-muted-foreground">
+                잠시 후 다시 시도해 주세요. 입력한 검색 조건은 유지됩니다.
+              </p>
+              <a
+                className="institution-link mt-3"
+                href={queryHref(basePath, currentPage, q, fixedCategory ? undefined : category)}
+              >
+                다시 불러오기
+              </a>
+            </div>
+          ) : !hasUserFilter && total === 0 ? (
             <div className="border-b border-border py-10">
               <h3 className="text-safe-wrap text-heading font-bold">
                 {fixedCategory === "notice"
@@ -179,14 +198,9 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                     : "공개된 게시물이 아직 없습니다."}
               </p>
               <div className="mt-5 flex flex-wrap gap-5">
-                <a
-                  className="font-bold text-primary underline underline-offset-4"
-                  href={siteConfig.instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  인스타그램 보기(새 창)
-                </a>
+                <Link className="institution-link" href="/support/contact">
+                  문의하기
+                </Link>
                 <Link className="font-bold text-primary underline underline-offset-4" href="/">
                   홈으로 이동
                 </Link>
@@ -209,26 +223,48 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             <ul>
               {posts.map((post) => (
                 <li key={post.id} className="border-b border-border">
-                  <article className="grid gap-3 py-6 md:grid-cols-[8rem_minmax(0,1fr)_10rem]">
+                  <article className="grid gap-x-6 gap-y-3 py-6 md:grid-cols-[6rem_minmax(0,1fr)_9rem] md:px-3">
                     <div>
-                      {post.coverImage ? <img className="mb-4 aspect-[16/9] w-full rounded-card object-cover" src={post.coverImage.src}
-                        alt={post.coverImage.altText} width={post.coverImage.width} height={post.coverImage.height} /> : null}
-                      <p className="text-small font-bold text-primary">{getNewsCategoryLabel(post.category)}</p>
-                      {post.isDemo ? <p className="mt-1 text-xs text-muted-foreground">시연 콘텐츠</p> : null}
+                      <p
+                        className={`text-small font-semibold ${post.category === "activity" ? "text-accent" : "text-primary"}`}
+                      >
+                        {getNewsCategoryLabel(post.category)}
+                      </p>
                     </div>
-                    <div>
-                      <h3 className="text-heading font-bold">
-                        <Link
-                          className="text-safe-wrap underline decoration-border-strong underline-offset-4 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                          href={`/news/${post.slug}`}
-                        >
-                          {post.title}
-                        </Link>
-                      </h3>
-                      <p className="text-safe-wrap mt-2 text-body text-muted-foreground">{post.summary}</p>
-                      {post.attachment ? <p className="mt-2 text-small font-semibold text-muted-foreground">PDF 첨부</p> : null}
+                    <div className="flex min-w-0 items-start gap-5">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-lg leading-relaxed font-bold tracking-tight sm:text-xl">
+                          <Link
+                            className="text-safe-wrap underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                            href={`/news/${post.slug}?returnTo=${encodeURIComponent(queryHref(basePath, currentPage, q, fixedCategory ? undefined : category))}`}
+                          >
+                            {post.title}
+                          </Link>
+                        </h3>
+                        {post.summary.trim() && post.summary.trim() !== post.title.trim() ? (
+                          <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">
+                            {post.summary}
+                          </p>
+                        ) : null}
+                        {post.attachment ? (
+                          <p className="mt-2 text-small font-semibold text-muted-foreground">PDF 첨부</p>
+                        ) : null}
+                      </div>
+                      {post.category === "activity" && post.coverImage ? (
+                        <Image
+                          className="aspect-[4/3] w-24 shrink-0 object-cover sm:w-32"
+                          src={post.coverImage.src}
+                          alt={post.coverImage.altText}
+                          width={post.coverImage.width}
+                          height={post.coverImage.height}
+                          unoptimized
+                        />
+                      ) : null}
                     </div>
-                    <time className="text-small text-muted-foreground md:text-right" dateTime={post.publishedAt}>
+                    <time
+                      className="text-small text-muted-foreground tabular-nums md:pt-1 md:text-right"
+                      dateTime={post.publishedAt}
+                    >
                       {dateFormatter.format(new Date(post.publishedAt))}
                     </time>
                   </article>

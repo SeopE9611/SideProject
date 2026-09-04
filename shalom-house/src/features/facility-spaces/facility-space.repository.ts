@@ -1,10 +1,12 @@
 import { ObjectId } from "mongodb";
+import { getVisualAboutFixtures, isVisualFixtureEnabled, visualSpaceFixtures } from "@/content/fixtures/visual.fixture";
 import { getMongoDatabase } from "@/lib/mongodb";
 import { FACILITY_SPACE_COLLECTION_NAME, type MongoFacilitySpaceDocument } from "./facility-space.mongo-schema";
 import { validateFacilitySpaceInput } from "./facility-space.validation";
 import { isValidFacilitySpaceDate } from "./facility-space.types";
 export type PublicFacilitySpace = { id: string; title: string; description: string };
 export async function listPublicFacilitySpaces(): Promise<readonly PublicFacilitySpace[]> {
+  if (isVisualFixtureEnabled()) return getVisualAboutFixtures(visualSpaceFixtures);
   const source = process.env.SHALOM_CONTENT_SOURCE || "fixture";
   if (source === "fixture" || source === "empty") return [];
   if (source !== "mongodb") throw new Error(`지원하지 않는 SHALOM_CONTENT_SOURCE입니다: ${source}`);

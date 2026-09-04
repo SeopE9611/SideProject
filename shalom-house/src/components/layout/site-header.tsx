@@ -2,50 +2,44 @@ import Link from "next/link";
 
 import { SiteNavigation } from "@/components/layout/site-navigation";
 import { siteConfig } from "@/config/site";
+import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
+import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const contact = await getPublicContactInformation();
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 shadow-nav backdrop-blur-md">
-      <div className="hidden border-b border-hero-on-dark/15 bg-home-ink text-hero-muted lg:block">
-        <div className="mx-auto flex min-h-8 w-full max-w-site items-center justify-between gap-8 px-page-wide text-xs">
-          <p className="text-safe-wrap">서울 강서구 장애인거주시설</p>
+    <header className="sticky top-0 z-50 border-b border-border bg-surface">
+      <div className="hidden border-b border-border lg:block">
+        <div className="mx-auto flex min-h-8 max-w-site items-center justify-between gap-6 px-page-wide text-xs text-muted-foreground">
+          <p>샬롬의 집 · 장애인거주시설</p>
           <div className="flex items-center gap-6">
             <Link
-              className="underline decoration-hero-on-dark/40 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
+              className="py-1 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               href="/about/directions"
             >
               찾아오시는 길
             </Link>
             <a
-              className="underline decoration-hero-on-dark/40 underline-offset-4 transition-colors hover:text-sun-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-on-dark"
-              href={`tel:${siteConfig.phone}`}
+              className="py-1 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              href={createTelephoneHref(contact.phone)}
             >
-              대표 전화 {siteConfig.phone}
+              대표 전화 {contact.phone}
             </a>
           </div>
         </div>
       </div>
-
-      <div className="mx-auto flex min-h-16 w-full max-w-site items-center justify-between gap-5 px-page py-2 sm:min-h-20 sm:px-page-wide">
+      <div className="mx-auto flex min-h-20 max-w-site items-center justify-between gap-5 px-page py-3 sm:px-page-wide lg:min-h-24">
         <Link
-          aria-label={`${siteConfig.name} 홈`}
-          className="group inline-flex min-w-0 items-center gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+          aria-label={siteConfig.name + " 홈"}
+          className="inline-flex min-h-11 min-w-0 flex-col items-start justify-center text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
           href="/"
         >
-          <span
-            aria-hidden="true"
-            className="h-9 w-1 shrink-0 bg-accent transition-colors duration-[var(--motion-duration-fast)] ease-standard group-hover:bg-primary sm:h-10"
-          ></span>
-          <span className="min-w-0">
-            <span className="block text-xl font-bold tracking-[-0.03em] text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard group-hover:text-primary sm:text-xl">
-              {siteConfig.name}
-            </span>
-            <span className="mt-0.5 hidden text-[0.6875rem] font-semibold tracking-[0.13em] text-muted-foreground xl:block">
-              SHALOM HOUSE · 장애인거주시설
-            </span>
+          <span className="text-xs font-medium tracking-wide text-muted-foreground lg:hidden">장애인거주시설</span>
+          <span className="text-[1.875rem] font-extrabold leading-tight tracking-[-0.055em] lg:text-[2.125rem]">
+            {siteConfig.name}
           </span>
         </Link>
-        <SiteNavigation />
+        <SiteNavigation phone={contact.phone} />
       </div>
     </header>
   );

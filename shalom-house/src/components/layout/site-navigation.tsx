@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { siteConfig } from "@/config/site";
+import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
 const DESKTOP_MEDIA_QUERY = "(min-width: 64rem)";
 
@@ -24,9 +25,10 @@ function isCurrentNavigationItem(pathname: string, item: NavigationItem) {
 
 type SiteNavigationContentProps = {
   pathname: string;
+  phone: string;
 };
 
-function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
+function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) {
   const mobileMenuId = useId();
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const navigationRef = useRef<HTMLDivElement>(null);
@@ -93,18 +95,36 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
     setIsMobileOpen(false);
   }
 
+  function closeMenuOnNavigate(href: string) {
+    setIsMobileOpen(false);
+    setOpenDesktopHref(null);
+
+    if (href !== pathname) return;
+    if (isMobileOpen) {
+      mobileButtonRef.current?.focus();
+    } else if (openDesktopHref !== null) {
+      desktopButtonRefs.current[openDesktopHref]?.focus();
+    }
+  }
+
   return (
-    <div ref={navigationRef}>
+    <div
+      ref={navigationRef}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsMobileOpen(false);
+          setOpenDesktopHref(null);
+        }
+      }}
+    >
       <nav aria-label="주요 메뉴" className="hidden lg:block">
-        <ul className="flex items-center gap-1">
+        <ul className="flex items-center gap-5 xl:gap-9">
           {siteConfig.mainNavigation.map((item, index) => {
             const hasChildren = item.children.length > 0;
             const isActive = isCurrentNavigationItem(pathname, item);
             const isSubmenuOpen = openDesktopHref === item.href;
             const submenuId = `${mobileMenuId}-desktop-${index}`;
-            const inactiveClassName = item.emphasis
-              ? "border-accent bg-accent text-primary-foreground hover:border-accent-hover hover:bg-accent-hover"
-              : "border-transparent text-foreground hover:border-primary hover:text-primary";
+            const inactiveClassName = "border-transparent text-foreground hover:text-primary";
 
             return (
               <li
@@ -115,28 +135,17 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                     setOpenDesktopHref((current) => (current === item.href ? null : current));
                   }
                 }}
-                onPointerEnter={() => {
-                  if (hasChildren) setOpenDesktopHref(item.href);
-                }}
-                onPointerLeave={(event) => {
-                  if (hasChildren && !event.currentTarget.contains(document.activeElement)) {
-                    setOpenDesktopHref(null);
-                  }
-                }}
               >
                 <div
                   className={`flex min-h-11 items-stretch border-b-2 transition-colors duration-[var(--motion-duration-fast)] ease-standard ${
-                    isActive
-                      ? item.emphasis
-                        ? "rounded-control border-accent bg-accent text-primary-foreground"
-                        : "border-primary text-primary"
-                      : `${item.emphasis ? "ml-2 rounded-control border" : ""} ${inactiveClassName}`
+                    isActive ? "border-accent text-primary" : inactiveClassName
                   }`}
                 >
                   <Link
                     aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
-                    className="text-safe-wrap inline-flex min-h-11 items-center whitespace-nowrap px-2 py-2 text-small font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3"
+                    className="text-safe-wrap inline-flex min-h-11 items-center whitespace-nowrap px-2 py-3 text-lg font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3 xl:text-xl"
                     href={item.href}
+                    onNavigate={() => closeMenuOnNavigate(item.href)}
                   >
                     {item.label}
                   </Link>
@@ -149,7 +158,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                       aria-controls={submenuId}
                       aria-expanded={isSubmenuOpen}
                       aria-label={`${item.label} 하위 메뉴 ${isSubmenuOpen ? "닫기" : "열기"}`}
-                      className="inline-flex min-h-11 min-w-9 items-center justify-center border-l border-current/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                       onClick={() => setOpenDesktopHref((current) => (current === item.href ? null : item.href))}
                     >
                       <svg
@@ -174,7 +183,11 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                 </div>
 
                 {hasChildren ? (
-                  <div id={submenuId} className="absolute left-0 top-full w-72 pt-3" hidden={!isSubmenuOpen}>
+                  <div
+                    id={submenuId}
+                    className={`absolute top-full w-72 pt-3 ${index === siteConfig.mainNavigation.length - 1 ? "right-0" : "left-0"}`}
+                    hidden={!isSubmenuOpen}
+                  >
                     <div className="border border-border bg-surface p-3 shadow-elevated">
                       <p className="text-safe-wrap border-b border-border px-3 pb-3 pt-1 text-xs font-semibold text-muted-foreground">
                         {item.description}
@@ -193,6 +206,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                                     : "border-transparent text-foreground hover:border-primary hover:bg-primary-soft hover:text-primary"
                                 }`}
                                 href={child.href}
+                                onNavigate={() => closeMenuOnNavigate(child.href)}
                               >
                                 <span className="text-safe-wrap block text-small font-bold">{child.label}</span>
                                 <span className="text-safe-wrap mt-1 block text-xs text-muted-foreground">
@@ -256,7 +270,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
       <nav
         id={mobileMenuId}
         aria-label="모바일 주요 메뉴"
-        className="absolute inset-x-0 top-full max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-border-strong bg-surface shadow-nav sm:max-h-[calc(100dvh-5rem)] lg:hidden"
+        className="absolute inset-x-0 top-full max-h-[calc(100dvh-5rem)] overflow-y-auto border-b border-border-strong bg-surface shadow-nav lg:hidden"
         hidden={!isMobileOpen}
       >
         <ul className="mx-auto w-full max-w-site divide-y divide-border px-page py-2 sm:px-page-wide">
@@ -265,12 +279,8 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
             const isActive = isCurrentNavigationItem(pathname, item);
             const isSubmenuOpen = openMobileHref === item.href;
             const submenuId = `${mobileMenuId}-mobile-${index}`;
-            const mobileItemContainerClassName = isActive
-              ? item.emphasis
-                ? "border-accent bg-accent-soft"
-                : "border-primary bg-primary-soft"
-              : "border-transparent bg-transparent";
-            const mobileItemTextClassName = item.emphasis && !isActive ? "text-accent" : "text-foreground";
+            const mobileItemContainerClassName = isActive ? "border-primary bg-primary-soft" : "border-transparent";
+            const mobileItemTextClassName = isActive ? "text-primary" : "text-foreground";
 
             return (
               <li key={item.href} className="py-1">
@@ -279,7 +289,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                     aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
                     className={`flex min-h-14 min-w-0 flex-1 items-center px-4 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${mobileItemTextClassName}`}
                     href={item.href}
-                    onClick={closeMobileMenu}
+                    onNavigate={() => closeMenuOnNavigate(item.href)}
                   >
                     <span>
                       <span className="text-safe-wrap block text-base font-bold">{item.label}</span>
@@ -337,7 +347,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
                                 : "text-foreground hover:bg-primary-soft hover:text-primary"
                             }`}
                             href={child.href}
-                            onClick={closeMobileMenu}
+                            onNavigate={() => closeMenuOnNavigate(child.href)}
                           >
                             <span className="text-safe-wrap block text-small font-bold">{child.label}</span>
                           </Link>
@@ -354,7 +364,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
           <li>
             <a
               className="inline-flex min-h-11 w-full items-center justify-center font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring"
-              href={`tel:${siteConfig.phone}`}
+              href={createTelephoneHref(phone)}
               onClick={closeMobileMenu}
             >
               전화하기
@@ -364,7 +374,7 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
             <Link
               className="inline-flex min-h-11 w-full items-center justify-center border-l border-border font-bold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring"
               href="/about/directions"
-              onClick={closeMobileMenu}
+              onNavigate={() => closeMenuOnNavigate("/about/directions")}
             >
               찾아오시는 길
             </Link>
@@ -375,8 +385,8 @@ function SiteNavigationContent({ pathname }: SiteNavigationContentProps) {
   );
 }
 
-export function SiteNavigation() {
+export function SiteNavigation({ phone }: { phone: string }) {
   const pathname = usePathname();
 
-  return <SiteNavigationContent key={pathname} pathname={pathname} />;
+  return <SiteNavigationContent key={pathname} pathname={pathname} phone={phone} />;
 }

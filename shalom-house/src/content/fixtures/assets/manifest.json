@@ -1,0 +1,24 @@
+{
+  "landscape": {
+    "fileName": "landscape.webp",
+    "width": 1440,
+    "height": 960,
+    "byteSize": 7758
+  },
+  "portrait": {
+    "fileName": "portrait.webp",
+    "width": 900,
+    "height": 1350,
+    "byteSize": 7402
+  },
+  "square": {
+    "fileName": "square.webp",
+    "width": 960,
+    "height": 960,
+    "byteSize": 6832
+  },
+  "pdf": {
+    "fileName": "ui-layout-sample.pdf",
+    "byteSize": 37743
+  }
+}

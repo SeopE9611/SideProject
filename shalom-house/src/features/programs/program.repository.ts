@@ -1,4 +1,5 @@
 import { MongoProgramRepository } from "./program.mongo-repository";
+import { isVisualFixtureEnabled, visualProgramFixtures } from "@/content/fixtures/visual.fixture";
 import type { PublicProgram, PublicProgramSummary } from "./program.types";
 import type { PublicSitemapEntry } from "@/features/seo/seo.types";
 export const PUBLIC_PROGRAM_DEFAULT_LIMIT = 100;
@@ -14,7 +15,9 @@ export interface ProgramRepository {
   findPublishedBySlug(slug: string): Promise<PublicProgram | null>;
 }
 const emptyProgramRepository: ProgramRepository = {
-  async listPublishedSitemapEntries() { return []; },
+  async listPublishedSitemapEntries() {
+    return [];
+  },
   async listPublished() {
     return [];
   },
@@ -23,6 +26,16 @@ const emptyProgramRepository: ProgramRepository = {
   },
 };
 export function getProgramRepository(): ProgramRepository {
+  if (isVisualFixtureEnabled())
+    return {
+      ...emptyProgramRepository,
+      async listPublished(options) {
+        return visualProgramFixtures.slice(0, normalizePublicProgramLimit(options?.limit));
+      },
+      async findPublishedBySlug(slug) {
+        return visualProgramFixtures.find((item) => item.slug === slug) ?? null;
+      },
+    };
   const configuredSource = process.env.SHALOM_CONTENT_SOURCE;
   const source =
     configuredSource ||

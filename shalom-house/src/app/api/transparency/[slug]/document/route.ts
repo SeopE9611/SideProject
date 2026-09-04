@@ -1,4 +1,5 @@
 import { findPublicTransparencyDocumentMediaBySlug } from "@/features/transparency/transparency.repository";
+import { serveVisualFixtureFile } from "@/content/fixtures/visual.fixture";
 import { downloadPrivateTransparencyDocument } from "@/features/transparency/transparency.storage";
 export const runtime = "nodejs";
 type Context = { params: Promise<{ slug: string }> };
@@ -6,6 +7,8 @@ const missing = () => new Response(null, { status: 404, headers: { "Cache-Contro
 export async function GET(_request: Request, { params }: Context) {
   const { slug } = await params;
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 80) return missing();
+  const fixture = await serveVisualFixtureFile("document", slug);
+  if (fixture) return fixture;
   let media;
   try {
     media = await findPublicTransparencyDocumentMediaBySlug(slug);

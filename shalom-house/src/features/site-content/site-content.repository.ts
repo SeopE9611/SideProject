@@ -1,4 +1,9 @@
 import { getMongoDatabase } from "@/lib/mongodb";
+import {
+  getVisualAboutFixtures,
+  isVisualFixtureEnabled,
+  visualGreetingFixture,
+} from "@/content/fixtures/visual.fixture";
 import { cache } from "react";
 import {
   defaultContactInformationContent,
@@ -29,10 +34,7 @@ function source(): "mongodb" | "fixture" | "empty" {
 
 async function getContent<
   T extends FacilityOverviewContent | GreetingContent | ContactInformationContent | DonationGuidanceContent,
->(
-  key: SiteContentKey,
-  fallback: T,
-): Promise<T> {
+>(key: SiteContentKey, fallback: T): Promise<T> {
   if (source() !== "mongodb") return fallback;
   const document = await (
     await getMongoDatabase()
@@ -67,7 +69,9 @@ export async function getPublicFacilityOverview(): Promise<FacilityOverviewConte
 }
 
 export async function getPublicGreeting(): Promise<GreetingContent> {
-  const content = await getContent("greeting", defaultGreetingContent);
+  const content = isVisualFixtureEnabled()
+    ? (getVisualAboutFixtures([visualGreetingFixture])[0] ?? defaultGreetingContent)
+    : await getContent("greeting", defaultGreetingContent);
   return content.showSignerName ? content : { ...content, signerName: "" };
 }
 

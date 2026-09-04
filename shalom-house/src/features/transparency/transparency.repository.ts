@@ -1,4 +1,5 @@
 import "server-only";
+import { isVisualFixtureEnabled, visualDocumentFixtures } from "@/content/fixtures/visual.fixture";
 import { MongoTransparencyRepository } from "./transparency.mongo-repository";
 import type { TransparencyCategory } from "./transparency.types";
 
@@ -32,6 +33,13 @@ const empty: TransparencyRepository = {
   },
 };
 function getTransparencyRepository(): TransparencyRepository {
+  if (isVisualFixtureEnabled())
+    return {
+      ...empty,
+      async listPublished() {
+        return visualDocumentFixtures;
+      },
+    };
   const configured = process.env.SHALOM_CONTENT_SOURCE;
   const source =
     configured ||

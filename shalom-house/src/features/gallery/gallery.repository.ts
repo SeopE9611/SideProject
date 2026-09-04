@@ -1,4 +1,5 @@
 import { MongoGalleryRepository } from "./gallery.mongo-repository";
+import { isVisualFixtureEnabled, visualGalleryFixtures } from "@/content/fixtures/visual.fixture";
 import type { ObjectId } from "mongodb";
 import type { PublicSitemapEntry } from "@/features/seo/seo.types";
 
@@ -42,7 +43,9 @@ export interface GalleryRepository {
 }
 
 const empty: GalleryRepository = {
-  async listPublishedSitemapEntries() { return []; },
+  async listPublishedSitemapEntries() {
+    return [];
+  },
   async listPublished() {
     return [];
   },
@@ -55,6 +58,16 @@ const empty: GalleryRepository = {
 };
 
 export function getGalleryRepository(): GalleryRepository {
+  if (isVisualFixtureEnabled())
+    return {
+      ...empty,
+      async listPublished() {
+        return visualGalleryFixtures;
+      },
+      async findPublishedBySlug(slug) {
+        return visualGalleryFixtures.find((item) => item.slug === slug) ?? null;
+      },
+    };
   const configured = process.env.SHALOM_CONTENT_SOURCE;
   const source =
     configured ||

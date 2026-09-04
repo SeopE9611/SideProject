@@ -8,8 +8,7 @@ import type {
 } from "./site-content.types";
 
 export const defaultFacilityOverviewContent: FacilityOverviewContent = {
-  pageDescription:
-    "샬롬의 집은 지체 및 지적 장애인이 식사하고 쉬며 관계를 나누는 장애인거주시설입니다. 확인된 시설 정보와 생활의 기준을 분명한 순서로 안내합니다.",
+  pageDescription: "샬롬의 집은 지체 및 지적 장애인이 함께 생활하는 장애인거주시설입니다.",
   facts: [
     { label: "시설 유형", value: "장애인거주시설" },
     { label: "생활", value: "지체 및 지적 장애인이 함께 생활합니다" },
@@ -84,7 +83,7 @@ export const defaultContactInformationContent: ContactInformationContent = {
   phone: siteConfig.phone,
   visitInquiryTitle: "방문 전 문의",
   visitInquiryDescription: "방문 일정과 시설 출입 안내는 대표 전화로 확인할 수 있습니다.",
-  contactPageDescription: "현재 공식 설정에서 확인된 연락 경로만 안내합니다.",
+  contactPageDescription: "시설에 관한 질문과 방문·후원·자원봉사 문의를 접수합니다.",
   contactIntroduction: "대표 전화와 방문 안내, 공식 외부 채널을 통해 문의할 수 있습니다.",
   instagramUrl: siteConfig.instagram,
   showInstagram: true,
@@ -99,8 +98,7 @@ export const defaultDonationGuidanceContent: DonationGuidanceContent = {
     "확인된 정보에 따라 참여합니다.",
   ],
   contactTitle: "후원 관련 문의",
-  contactDescription:
-    "대표 전화 또는 온라인 문의를 통해 후원 방법과 후원금 영수증·내역을 확인할 수 있습니다.",
+  contactDescription: "대표 전화 또는 온라인 문의를 통해 후원 방법과 후원금 영수증·내역을 확인할 수 있습니다.",
   transparencyLinkLabel: "후원금 자료공개 보기",
   donationInquiryLabel: "후원 문의 접수",
   receiptInquiryLabel: "후원금 영수증·내역 문의",

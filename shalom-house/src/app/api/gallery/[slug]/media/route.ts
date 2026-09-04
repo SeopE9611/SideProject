@@ -1,4 +1,5 @@
 import { findPublicGalleryMediaBySlug } from "@/features/gallery/gallery.repository";
+import { serveVisualFixtureFile } from "@/content/fixtures/visual.fixture";
 import { downloadPrivateGalleryImage } from "@/features/gallery/gallery.storage";
 
 export const runtime = "nodejs";
@@ -15,6 +16,8 @@ const missing = () =>
 
 export async function GET(_: Request, { params }: Context) {
   const { slug } = await params;
+  const fixture = await serveVisualFixtureFile("gallery", slug);
+  if (fixture) return fixture;
   let media;
 
   try {
