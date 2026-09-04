@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 type Values = {
@@ -83,16 +84,16 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
   }
   const described = (name: string) => `${name}-help${errors[name] ? ` ${name}-error` : ""}`;
   return (
-    <form onSubmit={submit} aria-busy={busy} className="min-w-0 space-y-5">
+    <form onSubmit={submit} aria-busy={busy} className="min-w-0 max-w-4xl space-y-6">
       {formError ? (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formError}
         </p>
       ) : null}
       {mode === "create" ? (
-        <div>
+        <div className="border-b border-border pb-6">
           <label htmlFor="document" className="block font-semibold">
-            PDF 파일
+            PDF 파일 <span className="text-danger">*</span>
           </label>
           <input
             id="document"
@@ -115,18 +116,24 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           ) : null}
         </div>
       ) : (
-        <p>PDF는 이 화면에서 교체할 수 없습니다.</p>
+        <p className="border-l-4 border-warning bg-warning-soft px-4 py-3 font-semibold">
+          PDF는 이 화면에서 교체할 수 없습니다. 문서 정보만 수정할 수 있습니다.
+        </p>
       )}
       {fields.map(([name, label]) => (
-        <div key={name}>
+        <div key={name} className="border-b border-border pb-6">
           <label htmlFor={name} className="block font-semibold">
-            {label}
+            {label} <span className="text-danger">*</span>
           </label>
           <input
             id={name}
             name={name}
             type={name === "documentDate" ? "date" : "text"}
             required
+            maxLength={name === "slug" ? 80 : name === "title" ? 140 : name === "periodLabel" ? 80 : undefined}
+            pattern={name === "slug" ? "[a-z0-9]+(?:-[a-z0-9]+)*" : undefined}
+            autoCapitalize={name === "slug" ? "none" : undefined}
+            spellCheck={name === "slug" ? false : undefined}
             defaultValue={initial?.[name] ?? ""}
             aria-invalid={Boolean(errors[name])}
             aria-describedby={described(name)}
@@ -142,9 +149,9 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           ) : null}
         </div>
       ))}
-      <div>
+      <div className="border-b border-border pb-6">
         <label htmlFor="category" className="block font-semibold">
-          분류
+          분류 <span className="text-danger">*</span>
         </label>
         <select
           id="category"
@@ -170,7 +177,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           </p>
         ) : null}
       </div>
-      <div>
+      <div className="border-b border-border pb-6">
         <label htmlFor="summary" className="block font-semibold">
           요약 (선택)
         </label>
@@ -190,7 +197,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           </p>
         ) : null}
       </div>
-      <div>
+      <div className="border-b border-border pb-6">
         <label htmlFor="privacyReviewStatus" className="block font-semibold">
           개인정보 검토 상태
         </label>
@@ -214,7 +221,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           </p>
         ) : null}
       </div>
-      <div>
+      <div className="border-b border-border pb-6">
         <label htmlFor="finalDocumentStatus" className="block font-semibold">
           최종본 상태
         </label>
@@ -238,9 +245,21 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           </p>
         ) : null}
       </div>
-      <button disabled={busy} className="min-h-11 rounded-control bg-primary px-5 text-primary-foreground">
-        {busy ? "저장 중…" : mode === "create" ? "비공개 초안 저장" : "메타데이터 수정"}
-      </button>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button
+          type="submit"
+          disabled={busy}
+          className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground"
+        >
+          {busy ? "저장 중…" : mode === "create" ? "비공개 초안 저장" : "문서 정보 저장"}
+        </button>
+        <Link
+          href={mode === "create" ? "/admin/transparency" : `/admin/transparency/${id}`}
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold text-primary"
+        >
+          취소
+        </Link>
+      </div>
     </form>
   );
 }

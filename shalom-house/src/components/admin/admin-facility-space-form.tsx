@@ -85,6 +85,8 @@ export function AdminFacilitySpaceForm({ mode, id, expectedUpdatedAt, initialSpa
         </label>
         <input
           id="title"
+          required
+          maxLength={100}
           className="mt-2 min-h-11 w-full rounded-control border px-3"
           value={space.title}
           onChange={(e) => set("title", e.target.value)}
@@ -102,6 +104,9 @@ export function AdminFacilitySpaceForm({ mode, id, expectedUpdatedAt, initialSpa
         </p>
         <textarea
           id="description"
+          required
+          minLength={10}
+          maxLength={800}
           rows={8}
           className="mt-2 w-full rounded-control border p-3"
           value={space.description}
@@ -136,6 +141,7 @@ export function AdminFacilitySpaceForm({ mode, id, expectedUpdatedAt, initialSpa
         <input
           id="displayOrder"
           type="number"
+          required
           min={1}
           max={999}
           className="mt-2 min-h-11 w-full border px-3"
@@ -150,6 +156,7 @@ export function AdminFacilitySpaceForm({ mode, id, expectedUpdatedAt, initialSpa
         <label className="flex gap-3">
           <input
             type="checkbox"
+            required
             checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
             aria-invalid={errors.saveConfirmed ? true : undefined}
@@ -170,7 +177,7 @@ export function AdminFacilitySpaceForm({ mode, id, expectedUpdatedAt, initialSpa
       ) : null}
       <button
         type="submit"
-        disabled={busy || !confirmed}
+        disabled={busy}
         className="min-h-11 rounded-control bg-primary px-5 font-bold text-primary-foreground"
       >
         {busy ? "저장 중…" : "저장"}

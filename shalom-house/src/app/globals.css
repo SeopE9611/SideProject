@@ -6,6 +6,8 @@
   --color-background: #ffffff;
   --color-surface: #ffffff;
   --color-surface-subtle: #f2f5f7;
+  --color-paper: #f6f1e8;
+  --color-paper-strong: #e7dac6;
   --color-foreground: #1b2c3d;
   --color-muted-foreground: #566371;
   --color-border: #dce3e8;
@@ -24,6 +26,7 @@
   --color-warning-soft: #fff4d9;
   --color-danger: #a23b3b;
   --color-danger-soft: #fbecec;
+  --color-destructive: #a23b3b;
   /* Legacy compatibility: 기존 하위 페이지가 전환될 때까지만 유지 */
   --color-hero-forest: #1f493f;
   --color-hero-clay: #85452f;
@@ -61,12 +64,12 @@
   --text-heading--line-height: 1.35;
   --text-body: 1.0625rem;
   --text-body--line-height: 1.75;
-  --text-small: 0.9375rem;
-  --text-small--line-height: 1.6;
+  --text-small: 1rem;
+  --text-small--line-height: 1.65;
 
   /* 컨테이너와 간격 */
   --container-site: 84rem;
-  --container-content: 46rem;
+  --container-content: 48rem;
   --spacing-page: 1.25rem;
   --spacing-page-wide: 2.5rem;
   --spacing-section: 5rem;
@@ -170,6 +173,143 @@
 
 @utility animate-page-enter {
   animation: page-enter 640ms var(--ease-standard) both;
+}
+
+@layer components {
+  .admin-shell .admin-main {
+    --admin-control-height: 3rem;
+  }
+
+  .admin-shell .admin-main h1 {
+    max-width: 48rem;
+    font-size: clamp(1.875rem, 2.5vw, 2.5rem);
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .admin-shell .admin-main h2 {
+    letter-spacing: -0.02em;
+  }
+
+  .admin-shell .admin-main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  .admin-shell .admin-main select,
+  .admin-shell .admin-main textarea {
+    min-height: var(--admin-control-height);
+    width: 100%;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-background);
+    padding: 0.7rem 0.85rem;
+    color: var(--color-foreground);
+    font-size: 1rem;
+    line-height: 1.55;
+    transition:
+      border-color var(--motion-duration-fast) var(--ease-standard),
+      box-shadow var(--motion-duration-fast) var(--ease-standard),
+      background-color var(--motion-duration-fast) var(--ease-standard);
+  }
+
+  .admin-shell .admin-main textarea {
+    min-height: 7rem;
+    resize: vertical;
+    line-height: 1.7;
+  }
+
+  .admin-shell .admin-main input[type="file"] {
+    padding: 0.55rem;
+  }
+
+  .admin-shell .admin-main input[type="checkbox"],
+  .admin-shell .admin-main input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 auto;
+    accent-color: var(--color-accent);
+  }
+
+  .admin-shell .admin-main input:disabled,
+  .admin-shell .admin-main select:disabled,
+  .admin-shell .admin-main textarea:disabled,
+  .admin-shell .admin-main button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+  }
+
+  .admin-shell .admin-main input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+  .admin-shell .admin-main select:focus-visible,
+  .admin-shell .admin-main textarea:focus-visible {
+    border-color: var(--color-accent);
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--color-accent-soft);
+  }
+
+  .admin-shell .admin-main [aria-invalid="true"],
+  .admin-shell .admin-main form[data-validation-attempted="true"] :user-invalid {
+    border-color: var(--color-danger) !important;
+    background: var(--color-danger-soft) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 14%, transparent);
+  }
+
+  .admin-shell .admin-main label {
+    color: var(--color-foreground);
+  }
+
+  .admin-shell .admin-main [role="alert"] {
+    overflow-wrap: break-word;
+  }
+
+  .admin-shell .admin-main table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.9375rem;
+  }
+
+  .admin-shell .admin-main th {
+    border-block: 1px solid var(--color-border);
+    background: var(--color-surface-subtle);
+    padding: 0.8rem 0.75rem;
+    text-align: left;
+    font-weight: 800;
+    color: var(--color-primary);
+  }
+
+  .admin-shell .admin-main td {
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.9rem 0.75rem;
+    vertical-align: top;
+  }
+
+  .admin-shell .admin-main tbody tr:hover {
+    background: color-mix(in srgb, var(--color-accent-soft) 55%, transparent);
+  }
+
+  .admin-shell .admin-main button,
+  .admin-shell .admin-main a {
+    transition:
+      color var(--motion-duration-fast) var(--ease-standard),
+      border-color var(--motion-duration-fast) var(--ease-standard),
+      background-color var(--motion-duration-fast) var(--ease-standard);
+  }
+
+  .admin-shell .admin-main button:not([class]) {
+    min-height: 2.75rem;
+    border-radius: var(--radius-control);
+    background: var(--color-primary);
+    padding: 0.6rem 1rem;
+    color: var(--color-primary-foreground);
+    font-weight: 700;
+  }
+
+  .admin-shell .admin-main a:not([class]) {
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

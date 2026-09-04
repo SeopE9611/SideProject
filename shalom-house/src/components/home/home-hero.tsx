@@ -16,36 +16,41 @@ type HomeHeroProps = {
 
 export function HomeHero({ siteName, description, image }: HomeHeroProps) {
   return (
-    <section aria-labelledby="home-heading" className="mx-auto max-w-site px-page pt-6 sm:px-page-wide sm:pt-8">
+    <section aria-labelledby="home-heading" className="border-b border-border bg-surface">
       <div
-        className={`grid overflow-hidden bg-primary text-primary-foreground ${image ? "lg:grid-cols-[0.9fr_1.1fr]" : "lg:grid-cols-[1.3fr_1fr]"}`}
+        className={`mx-auto grid max-w-site px-page py-6 sm:px-page-wide sm:py-8 ${image ? "lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]" : "lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]"}`}
       >
-        <div className="flex flex-col justify-center px-7 py-9 sm:px-10 sm:py-12 lg:px-12">
-          <p className="text-small font-medium tracking-wide text-primary-foreground/75">장애인거주시설</p>
+        <div className="flex min-h-[26rem] flex-col justify-center border-t-4 border-accent bg-primary px-7 py-10 text-primary-foreground sm:px-11 lg:min-h-[31rem] lg:px-14">
+          <p className="text-small font-semibold tracking-[0.04em] text-primary-foreground/78">장애인거주시설</p>
           <h1
             id="home-heading"
-            className="text-safe-wrap mt-4 text-[2.75rem] font-bold leading-[1.13] tracking-[-0.045em] sm:text-[3.5rem] lg:text-[4rem]"
+            className="text-safe-wrap mt-5 text-[2.75rem] font-extrabold leading-[1.08] tracking-[-0.035em] sm:text-[3.5rem] lg:text-[4rem]"
           >
             {siteName}
           </h1>
-          <p className="text-safe-wrap mt-6 max-w-sm text-body leading-8 text-primary-foreground/85">{description}</p>
-          <div className="mt-7 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+          <p className="text-safe-wrap mt-7 max-w-md text-[1.125rem] leading-8 text-primary-foreground/88">
+            {description}
+          </p>
+          <p className="text-safe-wrap mt-3 max-w-md text-small text-primary-foreground/68">
+            기관 정보와 생활 기록, 참여 방법을 정확하게 안내합니다.
+          </p>
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
             <Link
               href="/about"
-              className="inline-flex min-h-12 items-center justify-center bg-surface px-3 text-small font-bold text-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-surface sm:px-6"
+              className="inline-flex min-h-13 items-center justify-center bg-surface px-4 text-small font-bold text-primary transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-surface sm:px-7"
             >
               시설 알아보기
             </Link>
             <Link
-              href="/life"
-              className="inline-flex min-h-12 items-center justify-center border border-primary-foreground/40 px-3 text-small font-semibold text-primary-foreground hover:bg-primary-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-surface sm:px-6"
+              href="/about/directions"
+              className="inline-flex min-h-13 items-center justify-center border border-primary-foreground/45 px-4 text-small font-semibold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-surface sm:px-7"
             >
-              생활·프로그램
+              방문 안내
             </Link>
           </div>
         </div>
         {image ? (
-          <figure className="relative min-w-0 bg-primary-hover">
+          <figure className="group relative min-w-0 overflow-hidden bg-primary-hover">
             <Image
               src={image.src}
               alt={image.alt}
@@ -54,9 +59,11 @@ export function HomeHero({ siteName, description, image }: HomeHeroProps) {
               unoptimized
               loading="eager"
               fetchPriority="high"
-              className="aspect-[3/2] h-full max-h-[28rem] w-full object-cover"
+              sizes="(max-width: 1023px) 100vw, 58vw"
+              className="aspect-[4/3] h-full w-full object-cover transition-transform duration-[var(--motion-duration-standard)] ease-standard group-hover:scale-[1.015] lg:aspect-auto"
             />
-            <figcaption className="absolute inset-x-0 bottom-0 bg-primary/90 px-5 py-3 text-xs leading-5 text-primary-foreground sm:px-6">
+            <figcaption className="absolute inset-x-0 bottom-0 bg-primary/94 px-5 py-4 text-small leading-6 text-primary-foreground sm:px-7">
+              <span className="mr-3 font-bold text-sun-soft">최근 활동 기록</span>
               {image.href ? (
                 <Link href={image.href} className="underline underline-offset-4">
                   {image.caption}
@@ -67,11 +74,9 @@ export function HomeHero({ siteName, description, image }: HomeHeroProps) {
             </figcaption>
           </figure>
         ) : (
-          <nav
-            aria-label="시설 주요 안내"
-            className="mx-7 mb-7 border-t border-primary-foreground/25 pt-4 sm:mx-10 lg:my-10 lg:ml-0 lg:mr-12 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0"
-          >
-            <ul className="divide-y divide-primary-foreground/25">
+          <nav aria-label="시설 주요 안내" className="bg-paper px-7 py-8 sm:px-10 lg:px-12 lg:py-12">
+            <p className="text-small font-bold text-accent">먼저 확인할 정보</p>
+            <ul className="mt-4 divide-y divide-paper-strong border-y border-paper-strong">
               {[
                 { href: "/about/people", title: "함께하는 사람들", text: "직원의 역할과 담당 업무" },
                 { href: "/about/spaces", title: "생활공간", text: "시설의 공간과 쓰임" },
@@ -80,11 +85,11 @@ export function HomeHero({ siteName, description, image }: HomeHeroProps) {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="flex min-h-14 items-center justify-between gap-4 py-3 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-surface sm:py-5"
+                    className="flex min-h-16 items-center justify-between gap-4 py-4 text-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-focus-ring sm:py-5"
                   >
                     <span>
-                      <span className="block text-body font-semibold sm:text-xl">{item.title}</span>
-                      <span className="mt-1 hidden text-small text-primary-foreground/75 sm:block">{item.text}</span>
+                      <span className="block text-body font-bold sm:text-xl">{item.title}</span>
+                      <span className="mt-1 hidden text-small text-muted-foreground sm:block">{item.text}</span>
                     </span>
                     <span aria-hidden="true">↗</span>
                   </Link>

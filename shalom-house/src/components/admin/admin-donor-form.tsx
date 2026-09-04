@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import type { DonorStatus, DonorType } from "@/features/donations/donor.types";
 type Props = {
@@ -88,11 +89,15 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
       </p>
     );
   return (
-    <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-5">
-      <p className="rounded-card border p-4">
+    <form onSubmit={submit} aria-busy={busy} className="mt-6 max-w-4xl space-y-6">
+      <p className="border-l-4 border-warning bg-warning-soft p-4">
         주민등록번호, 사업자등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보는 입력하지 마세요.
       </p>
-      {errors.form && <p role="alert">{errors.form}</p>}
+      {errors.form && (
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
+          {errors.form}
+        </p>
+      )}
       <label className="block">
         후원자 유형
         <select
@@ -112,6 +117,8 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
         <input
           id="donor-displayName"
           {...aria("displayName")}
+          required
+          maxLength={100}
           className="block min-h-11"
           value={d.displayName}
           onChange={(e) => change("displayName", e.target.value)}
@@ -124,6 +131,10 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
         <input
           id="donor-phone"
           {...aria("phone")}
+          type="tel"
+          maxLength={30}
+          pattern="\+?[0-9 ()-]{8,30}"
+          autoComplete="tel"
           className="block min-h-11"
           value={d.phone}
           onChange={(e) => change("phone", e.target.value)}
@@ -136,6 +147,8 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
           id="donor-email"
           {...aria("email")}
           type="email"
+          maxLength={254}
+          autoComplete="email"
           className="block min-h-11"
           value={d.email}
           onChange={(e) => change("email", e.target.value)}
@@ -161,6 +174,7 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
         <textarea
           id="donor-internalNote"
           {...aria("internalNote")}
+          maxLength={2000}
           className="block min-h-28"
           value={d.internalNote}
           onChange={(e) => change("internalNote", e.target.value)}
@@ -171,6 +185,7 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
         <input
           id="donor-saveConfirmed"
           type="checkbox"
+          required
           checked={confirmed}
           aria-invalid={errors.saveConfirmed ? true : undefined}
           aria-describedby={errors.saveConfirmed ? "donor-saveConfirmed-error" : undefined}
@@ -184,13 +199,21 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
         </p>
       )}
       {errors.expectedUpdatedAt && <p role="alert">{errors.expectedUpdatedAt}</p>}
-      <button
-        type="submit"
-        disabled={busy || !confirmed}
-        className="min-h-11 rounded-control bg-primary px-4 text-primary-foreground"
-      >
-        {busy ? "저장 중…" : "저장"}
-      </button>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button
+          type="submit"
+          disabled={busy}
+          className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground"
+        >
+          {busy ? "저장 중…" : id ? "변경 사항 저장" : "후원자 등록"}
+        </button>
+        <Link
+          href={id ? `/admin/donors/${id}` : "/admin/donors"}
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold text-primary"
+        >
+          취소
+        </Link>
+      </div>
     </form>
   );
 }

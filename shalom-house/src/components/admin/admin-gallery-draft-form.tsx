@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 type Values = {
   slug: string;
@@ -190,21 +191,22 @@ export function AdminGalleryDraftForm(props: Props) {
     }
   }
   return (
-    <form onSubmit={submit} className="max-w-3xl space-y-5" aria-busy={busy || undefined}>
+    <form onSubmit={submit} className="max-w-4xl space-y-6" aria-busy={busy || undefined}>
       {formError ? (
-        <p role="alert" className="border border-border-strong p-4 text-danger">
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formError}
         </p>
       ) : null}
       {props.mode === "create" ? (
-        <div className="grid gap-2">
+        <div className="grid gap-2 border-b border-border pb-6">
           <label htmlFor="gallery-image" className="font-semibold">
-            이미지
+            이미지 <span className="text-danger">*</span>
           </label>
           <input
             id="gallery-image"
             type="file"
             accept="image/jpeg,image/png,image/webp"
+            required
             onChange={(e) => void choose(e.target.files?.[0])}
             aria-invalid={Boolean(fieldErrors.image) || undefined}
             aria-describedby={`gallery-image-help gallery-image-status${fieldErrors.image ? " gallery-image-error" : ""}`}
@@ -248,52 +250,78 @@ export function AdminGalleryDraftForm(props: Props) {
           다른 이미지를 사용해야 하면 새 활동사진 초안을 등록해 주세요.
         </p>
       )}
-      {fields.map(([name, label, kind]) => (
-        <div key={name} className="grid gap-2">
-          <label htmlFor={`gallery-${name}`} className="font-semibold">
-            {label}
-            {["consentCheckedOn", "consentReferenceCode", "displayStartOn", "displayEndOn"].includes(name)
-              ? " (선택)"
-              : ""}
-          </label>
-          {kind === "textarea" ? (
-            <textarea
-              id={`gallery-${name}`}
-              name={name}
-              rows={4}
-              defaultValue={initial[name]}
-              aria-invalid={Boolean(fieldErrors[name]) || undefined}
-              aria-describedby={
-                name === "altText"
-                  ? `gallery-altText-help${fieldErrors[name] ? ` gallery-${name}-error` : ""}`
-                  : fieldErrors[name]
-                    ? `gallery-${name}-error`
-                    : undefined
-              }
-              onChange={name === "altText" ? (e) => setAlt(e.target.value) : undefined}
-            />
-          ) : (
-            <input
-              id={`gallery-${name}`}
-              name={name}
-              type={kind}
-              defaultValue={initial[name]}
-              aria-invalid={Boolean(fieldErrors[name]) || undefined}
-              aria-describedby={fieldErrors[name] ? `gallery-${name}-error` : undefined}
-            />
-          )}{" "}
-          {name === "altText" ? (
-            <p id="gallery-altText-help" className="text-small text-muted-foreground">
-              이름, 나이, 장애·건강 정보나 개인을 추정할 상세 위치 없이 핵심 장면을 설명해 주세요.
-            </p>
-          ) : null}
-          {fieldErrors[name] ? (
-            <p id={`gallery-${name}-error`} role="alert" className="text-small text-danger">
-              {fieldErrors[name]}
-            </p>
-          ) : null}
-        </div>
-      ))}
+      {fields.map(([name, label, kind]) => {
+        const optional = ["consentCheckedOn", "consentReferenceCode", "displayStartOn", "displayEndOn"].includes(name);
+        const maxLength =
+          name === "slug"
+            ? 80
+            : name === "title"
+              ? 100
+              : name === "category"
+                ? 40
+                : name === "description"
+                  ? 500
+                  : name === "altText"
+                    ? 300
+                    : name === "consentReferenceCode"
+                      ? 80
+                      : undefined;
+        return (
+          <div key={name} className="grid gap-2 border-b border-border pb-6">
+            <label htmlFor={`gallery-${name}`} className="font-semibold">
+              {label}
+              {optional ? " (선택)" : <span className="ml-1 text-danger">*</span>}
+            </label>
+            {kind === "textarea" ? (
+              <textarea
+                id={`gallery-${name}`}
+                name={name}
+                rows={4}
+                required={!optional}
+                maxLength={maxLength}
+                defaultValue={initial[name]}
+                aria-invalid={Boolean(fieldErrors[name]) || undefined}
+                aria-describedby={
+                  name === "altText"
+                    ? `gallery-altText-help${fieldErrors[name] ? ` gallery-${name}-error` : ""}`
+                    : fieldErrors[name]
+                      ? `gallery-${name}-error`
+                      : undefined
+                }
+                onChange={name === "altText" ? (e) => setAlt(e.target.value) : undefined}
+              />
+            ) : (
+              <input
+                id={`gallery-${name}`}
+                name={name}
+                type={kind}
+                required={!optional}
+                maxLength={maxLength}
+                pattern={
+                  name === "slug"
+                    ? "[a-z0-9]+(?:-[a-z0-9]+)*"
+                    : name === "consentReferenceCode"
+                      ? "[A-Za-z0-9_-]+"
+                      : undefined
+                }
+                defaultValue={initial[name]}
+                aria-invalid={Boolean(fieldErrors[name]) || undefined}
+                aria-describedby={fieldErrors[name] ? `gallery-${name}-error` : undefined}
+              />
+            )}{" "}
+            {name === "altText" ? (
+              <p id="gallery-altText-help" className="text-small text-muted-foreground">
+                이름, 나이, 장애·건강 정보나 개인을 추정할 상세 위치 없이 핵심 장면을 설명해 주세요.
+              </p>
+            ) : null}
+            {fieldErrors[name] ? (
+              <p id={`gallery-${name}-error`} role="alert" className="text-small text-danger">
+                {fieldErrors[name]}
+              </p>
+            ) : null}
+          </div>
+        );
+      })}
       <div className="grid gap-2">
         <label htmlFor="gallery-subjectPresence" className="font-semibold">
           사진 속 인물 상태
@@ -338,7 +366,7 @@ export function AdminGalleryDraftForm(props: Props) {
           </p>
         ) : null}
       </div>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3 border-l-4 border-warning bg-warning-soft p-4">
         <input
           id="gallery-safety"
           name="contentSafetyConfirmed"
@@ -356,12 +384,21 @@ export function AdminGalleryDraftForm(props: Props) {
           </p>
         ) : null}
       </div>
-      <button
-        disabled={busy}
-        className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground disabled:opacity-60"
-      >
-        {busy ? "저장 중…" : "활동사진 초안 저장"}
-      </button>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button
+          type="submit"
+          disabled={busy}
+          className="min-h-12 rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground disabled:opacity-60"
+        >
+          {busy ? "저장 중…" : props.mode === "create" ? "활동사진 초안 저장" : "변경 사항 저장"}
+        </button>
+        <Link
+          href={props.mode === "create" ? "/admin/gallery" : `/admin/gallery/${props.galleryItemId}`}
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 py-2 font-bold text-primary"
+        >
+          취소
+        </Link>
+      </div>
     </form>
   );
 }

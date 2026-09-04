@@ -1,7 +1,17 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import {
+  ADMIN_PROGRAM_BODY_MAX_LENGTH,
+  ADMIN_PROGRAM_CATEGORY_MAX_LENGTH,
+  ADMIN_PROGRAM_OPERATION_STATUS_MAX_LENGTH,
+  ADMIN_PROGRAM_PURPOSE_MAX_LENGTH,
+  ADMIN_PROGRAM_SLUG_MAX_LENGTH,
+  ADMIN_PROGRAM_SORT_ORDER_MAX,
+  ADMIN_PROGRAM_SORT_ORDER_MIN,
+  ADMIN_PROGRAM_SUMMARY_MAX_LENGTH,
+  ADMIN_PROGRAM_TITLE_MAX_LENGTH,
   validateAdminProgramDraftInput,
   type AdminProgramDraftFieldErrors,
 } from "@/features/programs/program.admin-validation";
@@ -114,9 +124,9 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={busy || undefined} className="max-w-3xl space-y-5">
+    <form onSubmit={submit} aria-busy={busy || undefined} className="max-w-4xl space-y-6">
       {formError ? (
-        <p role="alert" className="border border-border-strong p-4 text-danger">
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formError}
         </p>
       ) : null}
@@ -139,22 +149,45 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
           defaultValue: String(initial[name]),
           "aria-invalid": error ? true : undefined,
           "aria-describedby": `${help ? `${id}-help ` : ""}${error ? `${id}-error` : ""}`.trim() || undefined,
-          className: "min-h-11 rounded-control border border-border-strong bg-background px-3 py-2",
+          className: "min-h-12 rounded-control border border-border-strong bg-background px-3 py-2",
         };
+        const required = name !== "operationStatusLabel";
+        const maxLength =
+          name === "category"
+            ? ADMIN_PROGRAM_CATEGORY_MAX_LENGTH
+            : name === "slug"
+              ? ADMIN_PROGRAM_SLUG_MAX_LENGTH
+              : name === "title"
+                ? ADMIN_PROGRAM_TITLE_MAX_LENGTH
+                : name === "summary"
+                  ? ADMIN_PROGRAM_SUMMARY_MAX_LENGTH
+                  : name === "purpose"
+                    ? ADMIN_PROGRAM_PURPOSE_MAX_LENGTH
+                    : name === "body"
+                      ? ADMIN_PROGRAM_BODY_MAX_LENGTH
+                      : name === "operationStatusLabel"
+                        ? ADMIN_PROGRAM_OPERATION_STATUS_MAX_LENGTH
+                        : undefined;
         return (
-          <div key={name} className="grid gap-2">
+          <div key={name} className="grid gap-2 border-b border-border pb-6 last:border-b-0">
             <label htmlFor={id} className="font-semibold">
               {label}
-              {name === "operationStatusLabel" ? " (선택)" : ""}
+              {required ? <span className="ml-1 text-danger">*</span> : " (선택)"}
             </label>
             {kind === "textarea" ? (
-              <textarea {...common} rows={name === "body" ? 12 : 4} />
+              <textarea {...common} required={required} maxLength={maxLength} rows={name === "body" ? 14 : 4} />
             ) : (
               <input
                 {...common}
                 type={kind === "number" ? "number" : "text"}
-                min={kind === "number" ? 0 : undefined}
-                max={kind === "number" ? 9999 : undefined}
+                required={required}
+                maxLength={maxLength}
+                pattern={name === "slug" ? "[a-z0-9]+(?:-[a-z0-9]+)*" : undefined}
+                autoCapitalize={name === "slug" ? "none" : undefined}
+                spellCheck={name === "slug" ? false : undefined}
+                min={kind === "number" ? ADMIN_PROGRAM_SORT_ORDER_MIN : undefined}
+                max={kind === "number" ? ADMIN_PROGRAM_SORT_ORDER_MAX : undefined}
+                step={kind === "number" ? 1 : undefined}
               />
             )}{" "}
             {help ? (
@@ -176,6 +209,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
             id="admin-program-safety"
             name="contentSafetyConfirmed"
             type="checkbox"
+            required
             aria-invalid={errors.contentSafetyConfirmed ? true : undefined}
             aria-describedby={errors.contentSafetyConfirmed ? "admin-program-safety-error" : undefined}
           />
@@ -189,12 +223,21 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
           </p>
         ) : null}
       </div>
-      <button
-        disabled={busy}
-        className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground disabled:opacity-60"
-      >
-        {busy ? "저장 중…" : "프로그램 저장"}
-      </button>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button
+          type="submit"
+          disabled={busy}
+          className="min-h-12 rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground disabled:opacity-60"
+        >
+          {busy ? "저장 중…" : props.mode === "create" ? "프로그램 초안 저장" : "변경 사항 저장"}
+        </button>
+        <Link
+          href={props.mode === "create" ? "/admin/programs" : `/admin/programs/${props.programId}`}
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 py-2 font-bold text-primary"
+        >
+          취소
+        </Link>
+      </div>
     </form>
   );
 }

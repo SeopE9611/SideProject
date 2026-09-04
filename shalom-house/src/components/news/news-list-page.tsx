@@ -89,14 +89,14 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
         ]}
       />
 
-      <div className="mx-auto max-w-site px-page py-6 sm:px-page-wide sm:py-8">
+      <div className="mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-12">
         <form
           key={queryHref(basePath, currentPage, q, category)}
           action={basePath}
           method="get"
           role="search"
           aria-label="소식 검색"
-          className={`grid items-end gap-3 border border-border bg-surface-subtle p-5 sm:px-7 sm:py-5 ${
+          className={`grid items-end gap-4 border-t-4 border-accent bg-paper p-5 sm:px-7 sm:py-6 ${
             fixedCategory
               ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]"
               : "grid-cols-2 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
@@ -107,7 +107,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
               검색어
             </label>
             <input
-              className="mt-2 min-h-12 w-full border border-border-strong bg-surface px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              className="mt-2 min-h-13 w-full border border-border-strong bg-surface px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               id="news-query"
               name="q"
               type="search"
@@ -121,7 +121,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                 분류
               </label>
               <select
-                className="mt-2 min-h-12 w-full border border-border-strong bg-surface px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                className="mt-2 min-h-13 w-full border border-border-strong bg-surface px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                 id="news-category"
                 name="category"
                 defaultValue={category ?? ""}
@@ -133,17 +133,18 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             </div>
           ) : null}
           <button
-            className="min-h-12 bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+            className="min-h-13 bg-primary px-7 py-3 font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
             type="submit"
           >
             소식 검색
           </button>
         </form>
 
-        <section aria-labelledby="results-heading" className="mt-8">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-primary pb-4">
+        <section aria-labelledby="results-heading" className="mt-10 sm:mt-12">
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-primary pb-5">
             <div>
-              <h2 id="results-heading" className="text-lg font-semibold">
+              <p className="text-small font-bold text-accent">게시물 찾기</p>
+              <h2 id="results-heading" className="mt-2 text-xl font-bold sm:text-2xl">
                 {result === null ? "소식 목록" : hasUserFilter ? "검색 결과" : "전체"}{" "}
                 {result !== null ? <span className="font-bold text-accent">{total}건</span> : null}
               </h2>
@@ -164,7 +165,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             ) : null}
           </div>
           {hasFixture ? (
-            <aside className="border-b border-border py-3 text-small text-muted-foreground">
+            <aside className="border-b border-border py-4 text-small text-muted-foreground">
               미리보기 · 아래 예시 소식은 레이아웃 검증용입니다.
             </aside>
           ) : null}
@@ -223,17 +224,17 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             <ul>
               {posts.map((post) => (
                 <li key={post.id} className="border-b border-border">
-                  <article className="grid gap-x-6 gap-y-3 py-6 md:grid-cols-[6rem_minmax(0,1fr)_9rem] md:px-3">
+                  <article className="grid gap-x-7 gap-y-3 py-7 md:grid-cols-[7rem_minmax(0,1fr)_9rem] md:px-2 md:py-8">
                     <div>
                       <p
-                        className={`text-small font-semibold ${post.category === "activity" ? "text-accent" : "text-primary"}`}
+                        className={`inline-flex min-h-7 items-center text-small font-bold ${post.category === "activity" ? "text-accent" : "text-primary"}`}
                       >
                         {getNewsCategoryLabel(post.category)}
                       </p>
                     </div>
                     <div className="flex min-w-0 items-start gap-5">
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-lg leading-relaxed font-bold tracking-tight sm:text-xl">
+                        <h3 className="text-[1.2rem] leading-relaxed font-bold tracking-[-0.015em] sm:text-[1.35rem]">
                           <Link
                             className="text-safe-wrap underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                             href={`/news/${post.slug}?returnTo=${encodeURIComponent(queryHref(basePath, currentPage, q, fixedCategory ? undefined : category))}`}
@@ -242,7 +243,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                           </Link>
                         </h3>
                         {post.summary.trim() && post.summary.trim() !== post.title.trim() ? (
-                          <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">
+                          <p className="text-safe-wrap mt-3 max-w-3xl text-small leading-7 text-muted-foreground">
                             {post.summary}
                           </p>
                         ) : null}

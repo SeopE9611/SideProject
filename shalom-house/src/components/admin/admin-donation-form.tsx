@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import type {
   DonationMethod,
@@ -113,12 +114,16 @@ export function AdminDonationForm({
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-5">
-      <p className="rounded-card border p-4">
+    <form onSubmit={submit} aria-busy={busy} className="mt-6 max-w-4xl space-y-6">
+      <p className="border-l-4 border-warning bg-warning-soft p-4">
         주민등록번호, 사업자등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보는 입력하지 마세요. 영수증 상태는
         외부 처리 결과를 표시할 뿐 실제 영수증을 발급하지 않습니다.
       </p>
-      {errors.form && <p role="alert">{errors.form}</p>}
+      {errors.form && (
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
+          {errors.form}
+        </p>
+      )}
       <label className="flex min-h-11 items-center gap-2">
         익명 후원
         <input
@@ -141,6 +146,7 @@ export function AdminDonationForm({
           {...aria("donorId")}
           className="block min-h-11"
           disabled={d.anonymous || locked || voided}
+          required={!d.anonymous}
           value={d.donorId ?? ""}
           onChange={(e) => set("donorId", e.target.value || null)}
         >
@@ -159,6 +165,7 @@ export function AdminDonationForm({
           id="donation-donatedOn"
           {...aria("donatedOn")}
           type="date"
+          required
           className="block min-h-11"
           disabled={locked || voided}
           value={d.donatedOn}
@@ -171,12 +178,16 @@ export function AdminDonationForm({
         <input
           id="donation-amountWon"
           {...aria("amountWon")}
+          type="number"
           inputMode="numeric"
-          pattern="[0-9]*"
+          min={1}
+          max={1_000_000_000_000}
+          step={1}
+          required
           className="block min-h-11"
           disabled={locked || voided}
           value={d.amountWon || ""}
-          onChange={(e) => set("amountWon", Number(e.target.value.replace(/\D/g, "")))}
+          onChange={(e) => set("amountWon", Number(e.target.value))}
         />
         <span>입력 금액: {new Intl.NumberFormat("ko-KR").format(d.amountWon)}원</span>
         {error("amountWon")}
@@ -224,6 +235,8 @@ export function AdminDonationForm({
             id="donation-purposeDescription"
             {...aria("purposeDescription")}
             disabled={locked || voided}
+            required
+            maxLength={300}
             value={d.purposeDescription}
             onChange={(e) => set("purposeDescription", e.target.value)}
           />
@@ -259,6 +272,7 @@ export function AdminDonationForm({
             id="donation-receiptIssuedOn"
             {...aria("receiptIssuedOn")}
             type="date"
+            required
             disabled={voided}
             value={d.receiptIssuedOn ?? ""}
             onChange={(e) => set("receiptIssuedOn", e.target.value || null)}
@@ -295,6 +309,9 @@ export function AdminDonationForm({
             id="donation-voidReason"
             {...aria("voidReason")}
             disabled={voided}
+            required
+            minLength={10}
+            maxLength={500}
             value={d.voidReason}
             onChange={(e) => set("voidReason", e.target.value)}
           />
@@ -307,6 +324,7 @@ export function AdminDonationForm({
           id="donation-internalNote"
           {...aria("internalNote")}
           disabled={voided}
+          maxLength={2000}
           value={d.internalNote}
           onChange={(e) => set("internalNote", e.target.value)}
         />
@@ -316,6 +334,7 @@ export function AdminDonationForm({
         <input
           id="donation-saveConfirmed"
           type="checkbox"
+          required
           disabled={voided}
           checked={confirmed}
           aria-invalid={errors.saveConfirmed ? true : undefined}
@@ -330,13 +349,21 @@ export function AdminDonationForm({
         </p>
       )}
       {errors.expectedUpdatedAt && <p role="alert">{errors.expectedUpdatedAt}</p>}
-      <button
-        type="submit"
-        disabled={busy || !confirmed || voided}
-        className="min-h-11 rounded-control bg-primary px-4 text-primary-foreground"
-      >
-        저장
-      </button>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button
+          type="submit"
+          disabled={busy || voided}
+          className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground"
+        >
+          {busy ? "저장 중…" : id ? "변경 사항 저장" : "후원금 등록"}
+        </button>
+        <Link
+          href={id ? `/admin/donations/${id}` : "/admin/donations"}
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold text-primary"
+        >
+          취소
+        </Link>
+      </div>
     </form>
   );
 }

@@ -175,16 +175,16 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
     "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
 
   return (
-    <form onSubmit={handleSubmit} aria-busy={isSubmitting ? true : undefined} className="max-w-3xl space-y-6">
+    <form onSubmit={handleSubmit} aria-busy={isSubmitting ? true : undefined} className="max-w-4xl space-y-6">
       {formError ? (
-        <div role="alert" className="rounded-control border border-border-strong bg-surface p-4 text-danger">
+        <div role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formError}
         </div>
       ) : null}
 
-      <div className="grid gap-2">
+      <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="admin-news-category" className="font-semibold">
-          분류
+          분류 <span className="text-danger">*</span>
         </label>
         <select
           id="admin-news-category"
@@ -202,9 +202,9 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <FieldError field="category" errors={fieldErrors} />
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="admin-news-title" className="font-semibold">
-          제목
+          제목 <span className="text-danger">*</span>
         </label>
         <input
           id="admin-news-title"
@@ -221,9 +221,9 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <FieldError field="title" errors={fieldErrors} />
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="admin-news-slug" className="font-semibold">
-          슬러그
+          슬러그 <span className="text-danger">*</span>
         </label>
         <input
           id="admin-news-slug"
@@ -232,6 +232,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
           required
           defaultValue={props.mode === "edit" ? props.initialValues.slug : ""}
           maxLength={ADMIN_NEWS_SLUG_MAX_LENGTH}
+          pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
@@ -249,9 +250,9 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <FieldError field="slug" errors={fieldErrors} />
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="admin-news-summary" className="font-semibold">
-          요약
+          요약 <span className="text-danger">*</span>
         </label>
         <textarea
           id="admin-news-summary"
@@ -270,9 +271,9 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <FieldError field="summary" errors={fieldErrors} />
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="admin-news-body" className="font-semibold">
-          본문
+          본문 <span className="text-danger">*</span>
         </label>
         <textarea
           id="admin-news-body"
@@ -294,7 +295,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       </div>
 
       <div className="grid gap-2">
-        <div className="flex items-start gap-3 rounded-control border border-border bg-surface p-4">
+        <div className="flex items-start gap-3 border-l-4 border-warning bg-warning-soft p-4">
           <input
             id="admin-news-content-safety"
             name="contentSafetyConfirmed"
@@ -312,17 +313,17 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <FieldError field="contentSafetyConfirmed" errors={fieldErrors} />
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          className="inline-flex min-h-12 items-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           {isSubmitting ? "저장 중…" : props.mode === "create" ? "초안 저장" : "변경 사항 저장"}
         </button>
         <Link
           href={props.mode === "create" ? "/admin/news" : `/admin/news/${props.postId}`}
-          className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 py-2 font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           취소
         </Link>

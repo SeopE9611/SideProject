@@ -87,6 +87,8 @@ export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProf
       </label>
       <input
         id={key}
+        required={key === "role" || (key === "nameDisclosureReference" && profile.showName)}
+        maxLength={key === "role" || key === "name" ? 80 : 120}
         className="mt-2 min-h-11 w-full rounded-control border px-3"
         value={profile[key]}
         disabled={key === "nameDisclosureReference" && !profile.showName}
@@ -137,6 +139,9 @@ export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProf
         </label>
         <textarea
           id="responsibility"
+          required
+          minLength={10}
+          maxLength={600}
           rows={6}
           className="mt-2 w-full rounded-control border p-3"
           value={profile.responsibility}
@@ -236,6 +241,7 @@ export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProf
         <input
           id="displayOrder"
           type="number"
+          required
           min={1}
           max={999}
           className="mt-2 min-h-11 w-full border px-3"
@@ -253,6 +259,7 @@ export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProf
       <label className="flex gap-3">
         <input
           type="checkbox"
+          required
           checked={confirmed}
           onChange={(e) => setConfirmed(e.target.checked)}
           aria-invalid={errors.saveConfirmed ? true : undefined}
@@ -274,7 +281,7 @@ export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProf
       ) : null}
       <button
         type="submit"
-        disabled={busy || !confirmed}
+        disabled={busy}
         className="min-h-11 rounded-control bg-primary px-5 font-bold text-primary-foreground"
       >
         {busy ? "저장 중…" : "저장"}

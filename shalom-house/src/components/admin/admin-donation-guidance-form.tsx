@@ -19,10 +19,7 @@ const fields: { key: TextKey; label: string; multiline?: boolean }[] = [
   { key: "receiptInquiryLabel", label: "후원금 영수증·내역 문의 링크 문구" },
 ];
 
-export function AdminDonationGuidanceForm({
-  initialContent,
-  expectedUpdatedAt,
-}: AdminDonationGuidanceFormProps) {
+export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }: AdminDonationGuidanceFormProps) {
   const [content, setContent] = useState(initialContent);
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -36,7 +33,9 @@ export function AdminDonationGuidanceForm({
   function updateStep(index: number, value: string) {
     setContent((current) => ({
       ...current,
-      steps: current.steps.map((step, stepIndex) => (stepIndex === index ? value : step)) as unknown as DonationGuidanceContent["steps"],
+      steps: current.steps.map((step, stepIndex) =>
+        stepIndex === index ? value : step,
+      ) as unknown as DonationGuidanceContent["steps"],
     }));
     setConfirmed(false);
   }
@@ -70,10 +69,7 @@ export function AdminDonationGuidanceForm({
         );
         return;
       }
-      if (
-        typeof data.redirectTo !== "string" ||
-        !data.redirectTo.startsWith("/admin/site-content/donation-guidance")
-      ) {
+      if (typeof data.redirectTo !== "string" || !data.redirectTo.startsWith("/admin/site-content/donation-guidance")) {
         setMessage("후원 안내를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
         return;
       }
@@ -100,7 +96,9 @@ export function AdminDonationGuidanceForm({
           const error = errors[`steps.${index}`] ?? (index === 0 ? errors.steps : undefined);
           return (
             <div key={id}>
-              <label className="block font-semibold" htmlFor={id}>후원 절차 {index + 1}</label>
+              <label className="block font-semibold" htmlFor={id}>
+                후원 절차 {index + 1}
+              </label>
               <input
                 id={id}
                 value={step}
@@ -109,7 +107,11 @@ export function AdminDonationGuidanceForm({
                 aria-invalid={error ? true : undefined}
                 className="mt-2 min-h-11 w-full rounded-control border px-3 py-2"
               />
-              {error ? <p id={`${id}-error`} role="alert" className="text-small text-danger">{error}</p> : null}
+              {error ? (
+                <p id={`${id}-error`} role="alert" className="text-small text-danger">
+                  {error}
+                </p>
+              ) : null}
             </div>
           );
         })}
@@ -128,12 +130,18 @@ export function AdminDonationGuidanceForm({
         <span>입력한 후원 안내가 공개 홈페이지에 즉시 반영되는 것을 확인했습니다.</span>
       </label>
       {errors.saveConfirmed ? (
-        <p id="donation-confirm-error" role="alert" className="text-small text-danger">{errors.saveConfirmed}</p>
+        <p id="donation-confirm-error" role="alert" className="text-small text-danger">
+          {errors.saveConfirmed}
+        </p>
       ) : null}
-      {message ? <p role="alert" className="font-semibold text-danger">{message}</p> : null}
+      {message ? (
+        <p role="alert" className="font-semibold text-danger">
+          {message}
+        </p>
+      ) : null}
       <button
         type="submit"
-        disabled={!confirmed || busy}
+        disabled={busy}
         className="min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground disabled:opacity-60"
       >
         {busy ? "저장 중…" : "후원 안내 저장"}
@@ -142,7 +150,14 @@ export function AdminDonationGuidanceForm({
   );
 }
 
-function TextField({ keyName, label, multiline, value, errors, updateText }: {
+function TextField({
+  keyName,
+  label,
+  multiline,
+  value,
+  errors,
+  updateText,
+}: {
   keyName: TextKey;
   label: string;
   multiline?: boolean;
@@ -155,16 +170,23 @@ function TextField({ keyName, label, multiline, value, errors, updateText }: {
   const common = {
     id,
     value,
-    onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => updateText(keyName, event.target.value),
+    onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      updateText(keyName, event.target.value),
     "aria-describedby": error ? `${id}-error` : undefined,
     "aria-invalid": error ? (true as const) : undefined,
     className: "mt-2 min-h-11 w-full rounded-control border px-3 py-2",
   };
   return (
     <div>
-      <label className="block font-semibold" htmlFor={id}>{label}</label>
+      <label className="block font-semibold" htmlFor={id}>
+        {label}
+      </label>
       {multiline ? <textarea {...common} className={`${common.className} min-h-24`} /> : <input {...common} />}
-      {error ? <p id={`${id}-error`} role="alert" className="text-small text-danger">{error}</p> : null}
+      {error ? (
+        <p id={`${id}-error`} role="alert" className="text-small text-danger">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
