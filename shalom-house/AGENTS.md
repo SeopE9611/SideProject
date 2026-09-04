@@ -67,6 +67,26 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 감사·보고 목적의 Markdown 문서를 임의로 만들지 않는다.
 - 사용자가 요청한 문서만 생성한다.
 
+## 공개 UI 디자인 작업
+
+### 기존 UI 비보존 원칙
+
+“최소 수정”은 기존 시각 구조를 보존하라는 뜻이 아니다. UI 리디자인의 최소 범위는 해당 사용자 경험을 완성하는 데 필요한 공개 UI 범위 안에서만 작업한다는 뜻이다. 잘못된 UI를 유지한 채 `className` 몇 개만 수정하는 것을 최소 수정으로 판단하지 않는다.
+
+### Visual First Workflow
+
+1. 실제 코드와 데이터 계약 확인
+2. 현재 화면 구조 분석
+3. 관련 page pattern 확인
+4. 목표 wireframe 작성
+5. implementation
+6. viewport 시각 검증
+7. typecheck/diff 검증
+
+### 완료 금지
+
+시각 작업은 화면을 직접 확인하지 않고 `디자인 완료`, `UI QA 완료`, `반응형 완료`라고 보고하지 않는다. 브라우저 또는 preview 도구가 없는 환경에서는 `시각 검증 미실행`으로 명확히 보고한다.
+
 ## 기본 검증 명령
 
 - `pnpm typecheck`

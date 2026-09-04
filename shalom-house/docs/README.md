@@ -12,6 +12,7 @@
 - [`page-patterns.md`](./page-patterns.md): 페이지 유형별 레이아웃
 - [`content-governance.md`](./content-governance.md): 콘텐츠 상태, 개인정보와 승인
 - [`accessibility.md`](./accessibility.md): 장기 접근성 기준과 검증 방법
+- [`visual-quality-gate.md`](./visual-quality-gate.md): 공개 UI의 viewport별 시각 완료 기준
 
 각 규칙의 최종 소유 문서는 위 설명에 따른다.
 
@@ -36,13 +37,13 @@
 
 ## 작업 유형별 필독 문서
 
-| 작업 유형   | 필독 문서                                                                           |
-| ----------- | ----------------------------------------------------------------------------------- |
-| 공개 UI     | requirements, information-architecture, design-system, page-patterns, accessibility |
-| 공개 콘텐츠 | requirements, content-governance, operations/official-content-intake                |
-| 뉴스·CMS    | technical/content-platform-architecture, content-governance                         |
-| 관리자 기능 | requirements, technical/content-platform-architecture, accessibility                |
-| QA          | page-patterns, design-system, accessibility, 해당 작업 요구사항                     |
+| 작업 유형   | 필독 문서                                                                                                |
+| ----------- | -------------------------------------------------------------------------------------------------------- |
+| 공개 UI     | requirements, information-architecture, design-system, page-patterns, accessibility, visual-quality-gate |
+| 공개 콘텐츠 | requirements, content-governance, operations/official-content-intake                                     |
+| 뉴스·CMS    | technical/content-platform-architecture, content-governance                                              |
+| 관리자 기능 | requirements, technical/content-platform-architecture, accessibility                                     |
+| QA          | page-patterns, design-system, accessibility, 해당 작업 요구사항                                          |
 
 ## 문서 유지 원칙
 
