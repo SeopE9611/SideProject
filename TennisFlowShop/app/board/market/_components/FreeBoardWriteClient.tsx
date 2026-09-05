@@ -42,6 +42,8 @@ import { getApiErrorMessage } from "@/lib/fetchers/getApiErrorMessage";
 import { useBoardUnsavedChangesGuard } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { normalizeMarketMeta, type MarketMeta } from "@/lib/market";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_STORAGE_BUCKET } from "@/lib/storage-config";
+import { blockPortfolioDemoStorageUpload } from "@/lib/storage-upload.client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -406,13 +408,13 @@ export default function FreeBoardWriteClient() {
 
   // Supabase에 한 개 파일 업로드
   const uploadOneFile = async (file: File) => {
-    const BUCKET = "tennis-images";
+    if (blockPortfolioDemoStorageUpload()) throw new Error("Portfolio demo upload blocked");
     const FOLDER = "community/attachments";
 
     const ext = file.name.split(".").pop() || "bin";
     const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+    const { error } = await supabase.storage.from(SUPABASE_STORAGE_BUCKET).upload(path, file, {
       upsert: false,
       contentType: file.type || undefined,
     });
@@ -422,7 +424,7 @@ export default function FreeBoardWriteClient() {
       throw error;
     }
 
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    const { data } = supabase.storage.from(SUPABASE_STORAGE_BUCKET).getPublicUrl(path);
     const url = data?.publicUrl;
     if (!url) throw new Error("파일 URL 생성에 실패했습니다.");
 

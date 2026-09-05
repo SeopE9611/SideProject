@@ -22,6 +22,8 @@ import {
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { useBoardUnsavedChangesGuard } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_STORAGE_BUCKET } from "@/lib/storage-config";
+import { blockPortfolioDemoStorageUpload } from "@/lib/storage-upload.client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ArrowLeft,
@@ -459,7 +461,6 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
       setSubmitting(true);
 
       // Supabase 업로드는 기존 코드 재사용
-      const BUCKET = "tennis-images";
       const FOLDER = "boards/notice";
 
       const getImageSize = (file: File) =>
@@ -479,14 +480,15 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
         });
 
       const uploadOne = async (file: File) => {
+        if (blockPortfolioDemoStorageUpload()) throw new Error("Portfolio demo upload blocked");
         const ext = file.name.split(".").pop() || "bin";
         const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+        const { error } = await supabase.storage.from(SUPABASE_STORAGE_BUCKET).upload(path, file, {
           upsert: false,
           contentType: file.type || undefined,
         });
         if (error) throw error;
-        const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        const { data } = supabase.storage.from(SUPABASE_STORAGE_BUCKET).getPublicUrl(path);
         const meta = await getImageSize(file);
         const downloadUrl = `${data.publicUrl}${data.publicUrl.includes("?") ? "&" : "?"}download=${encodeURIComponent(file.name)}`;
         return {
