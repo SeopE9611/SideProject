@@ -29,6 +29,8 @@ import {
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_STORAGE_BUCKET } from "@/lib/storage-config";
+import { blockPortfolioDemoStorageUpload } from "@/lib/storage-upload.client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminFormHintTooltipClass } from "@/lib/tooltip-style";
 import { cn } from "@/lib/utils";
@@ -377,10 +379,13 @@ export default function NewStringPage() {
   const isMaxReached = images.length >= MAX_IMAGE_COUNT; // 최대 이미지 수 도달 여부
 
   const uploadProductImageFile = async (file: File): Promise<string | null> => {
+    if (blockPortfolioDemoStorageUpload()) return null;
     const fileName = sanitizeFileName(file);
-    const { error } = await supabase.storage.from("tennis-images").upload(fileName, file);
+    const { error } = await supabase.storage.from(SUPABASE_STORAGE_BUCKET).upload(fileName, file);
     if (error) return null;
-    const { data: publicData } = supabase.storage.from("tennis-images").getPublicUrl(fileName);
+    const { data: publicData } = supabase.storage
+      .from(SUPABASE_STORAGE_BUCKET)
+      .getPublicUrl(fileName);
     return publicData?.publicUrl ?? null;
   };
 

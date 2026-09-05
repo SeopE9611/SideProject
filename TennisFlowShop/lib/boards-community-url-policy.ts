@@ -1,3 +1,5 @@
+import { SERVER_STORAGE_BUCKET } from "@/lib/storage-config.server";
+
 type UrlValidationFailureReason =
   "invalid_url" | "invalid_scheme" | "invalid_host" | "invalid_path";
 
@@ -11,7 +13,7 @@ if (supabaseUrl) {
   }
 }
 export const BOARD_ASSET_ALLOWED_PATH_PREFIXES = [
-  "/storage/v1/object/public/tennis-images/",
+  `/storage/v1/object/public/${SERVER_STORAGE_BUCKET}/`,
 ] as const;
 
 export type UrlValidationResult = { ok: true } | { ok: false; reason: UrlValidationFailureReason };

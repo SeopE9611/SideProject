@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_STORAGE_BUCKET } from "@/lib/storage-config";
+import { blockPortfolioDemoStorageUpload } from "@/lib/storage-upload.client";
 import { showErrorToast } from "@/lib/toast";
 import { AlertCircle, ImagePlus, Loader2, UploadCloud, X } from "lucide-react";
 import Image from "next/image";
@@ -9,7 +11,6 @@ import { useEffect, useRef, useState } from "react";
 
 type Photo = string;
 
-const BUCKET = "tennis-images"; // 상품과 동일 버킷 사용
 const FOLDER = "reviews"; // 리뷰 전용 하위 폴더
 
 type QueueItem = { id: string; url: string };
@@ -78,6 +79,7 @@ export default function PhotosUploader({
 
   const onPick = () => {
     if (uploadBlocked || !hasRoom) return;
+    if (blockPortfolioDemoStorageUpload()) return;
     inputRef.current?.click();
   };
 
@@ -96,6 +98,7 @@ export default function PhotosUploader({
   };
 
   const uploadOne = async (file: File): Promise<string | null> => {
+    if (blockPortfolioDemoStorageUpload()) return null;
     if (disabled || !uploadSessionId) return null;
     const ext = file.name.split(".").pop() || "jpg";
     const path = sanitizeStorageKey(
@@ -103,7 +106,7 @@ export default function PhotosUploader({
     );
 
     const res = await withTimeout(
-      supabase.storage.from(BUCKET).upload(path, file, {
+      supabase.storage.from(SUPABASE_STORAGE_BUCKET).upload(path, file, {
         cacheControl: "3600",
         upsert: false,
         contentType: file.type || undefined,
@@ -114,7 +117,7 @@ export default function PhotosUploader({
     const err = res?.error;
     if (!res || err) {
       console.error("[PhotosUploader] upload failed", {
-        bucket: BUCKET,
+        bucket: SUPABASE_STORAGE_BUCKET,
         path,
         file: { name: file.name, size: file.size, type: file.type },
         error: err,
@@ -128,7 +131,7 @@ export default function PhotosUploader({
       return null;
     }
 
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    const { data } = supabase.storage.from(SUPABASE_STORAGE_BUCKET).getPublicUrl(path);
     const publicUrl = data?.publicUrl ?? null;
     if (publicUrl) sessionUploadedUrlsRef.current.add(publicUrl);
     return publicUrl;

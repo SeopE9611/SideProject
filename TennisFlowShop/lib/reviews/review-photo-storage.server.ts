@@ -1,8 +1,9 @@
 import "server-only";
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { SERVER_STORAGE_BUCKET } from "@/lib/storage-config.server";
 
-const REVIEW_PHOTO_BUCKET = "tennis-images";
+const REVIEW_PHOTO_BUCKET = SERVER_STORAGE_BUCKET;
 const REVIEW_PHOTO_PREFIX = "reviews/";
 export const REVIEW_PHOTO_SESSION_PREFIX = "reviews/sessions/";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;

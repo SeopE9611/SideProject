@@ -5,6 +5,8 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_STORAGE_BUCKET } from "@/lib/storage-config";
+import { blockPortfolioDemoStorageUpload } from "@/lib/storage-upload.client";
 import { showErrorToast } from "@/lib/toast";
 
 type Variant = "review" | "string" | "racket";
@@ -19,7 +21,6 @@ type Props = {
   onUploadingChange?: (v: boolean) => void;
 };
 
-const BUCKET = "tennis-images";
 const DEFAULT_FOLDER: Record<Variant, string> = {
   review: "reviews",
   string: "products/strings",
@@ -39,6 +40,7 @@ export default function ImageUploader({
   const targetFolder = folder ?? DEFAULT_FOLDER[variant];
 
   const pick = () => {
+    if (blockPortfolioDemoStorageUpload()) return;
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
@@ -61,7 +63,7 @@ export default function ImageUploader({
           const ext = f.name.split(".").pop() || "jpg";
           const key = `${targetFolder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-          const { error } = await supabase.storage.from(BUCKET).upload(key, f);
+          const { error } = await supabase.storage.from(SUPABASE_STORAGE_BUCKET).upload(key, f);
 
           if (error) {
             // 디버깅용: 배포 환경에서 실제 에러 메시지 확인
@@ -69,14 +71,14 @@ export default function ImageUploader({
               message: error.message,
               name: error.name,
               status: (error as any)?.status,
-              bucket: BUCKET,
+              bucket: SUPABASE_STORAGE_BUCKET,
               key,
             });
 
             showErrorToast("이미지 업로드 중 오류가 발생했습니다.");
             continue;
           }
-          const { data } = supabase.storage.from(BUCKET).getPublicUrl(key);
+          const { data } = supabase.storage.from(SUPABASE_STORAGE_BUCKET).getPublicUrl(key);
           const url = data?.publicUrl;
           if (url) next.push(url);
         }

@@ -33,6 +33,8 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_STORAGE_BUCKET } from "@/lib/storage-config";
+import { blockPortfolioDemoStorageUpload } from "@/lib/storage-upload.client";
 import { showErrorToast } from "@/lib/toast";
 import { adminFormHintTooltipClass } from "@/lib/tooltip-style";
 import { cn } from "@/lib/utils";
@@ -591,10 +593,13 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   const isMaxReached = images.length >= MAX_PRODUCT_IMAGE_COUNT;
 
   const uploadProductImageFile = async (file: File): Promise<string | null> => {
+    if (blockPortfolioDemoStorageUpload()) return null;
     const fileName = sanitizeUploadFileName(file.name);
-    const { error } = await supabase.storage.from("tennis-images").upload(fileName, file);
+    const { error } = await supabase.storage.from(SUPABASE_STORAGE_BUCKET).upload(fileName, file);
     if (error) return null;
-    const { data: publicData } = supabase.storage.from("tennis-images").getPublicUrl(fileName);
+    const { data: publicData } = supabase.storage
+      .from(SUPABASE_STORAGE_BUCKET)
+      .getPublicUrl(fileName);
     return publicData?.publicUrl ?? null;
   };
 
