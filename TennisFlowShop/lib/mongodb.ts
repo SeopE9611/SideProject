@@ -23,6 +23,27 @@ const uri = process.env.MONGODB_URI;
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
 const dbName = process.env.MONGODB_DB || "tennis_academy";
+
+function getDefaultDatabaseName(mongodbUri: string) {
+  const match = mongodbUri.match(/^mongodb(?:\+srv)?:\/\/[^/]+\/([^?]*)/i);
+  if (!match?.[1]) return null;
+
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    throw new Error("MONGODB_URI의 기본 데이터베이스 이름이 올바르지 않습니다.");
+  }
+}
+
+if (uri) {
+  const uriDbName = getDefaultDatabaseName(uri);
+  if (uriDbName && uriDbName !== dbName) {
+    throw new Error(
+      `MongoDB 데이터베이스 설정이 일치하지 않습니다: MONGODB_URI 기본 DB와 MONGODB_DB를 동일하게 설정하세요.`,
+    );
+  }
+}
+
 const mongoClientOptions: MongoClientOptions = {
   maxPoolSize: 10,
   minPoolSize: 0,

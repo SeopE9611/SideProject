@@ -5,7 +5,16 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 const REVIEW_PHOTO_BUCKET = "tennis-images";
 const REVIEW_PHOTO_PREFIX = "reviews/";
 export const REVIEW_PHOTO_SESSION_PREFIX = "reviews/sessions/";
-const ALLOWED_HOSTS = new Set(["cwzpxxahtayoyqqskmnt.supabase.co"]);
+const ALLOWED_HOSTS = new Set(
+  [process.env.SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_URL].flatMap((value) => {
+    if (!value) return [];
+    try {
+      return [new URL(value).hostname];
+    } catch {
+      return [];
+    }
+  }),
+);
 const ALLOWED_PATH_PREFIX = `/storage/v1/object/public/${REVIEW_PHOTO_BUCKET}/`;
 
 export function isAllowedReviewPhotoUrl(value: unknown): value is string {
