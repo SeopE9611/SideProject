@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { SiteNavigation } from "@/components/layout/site-navigation";
+import { LineIcon } from "@/components/ui/line-icon";
 import { siteConfig } from "@/config/site";
 import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
@@ -14,15 +15,17 @@ export async function SiteHeader() {
           <p>샬롬의 집 · 장애인거주시설</p>
           <div className="flex items-center gap-6">
             <Link
-              className="py-1 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              className="inline-flex items-center gap-1.5 py-1 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               href="/about/directions"
             >
+              <LineIcon name="map-pin" size={14} />
               찾아오시는 길
             </Link>
             <a
-              className="py-1 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              className="inline-flex items-center gap-1.5 py-1 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               href={createTelephoneHref(contact.phone)}
             >
+              <LineIcon name="phone" size={14} />
               대표 전화 {contact.phone}
             </a>
           </div>

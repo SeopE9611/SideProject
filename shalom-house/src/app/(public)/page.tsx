@@ -1,7 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { HomeActivityCarousel } from "@/components/home/home-activity-carousel";
 import { HomeHero } from "@/components/home/home-hero";
+import { LineIcon, type LineIconName } from "@/components/ui/line-icon";
 import { isVisualFixtureEnabled, visualHomeImage } from "@/content/fixtures/visual.fixture";
 import { siteConfig } from "@/config/site";
 import { findPublicGalleryItems } from "@/features/gallery/gallery.repository";
@@ -20,27 +21,47 @@ const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
   day: "2-digit",
   timeZone: "UTC",
 });
-const quickLinks = [
+const quickLinks: readonly {
+  label: string;
+  description: string;
+  href: string;
+  icon: LineIconName;
+}[] = [
   {
     label: "공지사항",
     description: "새로운 공지와 이용 안내",
     href: "/news/notices",
+    icon: "newspaper",
   },
   {
     label: "생활·프로그램",
     description: "생활 기록과 프로그램 안내",
     href: "/life",
+    icon: "sparkles",
   },
   {
     label: "함께하기",
     description: "참여 방법과 절차",
     href: "/support",
+    icon: "heart-handshake",
   },
   {
     label: "찾아오시는 길",
     description: "위치와 방문 문의",
     href: "/about/directions",
+    icon: "map-pin",
   },
+];
+
+const participationLinks: readonly {
+  href: string;
+  title: string;
+  description: string;
+  icon: LineIconName;
+}[] = [
+  { href: "/support/donation", title: "후원 안내", description: "후원 방법과 영수증 문의", icon: "heart-handshake" },
+  { href: "/support/volunteer", title: "자원봉사", description: "참여 절차와 문의 안내", icon: "sparkles" },
+  { href: "/transparency", title: "자료공개", description: "운영 자료의 유형과 기간 확인", icon: "file-text" },
 ];
 
 export default async function Home() {
@@ -67,8 +88,6 @@ export default async function Home() {
         }
       : undefined;
   const visibleGalleryItems = visualFixtureEnabled ? galleryItems.slice(0, 3) : galleryItems.slice(1, 4);
-  const featuredGalleryItem = visibleGalleryItems[0];
-  const compactGalleryItems = visibleGalleryItems.slice(1);
   const leadNewsPost = newsPosts[0];
   const remainingNewsPosts = newsPosts.slice(1);
   if (newsResult.status === "rejected") console.error("홈 최근 소식 조회 실패");
@@ -81,51 +100,51 @@ export default async function Home() {
         description="지체 및 지적 장애인이 함께 생활하는 장애인거주시설입니다."
         image={heroImage}
       />
-      <nav aria-label="자주 찾는 안내" className="border-b border-border bg-surface">
-        <ul className="mx-auto grid max-w-site grid-cols-2 px-page sm:px-page-wide lg:grid-cols-4">
-          {quickLinks.map((item, index) => (
+      <nav aria-label="자주 찾는 안내" className="mx-auto max-w-site px-page sm:px-page-wide">
+        <ul className="grid grid-cols-2 overflow-hidden border-b border-border bg-surface lg:grid-cols-4">
+          {quickLinks.map((item) => (
             <li key={item.href} className="border-border even:border-l lg:border-l lg:first:border-l-0">
               <Link
-                className="group flex min-h-24 items-start gap-3 px-3 py-4 transition-colors duration-[var(--motion-duration-fast)] hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring sm:px-6 lg:min-h-32 lg:py-7"
+                className="group flex min-h-28 flex-col items-start gap-3 px-4 py-5 transition-colors duration-[var(--motion-duration-fast)] hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-focus-ring sm:flex-row sm:gap-4 sm:px-6 lg:min-h-32 lg:py-6"
                 href={item.href}
               >
-                <span className="pt-1 text-xs font-bold tabular-nums text-accent">
-                  {String(index + 1).padStart(2, "0")}
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent transition-colors group-hover:bg-surface">
+                  <LineIcon name={item.icon} size={21} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="text-safe-wrap block text-base font-bold group-hover:text-accent sm:text-xl">
+                  <span className="text-safe-wrap block text-[1.05rem] font-bold group-hover:text-accent sm:text-xl">
                     {item.label}
                   </span>
-                  <span className="text-safe-wrap mt-1 hidden text-small text-muted-foreground sm:block">
+                  <span className="text-safe-wrap mt-1 hidden text-small leading-6 text-muted-foreground sm:block">
                     {item.description}
                   </span>
                 </span>
-                <span
-                  aria-hidden="true"
-                  className="pt-0.5 text-lg text-primary transition-transform group-hover:translate-x-1"
-                >
-                  →
-                </span>
+                <LineIcon
+                  className="mt-1 hidden shrink-0 text-primary transition-transform group-hover:translate-x-1 sm:block"
+                  name="arrow-right"
+                  size={18}
+                />
               </Link>
             </li>
           ))}
         </ul>
       </nav>
 
-      <div className="mx-auto grid max-w-site items-start gap-10 px-page py-12 sm:px-page-wide sm:py-16 lg:grid-cols-12 lg:gap-12">
+      <div className="mx-auto grid max-w-site items-start gap-10 px-page py-14 sm:px-page-wide sm:py-18 lg:grid-cols-12 lg:gap-14">
         <section aria-labelledby="news-heading" className="min-w-0 lg:col-span-8">
           <div className="flex flex-wrap items-end justify-between gap-x-5 border-b-2 border-primary pb-5">
-            <div>
-              <p className="text-small font-bold text-accent">최근 안내</p>
-              <h2
-                id="news-heading"
-                className="mt-2 text-[1.875rem] font-extrabold tracking-[-0.025em] sm:text-[2.25rem]"
-              >
-                샬롬의 집 소식
-              </h2>
+            <div className="flex items-start gap-4">
+              <span className="mt-1 inline-flex size-11 items-center justify-center rounded-full bg-primary-soft text-primary">
+                <LineIcon name="newspaper" size={22} />
+              </span>
+              <div>
+                <h2 id="news-heading" className="mt-1 text-[1.75rem] font-extrabold tracking-[-0.025em] sm:text-[2rem]">
+                  샬롬의 집 소식
+                </h2>
+              </div>
             </div>
             <Link className="institution-link text-small" href="/news">
-              전체 소식 <span aria-hidden="true">→</span>
+              전체 소식 <LineIcon name="arrow-right" size={18} />
             </Link>
           </div>
           {newsPosts.some((post) => post.isDemo) ? (
@@ -209,7 +228,10 @@ export default async function Home() {
           aria-labelledby="visit-summary-heading"
           className="min-w-0 border-t-4 border-accent bg-paper p-7 sm:p-9 lg:col-span-4"
         >
-          <p className="text-small font-bold text-accent">방문 전 확인</p>
+          <span className="inline-flex size-12 items-center justify-center rounded-full bg-surface text-accent">
+            <LineIcon name="map-pin" />
+          </span>
+          <p className="mt-5 text-small font-bold text-accent">방문 전 확인</p>
           <h2
             id="visit-summary-heading"
             className="text-safe-wrap mt-2 text-[1.75rem] font-extrabold tracking-[-0.025em]"
@@ -222,9 +244,10 @@ export default async function Home() {
           <div className="mt-6 border-t border-paper-strong pt-5">
             <p className="text-small text-muted-foreground">대표 전화</p>
             <a
-              className="institution-link mt-1 text-[1.65rem] font-bold tabular-nums"
+              className="institution-link mt-1 gap-3 whitespace-nowrap text-xl font-bold tabular-nums sm:text-[1.65rem]"
               href={createTelephoneHref(contact.phone)}
             >
+              <LineIcon name="phone" size={21} />
               {contact.phone}
             </a>
           </div>
@@ -232,12 +255,12 @@ export default async function Home() {
             className="mt-6 inline-flex min-h-12 items-center justify-between gap-6 border border-primary px-5 font-bold text-primary hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring"
             href="/about/directions"
           >
-            찾아오시는 길 <span aria-hidden="true">→</span>
+            찾아오시는 길 <LineIcon name="arrow-right" size={18} />
           </Link>
         </aside>
       </div>
 
-      {featuredGalleryItem ? (
+      {visibleGalleryItems.length > 0 ? (
         <section aria-labelledby="gallery-heading" className="border-y border-border bg-surface-subtle py-12 sm:py-16">
           <div className="mx-auto max-w-site px-page sm:px-page-wide">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -251,74 +274,21 @@ export default async function Home() {
                 </h2>
               </div>
               <Link className="institution-link text-small" href="/life/gallery">
-                활동사진 전체보기
+                활동사진 전체보기 <LineIcon name="arrow-right" size={18} />
               </Link>
             </div>
-            <div
-              className={`mt-7 grid gap-8 ${compactGalleryItems.length > 0 ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:gap-10" : "max-w-4xl"}`}
-            >
-              <article className="min-w-0">
-                <Link
-                  className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
-                  href={"/life/gallery/" + featuredGalleryItem.slug}
-                >
-                  <div className="overflow-hidden bg-surface">
-                    <Image
-                      className="aspect-[16/10] w-full object-cover transition-transform duration-[var(--motion-duration-standard)] ease-standard group-hover:scale-[1.015]"
-                      src={"/api/gallery/" + featuredGalleryItem.slug + "/media"}
-                      alt={featuredGalleryItem.altText}
-                      width={featuredGalleryItem.width}
-                      height={featuredGalleryItem.height}
-                      sizes="(max-width: 1023px) 100vw, 58vw"
-                      unoptimized
-                    />
-                  </div>
-                  <p className="mt-4 text-small font-semibold text-accent">
-                    {featuredGalleryItem.category} ·{" "}
-                    <time dateTime={featuredGalleryItem.activityDate}>
-                      {dateFormatter.format(new Date(featuredGalleryItem.activityDate))}
-                    </time>
-                  </p>
-                  <h3 className="text-safe-wrap mt-2 text-[1.4rem] font-bold leading-snug group-hover:text-primary group-hover:underline sm:text-[1.65rem]">
-                    {featuredGalleryItem.title}
-                  </h3>
-                </Link>
-              </article>
-              {compactGalleryItems.length > 0 ? (
-                <ul className="divide-y divide-border border-y border-border">
-                  {compactGalleryItems.map((item) => (
-                    <li key={item.slug} className="min-w-0 py-5 first:pt-0 lg:first:pt-5">
-                      <Link
-                        className="group grid grid-cols-[7.5rem_minmax(0,1fr)] gap-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring sm:grid-cols-[10rem_minmax(0,1fr)]"
-                        href={"/life/gallery/" + item.slug}
-                      >
-                        <div className="overflow-hidden bg-surface">
-                          <Image
-                            className="aspect-[4/3] h-full w-full object-cover transition-transform duration-[var(--motion-duration-standard)] ease-standard group-hover:scale-[1.02]"
-                            src={"/api/gallery/" + item.slug + "/media"}
-                            alt={item.altText}
-                            width={item.width}
-                            height={item.height}
-                            sizes="(max-width: 639px) 7.5rem, (max-width: 1023px) 10rem, 14vw"
-                            unoptimized
-                          />
-                        </div>
-                        <div className="min-w-0 py-1">
-                          <p className="text-small font-semibold text-accent">
-                            {item.category} ·{" "}
-                            <time dateTime={item.activityDate}>
-                              {dateFormatter.format(new Date(item.activityDate))}
-                            </time>
-                          </p>
-                          <h3 className="text-safe-wrap mt-2 text-lg font-bold leading-snug group-hover:text-primary group-hover:underline">
-                            {item.title}
-                          </h3>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+            <div className="mt-7">
+              <HomeActivityCarousel
+                key={visibleGalleryItems.map((item) => item.slug).join(",")}
+                items={visibleGalleryItems.map((item) => ({
+                  slug: item.slug,
+                  title: item.title,
+                  category: item.category,
+                  altText: item.altText,
+                  activityDate: item.activityDate,
+                  dateLabel: dateFormatter.format(new Date(item.activityDate)),
+                }))}
+              />
             </div>
           </div>
         </section>
@@ -330,40 +300,40 @@ export default async function Home() {
           </Link>
         </p>
       ) : null}
-      <section aria-labelledby="participation-heading" className="bg-primary text-primary-foreground">
+      <section aria-labelledby="participation-heading" className="border-b border-border bg-paper">
         <div className="mx-auto grid max-w-site gap-8 px-page py-12 sm:px-page-wide sm:py-14 lg:grid-cols-[1.1fr_1.9fr] lg:items-start lg:gap-14">
           <div>
-            <p className="text-small font-bold text-sun-soft">참여와 공개</p>
             <h2
               id="participation-heading"
-              className="text-safe-wrap mt-2 text-[1.875rem] font-extrabold tracking-[-0.025em] sm:text-[2.25rem]"
+              className="text-safe-wrap text-[1.875rem] font-extrabold tracking-[-0.025em] text-primary sm:text-[2.25rem]"
             >
-              함께하는 방법을 확인하세요
+              참여 안내와 자료공개
             </h2>
-            <p className="text-safe-wrap mt-4 max-w-md text-small leading-7 text-primary-foreground/72">
+            <p className="text-safe-wrap mt-4 max-w-md text-small leading-7 text-muted-foreground">
               참여 절차와 공개 자료를 각각의 안내에서 정확하게 확인할 수 있습니다.
             </p>
           </div>
-          <ul className="divide-y divide-primary-foreground/20 border-y border-primary-foreground/20 lg:grid lg:grid-cols-3 lg:divide-x lg:divide-y-0">
-            {[
-              { href: "/support/donation", title: "후원하기", description: "후원 방법과 영수증 문의" },
-              { href: "/support/volunteer", title: "자원봉사", description: "참여 절차와 문의 안내" },
-              { href: "/transparency", title: "자료공개", description: "운영 자료의 유형과 기간 확인" },
-            ].map((item) => (
+          <ul className="divide-y divide-paper-strong border-y border-paper-strong lg:grid lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+            {participationLinks.map((item) => (
               <li key={item.href}>
                 <Link
-                  className="group flex min-h-32 items-start justify-between gap-5 px-2 py-6 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-surface lg:min-h-44 lg:px-7"
+                  className="group relative flex min-h-32 items-start gap-4 px-2 py-6 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring lg:min-h-44 lg:flex-col lg:px-6"
                   href={item.href}
                 >
-                  <span>
-                    <span className="block text-xl font-bold group-hover:underline">{item.title}</span>
-                    <span className="text-safe-wrap mt-3 block text-small leading-7 text-primary-foreground/68">
+                  <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-surface text-accent">
+                    <LineIcon name={item.icon} size={21} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xl font-bold text-primary group-hover:underline">{item.title}</span>
+                    <span className="text-safe-wrap mt-2 block text-small leading-7 text-muted-foreground">
                       {item.description}
                     </span>
                   </span>
-                  <span aria-hidden="true" className="text-xl transition-transform group-hover:translate-x-1">
-                    →
-                  </span>
+                  <LineIcon
+                    className="mt-1 shrink-0 text-primary transition-transform group-hover:translate-x-1 lg:absolute lg:top-8 lg:right-6"
+                    name="arrow-right"
+                    size={19}
+                  />
                 </Link>
               </li>
             ))}

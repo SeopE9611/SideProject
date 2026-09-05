@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { SectionPageHeader } from "@/components/layout/section-page-header";
+import { LineIcon } from "@/components/ui/line-icon";
 import { getNewsRepository } from "@/features/news/news.repository";
 import {
   getPublicNewsPaginationItems,
@@ -133,18 +134,19 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             </div>
           ) : null}
           <button
-            className="min-h-13 bg-primary px-7 py-3 font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+            aria-label="소식 검색"
+            className="inline-flex min-h-13 items-center justify-center gap-2 whitespace-nowrap bg-primary px-3 py-3 font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring sm:px-7"
             type="submit"
           >
-            소식 검색
+            <LineIcon name="search" size={19} />
+            검색
           </button>
         </form>
 
-        <section aria-labelledby="results-heading" className="mt-10 sm:mt-12">
+        <section aria-labelledby="results-heading" className="mt-8 sm:mt-10">
           <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-primary pb-5">
             <div>
-              <p className="text-small font-bold text-accent">게시물 찾기</p>
-              <h2 id="results-heading" className="mt-2 text-xl font-bold sm:text-2xl">
+              <h2 id="results-heading" className="text-xl font-bold sm:text-2xl">
                 {result === null ? "소식 목록" : hasUserFilter ? "검색 결과" : "전체"}{" "}
                 {result !== null ? <span className="font-bold text-accent">{total}건</span> : null}
               </h2>
@@ -248,7 +250,10 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                           </p>
                         ) : null}
                         {post.attachment ? (
-                          <p className="mt-2 text-small font-semibold text-muted-foreground">PDF 첨부</p>
+                          <p className="mt-2 inline-flex items-center gap-2 text-small font-semibold text-muted-foreground">
+                            <LineIcon name="file-text" size={17} />
+                            PDF 첨부
+                          </p>
                         ) : null}
                       </div>
                       {post.category === "activity" && post.coverImage ? (

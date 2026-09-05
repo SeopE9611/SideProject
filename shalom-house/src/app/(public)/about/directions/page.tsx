@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
+import { LineIcon } from "@/components/ui/line-icon";
 import { createPublicPageMetadata } from "@/features/seo/metadata";
 import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
@@ -32,14 +33,11 @@ export default async function DirectionsPage() {
             aria-labelledby="directions-address-heading"
             className="min-w-0 border-t-4 border-accent bg-primary px-7 py-8 text-primary-foreground sm:p-10 lg:col-span-7 lg:p-12"
           >
-            <p className="text-small font-bold text-sun-soft">방문 위치</p>
-            <h2
-              id="directions-address-heading"
-              className="text-safe-wrap mt-3 text-[1.875rem] font-extrabold tracking-[-0.025em] sm:text-[2.25rem]"
-            >
-              주소를 확인하고 지도를 열어보세요
+            <h2 id="directions-address-heading" className="flex items-center gap-3 text-small font-bold text-sun-soft">
+              <LineIcon name="map-pin" size={22} />
+              방문 주소
             </h2>
-            <address className="text-safe-wrap mt-8 max-w-2xl text-[1.75rem] leading-snug font-bold tracking-[-0.025em] not-italic sm:text-[2.35rem]">
+            <address className="text-safe-wrap mt-6 max-w-2xl text-[1.75rem] leading-snug font-bold tracking-[-0.025em] not-italic sm:text-[2.35rem]">
               {contact.address}
             </address>
             <p className="text-safe-wrap mt-8 text-small text-primary-foreground/72">
@@ -55,9 +53,11 @@ export default async function DirectionsPage() {
                     rel="noreferrer"
                   >
                     {link.label}
-                    <span className="text-small transition-transform group-hover:translate-x-1" aria-hidden="true">
-                      ↗
-                    </span>
+                    <LineIcon
+                      className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
+                      name="external-link"
+                      size={18}
+                    />
                   </a>
                 </li>
               ))}
@@ -67,7 +67,10 @@ export default async function DirectionsPage() {
             aria-labelledby="directions-contact-heading"
             className="min-w-0 border-t-4 border-paper-strong bg-paper px-7 py-8 sm:p-10 lg:col-span-5 lg:p-12"
           >
-            <p className="text-small font-bold text-accent">방문 전 확인</p>
+            <p className="flex items-center gap-3 text-small font-bold text-accent">
+              <LineIcon name="phone" size={22} />
+              방문 전 확인
+            </p>
             <h2
               id="directions-contact-heading"
               className="text-safe-wrap mt-3 text-[1.875rem] font-extrabold tracking-[-0.025em]"
@@ -76,7 +79,7 @@ export default async function DirectionsPage() {
             </h2>
             <dl className="mt-8">
               <dt className="text-small text-muted-foreground">대표 전화</dt>
-              <dd className="text-safe-wrap mt-2 text-[2rem] font-extrabold tracking-[-0.025em] text-primary sm:text-[2.5rem]">
+              <dd className="text-safe-wrap mt-2 text-2xl font-extrabold tracking-[-0.025em] text-primary sm:text-[2.5rem] lg:text-[1.75rem] xl:text-[2.5rem]">
                 {contact.phone}
               </dd>
             </dl>
@@ -85,15 +88,17 @@ export default async function DirectionsPage() {
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               <a
-                className="inline-flex min-h-13 items-center justify-center bg-primary px-5 py-3 font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
+                className="inline-flex min-h-13 items-center justify-center gap-2 bg-primary px-5 py-3 font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
                 href={createTelephoneHref(contact.phone)}
               >
+                <LineIcon name="phone" size={19} />
                 전화로 문의하기
               </a>
               <Link
-                className="inline-flex min-h-13 items-center justify-center border border-primary px-5 py-3 font-bold text-primary hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring"
+                className="inline-flex min-h-13 items-center justify-center gap-2 border border-primary px-5 py-3 font-bold text-primary hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring"
                 href="/support/contact"
               >
+                <LineIcon name="message-circle" size={19} />
                 온라인 문의
               </Link>
             </div>
