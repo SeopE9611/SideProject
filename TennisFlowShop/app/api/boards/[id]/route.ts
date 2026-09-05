@@ -17,6 +17,7 @@ import {
   validateSanitizedLength,
 } from "@/lib/sanitize";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { SERVER_STORAGE_BUCKET } from "@/lib/storage-config.server";
 import { createHash } from "crypto";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -26,7 +27,7 @@ import { revalidateTag } from "next/cache";
 import { HOME_NOTICES_CACHE_TAG } from "@/lib/home/home-preview";
 
 // supabase 상수/핼퍼
-const STORAGE_BUCKET = "tennis-images";
+const STORAGE_BUCKET = SERVER_STORAGE_BUCKET;
 
 // 비로그인 사용자 조회 중복 방지용(익명 식별자)
 const ANON_VIEWER_COOKIE = "anonViewerId";

@@ -20,6 +20,8 @@ import { communityFetch } from "@/lib/community/communityFetch.client";
 import { useBoardUnsavedChangesGuard } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_STORAGE_BUCKET } from "@/lib/storage-config";
+import { blockPortfolioDemoStorageUpload } from "@/lib/storage-upload.client";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { AlertCircle, ChevronLeft, ChevronRight, ImagePlus, Search, Upload, X } from "lucide-react";
@@ -405,17 +407,17 @@ export default function QnaWritePage() {
       const c = content.trim();
 
       // 첨부 업로드(Supabase)
-      const BUCKET = "tennis-images";
       const FOLDER = "boards/qna";
       const uploadOne = async (file: File) => {
+        if (blockPortfolioDemoStorageUpload()) throw new Error("Portfolio demo upload blocked");
         const ext = file.name.split(".").pop() || "bin";
         const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+        const { error } = await supabase.storage.from(SUPABASE_STORAGE_BUCKET).upload(path, file, {
           upsert: false,
           contentType: file.type || undefined,
         });
         if (error) throw error;
-        const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        const { data } = supabase.storage.from(SUPABASE_STORAGE_BUCKET).getPublicUrl(path);
         return {
           url: data.publicUrl,
           name: file.name,
