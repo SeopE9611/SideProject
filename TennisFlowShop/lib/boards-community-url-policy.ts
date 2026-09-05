@@ -1,7 +1,15 @@
 type UrlValidationFailureReason =
   "invalid_url" | "invalid_scheme" | "invalid_host" | "invalid_path";
 
-export const BOARD_ASSET_ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+export const BOARD_ASSET_ALLOWED_HOSTS = new Set<string>();
+if (supabaseUrl) {
+  try {
+    BOARD_ASSET_ALLOWED_HOSTS.add(new URL(supabaseUrl).hostname);
+  } catch {
+    // 잘못된 URL은 허용 hostname을 추가하지 않는다.
+  }
+}
 export const BOARD_ASSET_ALLOWED_PATH_PREFIXES = [
   "/storage/v1/object/public/tennis-images/",
 ] as const;

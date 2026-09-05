@@ -4,10 +4,18 @@ import { compileTsModule } from "./helpers/compile-ts-module.mjs";
 
 const input = compileTsModule("lib/reviews/review-input-policy.ts");
 const guards = compileTsModule("lib/reviews/review-api-guards.ts");
+const originalSupabaseUrl = process.env.SUPABASE_URL;
+const originalPublicSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+process.env.SUPABASE_URL = "https://test-project.supabase.co";
+process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test-project.supabase.co";
 const photo = compileTsModule("lib/reviews/review-photo-storage.server.ts", {
   "server-only": {},
   "@/lib/supabase-admin": { supabaseAdmin: {} },
 });
+if (originalSupabaseUrl === undefined) delete process.env.SUPABASE_URL;
+else process.env.SUPABASE_URL = originalSupabaseUrl;
+if (originalPublicSupabaseUrl === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+else process.env.NEXT_PUBLIC_SUPABASE_URL = originalPublicSupabaseUrl;
 const publicSurface = compileTsModule("lib/reviews/public-review-surface.server.ts", {
   "@/lib/reviews/review-target": { getReviewContextLabel: () => "", inferReviewContext: () => "product" },
   mongodb: { ObjectId: { isValid: () => false } },
@@ -38,10 +46,10 @@ test("공개 후기 predicate와 사진 URL whitelist는 운영 helper 결과를
   assert.deepEqual(publicSurface.buildPublicReviewMatch(true), {
     isDeleted: { $ne: true }, deletedAt: null, moderationStatus: { $ne: "hidden" },
   });
-  const valid = "https://cwzpxxahtayoyqqskmnt.supabase.co/storage/v1/object/public/tennis-images/reviews/a.jpg";
+  const valid = "https://test-project.supabase.co/storage/v1/object/public/tennis-images/reviews/a.jpg";
   assert.equal(photo.isAllowedReviewPhotoUrl(valid), true);
   assert.equal(photo.isAllowedReviewPhotoUrl("https://example.com/storage/v1/object/public/tennis-images/reviews/a.jpg"), false);
-  assert.equal(photo.isAllowedReviewPhotoUrl("https://cwzpxxahtayoyqqskmnt.supabase.co/storage/v1/object/public/tennis-images/other/a.jpg"), false);
+  assert.equal(photo.isAllowedReviewPhotoUrl("https://test-project.supabase.co/storage/v1/object/public/tennis-images/other/a.jpg"), false);
 });
 
 test("helpful, cursor, 중복 및 잘못된 요청 body 방어는 순수 helper 결과를 반환한다", () => {
