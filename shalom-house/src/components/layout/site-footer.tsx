@@ -55,9 +55,18 @@ export async function SiteFooter() {
                 </a>
               </p>
             </address>
-            <p className="mt-2 text-xs text-primary-foreground/65">
-              © {new Date().getFullYear()} {siteConfig.name}
-            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-primary-foreground/65">
+              <p>
+                © {new Date().getFullYear()} {siteConfig.name}
+              </p>
+              <Link
+                href="/admin"
+                prefetch={false}
+                className="inline-flex min-h-11 items-center underline-offset-4 hover:text-primary-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface"
+              >
+                관리자 로그인
+              </Link>
+            </div>
           </div>
         </div>
       </div>
