@@ -37,7 +37,10 @@ function getDefaultDatabaseName(mongodbUri: string) {
 
 if (uri) {
   const uriDbName = getDefaultDatabaseName(uri);
-  if (uriDbName && uriDbName !== dbName) {
+  if (!uriDbName) {
+    throw new Error("MONGODB_URI에 기본 데이터베이스 이름을 설정해야 합니다.");
+  }
+  if (uriDbName !== dbName) {
     throw new Error(
       `MongoDB 데이터베이스 설정이 일치하지 않습니다: MONGODB_URI 기본 DB와 MONGODB_DB를 동일하게 설정하세요.`,
     );
