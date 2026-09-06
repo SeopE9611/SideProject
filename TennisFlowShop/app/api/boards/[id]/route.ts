@@ -4,6 +4,10 @@ import {
 } from "@/components/editor/rich-text-utils";
 import { requireAdmin } from "@/lib/admin.guard";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import {
+  getPortfolioDemoAdminMutationBlock,
+  isPortfolioDemoReadOnly,
+} from "@/lib/admin/portfolio-demo-readonly.server";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { resolveBoardViewerContext } from "@/lib/board-secret-policy";
 import { API_VERSION } from "@/lib/board.repository";
@@ -412,6 +416,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return guard.res;
     }
     isAdmin = true;
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
+  } else if (isPortfolioDemoReadOnly()) {
+    const guard = await requireAdmin(req);
+    if (guard.ok) {
+      const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+      if (demoMutationBlock) return demoMutationBlock;
+    }
   }
 
   if (!canEdit({ viewerId: String(payload?.sub || ""), isAdmin }, post)) {
@@ -782,6 +794,14 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (!isOwner) {
     const guard = await requireAdmin(req);
     if (!guard.ok) return guard.res;
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
+  } else if (isPortfolioDemoReadOnly()) {
+    const guard = await requireAdmin(req);
+    if (guard.ok) {
+      const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+      if (demoMutationBlock) return demoMutationBlock;
+    }
   }
 
   // 첨부가 있으면 스토리지에서 먼저 삭제
