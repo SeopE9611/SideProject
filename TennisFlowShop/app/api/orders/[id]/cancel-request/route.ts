@@ -18,6 +18,7 @@ import {
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import { NextResponse } from "next/server";
 
 function toReasonPreview(value: unknown, max = 200): string | null {
@@ -103,6 +104,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // 비회원 주문(guest)의 경우 관리자만 취소 요청을 넣을 수 있도록 제한
     if (existing.userId ? !(isOwner || isAdmin) : !isAdmin) {
       return new NextResponse("권한이 없습니다.", { status: 403 });
+    }
+
+    if (isAdmin) {
+      const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+      if (demoMutationBlock) return demoMutationBlock;
     }
 
     // 비즈니스 룰 체크

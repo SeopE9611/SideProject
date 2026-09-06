@@ -7,6 +7,7 @@ import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 
 /**
  * 사용자(또는 게스트/관리자) 자가발송 운송장 저장 API
@@ -69,6 +70,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   if (!isOwner && !isAdmin && !guestOwns) {
     return NextResponse.json({ ok: false, message: "Forbidden" }, { status: 403 });
+  }
+
+  if (isAdmin) {
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
   }
 
   // 바디 파싱 + 사용자용 필드만 허용(selfShip만)

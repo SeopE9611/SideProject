@@ -18,6 +18,7 @@ import jwt from "jsonwebtoken";
 import { randomUUID } from "node:crypto";
 import { ClientSession, ObjectId } from "mongodb";
 import { cookies } from "next/headers";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import { NextResponse } from "next/server";
 
 function toReasonPreview(value: unknown, max = 200): string | null {
@@ -455,6 +456,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!(user.role === "admin" || (user.email && adminList.includes(user.email)))) {
     return new NextResponse("관리자만 취소를 승인할 수 있습니다.", { status: 403 });
   }
+
+  const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+  if (demoMutationBlock) return demoMutationBlock;
 
   const body = await req.json().catch(() => ({}));
   const hasTrackingNumber = Boolean(

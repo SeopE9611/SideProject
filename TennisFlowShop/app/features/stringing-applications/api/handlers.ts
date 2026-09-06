@@ -18,6 +18,7 @@ import {
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import { appendAudit } from "@/lib/audit";
 import {
   signApplicationAccessToken,
@@ -1971,6 +1972,9 @@ export async function handleUpdateApplicationStatus(
   const adminAuth = await requireAdminUserFromAccessToken();
   if (!adminAuth.ok) return adminAuth.response;
 
+  const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+  if (demoMutationBlock) return demoMutationBlock;
+
   // URL 파라미터로부터 신청 ID 추출
   const { id } = context.params;
   if (!ObjectId.isValid(id)) return new NextResponse("Invalid ID", { status: 400 }); // MongoDB ObjectId 형식 검증
@@ -2323,6 +2327,9 @@ export async function handleStringingCancelApprove(
     const adminAuth = await requireAdminUserFromAccessToken();
     if (!adminAuth.ok) return adminAuth.response;
 
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
+
     // 파라미터 검증
     const { id } = params;
     if (!ObjectId.isValid(id)) {
@@ -2479,6 +2486,9 @@ export async function handleStringingAdminCancel(
   try {
     const adminAuth = await requireAdminUserFromAccessToken();
     if (!adminAuth.ok) return adminAuth.response;
+
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
 
     const { id } = params;
     if (!ObjectId.isValid(id)) {
@@ -2693,6 +2703,9 @@ export async function handleStringingCancelReject(
   try {
     const adminAuth = await requireAdminUserFromAccessToken();
     if (!adminAuth.ok) return adminAuth.response;
+
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
 
     const { id } = params;
     if (!ObjectId.isValid(id)) {
@@ -3503,6 +3516,9 @@ export async function handleApplicationCancelApprove(
       });
     }
 
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
+
     // ── 비즈니스 룰 ──
     if (isStringingCanceledStatus(existing.status)) {
       return new NextResponse("이미 취소된 신청입니다.", { status: 400 });
@@ -3616,6 +3632,9 @@ export async function handleApplicationCancelReject(
         status: 403,
       });
     }
+
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
 
     // ── 비즈니스 룰 ──
     const currentCancel = existing.cancelRequest ?? {};
@@ -3945,6 +3964,11 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       return new Response(JSON.stringify({ message: "forbidden" }), {
         status: 403,
       });
+    }
+
+    if (isAdmin) {
+      const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+      if (demoMutationBlock) return demoMutationBlock;
     }
 
     // 서비스 대상 확인: withStringService / isStringServiceApplied 둘 다 허용

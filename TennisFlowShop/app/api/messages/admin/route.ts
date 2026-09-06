@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { createUserNotifications } from "@/lib/notifications/user-notification.service";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import { mapMessageListItem, notExpiredClause, parseListQuery } from "../_utils";
 
 export async function GET(req: NextRequest) {
@@ -57,6 +58,9 @@ export async function POST(req: NextRequest) {
   if (!me) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   if (me.role !== "admin")
     return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+
+  const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+  if (demoMutationBlock) return demoMutationBlock;
 
   const payload = (await req.json().catch(() => null)) as null | {
     title?: unknown;

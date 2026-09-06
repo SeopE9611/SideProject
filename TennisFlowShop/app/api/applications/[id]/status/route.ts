@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 
 // 허용된 상태 값 목록 (관리자가 선택 가능)
 import { APPLICATION_STATUSES } from "@/lib/application-status";
@@ -14,6 +15,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!session || session.user.role !== "admin") {
     return new NextResponse("Unauthorized", { status: 401 }); // 인증 실패 시 401 반환
   }
+
+  const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+  if (demoMutationBlock) return demoMutationBlock;
 
   const { id } = await params;
 
