@@ -18,6 +18,8 @@
     "check:next-page-props": "node scripts/check-next-page-props.mjs",
     "db:audit-legacy-withdrawal-feedback": "node scripts/db/cleanup-legacy-withdrawal-feedback.mjs",
     "db:cleanup-legacy-withdrawal-feedback": "node scripts/db/cleanup-legacy-withdrawal-feedback.mjs --apply --confirm=REMOVE_LEGACY_WITHDRAWAL_FIELDS",
+    "db:seed-portfolio-demo:dry-run": "node scripts/db/seed-portfolio-demo.mjs",
+    "db:seed-portfolio-demo": "node scripts/db/seed-portfolio-demo.mjs --apply --confirm=SEED_PORTFOLIO_DEMO",
     "db:ensure-admin-user-indexes": "node scripts/db/ensure-admin-user-indexes.mjs",
     "report:type-debt": "node scripts/report-admin-any-count.mjs",
     "check:admin-any-gate": "node scripts/check-admin-any-gate.mjs",
