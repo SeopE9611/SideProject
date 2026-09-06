@@ -6,6 +6,7 @@ import { verifyCommunityCsrf } from "@/lib/community/security";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { API_VERSION } from "@/lib/board.repository";
 import { requireAdmin } from "@/lib/admin.guard";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 
 const answerSchema = z.object({ content: z.string().trim().min(1).max(20000) });
 
@@ -17,6 +18,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+  if (demoMutationBlock) return demoMutationBlock;
 
   const { id } = await params;
   if (!ObjectId.isValid(id))
@@ -75,6 +78,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
+  const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+  if (demoMutationBlock) return demoMutationBlock;
 
   const { id } = await params;
   if (!ObjectId.isValid(id))
@@ -119,6 +124,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   }
   const guard = await requireAdmin(_req);
   if (!guard.ok) return guard.res;
+  const demoMutationBlock = getPortfolioDemoAdminMutationBlock(_req);
+  if (demoMutationBlock) return demoMutationBlock;
   const db = await getDb();
   const { id } = await params;
   if (!ObjectId.isValid(id))

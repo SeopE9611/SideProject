@@ -1,4 +1,5 @@
 import { richTextToValidationText } from "@/components/editor/rich-text-utils";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { maskSecretTitle, resolveBoardViewerContext } from "@/lib/board-secret-policy";
 import { API_VERSION } from "@/lib/board.repository";
@@ -828,6 +829,8 @@ export async function POST(req: NextRequest) {
         { status: 403 },
       );
     }
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
   }
 
   const now = new Date();

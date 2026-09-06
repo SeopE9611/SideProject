@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ADMIN_CSRF_COOKIE_KEY, ADMIN_CSRF_HEADER_KEY } from "@/lib/admin/adminCsrf";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 
 type CsrfOk = { ok: true };
 type CsrfFail = { ok: false; res: NextResponse };
@@ -60,6 +61,9 @@ function readCsrfTokenFromHeader(req: Request): string {
 }
 
 export function verifyAdminCsrf(req: Request): CsrfOk | CsrfFail {
+  const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+  if (demoMutationBlock) return { ok: false, res: demoMutationBlock };
+
   const originAllowlist = buildOriginAllowlist();
   const requestOriginRaw = req.headers.get("origin")?.trim() ?? "";
   let requestOrigin = "";

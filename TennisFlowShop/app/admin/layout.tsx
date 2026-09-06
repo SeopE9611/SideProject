@@ -1,6 +1,7 @@
 import AdminDesktopViewportPolicy from "@/components/admin/AdminDesktopViewportPolicy";
 import AdminNavigationShell from "@/components/admin/AdminNavigationShell";
 import AccessDenied from "@/components/system/AccessDenied";
+import { isPortfolioDemoReadOnly } from "@/lib/admin/portfolio-demo-readonly.server";
 import { isAdminRole } from "@/lib/admin/roles";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { logInfo } from "@/lib/logger";
@@ -69,6 +70,7 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const requestHeaders = await headers();
   const e2eBypass = canBypassAdminGuard(requestHeaders);
+  const isDemoReadOnly = isPortfolioDemoReadOnly();
 
   if (!e2eBypass) {
     const user = await getCurrentUser();
@@ -114,6 +116,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </div>
       </div>
+      {isDemoReadOnly ? (
+        <div className="border-b border-border bg-muted px-6 py-3 text-foreground" role="status">
+          <p className="font-semibold">포트폴리오 데모 · 조회 전용</p>
+          <p className="text-ui-body-sm text-muted-foreground">
+            실제 운영 환경과 분리된 시연용 데이터입니다. 등록·수정·삭제 등 변경 작업은
+            차단됩니다.
+          </p>
+        </div>
+      ) : null}
       <div className="mx-auto flex w-full max-w-[1920px] flex-1 flex-row gap-2 px-2 pb-8 pt-2 xl:gap-3 xl:px-3 xl:pt-3 2xl:gap-5 2xl:px-6 2xl:pb-10 2xl:pt-4">
         <AdminNavigationShell />
 
