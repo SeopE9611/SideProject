@@ -11,6 +11,7 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test-project.supabase.co";
 const photo = compileTsModule("lib/reviews/review-photo-storage.server.ts", {
   "server-only": {},
   "@/lib/supabase-admin": { supabaseAdmin: {} },
+  "@/lib/storage-config.server": { SERVER_STORAGE_BUCKET: "tennis-images" },
 });
 if (originalSupabaseUrl === undefined) delete process.env.SUPABASE_URL;
 else process.env.SUPABASE_URL = originalSupabaseUrl;
