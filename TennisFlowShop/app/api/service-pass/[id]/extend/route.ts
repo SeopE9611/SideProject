@@ -4,6 +4,7 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import jwt from "jsonwebtoken";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -53,6 +54,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       user?.isAdmin === true ||
       ADMIN_EMAILS.includes((user?.email ?? "").toLowerCase());
     if (!isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
 
     // 입력 파싱/검증
     const body = await req.json().catch(() => ({}));

@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import {
   extractNiceCardInfo,
   getNicePaymentByTid,
@@ -124,6 +125,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
         { status: 403 },
       );
     }
+
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(_req);
+    if (demoMutationBlock) return demoMutationBlock;
 
     const { clientKey, secretKey, apiBaseUrl } = getNiceCredentials();
     if (!clientKey || !secretKey) {

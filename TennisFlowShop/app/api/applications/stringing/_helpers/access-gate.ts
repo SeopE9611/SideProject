@@ -117,5 +117,5 @@ export async function canAccessStringingApplicationById(id: string, options: Acc
     };
   }
 
-  return { ok: true as const };
+  return { ok: true as const, isAdmin };
 }

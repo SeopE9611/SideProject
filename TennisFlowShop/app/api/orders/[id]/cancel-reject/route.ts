@@ -9,6 +9,7 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import jwt from "jsonwebtoken";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 
 function toReasonPreview(value: unknown, max = 200): string | null {
   if (typeof value !== "string") return null;
@@ -76,6 +77,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         status: 403,
       });
     }
+
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
 
     const existingReq = existing.cancelRequest || {};
 

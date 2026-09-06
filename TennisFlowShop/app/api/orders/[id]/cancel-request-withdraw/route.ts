@@ -7,6 +7,7 @@ import {
 } from "@/lib/risk/recordCancelRefundSignal";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import jwt from "jsonwebtoken";
 
@@ -85,6 +86,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // 비회원 주문(guest)의 경우 관리자만 취소 요청 철회 가능
     if (existing.userId ? !(isOwner || isAdmin) : !isAdmin) {
       return jsonError(403, "권한이 없습니다.", "FORBIDDEN");
+    }
+
+    if (isAdmin) {
+      const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+      if (demoMutationBlock) return demoMutationBlock;
     }
 
     // ───────── 2) 비즈니스 룰 체크 ─────────

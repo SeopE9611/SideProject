@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { createUserNotification } from "@/lib/notifications/user-notification.service";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { mapMessageListItem, notExpiredClause, parseListQuery } from "../_utils";
 
@@ -96,6 +97,11 @@ export async function POST(req: NextRequest) {
 
   const isFromAdmin = me.role === "admin";
   const isToAdmin = toUser.role === "admin";
+
+  if (isFromAdmin) {
+    const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
+    if (demoMutationBlock) return demoMutationBlock;
+  }
 
   // 조건(게시글 5 + 댓글 5), 단 관리자/관리자에게 보내기는 예외
   if (!isFromAdmin && !isToAdmin) {

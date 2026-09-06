@@ -23,6 +23,7 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 
 // 고객정보 서버 검증(관리자 PATCH)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -886,6 +887,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     // 주문에 userId가 있을 때만 소유자 체크, 없으면(비회원 주문 등) 관리자만 허용
     if (existing.userId ? !(isOwner || isAdmin) : !isAdmin) {
       return new NextResponse("권한이 없습니다.", { status: 403 });
+    }
+
+    if (isAdmin) {
+      const demoMutationBlock = getPortfolioDemoAdminMutationBlock(request);
+      if (demoMutationBlock) return demoMutationBlock;
     }
 
     const requestedFields = Object.keys(body);
