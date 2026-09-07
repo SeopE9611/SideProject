@@ -16,6 +16,15 @@ summary로 남기되 병합을 차단하지 않는다. 중요한 UI 결과는 �
 새 계약 테스트는 추가 시 core/advisory 분류와 이유를 명시한다. exact source string 검사는
 운영 행위를 보장하지 않으므로 core의 근거로 사용하지 않는다.
 
+새 `.contract.test.mjs`, `.core.test.mjs`, `.advisory.test.mjs` 파일은
+`scripts/contract-test-manifest.mjs`의 해당 Core 또는 Advisory 목록에 반드시 등록하며, 등록
+누락은 CI 오류로 처리한다. 보안·권한·CSRF·관리자 write 차단은 Core로, 정확한 UI copy·JSX·
+source shape 검사는 Advisory로 분류한다. 하나의 테스트 파일에 Core와 Advisory 성격을 섞지
+않는 것을 원칙으로 한다.
+
+Portfolio Demo Read-only 계약에서는 서버의 관리자 mutation 보호를 Core로 유지하고, 관리자
+Demo 안내 UI의 문구와 렌더링 형태는 Advisory로 분리한다.
+
 현재 분류는 실행 manifest로 추적한다. `run-contract-tests.mjs`는 핵심 계약과 실행 가능한
 후기 캐시 검증을, `run-advisory-contract-tests.mjs`는 `display-policy`, `review-domain`,
 `review-api-policy`, `review-management-context` 및 UI 중심 계약을 실행한다. 특히
