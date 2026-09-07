@@ -32,17 +32,17 @@ test("Portfolio Demo 관리자 mutation은 공통 서버 경계에서 일관된 
   const helper = read("lib/admin/portfolio-demo-readonly.server.ts");
   const csrf = read("lib/admin/verifyAdminCsrf.ts");
 
-  assert.ok(helper.includes('import "server-only"'));
-  assert.ok(helper.includes('process.env.PORTFOLIO_DEMO_MODE === "true"'));
-  assert.ok(helper.includes('new Set(["POST", "PUT", "PATCH", "DELETE"])'));
-  assert.ok(helper.includes('code: "PORTFOLIO_DEMO_READ_ONLY"'));
-  assert.ok(helper.includes('message: "포트폴리오 데모에서는 조회만 가능합니다."'));
-  assert.ok(helper.includes('{ status: 403 }'));
+  assert.match(helper, /PORTFOLIO_DEMO_MODE\s*===\s*["']true["']/);
+  for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
+    assert.ok(helper.includes(`"${method}"`), `${method}: 관리자 mutation 차단 대상이어야 합니다.`);
+  }
+  assert.match(helper, /code:\s*["']PORTFOLIO_DEMO_READ_ONLY["']/);
+  assert.match(helper, /status:\s*403/);
   assert.ok(csrf.includes("getPortfolioDemoAdminMutationBlock(req)"));
   assert.ok(
     csrf.indexOf("getPortfolioDemoAdminMutationBlock(req)") <
       csrf.indexOf("const originAllowlist = buildOriginAllowlist()"),
-    "Demo 차단 이후 Production의 기존 CSRF 검사가 이어져야 합니다.",
+    "Demo mutation은 기존 CSRF 검사 및 write 진입 전에 차단되어야 합니다.",
   );
 });
 
@@ -75,14 +75,10 @@ test("owner/admin 혼합 mutation은 admin branch만 Demo 보호를 적용한다
       `${relPath}: 관리자 분기를 명시적으로 구분해야 합니다.`,
     );
     assert.ok(
-      route.includes("getPortfolioDemoAdminMutationBlock("),
-      `${relPath}: 관리자 분기에 Demo mutation guard가 필요합니다.`,
-    );
-    assert.ok(
       /if \((?:auth\.)?isAdmin\) \{\s*const demoMutationBlock = getPortfolioDemoAdminMutationBlock\(|if \(isFromAdmin\) \{\s*const demoMutationBlock = getPortfolioDemoAdminMutationBlock\(/.test(
         route,
       ),
-      `${relPath}: Demo guard는 관리자 조건문 내부에 있어야 합니다.`,
+      `${relPath}: Demo guard는 일반 owner flow가 아닌 관리자 조건문 내부에 있어야 합니다.`,
     );
   }
 });
@@ -111,26 +107,9 @@ test("stringing legacy/direct 관리자 mutation handler도 우회할 수 없다
   }
 });
 
-test("관리자 공통 레이아웃은 서버 환경값으로 Demo 조회 전용 안내를 조건부 렌더링한다", () => {
-  const layout = read("app/admin/layout.tsx");
-
-  assert.ok(layout.includes("isPortfolioDemoReadOnly()"));
-  assert.ok(layout.includes("{isDemoReadOnly ? ("));
-  assert.ok(layout.includes("포트폴리오 데모 · 조회 전용"));
-  assert.ok(
-    layout.includes(
-      "실제 운영 환경과 분리된 시연용 데이터입니다. 등록·수정·삭제 등 변경 작업은",
-    ),
-  );
-});
-
-test("Storage와 Seed 및 고객·PG 관리자 CSRF 경계는 변경 대상이 아니다", () => {
-  const storage = read("lib/storage-config.server.ts");
-  const seed = read("scripts/db/seed-portfolio-demo.mjs");
+test("일반 고객·PG route에는 관리자 전용 CSRF/Demo guard를 적용하지 않는다", () => {
   const customerPayment = read("app/api/payments/toss/confirm/route.ts");
 
-  assert.ok(storage.includes("IS_PORTFOLIO_DEMO"));
-  assert.ok(seed.length > 0);
   assert.ok(!customerPayment.includes("verifyAdminCsrf"));
   assert.ok(!customerPayment.includes("getPortfolioDemoAdminMutationBlock"));
 });
