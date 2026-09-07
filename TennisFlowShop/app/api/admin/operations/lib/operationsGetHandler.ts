@@ -25,6 +25,7 @@ import {
   isStringingCanceledStatus,
   isStringingCompletedStatus,
   normalizeStatusText,
+  VISIT_STRINGING_COLLECTION_METHOD_VALUES,
 } from "@/lib/status/flow-status";
 import type {
   AdminOperationReviewLevel,
@@ -515,19 +516,6 @@ function isClosedForNicePaymentSync(status?: string | null) {
     s === "refunded"
   );
 }
-
-const VISIT_STRINGING_COLLECTION_METHOD_VALUES = [
-  "visit",
-  "pickup",
-  "store_pickup",
-  "visit_pickup",
-  "방문수령",
-  "방문 수령",
-  "매장수령",
-  "매장 수령",
-  "매장방문",
-  "매장 방문",
-] as const;
 
 const normalizeMethodValue = (value: unknown) =>
   String(value ?? "")
