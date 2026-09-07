@@ -148,7 +148,7 @@ try {
   const item = (product, quantity = 1) => ({ productId: product._id, name: product.name, brand: product.brand, price: product.inventory?.isSale && Number(product.inventory?.salePrice) > 0 ? Number(product.inventory.salePrice) : Number(product.price), imageUrl: product.images?.[0] ?? null, quantity, kind: "product", selectedColor: product.color, selectedColorLabel: product.colorInventories?.[0]?.label ?? product.color, selectedColorHex: product.colorInventories?.[0]?.colorHex, selectedColorImage: product.colorInventories?.[0]?.image, selectedGauge: product.gauge });
   const order = (key, customer, product, options) => {
     const items = [item(product, options.quantity ?? 1)];
-    const shippingFee = options.shippingFee ?? 3000;
+    const shippingFee = options.shippingMethod === "visit" ? 0 : options.shippingFee ?? 3000;
     const totalPrice = items.reduce((sum, row) => sum + row.price * row.quantity, 0) + shippingFee;
     return { ...marker(key), userId: customer._id, userSnapshot: { name: customer.name, email: customer.email }, items, shippingInfo: { ...address(customer, options.shippingMethod), ...(options.estimatedDate ? { estimatedDate: options.estimatedDate } : {}) }, guestInfo: null, originalTotalPrice: totalPrice, pointsUsed: 0, totalPrice, shippingFee, serviceFee: 0, status: options.status, paymentStatus: options.paymentStatus, paymentInfo: { provider: "manual_bank_transfer", method: "무통장 입금", status: options.paymentInfoStatus, total: totalPrice, shippingFee, serviceFee: 0, createdAt: options.createdAt }, history: [{ status: options.status, date: options.createdAt, description: "포트폴리오 Demo 운영 시연 주문" }], updatedAt: now, ...(options.cancelRequest ? { cancelRequest: options.cancelRequest } : {}) };
   };
