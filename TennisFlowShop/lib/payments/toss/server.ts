@@ -15,6 +15,12 @@ export async function confirmTossPayment(params: {
   orderId: string;
   amount: number;
 }) {
+  if (process.env.PORTFOLIO_DEMO_MODE === "true") {
+    throw Object.assign(new Error("포트폴리오 데모에서는 실제 결제를 진행하지 않습니다."), {
+      code: "PORTFOLIO_DEMO_PAYMENT_DISABLED",
+      status: 403,
+    });
+  }
   const secretKey = process.env.TOSS_WIDGET_SECRET_KEY;
   if (!secretKey) {
     throw new Error("TOSS_WIDGET_SECRET_KEY is required");

@@ -30,6 +30,7 @@ import { ENABLE_RACKET_STANDALONE_ORDER } from "@/lib/orders/racket-standalone-p
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { findOneActivePassForUser } from "@/lib/passes.service";
+import { createPortfolioDemoInteractionMeta, shouldPreservePortfolioDemoInventory } from "@/lib/portfolio-demo/interactive.server";
 import { deductPoints } from "@/lib/points.service";
 import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
@@ -536,6 +537,8 @@ export async function createOrder(
           });
         }
 
+        if (shouldPreservePortfolioDemoInventory()) return { status: "deducted" };
+
         const variantUpdated = await db.collection("products").updateOne(
           {
             _id: productId,
@@ -631,6 +634,14 @@ export async function createOrder(
         if (!hasManagedColorInventory) {
           return { status: "not_managed" };
         }
+
+        const selectedColorRow = (productDoc as any).colorInventories.find(
+          (row: any) => String(row?.value ?? "").trim() === selectedColor,
+        );
+        if (selectedColorRow?.isSoldOut || Number(selectedColorRow?.stock ?? 0) < quantity) {
+          throw new HttpError(400, { error: "선택한 색상의 구매 가능 수량을 초과했습니다." });
+        }
+        if (shouldPreservePortfolioDemoInventory()) return { status: "deducted" };
 
         const colorUpdated = await db.collection("products").updateOne(
           {
@@ -790,7 +801,9 @@ export async function createOrder(
                 });
               }
 
-              const gaugeUpdated = await db.collection("products").updateOne(
+              const gaugeUpdated = shouldPreservePortfolioDemoInventory()
+                ? { matchedCount: 1, modifiedCount: 1 }
+                : await db.collection("products").updateOne(
                 {
                   _id: productId,
                   ...productVisibilityFilterFor(visibilityViewer),
@@ -859,7 +872,7 @@ export async function createOrder(
               });
             }
 
-            await db.collection("products").updateOne(
+            if (!shouldPreservePortfolioDemoInventory()) await db.collection("products").updateOne(
               {
                 _id: productId,
                 ...productVisibilityFilterFor(visibilityViewer),
@@ -938,7 +951,9 @@ export async function createOrder(
                   error: "라켓은 1개만 구매할 수 있습니다.",
                 });
 
-              const r = await rackCol.updateOne(
+              const r = shouldPreservePortfolioDemoInventory()
+                ? { matchedCount: 1 }
+                : await rackCol.updateOne(
                 { _id: racketId, status: "available" },
                 {
                   $set: { status: "sold", updatedAt: new Date().toISOString() },
@@ -960,7 +975,9 @@ export async function createOrder(
 
             // (B) 재고형(다수 수량)
             const nowIso = new Date().toISOString();
-            const updated = await rackCol.findOneAndUpdate(
+            const updated = shouldPreservePortfolioDemoInventory()
+              ? racket
+              : await rackCol.findOneAndUpdate(
               // 대여 점유(activeRentalCount)를 고려한 "판매 가능 수량" 확보
               // quantity(요청 수량)만큼 판매하려면: quantity >= activeRentalCount + quantity
               {
@@ -1273,6 +1290,7 @@ export async function createOrder(
 
         // 주문 문서 생성(저장 값은 서버 계산값만)
         const order: any = {
+          ...(shouldPreservePortfolioDemoInventory() ? createPortfolioDemoInteractionMeta() : {}),
           items: itemsWithSnapshot,
           shippingInfo,
           guestInfo: userId ? null : guestInfo || null,

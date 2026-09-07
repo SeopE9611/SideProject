@@ -301,6 +301,9 @@ export async function POST(req: Request) {
   const now = new Date().toISOString();
 
   const application: Omit<AcademyLessonApplication, "_id"> = {
+    ...(process.env.PORTFOLIO_DEMO_MODE === "true"
+      ? (await import("@/lib/portfolio-demo/interactive.server")).createPortfolioDemoInteractionMeta()
+      : {}),
     userId,
     classId,
     classSnapshot,

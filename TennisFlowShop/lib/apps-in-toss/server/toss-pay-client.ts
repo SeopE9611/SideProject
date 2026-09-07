@@ -12,6 +12,12 @@ function headers(userKey: string) {
   return { "x-toss-user-key": userKey };
 }
 async function post(path: string, userKey: string, body: Record<string, unknown>) {
+  if (process.env.PORTFOLIO_DEMO_MODE === "true") {
+    throw Object.assign(new Error("포트폴리오 데모에서는 실제 결제를 진행하지 않습니다."), {
+      code: "PORTFOLIO_DEMO_PAYMENT_DISABLED",
+      status: 403,
+    });
+  }
   return requestTossPayJson({ method: "POST", path, headers: headers(userKey), body });
 }
 export async function makeTossPayPayment(userKey: string, input: unknown) {

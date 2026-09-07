@@ -142,6 +142,7 @@ export async function approveNicePaymentByTid(params: {
   secretKey: string;
   apiBaseUrl?: string;
 }): Promise<Record<string, string>> {
+  if (process.env.PORTFOLIO_DEMO_MODE === "true") throw Object.assign(new Error("포트폴리오 데모에서는 실제 결제를 진행하지 않습니다."), { code: "PORTFOLIO_DEMO_PAYMENT_DISABLED", status: 403 });
   const raw = await requestNicePayment({
     method: "POST",
     tid: params.tid,
@@ -159,6 +160,7 @@ export async function getNicePaymentByTid(params: {
   secretKey: string;
   apiBaseUrl?: string;
 }): Promise<Record<string, string>> {
+  if (process.env.PORTFOLIO_DEMO_MODE === "true") throw Object.assign(new Error("포트폴리오 데모에서는 실제 결제를 진행하지 않습니다."), { code: "PORTFOLIO_DEMO_PAYMENT_DISABLED", status: 403 });
   return requestNicePayment({
     method: "GET",
     tid: params.tid,
@@ -177,6 +179,7 @@ export async function cancelNicePaymentByTid(params: {
   secretKey: string;
   apiBaseUrl?: string;
 }): Promise<Record<string, string>> {
+  if (process.env.PORTFOLIO_DEMO_MODE === "true") throw Object.assign(new Error("포트폴리오 데모에서는 실제 결제를 진행하지 않습니다."), { code: "PORTFOLIO_DEMO_PAYMENT_DISABLED", status: 403 });
   const body: Record<string, unknown> = {
     reason: String(params.reason || "주문 취소").trim(),
     orderId: String(params.orderId || "").trim(),
