@@ -156,9 +156,9 @@ export default function AdminDashboardClientView() {
         aria-label="오늘 처리 필요 요약"
       >
         <SummaryCard
-          title="긴급 확인"
+          title="우선 확인"
           value={`${formatAdminNumber(urgentTotal)}건`}
-          description="취소 요청, 24시간 초과 결제 확인, 대여 연체"
+          description="취소 요청, 장기 결제대기, 대여 연체"
           tone={urgentTotal > 0 ? "danger" : "default"}
         />
         <SummaryCard

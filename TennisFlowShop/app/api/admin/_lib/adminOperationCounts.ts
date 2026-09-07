@@ -66,36 +66,30 @@ const VISIT_PICKUP_VALUES = [
   "매장 방문",
 ];
 
-const orderNeedsActionFilter: Filter<Document> = {
+const orderRepresentativeGroupFilter: Filter<Document> = {
   $and: [
     {
       $or: [
-        { "cancel.status": "requested" },
-        { "cancelRequest.status": { $in: ["requested", "요청"] } },
-        { cancelStatus: "requested" },
-        { status: "취소처리중" },
-        { "cancelRequest.status": "approved_pending_pg_cancel" },
+        { "cancelRequest.status": { $ne: "approved" } },
+        { status: { $in: ["취소처리중", "cancel_processing", "approved_pending_pg_cancel"] } },
         { "cancelRequest.pgCancelBlocked.reason": "unsettled_amount_shortage" },
         { "paymentInfo.niceSync.manualActionReason": "unsettled_amount_shortage" },
-        { paymentStatus: { $in: PAYMENT_PENDING_VALUES } },
+      ],
+    },
+    {
+      $or: [
+        { status: { $in: [...ORDER_DELIVERED_MONITORING_VALUES] } },
         {
           status: {
-            $in: [
-              "pending",
-              "paid",
-              "payment_completed",
-              "preparing",
-              "shipping_pending",
-              "대기중",
-              "결제완료",
-              "배송준비중",
-              ...ORDER_DELIVERED_MONITORING_VALUES,
+            $nin: [
+              ...ORDER_CANCELED_TERMINAL_VALUES,
+              ...ORDER_REFUNDED_TERMINAL_VALUES,
+              ...ORDER_CONFIRMED_TERMINAL_VALUES,
             ],
           },
         },
       ],
     },
-    { status: { $nin: TERMINAL_STATUS_VALUES } },
   ],
 };
 
@@ -112,37 +106,13 @@ const rentalDepositRefundRequiredFilter: Filter<Document> = {
   ],
 };
 
-const rentalNeedsActionFilter: Filter<Document> = {
+const rentalRepresentativeGroupFilter: Filter<Document> = {
   $or: [
     rentalDepositRefundRequiredFilter,
     {
       $and: [
-        {
-          $or: [
-            { "cancel.status": "requested" },
-            { "cancelRequest.status": { $in: ["requested", "요청"] } },
-            { cancelStatus: "requested" },
-            {
-              status: {
-                $in: [
-                  "created",
-                  "pending",
-                  "paid",
-                  "ready",
-                  "out",
-                  "rented",
-                  "overdue",
-                  "return_requested",
-                  "대기중",
-                  "대여중",
-                  "연체",
-                ],
-              },
-            },
-            { paymentStatus: { $in: PAYMENT_PENDING_VALUES } },
-          ],
-        },
-        { status: { $nin: TERMINAL_STATUS_VALUES } },
+        { status: { $nin: ["returned", "반납완료", "취소", "canceled", "cancelled"] } },
+        { "cancelRequest.status": { $ne: "approved" } },
       ],
     },
   ],
@@ -485,14 +455,46 @@ async function safeCount(db: Db, collectionName: string, filter: Filter<Document
   }
 }
 
-const standaloneStringingNeedsActionFilter: Filter<Document> = {
+const standaloneStringingRepresentativeGroupFilter: Filter<Document> = {
   $and: [
-    stringingNeedsActionFilter,
+    { status: { $ne: "draft" } },
     {
       $or: [{ orderId: { $exists: false } }, { orderId: null }, { orderId: "" }],
     },
     {
       $or: [{ rentalId: { $exists: false } }, { rentalId: null }, { rentalId: "" }],
+    },
+    {
+      $or: [
+        {
+          status: {
+            $nin: [
+              "completed",
+              "교체완료",
+              "done",
+              "work_done",
+              "canceled",
+              "cancelled",
+              "취소",
+            ],
+          },
+        },
+        {
+          $and: [
+            { status: { $in: ["completed", "교체완료", "done", "work_done"] } },
+            { paymentStatus: { $nin: ["cancelled", "canceled", "refunded", "환불완료"] } },
+            { collectionMethod: { $nin: VISIT_PICKUP_VALUES } },
+            { "shippingInfo.collectionMethod": { $nin: VISIT_PICKUP_VALUES } },
+            { "shippingInfo.shippingMethod": { $nin: VISIT_PICKUP_VALUES } },
+            { "shippingInfo.invoice.trackingNumber": { $in: [null, ""] } },
+            { "shippingInfo.trackingNumber": { $in: [null, ""] } },
+            { "shippingInfo.trackingNo": { $in: [null, ""] } },
+            { "shippingInfo.returnInvoice.trackingNumber": { $in: [null, ""] } },
+            { "shippingInfo.returnTrackingNumber": { $in: [null, ""] } },
+            { "shippingInfo.returnTrackingNo": { $in: [null, ""] } },
+          ],
+        },
+      ],
     },
   ],
 };
@@ -556,16 +558,21 @@ export async function countAdminOperationGroupCounts(
     options.measure ?? ((_, work) => Promise.resolve(typeof work === "function" ? work() : work));
   const [orders, rentals, standaloneStringing] = await Promise.all([
     measure("operationCounts.group.orders", () =>
-      safeCount(db, "orders", orderNeedsActionFilter, "representative order tasks"),
+      safeCount(db, "orders", orderRepresentativeGroupFilter, "representative order tasks"),
     ),
     measure("operationCounts.group.rentals", () =>
-      safeCount(db, "rental_orders", rentalNeedsActionFilter, "representative rental tasks"),
+      safeCount(
+        db,
+        "rental_orders",
+        rentalRepresentativeGroupFilter,
+        "representative rental tasks",
+      ),
     ),
     measure("operationCounts.group.stringingApplications", () =>
       safeCount(
         db,
         "stringing_applications",
-        standaloneStringingNeedsActionFilter,
+        standaloneStringingRepresentativeGroupFilter,
         "representative standalone stringing tasks",
       ),
     ),
