@@ -1,10 +1,16 @@
 import type { Db, Document, Filter } from "mongodb";
 
 import {
+  CANCEL_FINALIZED_ORDER_STATUS_VALUES,
+  EXTERNALLY_CANCELED_PAYMENT_INFO_STATUSES,
+  EXTERNALLY_CANCELED_PAYMENT_STATUS,
+} from "@/lib/orders/cancel-finalization";
+import {
   ORDER_CANCELED_TERMINAL_VALUES,
   ORDER_CONFIRMED_TERMINAL_VALUES,
   ORDER_DELIVERED_MONITORING_VALUES,
   ORDER_REFUNDED_TERMINAL_VALUES,
+  VISIT_STRINGING_COLLECTION_METHOD_VALUES,
 } from "@/lib/status/flow-status";
 
 import { createPackagePaymentCheckFilter } from "@/app/api/admin/_lib/packagePaymentCheckFilter";
@@ -53,40 +59,52 @@ const PAYMENT_CANCELLED_VALUES = [
   "canceled",
 ];
 
-const VISIT_PICKUP_VALUES = [
-  "visit",
-  "pickup",
-  "store_pickup",
-  "visit_pickup",
-  "방문수령",
-  "방문 수령",
-  "매장수령",
-  "매장 수령",
-  "매장방문",
-  "매장 방문",
-];
+const VISIT_PICKUP_VALUES = [...VISIT_STRINGING_COLLECTION_METHOD_VALUES, "SHOP_VISIT"];
 
-const orderRepresentativeGroupFilter: Filter<Document> = {
+const orderCancelFinalizationRequiredFilter: Filter<Document> = {
   $and: [
     {
       $or: [
-        { "cancelRequest.status": { $ne: "approved" } },
-        { status: { $in: ["취소처리중", "cancel_processing", "approved_pending_pg_cancel"] } },
-        { "cancelRequest.pgCancelBlocked.reason": "unsettled_amount_shortage" },
-        { "paymentInfo.niceSync.manualActionReason": "unsettled_amount_shortage" },
+        { paymentStatus: EXTERNALLY_CANCELED_PAYMENT_STATUS },
+        { "paymentInfo.status": { $in: [...EXTERNALLY_CANCELED_PAYMENT_INFO_STATUSES] } },
+        {
+          "paymentInfo.niceSync.pgStatus": {
+            $in: [...EXTERNALLY_CANCELED_PAYMENT_INFO_STATUSES],
+          },
+        },
+        { "paymentNiceSync.pgStatus": { $in: [...EXTERNALLY_CANCELED_PAYMENT_INFO_STATUSES] } },
       ],
     },
+    { status: { $nin: [...CANCEL_FINALIZED_ORDER_STATUS_VALUES] } },
+  ],
+};
+
+const orderRepresentativeGroupFilter: Filter<Document> = {
+  $or: [
+    orderCancelFinalizationRequiredFilter,
     {
-      $or: [
-        { status: { $in: [...ORDER_DELIVERED_MONITORING_VALUES] } },
+      $and: [
         {
-          status: {
-            $nin: [
-              ...ORDER_CANCELED_TERMINAL_VALUES,
-              ...ORDER_REFUNDED_TERMINAL_VALUES,
-              ...ORDER_CONFIRMED_TERMINAL_VALUES,
-            ],
-          },
+          $or: [
+            { "cancelRequest.status": { $ne: "approved" } },
+            { status: { $in: ["취소처리중", "cancel_processing", "approved_pending_pg_cancel"] } },
+            { "cancelRequest.pgCancelBlocked.reason": "unsettled_amount_shortage" },
+            { "paymentInfo.niceSync.manualActionReason": "unsettled_amount_shortage" },
+          ],
+        },
+        {
+          $or: [
+            { status: { $in: [...ORDER_DELIVERED_MONITORING_VALUES] } },
+            {
+              status: {
+                $nin: [
+                  ...ORDER_CANCELED_TERMINAL_VALUES,
+                  ...ORDER_REFUNDED_TERMINAL_VALUES,
+                  ...ORDER_CONFIRMED_TERMINAL_VALUES,
+                ],
+              },
+            },
+          ],
         },
       ],
     },
@@ -486,6 +504,9 @@ const standaloneStringingRepresentativeGroupFilter: Filter<Document> = {
             { collectionMethod: { $nin: VISIT_PICKUP_VALUES } },
             { "shippingInfo.collectionMethod": { $nin: VISIT_PICKUP_VALUES } },
             { "shippingInfo.shippingMethod": { $nin: VISIT_PICKUP_VALUES } },
+            { "shippingInfo.deliveryMethod": { $nin: VISIT_PICKUP_VALUES } },
+            { "shippingInfo.pickupMethod": { $nin: VISIT_PICKUP_VALUES } },
+            { "shippingInfo.servicePickupMethod": { $nin: VISIT_PICKUP_VALUES } },
             { "shippingInfo.invoice.trackingNumber": { $in: [null, ""] } },
             { "shippingInfo.trackingNumber": { $in: [null, ""] } },
             { "shippingInfo.trackingNo": { $in: [null, ""] } },

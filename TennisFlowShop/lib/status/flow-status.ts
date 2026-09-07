@@ -35,6 +35,20 @@ export const STRINGING_CANCELED_VALUES = ["취소", "canceled", "cancelled"] as 
 
 export const RENTAL_RETURNED_VALUES = ["returned", "반납완료"] as const;
 
+export const VISIT_STRINGING_COLLECTION_METHOD_VALUES = [
+  "visit",
+  "pickup",
+  "store_pickup",
+  "visit_pickup",
+  "shop_visit",
+  "방문수령",
+  "방문 수령",
+  "매장수령",
+  "매장 수령",
+  "매장방문",
+  "매장 방문",
+] as const;
+
 export function isOrderDeliveredStatus(status?: unknown) {
   return includesNormalized(ORDER_DELIVERED_MONITORING_VALUES, status);
 }
