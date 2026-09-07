@@ -101,6 +101,10 @@ function getEnabledProviders() {
 
 export async function sendAdminOperationalAlert(payload: AdminOperationalAlertPayload) {
   try {
+    if (process.env.PORTFOLIO_DEMO_MODE === "true") {
+      console.info("[admin-alerts] skipped:portfolio-demo", { kind: payload.kind });
+      return;
+    }
     if (process.env.ADMIN_ALERTS_ENABLED === "false") {
       console.info("[admin-alerts] skipped:disabled", {
         kind: payload.kind,

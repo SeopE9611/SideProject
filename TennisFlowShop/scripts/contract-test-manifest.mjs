@@ -38,6 +38,7 @@ export const coreContractFiles = [
   "mypage-stringing-application-priority.contract.test.mjs",
   "mypage-stringing-detail-state.contract.test.mjs",
   "portfolio-demo-readonly.core.test.mjs",
+  "portfolio-demo-interactive.core.test.mjs",
   "rich-text-sanitize-policy.contract.test.mjs",
   "rich-text-validation-behavior.contract.test.mjs",
   "security-contract.test.mjs",

@@ -101,11 +101,13 @@ function focusFirst(ids: string[]) {
 type LoginPageClientProps = {
   allowRegistration: boolean;
   minimumPasswordLength: number;
+  portfolioDemoMode: boolean;
 };
 
 export default function LoginPageClient({
   allowRegistration,
   minimumPasswordLength,
+  portfolioDemoMode,
 }: LoginPageClientProps) {
   const router = useRouter();
   const params = useSearchParams();
@@ -129,6 +131,7 @@ export default function LoginPageClient({
   // 로그인 상태
   const [showPassword, setShowPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   // 로그인 입력값이 “하나라도” 들어왔는지(=dirty)만 최소 추적 (uncontrolled input 유지)
   const [loginDirty, setLoginDirty] = useState(false);
@@ -275,6 +278,28 @@ export default function LoginPageClient({
     }
   };
 
+  const handleDemoLogin = async () => {
+    if (demoLoading) return;
+    try {
+      setDemoLoading(true);
+      const response = await fetch("/api/portfolio-demo/session", { method: "POST" });
+      const data = await readJsonSafe(response);
+      if (!response.ok) throw new Error(data?.message || "데모 세션을 시작하지 못했습니다.");
+      const meRes = await fetch("/api/users/me", { credentials: "include" });
+      const meData = await readJsonSafe(meRes);
+      const meUser = (meData as any)?.user ?? meData;
+      if (!meRes.ok || !meUser?.id) throw new Error("데모 사용자 정보를 확인하지 못했습니다.");
+      setUser(meUser);
+      showSuccessToast("데모 체험을 시작합니다.");
+      router.replace(safeRedirectTarget(params.get("next") || params.get("redirectTo") || "/"));
+      router.refresh();
+    } catch (error) {
+      showErrorToast(error instanceof Error ? error.message : "데모 세션을 시작하지 못했습니다.");
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   const handleKakaoOAuth = () => {
     if (!confirmLeaveIfDirty()) return;
     const from = new URLSearchParams(window.location.search).get("from");
@@ -337,6 +362,17 @@ export default function LoginPageClient({
         {activeTab === "login" && (
           <TabsContent value="login" forceMount className="mt-0">
             <div className="space-y-4">
+              {portfolioDemoMode && (
+                <div className="space-y-3 rounded-control border border-brand-highlight bg-brand-highlight-muted/35 p-4">
+                  <p className="break-keep text-ui-body-sm text-muted-foreground">
+                    개인정보 입력 없이 주문·교체서비스·대여·아카데미 흐름을 직접 체험할 수 있습니다.
+                  </p>
+                  <Button className="w-full" variant="highlight" onClick={handleDemoLogin} disabled={demoLoading}>
+                    {demoLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    데모 체험 시작
+                  </Button>
+                </div>
+              )}
               <div className="text-center">
                 <h2 className="text-ui-page-title font-ui-bold tracking-normal text-foreground">
                   로그인
@@ -346,7 +382,7 @@ export default function LoginPageClient({
                 </p>
               </div>
 
-              <div className="space-y-3 rounded-control border border-border bg-brand-highlight-muted/35 p-4">
+              {!portfolioDemoMode && <div className="space-y-3 rounded-control border border-border bg-brand-highlight-muted/35 p-4">
                 <p className="text-ui-body-sm font-ui-medium text-foreground text-center">
                   간편 로그인
                 </p>
@@ -354,7 +390,7 @@ export default function LoginPageClient({
                   onKakaoClick={handleKakaoOAuth}
                   onNaverClick={handleNaverOAuth}
                 />
-              </div>
+              </div>}
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">

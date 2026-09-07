@@ -26,6 +26,10 @@ import {
   truthyField,
 } from "@/lib/admin-alerts/formatters";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import {
+  createPortfolioDemoInteractionMeta,
+  shouldPreservePortfolioDemoInventory,
+} from "@/lib/portfolio-demo/interactive.server";
 import { RefundAccountSchema, type RefundAccountInfo } from "@/lib/cancel-request/refund-account";
 import { deductPoints, getPointsSummary } from "@/lib/points.service";
 import type { MongoClient, Db } from "mongodb";
@@ -97,7 +101,9 @@ export async function applyRentalVariantInventoryDeduction(params: {
     throw new Error("VARIANT_INSUFFICIENT_STOCK");
   }
 
-  const stockUpdateResult = await db.collection("products").updateOne(
+  const stockUpdateResult = shouldPreservePortfolioDemoInventory()
+    ? { matchedCount: 1, modifiedCount: 1 }
+    : await db.collection("products").updateOne(
     {
       _id: productId,
       ...productVisibilityFilterFor(visibilityViewer),
@@ -501,6 +507,7 @@ export async function createRentalOrderCore(params: {
 
   const now = new Date();
   const doc: Record<string, unknown> = {
+    ...(shouldPreservePortfolioDemoInventory() ? createPortfolioDemoInteractionMeta() : {}),
     racketId: racket._id,
     brand: racket.brand,
     model: racket.model,
@@ -586,7 +593,9 @@ export async function createRentalOrderCore(params: {
               });
             } else if (stringingSnap.selectedGauge && stringingSnap.selectedColor) {
               if (stringingHasManagedColorInventories) {
-                const stockUpdateResult = await db.collection("products").updateOne(
+                const stockUpdateResult = shouldPreservePortfolioDemoInventory()
+                  ? { matchedCount: 1, modifiedCount: 1 }
+                  : await db.collection("products").updateOne(
                   {
                     _id: stringingSnap.stringId,
                     ...productVisibilityFilterFor(visibilityViewer),
@@ -626,7 +635,9 @@ export async function createRentalOrderCore(params: {
                   throw new Error("GAUGE_OR_COLOR_STOCK_UPDATE_FAILED");
                 }
               } else {
-                const stockUpdateResult = await db.collection("products").updateOne(
+                const stockUpdateResult = shouldPreservePortfolioDemoInventory()
+                  ? { matchedCount: 1, modifiedCount: 1 }
+                  : await db.collection("products").updateOne(
                   {
                     _id: stringingSnap.stringId,
                     ...productVisibilityFilterFor(visibilityViewer),
@@ -652,7 +663,9 @@ export async function createRentalOrderCore(params: {
                   throw new Error("GAUGE_STOCK_UPDATE_FAILED");
               }
             } else if (stringingSnap.selectedGauge) {
-              const stockUpdateResult = await db.collection("products").updateOne(
+              const stockUpdateResult = shouldPreservePortfolioDemoInventory()
+                  ? { matchedCount: 1, modifiedCount: 1 }
+                  : await db.collection("products").updateOne(
                 {
                   _id: stringingSnap.stringId,
                   ...productVisibilityFilterFor(visibilityViewer),
@@ -678,7 +691,9 @@ export async function createRentalOrderCore(params: {
                 throw new Error("GAUGE_STOCK_UPDATE_FAILED");
             } else if (stringingSnap.selectedColor) {
               if (stringingHasManagedColorInventories) {
-                const stockUpdateResult = await db.collection("products").updateOne(
+                const stockUpdateResult = shouldPreservePortfolioDemoInventory()
+                  ? { matchedCount: 1, modifiedCount: 1 }
+                  : await db.collection("products").updateOne(
                   {
                     _id: stringingSnap.stringId,
                     ...productVisibilityFilterFor(visibilityViewer),
@@ -703,7 +718,9 @@ export async function createRentalOrderCore(params: {
                 if (stockUpdateResult.modifiedCount !== 1)
                   throw new Error("COLOR_STOCK_UPDATE_FAILED");
               } else {
-                const stockUpdateResult = await db.collection("products").updateOne(
+                const stockUpdateResult = shouldPreservePortfolioDemoInventory()
+                  ? { matchedCount: 1, modifiedCount: 1 }
+                  : await db.collection("products").updateOne(
                   {
                     _id: stringingSnap.stringId,
                     ...productVisibilityFilterFor(visibilityViewer),

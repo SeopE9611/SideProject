@@ -130,6 +130,9 @@ export async function POST(req: Request) {
 
     const now = new Date();
     const doc = {
+      ...(process.env.PORTFOLIO_DEMO_MODE === "true"
+        ? (await import("@/lib/portfolio-demo/interactive.server")).createPortfolioDemoInteractionMeta()
+        : {}),
       userId: new ObjectId(user.sub),
       createdAt: now,
       updatedAt: now,

@@ -15,6 +15,7 @@ import { normalizeEmail } from "@/lib/claims";
 import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
 import { consumePass, findOneActivePassForUser } from "@/lib/passes.service";
 import { productVisibilityFilterFor } from "@/lib/public-visibility";
+import { createPortfolioDemoInteractionMeta, shouldPreservePortfolioDemoInventory } from "@/lib/portfolio-demo/interactive.server";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import { guardVisitReservation } from "@/app/features/stringing-applications/lib/visitReservationGuard";
@@ -139,6 +140,8 @@ async function applyStringingVariantInventoryDeduction(params: {
       code: "VARIANT_INSUFFICIENT_STOCK",
     });
   }
+
+  if (shouldPreservePortfolioDemoInventory()) return { status: "preserved" as const };
 
   const result = await db.collection("products").updateOne(
     {
@@ -414,7 +417,7 @@ export async function submitStringingApplicationCore({
       packageOptOut: !!packageOptOut,
     });
 
-    if (pass && packageUsage.usingPackage) {
+    if (pass && packageUsage.usingPackage && !shouldPreservePortfolioDemoInventory()) {
       await consumePass(db, pass._id, applicationId, packageUseCount, {
         session,
       });
@@ -511,6 +514,7 @@ export async function submitStringingApplicationCore({
   }
 
   const updateDoc: Record<string, unknown> = {
+    ...(shouldPreservePortfolioDemoInventory() ? createPortfolioDemoInteractionMeta() : {}),
     orderId: orderObjectId,
     rentalId: rentalObjectId,
     paymentSource,
