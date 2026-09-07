@@ -59,6 +59,7 @@ const plan = {
   rental_orders: ["portfolio-demo-rental-paid", "portfolio-demo-rental-overdue", "portfolio-demo-rental-due-soon", "portfolio-demo-rental-payment-pending"],
   packageOrders: ["portfolio-demo-package-paid", "portfolio-demo-package-payment-pending"],
   service_passes: ["portfolio-demo-service-pass-expiring"],
+  academy_classes: ["portfolio-demo-academy-class-group"],
   academy_lesson_applications: ["portfolio-demo-academy-submitted", "portfolio-demo-academy-reviewing", "portfolio-demo-academy-confirmed"],
 };
 
@@ -77,9 +78,10 @@ if (!shouldApply) {
 }
 
 const marker = (demoSeedKey) => ({ isDemoData: true, demoSeedVersion: DEMO_VERSION, demoSeedKey });
-const demoFilter = (demoSeedKey) => ({ ...marker(demoSeedKey) });
+const demoFilter = (demoSeedKey) => ({ demoSeedKey, isDemoData: true });
 const ago = (now, hours) => new Date(now.getTime() - hours * 60 * 60 * 1000);
 const after = (now, hours) => new Date(now.getTime() + hours * 60 * 60 * 1000);
+const addDays = (date, days) => new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 const iso = (date) => date.toISOString();
 
 const client = new MongoClient(uri);
@@ -116,6 +118,16 @@ try {
     if (missing.length) throw new Error(`1차 Seed dependency 누락 (${collection}): ${missing.join(", ")}`);
   }
 
+  const collisions = [];
+  for (const [collection, keys] of Object.entries(plan)) {
+    const docs = await db.collection(collection).find(
+      { demoSeedKey: { $in: keys }, isDemoData: { $ne: true } },
+      { projection: { _id: 1, demoSeedKey: 1 } },
+    ).toArray();
+    for (const doc of docs) collisions.push(`${collection}:${doc.demoSeedKey}`);
+  }
+  if (collisions.length) throw new Error(`Ops demoSeedKey 일반 문서 충돌: ${collisions.join(", ")}`);
+
   const now = new Date();
   const customers = [
     { key: plan.users[0], name: "데모 고객 김민수", email: "minsu.demo@example.com", phone: "010-0000-1001" },
@@ -138,14 +150,14 @@ try {
     const items = [item(product, options.quantity ?? 1)];
     const shippingFee = options.shippingFee ?? 3000;
     const totalPrice = items.reduce((sum, row) => sum + row.price * row.quantity, 0) + shippingFee;
-    return { ...marker(key), userId: customer._id, userSnapshot: { name: customer.name, email: customer.email }, items, shippingInfo: address(customer), guestInfo: null, originalTotalPrice: totalPrice, pointsUsed: 0, totalPrice, shippingFee, serviceFee: 0, status: options.status, paymentStatus: options.paymentStatus, paymentInfo: { provider: "manual_bank_transfer", method: "무통장 입금", status: options.paymentInfoStatus, total: totalPrice, shippingFee, serviceFee: 0, createdAt: options.createdAt }, history: [{ status: options.status, date: options.createdAt, description: "포트폴리오 Demo 운영 시연 주문" }], updatedAt: now, ...(options.cancelRequest ? { cancelRequest: options.cancelRequest } : {}) };
+    return { ...marker(key), userId: customer._id, userSnapshot: { name: customer.name, email: customer.email }, items, shippingInfo: { ...address(customer, options.shippingMethod), ...(options.estimatedDate ? { estimatedDate: options.estimatedDate } : {}) }, guestInfo: null, originalTotalPrice: totalPrice, pointsUsed: 0, totalPrice, shippingFee, serviceFee: 0, status: options.status, paymentStatus: options.paymentStatus, paymentInfo: { provider: "manual_bank_transfer", method: "무통장 입금", status: options.paymentInfoStatus, total: totalPrice, shippingFee, serviceFee: 0, createdAt: options.createdAt }, history: [{ status: options.status, date: options.createdAt, description: "포트폴리오 Demo 운영 시연 주문" }], updatedAt: now, ...(options.cancelRequest ? { cancelRequest: options.cancelRequest } : {}) };
   };
   const orderSpecs = [
     [plan.orders[0], c1, products.get(dependencyKeys.products[0]), { status: "결제완료", paymentStatus: "결제완료", paymentInfoStatus: "paid", createdAt: ago(now, 6), quantity: 2 }],
     [plan.orders[1], c2, products.get(dependencyKeys.products[2]), { status: "상품준비중", paymentStatus: "결제완료", paymentInfoStatus: "paid", createdAt: ago(now, 12) }],
     [plan.orders[2], c3, products.get(dependencyKeys.products[1]), { status: "결제완료", paymentStatus: "결제완료", paymentInfoStatus: "paid", createdAt: ago(now, 18), cancelRequest: { status: "requested", reasonCode: "단순 변심", reasonText: "포트폴리오 Demo 취소 검토", requestedAt: ago(now, 2), refundAccount: { bank: "demo-bank", account: "000-0000-0000", holder: "데모 고객" } } }],
     [plan.orders[3], c1, products.get(dependencyKeys.products[3]), { status: "대기중", paymentStatus: "결제대기", paymentInfoStatus: "pending", createdAt: ago(now, 30) }],
-    [plan.orders[4], c2, products.get(dependencyKeys.products[0]), { status: "배송완료", paymentStatus: "결제완료", paymentInfoStatus: "paid", createdAt: ago(now, 48) }],
+    [plan.orders[4], c2, products.get(dependencyKeys.products[0]), { status: "배송완료", paymentStatus: "결제완료", paymentInfoStatus: "paid", createdAt: ago(now, 48), shippingMethod: "visit", estimatedDate: iso(ago(now, 24)) }],
   ];
   for (const spec of orderSpecs) { const doc = order(...spec); await upsert(db, "orders", doc, doc.paymentInfo.createdAt); }
 
@@ -158,20 +170,31 @@ try {
   ];
   for (const doc of stringingDocs) await upsert(db, "stringing_applications", doc, doc.history[0].date ? new Date(doc.history[0].date) : now);
 
-  const rental = (key, customer, racket, status, createdAt, dueAt) => { const deposit = Number(racket.rental?.deposit ?? 0); const fee = Number(racket.rental?.fee?.d7 ?? 0); return { ...marker(key), userId: customer._id, racketId: racket._id, brand: racket.brand, model: racket.model, days: 7, amount: { fee, deposit, stringPrice: 0, stringingFee: 0, total: deposit + fee }, originalTotal: deposit + fee, pointsUsed: 0, servicePickupMethod: "courier", status, paymentStatus: status === "pending" ? "결제대기" : "결제완료", paymentInfo: { provider: "manual_bank_transfer", method: "무통장 입금", status: status === "pending" ? "pending" : "paid" }, shipping: { outbound: { recipient: customer.name, phone: customer.phone, address: "데모시 테니스로 2", trackingNumber: null }, return: null }, ...(status !== "pending" ? { paidAt: createdAt } : {}), ...(status === "out" ? { outAt: ago(now, 72), dueAt } : {}), updatedAt: now }; };
-  const rentalDocs = [rental(plan.rental_orders[0], c1, rackets.get(dependencyKeys.used_rackets[0]), "paid", ago(now, 8)), rental(plan.rental_orders[1], c2, rackets.get(dependencyKeys.used_rackets[1]), "out", ago(now, 72), ago(now, 48)), rental(plan.rental_orders[2], c3, rackets.get(dependencyKeys.used_rackets[0]), "out", ago(now, 24), after(now, 12)), rental(plan.rental_orders[3], c1, rackets.get(dependencyKeys.used_rackets[1]), "pending", ago(now, 30))];
-  for (const doc of rentalDocs) await upsert(db, "rental_orders", doc, doc.status === "pending" ? ago(now, 30) : doc.paidAt ?? ago(now, 24));
+  const rental = (key, customer, racket, status, createdAt, paidAt, outAt) => { const deposit = Number(racket.rental?.deposit ?? 0); const fee = Number(racket.rental?.fee?.d7 ?? 0); const isOut = status === "out"; const servicePickupMethod = isOut ? "SHOP_VISIT" : "SELF_SEND"; return { ...marker(key), userId: customer._id, racketId: racket._id, brand: racket.brand, model: racket.model, days: 7, amount: { fee, deposit, stringPrice: 0, stringingFee: 0, total: deposit + fee }, originalTotal: deposit + fee, pointsUsed: 0, servicePickupMethod, status, paymentStatus: status === "pending" ? "결제대기" : "결제완료", paymentInfo: { provider: "manual_bank_transfer", method: "무통장 입금", status: status === "pending" ? "pending" : "paid" }, shipping: { name: customer.name, phone: customer.phone, postalCode: isOut ? "" : "00000", address: isOut ? "" : "데모시 테니스로 2", addressDetail: isOut ? "" : "포트폴리오 데모", deliveryRequest: "데모 대여 - 실제 배송 금지", shippingMethod: isOut ? "pickup" : "delivery" }, createdAt, ...(paidAt ? { paidAt } : {}), ...(outAt ? { outAt: iso(outAt), dueAt: iso(addDays(outAt, 7)) } : {}), updatedAt: now }; };
+  const overdueDueAt = ago(now, 48);
+  const overdueOutAt = addDays(overdueDueAt, -7);
+  const dueSoonDueAt = after(now, 12);
+  const dueSoonOutAt = addDays(dueSoonDueAt, -7);
+  const rentalDocs = [rental(plan.rental_orders[0], c1, rackets.get(dependencyKeys.used_rackets[0]), "paid", ago(now, 8), ago(now, 7)), rental(plan.rental_orders[1], c2, rackets.get(dependencyKeys.used_rackets[1]), "out", ago(now, 240), ago(now, 239), overdueOutAt), rental(plan.rental_orders[2], c3, rackets.get(dependencyKeys.used_rackets[0]), "out", ago(now, 168), ago(now, 167), dueSoonOutAt), rental(plan.rental_orders[3], c1, rackets.get(dependencyKeys.used_rackets[1]), "pending", ago(now, 30))];
+  for (const doc of rentalDocs) await upsert(db, "rental_orders", doc, doc.createdAt);
 
   const packageItemId = "portfolio-demo-package-item-10";
-  const packageDoc = (key, customer, status, paymentStatus, createdAt) => ({ ...marker(key), userId: customer._id, status, paymentStatus, totalPrice: 180000, packageInfo: { id: "10-sessions", title: "Demo 스트링 케어 10회권", sessions: 10, price: 180000, validityPeriod: 180 }, items: [{ id: packageItemId, name: "Demo 스트링 케어 10회권", price: 180000, quantity: 1, meta: { kind: "service_package", packageSize: 10, validityPeriod: 180, planId: "10-sessions", planTitle: "Demo 스트링 케어 10회권" } }], serviceInfo: { depositor: customer.name, serviceMethod: "courier", name: customer.name, phone: customer.phone, email: customer.email, address: "데모시 테니스로 2", postalCode: "00000" }, paymentInfo: { provider: "manual_bank_transfer", method: "무통장 입금", status: paymentStatus === "결제완료" ? "paid" : "pending", bank: "demo-bank", depositor: customer.name, ...(paymentStatus === "결제완료" ? { approvedAt: createdAt } : {}) }, history: [{ status, date: createdAt, description: "포트폴리오 Demo 패키지 주문" }], userSnapshot: { name: customer.name, email: customer.email }, meta: { source: "portfolio_demo", channel: "online_demo" }, updatedAt: now });
-  const packageDocs = [packageDoc(plan.packageOrders[0], c2, "결제완료", "결제완료", ago(now, 5)), packageDoc(plan.packageOrders[1], c3, "결제대기", "결제대기", ago(now, 30))];
+  const packageDoc = (key, customer, status, paymentStatus, createdAt) => ({ ...marker(key), userId: customer._id, status, paymentStatus, totalPrice: 180000, packageInfo: { id: "10-sessions", title: "Demo 스트링 케어 10회권", sessions: 10, price: 180000, validityPeriod: 30 }, items: [{ id: packageItemId, name: "Demo 스트링 케어 10회권", price: 180000, quantity: 1, meta: { kind: "service_package", packageSize: 10, validityPeriod: 30, planId: "10-sessions", planTitle: "Demo 스트링 케어 10회권" } }], serviceInfo: { depositor: customer.name, serviceMethod: "courier", name: customer.name, phone: customer.phone, email: customer.email, address: "데모시 테니스로 2", postalCode: "00000" }, paymentInfo: { provider: "manual_bank_transfer", method: "무통장 입금", status: paymentStatus === "결제완료" ? "paid" : "pending", bank: "demo-bank", depositor: customer.name, ...(paymentStatus === "결제완료" ? { approvedAt: createdAt } : {}) }, history: [{ status, date: createdAt, description: "포트폴리오 Demo 패키지 주문" }], userSnapshot: { name: customer.name, email: customer.email }, meta: { source: "portfolio_demo", channel: "online_demo" }, updatedAt: now });
+  const paidPackageAt = ago(now, 5);
+  const packageDocs = [packageDoc(plan.packageOrders[0], c2, "결제완료", "결제완료", paidPackageAt), packageDoc(plan.packageOrders[1], c3, "결제대기", "결제대기", ago(now, 30))];
   for (const doc of packageDocs) await upsert(db, "packageOrders", doc, doc.history[0].date);
   const paidPackage = await db.collection("packageOrders").findOne(demoFilter(plan.packageOrders[0]), { projection: { _id: 1 } });
   if (!paidPackage?._id) throw new Error("Demo 결제완료 패키지 주문 ID를 조회하지 못했습니다.");
-  await upsert(db, "service_passes", { ...marker(plan.service_passes[0]), userId: c2._id, orderId: paidPackage._id, orderItemId: packageItemId, packageSize: 10, usedCount: 3, remainingCount: 7, status: "active", purchasedAt: ago(now, 5), activatedAt: ago(now, 5), expiresAt: after(now, 120), remainingValidityMs: null, redemptions: [], meta: { planId: "10-sessions", planTitle: "Demo 스트링 케어 10회권" }, updatedAt: now }, ago(now, 5));
+  await upsert(db, "service_passes", { ...marker(plan.service_passes[0]), userId: c2._id, orderId: paidPackage._id, orderItemId: packageItemId, packageSize: 10, usedCount: 0, remainingCount: 10, status: "active", purchasedAt: paidPackageAt, activatedAt: paidPackageAt, expiresAt: addDays(paidPackageAt, 30), remainingValidityMs: null, redemptions: [], meta: { planId: "10-sessions", planTitle: "Demo 스트링 케어 10회권" }, updatedAt: now }, paidPackageAt);
 
-  const academySpecs = [[plan.academy_lesson_applications[0], c1, "submitted", "group", "beginner", ["화", "목"], "19:00 이후"], [plan.academy_lesson_applications[1], c2, "reviewing", "private", "intermediate", ["수", "금"], "오전 10:00~12:00"], [plan.academy_lesson_applications[2], c3, "confirmed", "adult", "new", ["토"], "오후 14:00"]];
-  for (let index = 0; index < academySpecs.length; index++) { const [key, customer, status, desiredLessonType, currentLevel, preferredDays, preferredTimeText] = academySpecs[index]; const createdAt = iso(ago(now, 4 + index * 6)); await upsert(db, "academy_lesson_applications", { ...marker(key), userId: customer._id.toString(), classId: null, classSnapshot: null, applicantName: customer.name, phone: customer.phone, email: customer.email, desiredLessonType, currentLevel, preferredDays, preferredTimeText, lessonGoal: "포트폴리오 Demo 레슨 상담", requestMemo: "실제 연락 금지", status, adminMemo: null, customerMessage: null, history: [{ status, date: createdAt, description: "포트폴리오 Demo 아카데미 신청" }], updatedAt: iso(now) }, createdAt); }
+  const academyClassCreatedAt = iso(ago(now, 24));
+  await upsert(db, "academy_classes", { ...marker(plan.academy_classes[0]), name: "포트폴리오 데모 그룹 레슨", description: "실제 수업이 아닌 포트폴리오 시연용 클래스입니다.", level: "all", lessonType: "group", instructorName: "데모 코치", location: "포트폴리오 데모 코트", scheduleText: "화·목 19:00", capacity: 12, price: 120000, status: "visible", enrolledCount: 0, updatedAt: iso(now) }, academyClassCreatedAt);
+  const academyClass = await db.collection("academy_classes").findOne(demoFilter(plan.academy_classes[0]), { projection: { _id: 1, name: 1, description: 1, level: 1, lessonType: 1, instructorName: 1, location: 1, scheduleText: 1, capacity: 1, price: 1, status: 1 } });
+  if (!academyClass?._id) throw new Error("Demo Academy Class ID를 조회하지 못했습니다.");
+  const academyClassId = academyClass._id.toString();
+  const classSnapshot = { classId: academyClassId, name: academyClass.name, description: academyClass.description, level: academyClass.level, levelLabel: "전체 레벨", lessonType: academyClass.lessonType, lessonTypeLabel: "그룹 레슨", instructorName: academyClass.instructorName, location: academyClass.location, scheduleText: academyClass.scheduleText, capacity: academyClass.capacity, price: academyClass.price, status: academyClass.status, statusLabel: "모집 중" };
+  const academySpecs = [[plan.academy_lesson_applications[0], c1, "submitted", "beginner", ["화", "목"], "19:00 이후"], [plan.academy_lesson_applications[1], c2, "reviewing", "intermediate", ["수", "금"], "오전 10:00~12:00"], [plan.academy_lesson_applications[2], c3, "confirmed", "new", ["토"], "오후 14:00"]];
+  for (let index = 0; index < academySpecs.length; index++) { const [key, customer, status, currentLevel, preferredDays, preferredTimeText] = academySpecs[index]; const createdAt = iso(ago(now, 4 + index * 6)); await upsert(db, "academy_lesson_applications", { ...marker(key), userId: customer._id.toString(), classId: academyClassId, classSnapshot, applicantName: customer.name, phone: customer.phone, email: customer.email, desiredLessonType: "group", currentLevel, preferredDays, preferredTimeText, lessonGoal: "포트폴리오 Demo 레슨 상담", requestMemo: "실제 연락 금지", status, adminMemo: null, customerMessage: null, history: [{ status, date: createdAt, description: "포트폴리오 Demo 아카데미 신청" }], updatedAt: iso(now) }, createdAt); }
 
   console.log("모드: APPLY");
   console.log("Demo 환경 안전 조건 및 1차 Seed dependency: 통과");
