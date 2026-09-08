@@ -134,16 +134,17 @@ test("Demo refresh는 남은 절대 TTL로 제한하고 일반 사용자의 기�
 test("만료되거나 비정상인 Demo refresh는 token 서명 전에 401과 cookie 정리로 종료한다", () => {
   const route = read("app/api/refresh/route.ts");
   const demoGuardIndex = route.indexOf("if (user.isDemoInteraction === true)");
-  const expiredReturnIndex = route.indexOf("return res;", demoGuardIndex);
-  const tokenSignIndex = route.indexOf("const newAccessToken = jwt.sign");
+  const expiredReturnIndex = route.indexOf("return demoSessionFailure();", demoGuardIndex);
+  const tokenSignIndex = route.indexOf("const newAccessToken = jwt.sign", demoGuardIndex);
   assert.ok(demoGuardIndex >= 0 && demoGuardIndex < expiredReturnIndex);
   assert.ok(expiredReturnIndex < tokenSignIndex);
   assert.match(route, /remainingSeconds <= 0/);
   assert.match(route, /code: "PORTFOLIO_DEMO_SESSION_EXPIRED"/);
   assert.match(route, /\{ status: 401 \}/);
-  assert.ok(route.indexOf('res.cookies.set("accessToken", ""', demoGuardIndex) < expiredReturnIndex);
-  assert.ok(route.indexOf('res.cookies.set("refreshToken", ""', demoGuardIndex) < expiredReturnIndex);
-  assert.ok(route.indexOf("res.cookies.set(ADMIN_CSRF_COOKIE_KEY", demoGuardIndex) < expiredReturnIndex);
+  assert.match(route, /function clearAuthCookies/);
+  assert.match(route, /response\.cookies\.set\("accessToken", ""/);
+  assert.match(route, /response\.cookies\.set\("refreshToken", ""/);
+  assert.match(route, /response\.cookies\.set\(ADMIN_CSRF_COOKIE_KEY, ""/);
 });
 
 test("Demo 로그인 UI는 체험 CTA와 이메일 로그인을 유지하고 회원가입 진입을 차단한다", () => {
@@ -153,8 +154,8 @@ test("Demo 로그인 UI는 체험 CTA와 이메일 로그인을 유지하고 회
   assert.match(client, /tabParam === "register" && !allowRegistration \? "login"/);
   assert.match(client, /\{allowRegistration && \(\s*<div className="mb-5/);
   assert.match(client, /\{allowRegistration && \(\s*<RegisterTabPanel/);
-  assert.match(client, /데모 체험 시작/);
-  assert.match(client, /개인정보 입력 없이 주문·교체서비스·대여·아카데미 흐름을 직접 체험할 수 있습니다\./);
+  assert.match(client, /고객 데모 체험 시작/);
+  assert.match(client, /관리자 데모 보기/);
 });
 
 test("Demo 업무 문서는 metadata를 저장하고 재고·pass 소비를 보존한다", () => {
@@ -178,4 +179,57 @@ test("외부 알림 및 결제 provider는 Demo에서 호출 전에 중단한다
     assert.match(source, /PORTFOLIO_DEMO_MODE/);
     assert.match(source, /PORTFOLIO_DEMO_PAYMENT_DISABLED/);
   }
+});
+
+
+test("Demo switch는 production 차단, same-origin, rate limit 이후에만 세션을 전환한다", () => {
+  const route = read("app/api/portfolio-demo/switch/route.ts");
+  assert.ok(route.indexOf("if (!isPortfolioDemo())") < route.indexOf("const db = await getDb()"));
+  assert.match(route, /if \(!isSameOriginPost\(req\)\)/);
+  assert.match(route, /routeId: "portfolio_demo_switch"/);
+  assert.match(read("lib/auth/publicAuthRateLimit.ts"), /portfolio_demo_switch:\s*\{\s*ip: \{ limit: 20, windowSec: 60 \* 10 \}/);
+});
+
+test("Demo customer만 검증된 Seed Admin Tour로 전환하며 credential을 사용하지 않는다", () => {
+  const route = read("app/api/portfolio-demo/switch/route.ts");
+  assert.match(route, /currentUser\.role !== "user"/);
+  assert.match(route, /currentUser\.isDemoInteraction !== true/);
+  assert.match(route, /remainingSeconds <= 0/);
+  assert.match(route, /demoSeedKey: PORTFOLIO_DEMO_ADMIN_SEED_KEY/);
+  assert.match(route, /isDemoData: true/);
+  assert.match(route, /isAdminRole\(admin\.role\)/);
+  assert.match(route, /portfolioDemoTour: true/);
+  assert.doesNotMatch(route, /PORTFOLIO_DEMO_ADMIN_(?:EMAIL|PASSWORD)/);
+});
+
+test("Admin Tour refresh는 원래 customer context와 absolute TTL을 유지하며 fail-closed 한다", () => {
+  const route = read("app/api/refresh/route.ts");
+  const tourStart = route.indexOf("if (decoded.portfolioDemoTour === true)");
+  const normalStart = route.indexOf("if (typeof decoded.sub", tourStart);
+  assert.ok(tourStart >= 0 && normalStart > tourStart);
+  const tourBranch = route.slice(tourStart, normalStart);
+  assert.match(tourBranch, /getPortfolioDemoTourContext/);
+  assert.match(tourBranch, /customer\.demoSessionId !== context\.demoSessionId/);
+  assert.match(tourBranch, /portfolioDemoExpiryMatches\(customer\.demoExpiresAt, context\.demoExpiresAt\)/);
+  assert.match(tourBranch, /demoSessionFailure\(\)/);
+  assert.match(tourBranch, /demoExpiresAt: context\.demoExpiresAt/);
+  assert.match(tourBranch, /Math\.min\(REFRESH_TOKEN_EXPIRES_IN, remainingSeconds\)/);
+});
+
+test("customer 복귀는 Tour context를 제거하고 admin CSRF를 삭제한다", () => {
+  const route = read("app/api/portfolio-demo/switch/route.ts");
+  assert.match(route, /getPortfolioDemoTourContext/);
+  assert.match(route, /customer\.demoSessionId !== context\.demoSessionId/);
+  assert.match(route, /portfolioDemoExpiryMatches/);
+  assert.match(route, /jwt\.sign\(\{ sub: user\._id\.toString\(\) \}, REFRESH_TOKEN_SECRET/);
+  assert.match(route, /ADMIN_CSRF_COOKIE_KEY, "", \{ \.\.\.baseCookie, httpOnly: false, maxAge: 0 \}/);
+});
+
+test("users/me는 Demo 여부 boolean만 노출하고 내부 context는 노출하지 않는다", () => {
+  const route = read("app/api/users/me/route.ts");
+  const responseStart = route.indexOf("const response = NextResponse.json({");
+  const responseEnd = route.indexOf("});", responseStart);
+  const response = route.slice(responseStart, responseEnd);
+  assert.match(response, /isDemoInteraction: user\.isDemoInteraction === true/);
+  assert.doesNotMatch(response, /demoSessionId|demoExpiresAt|demoCustomerSub/);
 });

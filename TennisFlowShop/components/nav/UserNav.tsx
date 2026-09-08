@@ -14,12 +14,15 @@ import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { LayoutDashboard, LogOut, MessageSquare, Settings, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { showErrorToast } from "@/lib/toast";
 import { runBoardUnsavedChangesNavigation } from "@/lib/hooks/useBoardUnsavedChangesGuard";
 
 export function UserNav() {
   const router = useRouter();
   const { user, loading } = useCurrentUser();
   const { logout } = useAuthStore();
+  const [demoSwitchLoading, setDemoSwitchLoading] = useState(false);
 
   if (loading) {
     return (
@@ -125,6 +128,31 @@ export function UserNav() {
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
             관리자 페이지
+          </DropdownMenuItem>
+        )}
+        {!isAdmin && user.isDemoInteraction === true && (
+          <DropdownMenuItem
+            disabled={demoSwitchLoading}
+            onSelect={async (event) => {
+              event.preventDefault();
+              if (demoSwitchLoading) return;
+              setDemoSwitchLoading(true);
+              try {
+                const response = await fetch("/api/portfolio-demo/switch", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ target: "admin" }),
+                });
+                if (!response.ok) throw new Error("관리자 데모로 전환하지 못했습니다.");
+                window.location.assign("/admin/operations");
+              } catch (error) {
+                setDemoSwitchLoading(false);
+                showErrorToast(error instanceof Error ? error.message : "관리자 데모로 전환하지 못했습니다.");
+              }
+            }}
+          >
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            {demoSwitchLoading ? "전환 중..." : "관리자 데모 보기"}
           </DropdownMenuItem>
         )}
         <DropdownMenuItem
