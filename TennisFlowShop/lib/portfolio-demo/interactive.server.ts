@@ -18,6 +18,21 @@ export function capPortfolioDemoTokenMaxAge(tokenExpiresIn: number): number {
   return Math.min(tokenExpiresIn, PORTFOLIO_DEMO_INTERACTION_TTL_SECONDS);
 }
 
+export function getPortfolioDemoRemainingSessionSeconds(
+  demoExpiresAt: unknown,
+  now = new Date(),
+): number {
+  if (
+    !(demoExpiresAt instanceof Date) &&
+    typeof demoExpiresAt !== "string" &&
+    typeof demoExpiresAt !== "number"
+  ) return 0;
+  const expiresAt = demoExpiresAt instanceof Date ? demoExpiresAt : new Date(demoExpiresAt);
+  const remainingMs = expiresAt.getTime() - now.getTime();
+  if (!Number.isFinite(remainingMs) || remainingMs <= 0) return 0;
+  return Math.floor(remainingMs / 1000);
+}
+
 export function isPortfolioDemo(): boolean {
   return process.env.PORTFOLIO_DEMO_MODE === "true";
 }
