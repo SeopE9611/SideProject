@@ -12,6 +12,7 @@ import {
   capPortfolioDemoTokenMaxAge,
   cleanupExpiredPortfolioDemoInteractions,
   createPortfolioDemoInteractionMeta,
+  getPortfolioDemoRemainingSessionSeconds,
   isPortfolioDemo,
 } from "@/lib/portfolio-demo/interactive.server";
 import jwt from "jsonwebtoken";
@@ -33,7 +34,8 @@ export async function POST(req: Request) {
   await cleanupExpiredPortfolioDemoInteractions(db);
   const demoSessionId = crypto.randomUUID();
   const suffix = demoSessionId.replace(/-/g, "").slice(0, 16);
-  const meta = createPortfolioDemoInteractionMeta(demoSessionId);
+  const now = new Date();
+  const meta = createPortfolioDemoInteractionMeta(demoSessionId, now);
   const user = {
     name: "데모 체험 사용자",
     email: `portfolio-demo-${suffix}@example.com`,
@@ -41,14 +43,15 @@ export async function POST(req: Request) {
     role: "user" as const,
     isDeleted: false,
     isSuspended: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: now,
+    updatedAt: now,
     ...meta,
   };
   const inserted = await db.collection("users").insertOne(user);
   const sub = inserted.insertedId.toString();
-  const accessMaxAge = capPortfolioDemoTokenMaxAge(ACCESS_TOKEN_EXPIRES_IN);
-  const refreshMaxAge = capPortfolioDemoTokenMaxAge(REFRESH_TOKEN_EXPIRES_IN);
+  const remainingSeconds = getPortfolioDemoRemainingSessionSeconds(meta.demoExpiresAt, now);
+  const accessMaxAge = Math.min(capPortfolioDemoTokenMaxAge(ACCESS_TOKEN_EXPIRES_IN), remainingSeconds);
+  const refreshMaxAge = Math.min(capPortfolioDemoTokenMaxAge(REFRESH_TOKEN_EXPIRES_IN), remainingSeconds);
   const accessToken = jwt.sign({ sub, email: user.email, role: user.role }, ACCESS_TOKEN_SECRET, { expiresIn: accessMaxAge });
   const refreshToken = jwt.sign({ sub }, REFRESH_TOKEN_SECRET, { expiresIn: refreshMaxAge });
   const response = NextResponse.json({ success: true, userId: sub });

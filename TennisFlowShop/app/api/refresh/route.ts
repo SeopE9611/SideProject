@@ -12,6 +12,7 @@ import clientPromise from "@/lib/mongodb";
 import { baseCookie } from "@/lib/cookieOptions";
 import { ADMIN_CSRF_COOKIE_KEY } from "@/lib/admin/adminCsrf";
 import { isAdminRole } from "@/lib/admin/roles";
+import { getPortfolioDemoRemainingSessionSeconds } from "@/lib/portfolio-demo/interactive.server";
 
 export async function POST() {
   const cookieStore = await cookies();
@@ -60,16 +61,41 @@ export async function POST() {
     return res;
   }
 
+  let accessMaxAge = ACCESS_TOKEN_EXPIRES_IN;
+  let refreshMaxAge = REFRESH_TOKEN_EXPIRES_IN;
+  if (user.isDemoInteraction === true) {
+    const remainingSeconds = getPortfolioDemoRemainingSessionSeconds(user.demoExpiresAt);
+    if (remainingSeconds <= 0) {
+      const res = NextResponse.json(
+        {
+          code: "PORTFOLIO_DEMO_SESSION_EXPIRED",
+          message: "데모 체험 세션이 만료되었습니다. 다시 데모 체험을 시작해주세요.",
+        },
+        { status: 401 },
+      );
+      res.cookies.set("accessToken", "", { ...baseCookie, maxAge: 0 });
+      res.cookies.set("refreshToken", "", { ...baseCookie, maxAge: 0 });
+      res.cookies.set(ADMIN_CSRF_COOKIE_KEY, "", {
+        ...baseCookie,
+        httpOnly: false,
+        maxAge: 0,
+      });
+      return res;
+    }
+    accessMaxAge = Math.min(ACCESS_TOKEN_EXPIRES_IN, remainingSeconds);
+    refreshMaxAge = Math.min(REFRESH_TOKEN_EXPIRES_IN, remainingSeconds);
+  }
+
   // 새 액세스 토큰 발급
   const newAccessToken = jwt.sign(
     { sub: user._id.toString(), email: user.email, role: user.role },
     ACCESS_TOKEN_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRES_IN },
+    { expiresIn: accessMaxAge },
   );
 
   // 리프레시 토큰 재발급
   const newRefreshToken = jwt.sign({ sub: decoded.sub }, REFRESH_TOKEN_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+    expiresIn: refreshMaxAge,
   });
 
   // 쿠키에 다시 심어서 만료시간 연장
@@ -78,13 +104,13 @@ export async function POST() {
   //  AccessToken 쿠키 갱신
   res.cookies.set("accessToken", newAccessToken, {
     ...baseCookie,
-    maxAge: ACCESS_TOKEN_EXPIRES_IN,
+    maxAge: accessMaxAge,
   });
 
   //  RefreshToken 쿠키 갱신 (슬라이딩 로테이션)
   res.cookies.set("refreshToken", newRefreshToken, {
     ...baseCookie,
-    maxAge: REFRESH_TOKEN_EXPIRES_IN,
+    maxAge: refreshMaxAge,
   });
 
   // admin/superadmin 관리자 세션 refresh에는 CSRF 쿠키를 함께 재발급하고, 일반 유저는 기존 값을 제거한다.
@@ -93,7 +119,7 @@ export async function POST() {
     res.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
       ...baseCookie,
       httpOnly: false,
-      maxAge: REFRESH_TOKEN_EXPIRES_IN,
+      maxAge: refreshMaxAge,
     });
   } else {
     res.cookies.set(ADMIN_CSRF_COOKIE_KEY, "", {

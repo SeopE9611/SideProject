@@ -53,7 +53,7 @@ test("Demo session은 격리 사용자와 정상 access/refresh cookie를 발급
   assert.ok(rateLimitIndex < cleanupIndex);
   assert.match(route, /routeId: "portfolio_demo_session"/);
   assert.match(route, /role: "user"/);
-  assert.match(route, /createPortfolioDemoInteractionMeta\(demoSessionId\)/);
+  assert.match(route, /createPortfolioDemoInteractionMeta\(demoSessionId, now\)/);
   assert.match(route, /portfolio-demo-\$\{suffix\}@example\.com/);
   assert.ok(route.includes('response.cookies.set("accessToken"'));
   assert.ok(route.includes('response.cookies.set("refreshToken"'));
@@ -85,6 +85,65 @@ test("Demo access/refresh TTL은 Interaction 24시간을 초과하지 않는다"
   assert.match(route, /expiresIn: refreshMaxAge/);
   assert.match(route, /maxAge: accessMaxAge/);
   assert.match(route, /maxAge: refreshMaxAge/);
+});
+
+test("Demo remaining TTL은 저장된 절대 만료 시각을 기준으로 floor 계산한다", () => {
+  const startedAt = new Date("2026-09-08T12:00:00.000Z");
+  const { demoExpiresAt } = interactive.createPortfolioDemoInteractionMeta("session", startedAt);
+  assert.equal(
+    interactive.getPortfolioDemoRemainingSessionSeconds(demoExpiresAt, startedAt),
+    24 * 60 * 60,
+  );
+  assert.equal(
+    interactive.getPortfolioDemoRemainingSessionSeconds(
+      demoExpiresAt,
+      new Date("2026-09-09T11:00:00.000Z"),
+    ),
+    60 * 60,
+  );
+  assert.equal(
+    interactive.getPortfolioDemoRemainingSessionSeconds(
+      demoExpiresAt,
+      new Date("2026-09-09T11:59:58.750Z"),
+    ),
+    1,
+  );
+  assert.equal(interactive.getPortfolioDemoRemainingSessionSeconds(demoExpiresAt, demoExpiresAt), 0);
+  assert.equal(interactive.getPortfolioDemoRemainingSessionSeconds("invalid date", startedAt), 0);
+  assert.equal(interactive.getPortfolioDemoRemainingSessionSeconds(undefined, startedAt), 0);
+});
+
+test("Demo refresh는 남은 절대 TTL로 제한하고 일반 사용자의 기존 TTL은 유지한다", () => {
+  const remainingSeconds = 30 * 60;
+  assert.equal(Math.min(60 * 60, remainingSeconds), remainingSeconds);
+  assert.equal(Math.min(60 * 60 * 24 * 7, remainingSeconds), remainingSeconds);
+
+  const route = read("app/api/refresh/route.ts");
+  assert.match(route, /let accessMaxAge = ACCESS_TOKEN_EXPIRES_IN/);
+  assert.match(route, /let refreshMaxAge = REFRESH_TOKEN_EXPIRES_IN/);
+  assert.match(route, /user\.isDemoInteraction === true/);
+  assert.match(route, /getPortfolioDemoRemainingSessionSeconds\(user\.demoExpiresAt\)/);
+  assert.match(route, /accessMaxAge = Math\.min\(ACCESS_TOKEN_EXPIRES_IN, remainingSeconds\)/);
+  assert.match(route, /refreshMaxAge = Math\.min\(REFRESH_TOKEN_EXPIRES_IN, remainingSeconds\)/);
+  assert.match(route, /expiresIn: accessMaxAge/);
+  assert.match(route, /expiresIn: refreshMaxAge/);
+  assert.match(route, /maxAge: accessMaxAge/);
+  assert.match(route, /maxAge: refreshMaxAge/);
+});
+
+test("만료되거나 비정상인 Demo refresh는 token 서명 전에 401과 cookie 정리로 종료한다", () => {
+  const route = read("app/api/refresh/route.ts");
+  const demoGuardIndex = route.indexOf("if (user.isDemoInteraction === true)");
+  const expiredReturnIndex = route.indexOf("return res;", demoGuardIndex);
+  const tokenSignIndex = route.indexOf("const newAccessToken = jwt.sign");
+  assert.ok(demoGuardIndex >= 0 && demoGuardIndex < expiredReturnIndex);
+  assert.ok(expiredReturnIndex < tokenSignIndex);
+  assert.match(route, /remainingSeconds <= 0/);
+  assert.match(route, /code: "PORTFOLIO_DEMO_SESSION_EXPIRED"/);
+  assert.match(route, /\{ status: 401 \}/);
+  assert.ok(route.indexOf('res.cookies.set("accessToken", ""', demoGuardIndex) < expiredReturnIndex);
+  assert.ok(route.indexOf('res.cookies.set("refreshToken", ""', demoGuardIndex) < expiredReturnIndex);
+  assert.ok(route.indexOf("res.cookies.set(ADMIN_CSRF_COOKIE_KEY", demoGuardIndex) < expiredReturnIndex);
 });
 
 test("Demo 로그인 UI는 체험 CTA와 이메일 로그인을 유지하고 회원가입 진입을 차단한다", () => {
