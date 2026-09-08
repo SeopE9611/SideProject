@@ -1,10 +1,12 @@
 import AdminDesktopViewportPolicy from "@/components/admin/AdminDesktopViewportPolicy";
 import AdminNavigationShell from "@/components/admin/AdminNavigationShell";
+import PortfolioDemoCustomerReturnButton from "@/components/admin/PortfolioDemoCustomerReturnButton";
 import AccessDenied from "@/components/system/AccessDenied";
 import { isPortfolioDemoReadOnly } from "@/lib/admin/portfolio-demo-readonly.server";
 import { isAdminRole } from "@/lib/admin/roles";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { logInfo } from "@/lib/logger";
+import { isPortfolioDemoTourSession } from "@/lib/portfolio-demo/tour.server";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -71,6 +73,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const requestHeaders = await headers();
   const e2eBypass = canBypassAdminGuard(requestHeaders);
   const isDemoReadOnly = isPortfolioDemoReadOnly();
+  const isDemoTour = isDemoReadOnly && (await isPortfolioDemoTourSession());
 
   if (!e2eBypass) {
     const user = await getCurrentUser();
@@ -105,14 +108,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </Link>
           <div className="flex items-center gap-3 text-ui-label text-muted-foreground">
             <span>관리자 콘솔</span>
-            <Link
+            {isDemoTour ? <PortfolioDemoCustomerReturnButton /> : <Link
               href="/"
               target="_blank"
               rel="noreferrer"
               className="rounded-md font-semibold text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               쇼핑몰 홈
-            </Link>
+            </Link>}
           </div>
         </div>
       </div>

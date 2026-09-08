@@ -132,6 +132,7 @@ export default function LoginPageClient({
   const [showPassword, setShowPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
+  const [adminDemoLoading, setAdminDemoLoading] = useState(false);
 
   // 로그인 입력값이 “하나라도” 들어왔는지(=dirty)만 최소 추적 (uncontrolled input 유지)
   const [loginDirty, setLoginDirty] = useState(false);
@@ -300,6 +301,34 @@ export default function LoginPageClient({
     }
   };
 
+  const handleAdminDemoLogin = async () => {
+    if (demoLoading || adminDemoLoading) return;
+    let customerSessionCreated = false;
+    try {
+      setAdminDemoLoading(true);
+      const sessionResponse = await fetch("/api/portfolio-demo/session", { method: "POST" });
+      const sessionData = await readJsonSafe(sessionResponse);
+      if (!sessionResponse.ok) throw new Error(sessionData?.message || "데모 세션을 시작하지 못했습니다.");
+      customerSessionCreated = true;
+
+      const switchResponse = await fetch("/api/portfolio-demo/switch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: "admin" }),
+      });
+      const switchData = await readJsonSafe(switchResponse);
+      if (!switchResponse.ok) throw new Error(switchData?.message || "관리자 데모로 전환하지 못했습니다.");
+      window.location.assign("/admin/operations");
+    } catch (error) {
+      if (customerSessionCreated) {
+        await fetch("/api/logout", { method: "POST", credentials: "include" }).catch(() => undefined);
+        setUser(null);
+      }
+      showErrorToast(error instanceof Error ? error.message : "관리자 데모를 시작하지 못했습니다.");
+      setAdminDemoLoading(false);
+    }
+  };
+
   const handleKakaoOAuth = () => {
     if (!confirmLeaveIfDirty()) return;
     const from = new URLSearchParams(window.location.search).get("from");
@@ -370,12 +399,21 @@ export default function LoginPageClient({
             <div className="space-y-4">
               {portfolioDemoMode && (
                 <div className="space-y-3 rounded-control border border-brand-highlight bg-brand-highlight-muted/35 p-4">
-                  <p className="break-keep text-ui-body-sm text-muted-foreground">
-                    개인정보 입력 없이 주문·교체서비스·대여·아카데미 흐름을 직접 체험할 수 있습니다.
-                  </p>
-                  <Button className="w-full" variant="highlight" onClick={handleDemoLogin} disabled={demoLoading}>
+                  <div>
+                    <p className="font-medium text-foreground">고객 화면</p>
+                    <p className="break-keep text-ui-body-sm text-muted-foreground">주문·교체서비스·대여·아카데미 등 사용자 흐름을 체험합니다.</p>
+                  </div>
+                  <Button className="w-full" variant="highlight" onClick={handleDemoLogin} disabled={demoLoading || adminDemoLoading}>
                     {demoLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    데모 체험 시작
+                    고객 데모 체험 시작
+                  </Button>
+                  <div className="border-t border-border pt-3">
+                    <p className="font-medium text-foreground">관리자 화면</p>
+                    <p className="break-keep text-ui-body-sm text-muted-foreground">주문·신청·재고·운영 현황을 조회 전용으로 확인합니다.</p>
+                  </div>
+                  <Button className="w-full" variant="outline" onClick={handleAdminDemoLogin} disabled={demoLoading || adminDemoLoading}>
+                    {adminDemoLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    관리자 데모 보기
                   </Button>
                 </div>
               )}

@@ -14,6 +14,7 @@ type SafeUser = {
   name: string | null;
   email: string | null;
   role: "user" | "admin" | string;
+  isDemoInteraction?: boolean;
   oauthProviders?: Array<"kakao" | "naver">;
 };
 
@@ -69,6 +70,7 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
       name: user.name ?? null,
       email: user.email ?? null,
       role: (user.role as SafeUser["role"]) ?? "user",
+      isDemoInteraction: user.isDemoInteraction === true,
       oauthProviders,
     };
   } catch {
