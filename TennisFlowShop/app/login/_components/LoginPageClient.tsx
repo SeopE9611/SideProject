@@ -337,28 +337,34 @@ export default function LoginPageClient({
           <span>도깨비테니스</span>
         </span>
       }
-      description="로그인 또는 회원가입을 선택해 계속 진행하세요"
+      description={
+        portfolioDemoMode
+          ? "데모 체험 또는 이메일 로그인으로 계속 진행하세요"
+          : "로그인 또는 회원가입을 선택해 계속 진행하세요"
+      }
       variant="feature"
       panelClassName={activeTab === "register" ? "max-w-2xl" : "max-w-md"}
     >
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="mb-5 rounded-control border border-border bg-muted/50 p-1">
-          <TabsList className="grid h-11 w-full grid-cols-2 bg-transparent">
-            <TabsTrigger
-              value="login"
-              className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm"
-            >
-              로그인
-            </TabsTrigger>
-            <TabsTrigger
-              value="register"
-              disabled={!allowRegistration}
-              className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm"
-            >
-              회원가입
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        {allowRegistration && (
+          <div className="mb-5 rounded-control border border-border bg-muted/50 p-1">
+            <TabsList className="grid h-11 w-full grid-cols-2 bg-transparent">
+              <TabsTrigger
+                value="login"
+                className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm"
+              >
+                로그인
+              </TabsTrigger>
+              <TabsTrigger
+                value="register"
+                disabled={!allowRegistration}
+                className="rounded-control data-[state=active]:bg-brand-highlight data-[state=active]:text-brand-highlight-foreground data-[state=active]:shadow-sm"
+              >
+                회원가입
+              </TabsTrigger>
+            </TabsList>
+          </div>
+        )}
         {activeTab === "login" && (
           <TabsContent value="login" forceMount className="mt-0">
             <div className="space-y-4">
@@ -556,11 +562,11 @@ export default function LoginPageClient({
                     일반가입
                   </button>
                 </div>
-              ) : (
+              ) : !portfolioDemoMode ? (
                 <div className="text-center text-ui-label text-muted-foreground">
                   현재 신규 회원가입이 일시 중단되었습니다.
                 </div>
-              )}
+              ) : null}
 
               {showGuestLookup && (
                 <div className="text-center">

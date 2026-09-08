@@ -14,7 +14,8 @@ export type PublicAuthRouteId =
   | "oauth_complete"
   | "forgot_password_request"
   | "forgot_password_reset"
-  | "apps_in_toss_login";
+  | "apps_in_toss_login"
+  | "portfolio_demo_session";
 
 type PublicAuthRateLimitPolicy = {
   limit: number;
@@ -48,6 +49,9 @@ export const AUTH_RATE_LIMIT_POLICIES: Record<PublicAuthRouteId, RoutePolicy> = 
     identifier: { limit: 5, windowSec: 60 * 30 },
   },
   apps_in_toss_login: {
+    ip: { limit: 10, windowSec: 60 * 10 },
+  },
+  portfolio_demo_session: {
     ip: { limit: 10, windowSec: 60 * 10 },
   },
 };

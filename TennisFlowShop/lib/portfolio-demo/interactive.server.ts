@@ -3,6 +3,20 @@ import "server-only";
 import type { Db, Filter } from "mongodb";
 
 export const PORTFOLIO_DEMO_INTERACTION_TTL_MS = 24 * 60 * 60 * 1000;
+export const PORTFOLIO_DEMO_INTERACTION_TTL_SECONDS =
+  PORTFOLIO_DEMO_INTERACTION_TTL_MS / 1000;
+
+export function buildPortfolioDemoPhone(demoSessionId: string): string {
+  const hex = demoSessionId.replace(/[^0-9a-f]/gi, "");
+  const numericSuffix = (BigInt(`0x${hex || "0"}`) % BigInt(100000000))
+    .toString()
+    .padStart(8, "0");
+  return `010-${numericSuffix.slice(0, 4)}-${numericSuffix.slice(4)}`;
+}
+
+export function capPortfolioDemoTokenMaxAge(tokenExpiresIn: number): number {
+  return Math.min(tokenExpiresIn, PORTFOLIO_DEMO_INTERACTION_TTL_SECONDS);
+}
 
 export function isPortfolioDemo(): boolean {
   return process.env.PORTFOLIO_DEMO_MODE === "true";

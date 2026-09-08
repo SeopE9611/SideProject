@@ -35,10 +35,12 @@ export default async function LoginPage({ searchParams }: PageProps) {
     redirect(safeRedirectTarget(next ?? redirectTo));
   }
   const registrationPolicy = await getRegistrationPolicy();
+  const portfolioDemoMode = process.env.PORTFOLIO_DEMO_MODE === "true";
   return (
     <LoginPageClient
       {...registrationPolicy}
-      portfolioDemoMode={process.env.PORTFOLIO_DEMO_MODE === "true"}
+      allowRegistration={registrationPolicy.allowRegistration && !portfolioDemoMode}
+      portfolioDemoMode={portfolioDemoMode}
     />
   );
 }
