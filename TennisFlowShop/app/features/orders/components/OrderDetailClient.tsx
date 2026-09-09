@@ -1666,9 +1666,14 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                               const storedRacketLabel =
                                 line.racketLabel || line.racketType || `${index + 1}번째 라켓`;
                               const storedStringLabel = line.stringName || "스트링 미입력";
+                              const hasGenericRacketLabel = /^(?:라켓|라켓명|라켓 종류|라켓 정보)$/u.test(
+                                storedRacketLabel.trim(),
+                              );
                               const hasRacketStringCollision =
                                 Boolean(line.stringName) &&
                                 storedRacketLabel.trim() === storedStringLabel.trim();
+                              const needsRacketLabelReview =
+                                hasGenericRacketLabel || hasRacketStringCollision;
 
                               return (
                                 <div
@@ -1676,7 +1681,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                                   className="space-y-1"
                                 >
                                   <p className="font-medium text-foreground">
-                                    {hasRacketStringCollision
+                                    {needsRacketLabelReview
                                       ? "라켓명 확인 필요"
                                       : storedRacketLabel}{" "}
                                     · {storedStringLabel}
@@ -1684,10 +1689,10 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                                       ? ` · 게이지(굵기) ${line.gauge ? formatGaugeLabel(line.gauge) : "-"} / 색상 ${line.colorLabel || line.color || "-"}`
                                       : ""}
                                   </p>
-                                  {hasRacketStringCollision && (
+                                  {needsRacketLabelReview && (
                                     <p className="text-ui-label text-warning">
-                                      저장된 라켓명이 스트링명과 동일합니다. 원본 신청서 확인이
-                                      필요합니다.
+                                      저장된 라켓명이 구체적이지 않거나 스트링명과 동일합니다. 원본
+                                      신청서 확인이 필요합니다.
                                     </p>
                                   )}
                                 </div>

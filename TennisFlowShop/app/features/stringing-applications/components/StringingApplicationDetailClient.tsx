@@ -977,7 +977,11 @@ export default function StringingApplicationDetailClient({
     : linkedRentalId
       ? `/admin/rentals/${encodeURIComponent(String(linkedRentalId))}`
       : null;
-  const linkedStageCtaLabel = data.orderId ? "주문에서 진행 단계 변경" : "대여에서 진행 단계 확인";
+  const linkedStageCtaLabel = data.orderId
+    ? readOnly
+      ? "주문 진행 단계 보기"
+      : "주문에서 진행 단계 변경"
+    : "대여에서 진행 단계 확인";
   const applicationContext = isAmbiguousLinkedApplication
     ? {
         label: "주문·대여 연결 작업",
@@ -1374,9 +1378,11 @@ export default function StringingApplicationDetailClient({
             ? "주문 상세의 연결 진행 단계 확인"
             : "대여 상세의 연결 진행 단계 확인",
           description: data.orderId
-            ? "이 작업은 주문에 포함된 하위 작업입니다. 주문 상세의 연결 진행 단계에서 상태를 함께 변경하세요."
+            ? readOnly
+              ? "이 작업은 주문에 포함된 하위 작업입니다. 주문 상세에서 연결 진행 단계를 확인하세요."
+              : "이 작업은 주문에 포함된 하위 작업입니다. 주문 상세의 연결 진행 단계에서 상태를 함께 변경하세요."
             : "이 작업은 대여에 포함된 하위 작업입니다. 대여 상세의 연결 진행 단계에서 상태를 함께 변경하세요.",
-          actionLabel: data.orderId ? "주문에서 진행 단계 변경" : "대여에서 진행 단계 확인",
+          actionLabel: linkedStageCtaLabel,
           actionHref: linkedAdminHref ?? undefined,
         }
       : lowerStatus.includes("접수") || lowerStatus.includes("검토")

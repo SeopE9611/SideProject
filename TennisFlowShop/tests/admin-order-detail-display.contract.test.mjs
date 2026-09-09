@@ -44,6 +44,7 @@ test("주문 상세은 방문 수령 문맥과 표시 형식을 일관되게 적
   assert.ok(detail.includes("getOrderStatusLabelForDisplay("));
   assert.ok(detail.includes("formatKoreanPhone(orderDetail.customer.phone)"));
   assert.ok(detail.includes("주문일시 ${formatDateTime(orderDetail.date)}"));
-  assert.ok(detail.includes("저장된 라켓명이 스트링명과 동일합니다."));
+  assert.ok(detail.includes("hasGenericRacketLabel"));
+  assert.ok(detail.includes("저장된 라켓명이 구체적이지 않거나 스트링명과 동일합니다."));
   assert.ok(dialog.includes("<DialogDescription>"));
 });

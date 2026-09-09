@@ -74,6 +74,7 @@ test("Demo의 연결 교체서비스 상세은 mutation UI와 메모 변경을 �
 
   assert.ok(page.includes("readOnly={isPortfolioDemoReadOnly()}"));
   assert.ok(detail.includes("Portfolio Demo에서는 편집할 수 없습니다."));
+  assert.ok(detail.includes('readOnly\n      ? "주문 진행 단계 보기"'));
   assert.ok(detail.includes("{isAdmin && !readOnly && ("));
   assert.ok(detail.includes("readOnly={readOnly}"));
   assert.ok(notes.includes("readOnly?: boolean"));
