@@ -374,7 +374,12 @@ export function getOrderStatusTone(status?: string | null): BadgeSemanticTone {
     return "success";
   if (["paid", "payment_completed", "delivered", "confirmed", "purchase_confirmed"].includes(lower))
     return "success";
-  if (normalized === "배송중" || normalized === "처리중" || normalized === "배송준비중")
+  if (
+    normalized === "상품준비중" ||
+    normalized === "배송중" ||
+    normalized === "처리중" ||
+    normalized === "배송준비중"
+  )
     return "info";
   if (["shipped", "shipping_pending"].includes(lower)) return "info";
   if (normalized === "대기중") return "warning";

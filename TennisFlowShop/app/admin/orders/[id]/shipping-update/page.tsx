@@ -1,7 +1,8 @@
 import { adminTypography } from "@/components/admin/admin-typography";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
-import { hasAnyRegisteredFulfillmentField, isVisitPickupOrder } from "@/lib/order-shipping";
+import { isPortfolioDemoReadOnly } from "@/lib/admin/portfolio-demo-readonly.server";
+import { canEnterShippingPhase, isVisitPickupOrder } from "@/lib/order-shipping";
 import { Store, Truck } from "lucide-react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -21,9 +22,20 @@ type StringingApplicationLite = {
 
 export default async function ShippingUpdatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  if (isPortfolioDemoReadOnly()) {
+    redirect(`/admin/orders/${id}`);
+  }
+
   const headersList = await headers();
-  const host = headersList.get("host");
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://${host}`;
+  const host = headersList.get("x-forwarded-host")?.split(",")[0]?.trim() || headersList.get("host");
+  if (!host) {
+    redirect(`/admin/orders/${id}`);
+  }
+  const protocol =
+    headersList.get("x-forwarded-proto")?.split(",")[0]?.trim() ||
+    (process.env.NODE_ENV === "development" ? "http" : "https");
+  const baseUrl = `${protocol}://${host}`;
   const cookie = headersList.get("cookie") ?? "";
 
   const res = await fetch(`${baseUrl}/api/admin/orders/${id}`, {
@@ -107,7 +119,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
   // 기존 배송정보가 하나라도 있으면 "수정", 아무것도 없으면 "등록"
   const rawMethod =
     order?.shippingInfo?.shippingMethod ?? order?.shippingInfo?.deliveryMethod ?? "";
-  const isRegistered = hasAnyRegisteredFulfillmentField(order?.shippingInfo);
+  const isRegistered = canEnterShippingPhase(order?.shippingInfo).ok;
   const isVisitPickup = isVisitPickupOrder(order?.shippingInfo);
   const pageTitle = isVisitPickup
     ? isRegistered

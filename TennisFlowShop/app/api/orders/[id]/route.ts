@@ -447,7 +447,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
             null,
           selectedColorImage: (item as any)?.selectedColorImage ?? null,
 
-          mountingFee: isMountableString ? rawMountingFee : 0,
+          // 주문 상세에는 현재 상품 설정값이 아니라 주문 당시 청구 스냅샷만 노출한다.
+          // 일반 상품 주문에 현재 장착비가 소급 표시되면 결제 금액과 모순된다.
+          mountingFee: toFiniteNonNegativeNumber((item as any)?.mountingFee) ?? 0,
 
           isMountableString,
           quantity: item.quantity,
@@ -1119,8 +1121,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const __phaseIndex: Record<string, number> = {
       대기중: 0,
       결제완료: 1,
-      배송중: 2,
-      배송완료: 3,
+      상품준비중: 2,
+      배송중: 3,
+      배송완료: 4,
       // '환불', '취소'는 종단 상태라 인덱스 필요 없음 (이미 서버에서 락)
     };
 
@@ -1140,16 +1143,24 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         status: 409,
       });
     }
-    const ALLOWED_STATUS = new Set(["대기중", "결제완료", "배송중", "배송완료"]);
+    const ALLOWED_STATUS = new Set([
+      "대기중",
+      "결제완료",
+      "상품준비중",
+      "배송중",
+      "배송완료",
+    ]);
     if (!ALLOWED_STATUS.has(nextStatus)) {
       return new NextResponse("허용되지 않은 상태 값입니다.", { status: 400 });
     }
-    if (nextStatus === "배송중" || nextStatus === "배송완료") {
+    if (["상품준비중", "배송중", "배송완료"].includes(nextStatus)) {
       if (resolveOrderPaymentStatus(existing) !== "결제완료") {
-        return new NextResponse("결제가 완료된 주문만 배송 단계로 변경할 수 있습니다.", {
+        return new NextResponse("결제가 완료된 주문만 상품 준비·배송 단계로 변경할 수 있습니다.", {
           status: 409,
         });
       }
+    }
+    if (nextStatus === "배송중" || nextStatus === "배송완료") {
       const guard = canEnterShippingPhase((existing as any)?.shippingInfo);
       if (!guard.ok) {
         return new NextResponse(guard.message ?? "배송 정보가 등록되지 않았습니다.", {
@@ -1229,6 +1240,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       try {
         const titleByStatus: Record<string, string> = {
           결제완료: "주문 결제가 확인되었습니다.",
+          상품준비중: "주문 상품을 준비하고 있습니다.",
           배송중: "주문이 배송중으로 변경되었습니다.",
           배송완료: "주문 배송이 완료되었습니다.",
           취소: "주문이 취소되었습니다.",

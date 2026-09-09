@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogTrigger,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -159,6 +160,9 @@ export default function AdminCancelOrderDialog({
                 ? "관리자 강제 취소"
                 : "주문 취소"}
           </DialogTitle>
+          <DialogDescription>
+            취소 사유와 결제·재고 후처리 영향을 확인한 뒤 주문 취소를 진행합니다.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2 py-4">

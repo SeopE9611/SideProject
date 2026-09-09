@@ -36,10 +36,12 @@ export default function AdminInternalNotesCard({
   targetType,
   targetId,
   className,
+  readOnly = false,
 }: {
   targetType: TargetType;
   targetId: string;
   className?: string;
+  readOnly?: boolean;
 }) {
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -73,7 +75,7 @@ export default function AdminInternalNotesCard({
   );
 
   const onCreate = async () => {
-    if (isCreating) return;
+    if (readOnly || isCreating) return;
     setIsCreating(true);
     try {
       const payload = { targetType, targetId, body: draft };
@@ -93,7 +95,7 @@ export default function AdminInternalNotesCard({
   };
 
   const onUpdate = async (id: string) => {
-    if (updatingId) return;
+    if (readOnly || updatingId) return;
     setUpdatingId(id);
     try {
       await adminMutator(`/api/admin/notes/${id}`, {
@@ -113,7 +115,7 @@ export default function AdminInternalNotesCard({
   };
 
   const onDelete = async () => {
-    if (!deleteId) return;
+    if (readOnly || !deleteId) return;
     if (deletingId) return;
     setDeletingId(deleteId);
     try {
@@ -147,23 +149,27 @@ export default function AdminInternalNotesCard({
       <CardHeader className={adminSurface.detailHeader}>
         <CardTitle className={adminTypography.sectionTitle}>관리자 내부 메모</CardTitle>
         <CardDescription className={adminTypography.metaMuted}>
-          고객에게 노출되지 않는 운영자 전용 메모입니다.
+          {readOnly
+            ? "고객에게 노출되지 않는 운영자 메모를 조회합니다. Demo에서는 변경할 수 없습니다."
+            : "고객에게 노출되지 않는 운영자 전용 메모입니다."}
         </CardDescription>
       </CardHeader>
       <CardContent className={adminSurface.detailContent}>
-        <div className="space-y-2">
-          <Textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            maxLength={2000}
-            placeholder="예) 고객이 전화로 배송 일정 변경을 요청함"
-          />
-          <div className="flex justify-end">
-            <Button onClick={onCreate} disabled={!draft.trim() || isCreating}>
-              {isCreating ? "저장 중..." : "저장"}
-            </Button>
+        {!readOnly && (
+          <div className="space-y-2">
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              maxLength={2000}
+              placeholder="예) 고객이 전화로 배송 일정 변경을 요청함"
+            />
+            <div className="flex justify-end">
+              <Button onClick={onCreate} disabled={!draft.trim() || isCreating}>
+                {isCreating ? "저장 중..." : "저장"}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
         <div className={cn("space-y-2", adminSurface.fieldPanelMuted)}>
           <div className="grid gap-2 grid-cols-2">
             <Input
@@ -242,27 +248,29 @@ export default function AdminInternalNotesCard({
                       {note.createdByName || note.createdByEmail || "관리자"} ·{" "}
                       {note.createdAt ? new Date(note.createdAt).toLocaleString("ko-KR") : "-"}
                     </span>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingId(note.id);
-                          setEditingBody(note.body);
-                        }}
-                        disabled={Boolean(updatingId) || Boolean(deletingId)}
-                      >
-                        수정
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteId(note.id)}
-                        disabled={Boolean(updatingId) || Boolean(deletingId)}
-                      >
-                        삭제
-                      </Button>
-                    </div>
+                    {!readOnly && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingId(note.id);
+                            setEditingBody(note.body);
+                          }}
+                          disabled={Boolean(updatingId) || Boolean(deletingId)}
+                        >
+                          수정
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteId(note.id)}
+                          disabled={Boolean(updatingId) || Boolean(deletingId)}
+                        >
+                          삭제
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
@@ -293,16 +301,18 @@ export default function AdminInternalNotesCard({
           </div>
         ) : null}
       </CardContent>
-      <AdminConfirmDialog
-        open={Boolean(deleteId)}
-        onOpenChange={(o) => !o && setDeleteId(null)}
-        title="내부 메모 삭제"
-        description="삭제한 메모는 목록에서 사라집니다. 계속할까요?"
-        severity="danger"
-        confirmText={deletingId ? "삭제 중..." : "삭제"}
-        confirmDisabled={Boolean(deletingId)}
-        onConfirm={onDelete}
-      />
+      {!readOnly && (
+        <AdminConfirmDialog
+          open={Boolean(deleteId)}
+          onOpenChange={(o) => !o && setDeleteId(null)}
+          title="내부 메모 삭제"
+          description="삭제한 메모는 목록에서 사라집니다. 계속할까요?"
+          severity="danger"
+          confirmText={deletingId ? "삭제 중..." : "삭제"}
+          confirmDisabled={Boolean(deletingId)}
+          onConfirm={onDelete}
+        />
+      )}
     </Card>
   );
 }
