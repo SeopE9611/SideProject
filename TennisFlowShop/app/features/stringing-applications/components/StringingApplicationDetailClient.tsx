@@ -113,10 +113,10 @@ const CancelStringingDialog = dynamic(
 
 interface Props {
   id: string;
-  baseUrl: string;
   backUrl?: string /** 뒤로 가기 링크(관리자 기본: '/admin/orders') */;
   isAdmin?: boolean /** 관리자 여부(기본: true) */;
   userEditableStatuses?: string[] /** 일반 사용자가 편집 가능한 상태 */;
+  readOnly?: boolean /** Portfolio Demo 관리자 조회 전용 여부 */;
 }
 
 function StringingDetailShell({ isAdmin, children }: { isAdmin: boolean; children: ReactNode }) {
@@ -243,6 +243,7 @@ interface ApplicationDetail {
     salePrice?: number | null;
     discountAmount?: number | null;
     discountRate?: number | null;
+    priceSnapshotStatus?: "confirmed" | "needs_review";
     stringPrice?: number | null;
     stringingFee?: number | null;
     selectedGauge?: string | null;
@@ -450,10 +451,10 @@ const formatVisitTimeRange = (
 
 export default function StringingApplicationDetailClient({
   id,
-  baseUrl,
   backUrl = "/admin/orders",
   isAdmin = true,
   userEditableStatuses = ["검토 중", "접수완료"],
+  readOnly = false,
 }: Props) {
   const router = useRouter();
 
@@ -719,7 +720,7 @@ export default function StringingApplicationDetailClient({
     try {
       setIsConfirmSubmitting(true);
 
-      const res = await fetch(`${baseUrl}/api/applications/stringing/${applicationId}/confirm`, {
+      const res = await fetch(`/api/applications/stringing/${applicationId}/confirm`, {
         method: "POST",
         credentials: "include",
       });
@@ -753,7 +754,7 @@ export default function StringingApplicationDetailClient({
     useStringingStore.setState({ selectedApplicationId: id });
   }, [id]);
   const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(
-    applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null,
+    applicationId ? `/api/applications/stringing/${applicationId}` : null,
     authenticatedSWRFetcher,
     {
       revalidateOnFocus: false,
@@ -897,6 +898,7 @@ export default function StringingApplicationDetailClient({
   const isStandaloneApplication = primaryLinkedSource === null && !hasAnyLinkedReference;
   const isLinkedApplication = hasAnyLinkedReference || primaryLinkedSource !== null;
   const isEditableAllowed =
+    !readOnly &&
     !isRentalLinkedApplication &&
     (isAdmin || (!isUnresolvedLinkedApplication && userEditableStatuses.includes(data.status)));
 
@@ -976,7 +978,11 @@ export default function StringingApplicationDetailClient({
     : linkedRentalId
       ? `/admin/rentals/${encodeURIComponent(String(linkedRentalId))}`
       : null;
-  const linkedStageCtaLabel = data.orderId ? "주문에서 진행 단계 변경" : "대여에서 진행 단계 확인";
+  const linkedStageCtaLabel = data.orderId
+    ? readOnly
+      ? "주문 진행 단계 보기"
+      : "주문에서 진행 단계 변경"
+    : "대여에서 진행 단계 확인";
   const applicationContext = isAmbiguousLinkedApplication
     ? {
         label: "주문·대여 연결 작업",
@@ -1016,8 +1022,9 @@ export default function StringingApplicationDetailClient({
           : {
               label: "단독 교체서비스 신청서",
               title: "교체서비스 신청서",
-              description:
-                "이 신청서 자체가 대표 업무입니다. 접수·작업·완성 라켓 배송/수령을 이 화면에서 처리합니다.",
+              description: readOnly
+                ? "접수·작업·완성 라켓 배송/수령 상태를 이 화면에서 조회합니다."
+                : "이 신청서 자체가 대표 업무입니다. 접수·작업·완성 라켓 배송/수령을 이 화면에서 처리합니다.",
               payment: "결제는 이 신청서에서 처리합니다.",
             };
   const effectiveStockDeduction =
@@ -1150,6 +1157,7 @@ export default function StringingApplicationDetailClient({
     .toLowerCase();
   const canSyncStandaloneNicePayment =
     isAdmin &&
+    !readOnly &&
     !isLinkedPayment &&
     normalizedPaymentProvider === "nicepay" &&
     Boolean(String(linkedPayment?.tid ?? "").trim());
@@ -1211,6 +1219,7 @@ export default function StringingApplicationDetailClient({
 
   const canAdminDirectCancel =
     isAdmin &&
+    !readOnly &&
     !isCancelled &&
     !isLinkedApplication &&
     !hasOrderCancelRequested &&
@@ -1371,16 +1380,20 @@ export default function StringingApplicationDetailClient({
             ? "주문 상세의 연결 진행 단계 확인"
             : "대여 상세의 연결 진행 단계 확인",
           description: data.orderId
-            ? "이 작업은 주문에 포함된 하위 작업입니다. 주문 상세의 연결 진행 단계에서 상태를 함께 변경하세요."
+            ? readOnly
+              ? "이 작업은 주문에 포함된 하위 작업입니다. 주문 상세에서 연결 진행 단계를 확인하세요."
+              : "이 작업은 주문에 포함된 하위 작업입니다. 주문 상세의 연결 진행 단계에서 상태를 함께 변경하세요."
             : "이 작업은 대여에 포함된 하위 작업입니다. 대여 상세의 연결 진행 단계에서 상태를 함께 변경하세요.",
-          actionLabel: data.orderId ? "주문에서 진행 단계 변경" : "대여에서 진행 단계 확인",
+          actionLabel: linkedStageCtaLabel,
           actionHref: linkedAdminHref ?? undefined,
         }
-      : lowerStatus.includes("접수") || lowerStatus.includes("검토")
-        ? {
-            tone: "warning",
-            title: "신청 내용 검토 필요",
-            description: "요청 스트링/장력/수령 방식을 확인한 뒤 작업 단계를 진행하세요.",
+        : lowerStatus.includes("접수") || lowerStatus.includes("검토")
+          ? {
+              tone: "warning",
+              title: "신청 내용 검토 필요",
+              description: readOnly
+                ? "요청 스트링·장력·수령 방식과 현재 작업 단계를 확인하세요."
+                : "요청 스트링/장력/수령 방식을 확인한 뒤 작업 단계를 진행하세요.",
           }
         : lowerStatus.includes("작업")
           ? {
@@ -1392,7 +1405,9 @@ export default function StringingApplicationDetailClient({
             ? {
                 tone: "success",
                 title: "완료 처리 및 이력 확인",
-                description: "완료 처리 후 연결 문서 반영 여부와 변경 이력을 확인하세요.",
+                description: readOnly
+                  ? "완료 상태와 연결 문서 반영 여부, 변경 이력을 확인하세요."
+                  : "완료 처리 후 연결 문서 반영 여부와 변경 이력을 확인하세요.",
               }
             : needsShippingCheck
               ? {
@@ -1444,6 +1459,7 @@ export default function StringingApplicationDetailClient({
 
   // 일반 사용자도 편집 가능 상태일 때만 노출하고, 완료/취소 등엔 비활성화
   const canEditSelfShip =
+    !readOnly &&
     (isAdmin || (userEditableStatuses ?? []).includes(data.status)) &&
     !completedLikeStatuses.includes(data.status);
   const shouldShowReturnMethod = !(data.orderId && data.orderHasRacket === true);
@@ -1676,7 +1692,7 @@ export default function StringingApplicationDetailClient({
                       </Button>
 
                       {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
-                      {!isLinkedApplication && (
+                      {!readOnly && !isLinkedApplication && (
                         <Button
                           asChild
                           variant="outline"
@@ -1721,7 +1737,11 @@ export default function StringingApplicationDetailClient({
                           </span>
                         </TooltipTrigger>
                         {!isEditableAllowed && (
-                          <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>
+                          <TooltipContent>
+                            {readOnly
+                              ? "Portfolio Demo에서는 편집할 수 없습니다."
+                              : "현재 상태에서는 편집할 수 없습니다."}
+                          </TooltipContent>
                         )}
                       </Tooltip>
                       </div>
@@ -1754,11 +1774,13 @@ export default function StringingApplicationDetailClient({
                   nextActionTitle={nextActionGuide.title}
                   nextActionDescription={nextActionGuide.description}
                   primaryAction={
-                    nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                    nextActionGuide.actionHref &&
+                    nextActionGuide.actionLabel &&
+                    (!readOnly || isLinkedApplication) ? (
                       <Button asChild size="sm" className="justify-center">
                         <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                       </Button>
-                    ) : !isLinkedApplication && !isCancelled ? (
+                    ) : !readOnly && !isLinkedApplication && !isCancelled ? (
                       <Button asChild size="sm" className="justify-center">
                         <a href="#admin-stringing-cancel">상태 변경 확인</a>
                       </Button>
@@ -1777,7 +1799,9 @@ export default function StringingApplicationDetailClient({
                   ))}
                   note={
                     isLinkedApplication
-                      ? `연결된 ${data.orderId ? "주문" : "대여"}에서 상태 변경·취소·환불을 처리합니다.`
+                      ? readOnly
+                        ? `연결된 ${data.orderId ? "주문" : "대여"}의 상태·취소·환불 정보를 확인합니다.`
+                        : `연결된 ${data.orderId ? "주문" : "대여"}에서 상태 변경·취소·환불을 처리합니다.`
                       : applicationContext.description
                   }
                   footer={
@@ -2163,13 +2187,17 @@ export default function StringingApplicationDetailClient({
                 {isAdmin && (
                   <CardHeader className={detailCardHeaderClass}>
                     <div className="flex items-center justify-between gap-3">
-                      <CardTitle>작업 상태 관리</CardTitle>
+                      <CardTitle>{readOnly ? "작업 상태" : "작업 상태 관리"}</CardTitle>
                       <ApplicationStatusBadge status={data.status} />
                     </div>
                     <CardDescription>
-                      {isLinkedApplication
-                        ? "연결된 주문·대여의 진행 단계에서 상태를 함께 변경하세요. 이 화면에서는 현재 작업 상태를 확인합니다."
-                        : "단독 신청서는 접수·작업·완성 라켓 배송/수령 상태를 이 화면에서 직접 관리합니다."}
+                      {readOnly
+                        ? isLinkedApplication
+                          ? "연결된 주문·대여의 진행 단계와 현재 작업 상태를 확인합니다."
+                          : "접수·작업·완성 라켓 배송/수령 상태를 조회합니다."
+                        : isLinkedApplication
+                          ? "연결된 주문·대여의 진행 단계에서 상태를 함께 변경하세요. 이 화면에서는 현재 작업 상태를 확인합니다."
+                          : "단독 신청서는 접수·작업·완성 라켓 배송/수령 상태를 이 화면에서 직접 관리합니다."}
                     </CardDescription>
                   </CardHeader>
                 )}
@@ -2183,24 +2211,32 @@ export default function StringingApplicationDetailClient({
                               교체 작업 상태
                             </p>
                             <p className="mt-1 text-ui-label text-foreground/75">
-                              {isLinkedApplication
-                                ? "연결 작업의 현재 단계를 확인합니다. 상태 변경은 부모 상세의 연결 진행 단계에서 처리하세요."
-                                : "이 신청서의 접수·작업·완성 라켓 배송/수령 단계를 확인하고 필요한 경우 상태를 변경합니다."}
+                              {readOnly
+                                ? "접수·작업·완성 라켓 배송/수령의 현재 단계를 조회합니다."
+                                : isLinkedApplication
+                                  ? "연결 작업의 현재 단계를 확인합니다. 상태 변경은 부모 상세의 연결 진행 단계에서 처리하세요."
+                                  : "이 신청서의 접수·작업·완성 라켓 배송/수령 단계를 확인하고 필요한 경우 상태를 변경합니다."}
                             </p>
                           </div>
 
                           <div className="max-w-[280px]">
-                            <ApplicationStatusSelect
-                              applicationId={data.id}
-                              currentStatus={data.status}
-                              onUpdated={async () => {
-                                await mutate();
-                                if (historyMutateRef.current) {
-                                  await historyMutateRef.current();
-                                }
-                              }}
-                              disabled={isCancelled || isLinkedApplication}
-                            />
+                            {readOnly ? (
+                              <div className="rounded-md border border-border bg-muted px-3 py-2 text-ui-body-sm text-muted-foreground">
+                                {applicationStatusLabel} · 조회 전용
+                              </div>
+                            ) : (
+                              <ApplicationStatusSelect
+                                applicationId={data.id}
+                                currentStatus={data.status}
+                                onUpdated={async () => {
+                                  await mutate();
+                                  if (historyMutateRef.current) {
+                                    await historyMutateRef.current();
+                                  }
+                                }}
+                                disabled={isCancelled || isLinkedApplication}
+                              />
+                            )}
                           </div>
 
                           {isLinkedApplication && linkedAdminHref && (
@@ -2253,7 +2289,11 @@ export default function StringingApplicationDetailClient({
                           </div>
 
                           <div className="flex min-h-[40px] flex-wrap items-center gap-2">
-                            {isCancelled ? (
+                            {readOnly ? (
+                              <div className="rounded-xl bg-muted/15 px-3 py-2 text-ui-body-sm text-foreground/80">
+                                Portfolio Demo 조회 전용 · 취소/환불 처리를 실행할 수 없습니다.
+                              </div>
+                            ) : isCancelled ? (
                               <div className="rounded-xl bg-muted/15 px-3 py-2 text-ui-body-sm text-foreground/80">
                                 취소된 신청서입니다. 추가 액션이 불가능합니다.
                               </div>
@@ -2459,6 +2499,10 @@ export default function StringingApplicationDetailClient({
 
                                     {(() => {
                                       const priceDisplay = resolveLinkedOrderItemPriceDisplay(item);
+
+                                      if (item.priceSnapshotStatus === "needs_review") {
+                                        return <span>가격 스냅샷 확인 필요</span>;
+                                      }
 
                                       if (priceDisplay.displayUnitPrice === null) return null;
 
@@ -2964,7 +3008,7 @@ export default function StringingApplicationDetailClient({
                           <RequirementsEditForm
                             tone={isAdmin ? "admin" : "user"}
                             initial={data.stringDetails.requirements ?? ""}
-                            resourcePath={`${baseUrl}/api/applications/stringing`}
+                            resourcePath="/api/applications/stringing"
                             entityId={data.id}
                             onSuccess={() => {
                               mutate();
@@ -3046,7 +3090,7 @@ export default function StringingApplicationDetailClient({
                         initialData={{
                           depositor: data.shippingInfo?.depositor || "",
                         }}
-                        resourcePath={`${baseUrl}/api/applications/stringing`}
+                        resourcePath="/api/applications/stringing"
                         entityId={data.id}
                         onSuccess={() => {
                           mutate(); // 상세 데이터 갱신
@@ -3060,7 +3104,11 @@ export default function StringingApplicationDetailClient({
                         {isAdmin ? (
                           <div className="grid grid-cols-2 gap-3 bp-xl:grid-cols-3">
                             <AdminCompactField
-                              label="총 결제 금액"
+                              label={
+                                isResolvedOrderLinkedApplication
+                                  ? "교체서비스 금액 (주문 포함)"
+                                  : "총 결제 금액"
+                              }
                               className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
                               value={`${totalPrice === null ? "금액 확인 중" : `${totalPrice.toLocaleString()}원`}`}
                               valueClassName={
@@ -3085,10 +3133,14 @@ export default function StringingApplicationDetailClient({
                             />
                             <AdminCompactField
                               label="결제 방식"
-                              value={getCustomerPaymentMethodLabel(
-                                paymentMethodForDisplay,
-                                packageApplied,
-                              )}
+                              value={
+                                isResolvedOrderLinkedApplication && !paymentMethodForDisplay
+                                  ? "부모 주문에서 확인"
+                                  : getCustomerPaymentMethodLabel(
+                                      paymentMethodForDisplay,
+                                      packageApplied,
+                                    )
+                              }
                             />
                           </div>
                         ) : (
@@ -3409,7 +3461,7 @@ export default function StringingApplicationDetailClient({
                             addressDetail: data.customer?.addressDetail ?? "상세 주소 미입력",
                             postalCode: data.customer?.postalCode ?? "우편번호 미입력",
                           }}
-                          resourcePath={`${baseUrl}/api/applications/stringing`}
+                          resourcePath="/api/applications/stringing"
                           entityId={data.id}
                           onSuccess={() => {
                             mutate(); // 상세 데이터 갱신
@@ -3634,6 +3686,7 @@ export default function StringingApplicationDetailClient({
                   <AdminInternalNotesCard
                     targetType="stringingApplication"
                     targetId={applicationId}
+                    readOnly={readOnly}
                   />
                 </div>
               )}
@@ -3653,7 +3706,7 @@ export default function StringingApplicationDetailClient({
         </div>
       </StringingDetailShell>
 
-      {isAdmin && (
+      {isAdmin && !readOnly && (
         <AdminConfirmDialog
           open={isApproveCancelDialogOpen}
           title="취소 요청을 승인할까요?"
@@ -3673,7 +3726,7 @@ export default function StringingApplicationDetailClient({
       )}
 
       {/* 관리자: 취소 요청 거절 모달 */}
-      {isAdmin && (
+      {isAdmin && !readOnly && (
         <Dialog
           open={isRejectDialogOpen}
           onOpenChange={(open) => {
@@ -3725,7 +3778,7 @@ export default function StringingApplicationDetailClient({
       )}
 
       {/* 관리자: 신청 직접 취소 모달 */}
-      {isAdmin && (
+      {isAdmin && !readOnly && (
         <Dialog
           open={isAdminCancelDialogOpen}
           onOpenChange={(open) => {

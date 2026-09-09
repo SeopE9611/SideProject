@@ -7,10 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  canEnterShippingPhase,
-  getOrderStatusLabelForDisplay,
-} from "@/lib/order-shipping";
+import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import { isOrderRefundedStatus } from "@/lib/status/flow-status";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import useSWR, { mutate } from "swr";
@@ -50,13 +47,17 @@ interface Props {
       trackingNumber?: string;
     };
   };
+  readOnly?: boolean;
 }
+
+const ORDER_PROGRESS_STATUSES = ["대기중", "결제완료", "상품준비중", "배송중", "배송완료"] as const;
 
 export default function OrderStatusSelect({
   orderId,
   currentStatus,
   paymentStatus,
   shippingInfo,
+  readOnly = false,
 }: Props) {
   // 상태 전용 SWR: fallbackData로 초기 상태 주입 -> 첫 렌더 안정화
   const { data: statusData, mutate: mutateStatus } = useSWR<StatusRes>(
@@ -73,12 +74,26 @@ export default function OrderStatusSelect({
   const current = statusData?.status ?? currentStatus;
   const isCancelled = current === "취소";
   const isConfirmed = current === "구매확정";
-  const isRefunded =
-    isOrderRefundedStatus(current) || isOrderRefundedStatus(paymentStatus);
-  const isLocked = isCancelled || isConfirmed || isRefunded;
+  const isFulfillmentComplete = current === "배송완료";
+  const isRefunded = isOrderRefundedStatus(current) || isOrderRefundedStatus(paymentStatus);
+  const isLocked = isCancelled || isConfirmed || isFulfillmentComplete || isRefunded;
 
-  // 셀렉트에 노출할 “일반 상태”만 남김 (‘취소’는 모달 전용이므로 제외)
-  const SELECTABLE_STATUSES = ["대기중", "결제완료", "배송중", "배송완료"] as const;
+  const currentProgressIndex = ORDER_PROGRESS_STATUSES.indexOf(
+    current as (typeof ORDER_PROGRESS_STATUSES)[number],
+  );
+  const paymentStatusToken = String(paymentStatus ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+  const isPaymentComplete = ["결제완료", "paid", "paymentcompleted", "approved"].includes(
+    paymentStatusToken,
+  );
+  const forwardStatuses =
+    currentProgressIndex >= 0 ? ORDER_PROGRESS_STATUSES.slice(currentProgressIndex) : [current];
+  const selectableStatuses = forwardStatuses.filter(
+    (status) =>
+      status === current || isPaymentComplete || status === "대기중" || status === "결제완료",
+  );
 
   // 셀렉트 변경 핸들러
   const handleChange = async (nextStatus: string) => {
@@ -142,13 +157,19 @@ export default function OrderStatusSelect({
         - 구매확정: 사용자가 주문 완료를 확정한 상태
         - 환불: 주문 또는 결제가 환불/결제취소된 상태
       */}
-      {isLocked ? (
+      {readOnly ? (
+        <div className="rounded-md border border-border bg-muted px-3 py-2 text-ui-body-sm text-muted-foreground">
+          {getOrderStatusLabelForDisplay(current, shippingInfo)} · 조회 전용
+        </div>
+      ) : isLocked ? (
         <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-ui-body-sm italic">
           {isRefunded
             ? "결제취소/환불 상태 · 일반 상태 변경 불가"
             : isConfirmed
               ? "구매확정됨 (변경 불가)"
-              : "취소됨 (변경 불가)"}
+              : isFulfillmentComplete
+                ? `${getOrderStatusLabelForDisplay(current, shippingInfo)} · 일반 상태 변경 불가`
+                : "취소됨 (변경 불가)"}
         </div>
       ) : (
         <Select value={current} onValueChange={handleChange}>
@@ -157,7 +178,7 @@ export default function OrderStatusSelect({
           </SelectTrigger>
           <SelectContent>
             {/*  ‘취소’는 제외. 모달 버튼으로만 처리 */}
-            {SELECTABLE_STATUSES.map((s) => (
+            {selectableStatuses.map((s) => (
               <SelectItem key={s} value={s}>
                 {getOrderStatusLabelForDisplay(s, shippingInfo)}
               </SelectItem>

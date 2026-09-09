@@ -30,6 +30,7 @@ import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import { getGuestRentalAccessClaims } from "@/lib/auth/guest-resource-access.server";
 import clientPromise, { getDb } from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
+import { resolveHistoricalOrderItemPrice } from "@/lib/orders/historical-order-item-price";
 import { revertConsumption } from "@/lib/passes.service";
 import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
 import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
@@ -1290,39 +1291,9 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         };
       }),
     );
-    const orderStringMetaById = new Map(orderStrings.map((item) => [String(item.id), item]));
     const linkedOrderItems = rawOrderItems.map((oi) => {
       const productId = String(oi.productId ?? oi.id ?? "").trim();
-      const meta = orderStringMetaById.get(productId);
-
-      const snapshotPrice =
-        typeof oi.price === "number" && Number.isFinite(oi.price) ? oi.price : null;
-
-      const metaRegularPrice =
-        typeof meta?.regularPrice === "number" && Number.isFinite(meta.regularPrice)
-          ? meta.regularPrice
-          : null;
-
-      const metaSalePrice =
-        typeof meta?.salePrice === "number" && Number.isFinite(meta.salePrice)
-          ? meta.salePrice
-          : null;
-
-      const metaEffectivePrice =
-        typeof meta?.effectivePrice === "number" && Number.isFinite(meta.effectivePrice)
-          ? meta.effectivePrice
-          : null;
-
-      const displayPrice =
-        metaSalePrice !== null &&
-        metaRegularPrice !== null &&
-        snapshotPrice !== null &&
-        snapshotPrice === metaRegularPrice
-          ? metaSalePrice
-          : (snapshotPrice ?? metaEffectivePrice);
-
-      const hasDiscount =
-        displayPrice !== null && metaRegularPrice !== null && metaRegularPrice > displayPrice;
+      const priceDisplay = resolveHistoricalOrderItemPrice(oi);
 
       return {
         id: productId,
@@ -1330,14 +1301,12 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         quantity: typeof oi.quantity === "number" ? oi.quantity : 1,
 
         // 기존 호환용. 화면에서는 이 값을 판매가로 사용.
-        price: displayPrice,
-
-        regularPrice: hasDiscount ? metaRegularPrice : null,
-        salePrice: hasDiscount ? displayPrice : null,
-        discountAmount: hasDiscount ? metaRegularPrice - displayPrice : null,
-        discountRate: hasDiscount
-          ? Math.round(((metaRegularPrice - displayPrice) / metaRegularPrice) * 100)
-          : null,
+        price: priceDisplay.displayPrice,
+        regularPrice: priceDisplay.regularPrice,
+        salePrice: priceDisplay.salePrice,
+        discountAmount: priceDisplay.discountAmount,
+        discountRate: priceDisplay.discountRate,
+        priceSnapshotStatus: priceDisplay.snapshotStatus,
 
         stringPrice: typeof oi.stringPrice === "number" ? oi.stringPrice : null,
         stringingFee:

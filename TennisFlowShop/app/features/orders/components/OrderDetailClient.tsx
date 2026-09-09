@@ -67,10 +67,11 @@ import {
   type TrackingSWRFetcherError,
 } from "@/lib/fetchers/trackingSWRFetcher";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
+import { formatKoreanPhone } from "@/lib/phone";
 import {
+  canEnterShippingPhase,
   getOrderDeliveryInfoTitle,
   getOrderStatusLabelForDisplay,
-  hasAnyRegisteredFulfillmentField,
   isVisitPickupOrder,
   orderShippingMethodLabel,
   shouldShowDeliveryOnlyFields,
@@ -101,6 +102,7 @@ import {
   User,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -169,6 +171,9 @@ interface OrderDetail {
   } | null;
   paymentInfo?: {
     status?: string | null;
+    shippingFee?: number | null;
+    serviceFee?: number | null;
+    pointsUsed?: number | null;
     niceSync?: {
       pgStatus?: string | null;
       resultCode?: string | null;
@@ -179,10 +184,15 @@ interface OrderDetail {
     } | null;
   } | null;
   total: number;
+  originalTotalPrice?: number | null;
+  shippingFee?: number | null;
+  serviceFee?: number | null;
+  pointsUsed?: number | null;
   items: Array<{
     name: string;
     quantity: number;
     price: number;
+    imageUrl?: string | null;
     mountingFee?: number | null;
     isMountableString?: boolean;
     selectedStringName?: string | null;
@@ -382,6 +392,7 @@ const getTrackingErrorMessage = (
 // 메인 컴포넌트
 interface Props {
   orderId: string;
+  readOnly?: boolean;
 }
 
 type CancelRequestConfirmAction = "approveCancel" | "rejectCancel";
@@ -401,7 +412,7 @@ async function parseCancelApproveError(res: Response): Promise<string> {
   }
 }
 
-export default function OrderDetailClient({ orderId }: Props) {
+export default function OrderDetailClient({ orderId, readOnly = false }: Props) {
   const router = useRouter();
   const { mutate: mutateGlobal } = useSWRConfig();
 
@@ -465,7 +476,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   }, [orderDetail]);
 
   const handleNiceSync = async () => {
-    if (!orderDetail || isSyncingNice) return;
+    if (readOnly || !orderDetail || isSyncingNice) return;
     setIsSyncingNice(true);
     try {
       const res = await fetch(`/api/payments/nice/sync/${orderDetail._id}`, {
@@ -612,10 +623,9 @@ export default function OrderDetailClient({ orderId }: Props) {
   const shippingMethodBadge = getShippingMethodBadge(orderDetail as any);
   const shippingMethodValue =
     orderDetail.shippingInfo?.shippingMethod ?? (orderDetail.shippingInfo as any)?.deliveryMethod;
-  const registeredShippingMethod = orderDetail.shippingInfo?.shippingMethod;
   const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
   const isVisitPickup = isVisitPickupOrder(orderDetail.shippingInfo);
-  const hasShippingInfoRegistered = hasAnyRegisteredFulfillmentField(orderDetail.shippingInfo);
+  const hasShippingInfoRegistered = canEnterShippingPhase(orderDetail.shippingInfo).ok;
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail.shippingInfo);
   const displayOrderStatusLabel = getOrderStatusLabelForDisplay(
     localStatus,
@@ -664,6 +674,25 @@ export default function OrderDetailClient({ orderId }: Props) {
       hour12: false,
     }).format(date);
   };
+
+  const productSubtotal = orderDetail.items.reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
+    0,
+  );
+  const rawShippingFee = orderDetail.shippingFee ?? orderDetail.paymentInfo?.shippingFee;
+  const rawServiceFee = orderDetail.serviceFee ?? orderDetail.paymentInfo?.serviceFee;
+  const rawPointsUsed = orderDetail.pointsUsed ?? orderDetail.paymentInfo?.pointsUsed;
+  const shippingFee = Number.isFinite(Number(rawShippingFee))
+    ? Math.max(0, Number(rawShippingFee))
+    : 0;
+  const serviceFee = Number.isFinite(Number(rawServiceFee))
+    ? Math.max(0, Number(rawServiceFee))
+    : 0;
+  const pointsUsed = Number.isFinite(Number(rawPointsUsed))
+    ? Math.max(0, Number(rawPointsUsed))
+    : 0;
+  const calculatedPaymentTotal = productSubtotal + serviceFee + shippingFee - pointsUsed;
+  const hasPaymentAmountMismatch = calculatedPaymentTotal !== Number(orderDetail.total);
 
   // 연결 문서(표시용) 구성: 신청서(복수) 우선, 없으면 레거시 단일 필드 사용
   // - 핵심: “연결/통합”을 운영자가 한눈에 파악하도록, 상세 화면에서도 공용 카드로 통일
@@ -747,6 +776,7 @@ export default function OrderDetailClient({ orderId }: Props) {
     {
       kind: "order",
       statusLabel: localStatus,
+      shippingMethod: shippingMethodValue,
       paymentLabel: orderDetail.paymentStatus,
       related: linkedApplicationForGuide
         ? {
@@ -755,12 +785,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             href: `/admin/applications/stringing/${linkedApplicationForGuide.id}`,
           }
         : null,
-      hasShippingInfo: Boolean(
-        registeredShippingMethod ||
-        orderDetail.shippingInfo?.estimatedDate ||
-        orderDetail.shippingInfo?.invoice?.courier ||
-        orderDetail.shippingInfo?.invoice?.trackingNumber,
-      ),
+      hasShippingInfo: hasShippingInfoRegistered,
       hasOutboundTracking: Boolean(orderDetail.shippingInfo?.invoice?.trackingNumber),
     },
     ...(linkedApplicationForGuide
@@ -815,7 +840,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const needsShippingInfo =
     !isShippingManagedByApplication &&
     !isVisitPickup &&
-    !hasAnyRegisteredFulfillmentField(orderDetail.shippingInfo);
+    !hasShippingInfoRegistered;
   const needsCancelFinalization = needsOrderCancelFinalization({
     status: localStatus,
     paymentStatus: orderDetail.paymentStatus,
@@ -908,9 +933,9 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   const latestProcessingHistory = allHistory[0] ?? null;
   const latestProcessingHistoryStatusLabel =
-    getCommonApplicationStatusLabel(latestProcessingHistory?.status) ??
-    latestProcessingHistory?.status ??
-    "기록 없음";
+    latestProcessingHistory?.status
+      ? getOrderStatusLabelForDisplay(latestProcessingHistory.status, orderDetail.shippingInfo)
+      : "기록 없음";
   const latestProcessingDate = formatDateTime(latestProcessingHistory?.date);
   const variantStockDeductionItems = Array.isArray(orderDetail.items)
     ? orderDetail.items.filter((item) => item?.stockDeduction?.mode === "variant")
@@ -927,6 +952,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   // 취소 성공 시 호출되는 콜백
   const handleCancelSuccess = async (reason: string, detail?: string) => {
+    if (readOnly) return;
     // 옵티미스틱 업데이트: 클라이언트 화면에서 곧바로 상태를 '취소'로 바꿔줌
     setLocalStatus("취소");
 
@@ -947,7 +973,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   // 🔹 (추가) "취소 요청 승인" 버튼 클릭 시
   const handleApproveCancelRequest = async () => {
-    if (!orderId) return;
+    if (readOnly || !orderId) return;
 
     if (!isCancelableByPolicy) {
       showErrorToast(cancelPolicyMessage);
@@ -990,7 +1016,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   // 🔹 (추가) "취소 요청 거절" 버튼 클릭 시
   const handleRejectCancelRequest = async () => {
-    if (!orderId) return;
+    if (readOnly || !orderId) return;
 
     setIsProcessingCancelRequest(true);
     try {
@@ -1073,6 +1099,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
   };
 
   const handleShippingUpdate = () => {
+    if (readOnly) return;
     if (isCanceled) {
       showErrorToast("취소된 주문은 배송 정보를 수정할 수 없습니다.");
       return;
@@ -1099,10 +1126,18 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
             variant="detail"
             className="flex-wrap"
             title={`주문 ${shortOrderId} 상세`}
-            description="현재 주문의 결제·배송·교체서비스 연결 상태를 관리합니다."
+            description={
+              readOnly
+                ? "현재 주문의 결제·배송·교체서비스 연결 상태를 조회합니다."
+                : "현재 주문의 결제·배송·교체서비스 연결 상태를 관리합니다."
+            }
             icon={Settings}
             scope={`전체 주문 ID: ${orderDetail._id}`}
-            helperText="상태 변경 전 결제·배송 정보와 연결 작업을 함께 확인하세요."
+            helperText={
+              readOnly
+                ? "Portfolio Demo에서는 주문 정보를 변경할 수 없습니다."
+                : "상태 변경 전 결제·배송 정보와 연결 작업을 함께 확인하세요."
+            }
             actions={
               <>
                 {needsCancelFinalization ? (
@@ -1155,41 +1190,53 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                   <span>주문 목록으로 돌아가기</span>
                 </Link>
               </Button>
-              <Button
-                type="button"
-                variant={isEditMode ? "destructive" : "outline"}
-                size="sm"
-                onClick={() => setIsEditMode(!isEditMode)}
-                className={cn(
-                  "w-auto",
-                  isEditMode ? "" : "border-border bg-card hover:bg-muted",
-                )}
-              >
-                <Pencil className="mr-1 h-4 w-4" />
-                {isEditMode ? "편집 취소" : "편집 모드"}
-              </Button>
-              <Button
-                type="button"
-                onClick={handleShippingUpdate}
-                className="w-auto whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                <Truck className="mr-2 h-4 w-4" />
-                {/* 방문 수령 주문은 배송 용어 대신 수령 용어로 노출 */}
-                {isVisitPickup
-                  ? isShippingManagedByApplication
-                    ? "신청서 수령 정보 확인"
-                    : hasShippingInfoRegistered
-                      ? "방문 수령 정보 수정하기"
-                      : "방문 수령 정보 등록하기"
-                  : isShippingManagedByApplication
-                    ? "고객 발송 라켓 확인"
-                    : hasShippingInfoRegistered
-                      ? "배송 정보 수정하기"
-                      : "배송 정보 등록하기"}
-              </Button>
+              {!readOnly && (
+                <>
+                  <Button
+                    type="button"
+                    variant={isEditMode ? "destructive" : "outline"}
+                    size="sm"
+                    onClick={() => setIsEditMode(!isEditMode)}
+                    className={cn(
+                      "w-auto",
+                      isEditMode ? "" : "border-border bg-card hover:bg-muted",
+                    )}
+                  >
+                    <Pencil className="mr-1 h-4 w-4" />
+                    {isEditMode ? "편집 취소" : "편집 모드"}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleShippingUpdate}
+                    className="w-auto whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    <Truck className="mr-2 h-4 w-4" />
+                    {isVisitPickup
+                      ? isShippingManagedByApplication
+                        ? "신청서 수령 정보 확인"
+                        : hasShippingInfoRegistered
+                          ? "방문 수령 정보 수정하기"
+                          : "방문 수령 정보 등록하기"
+                      : isShippingManagedByApplication
+                        ? "고객 발송 라켓 확인"
+                        : hasShippingInfoRegistered
+                          ? "배송 정보 수정하기"
+                          : "배송 정보 등록하기"}
+                  </Button>
+                </>
+              )}
               </>
             }
           />
+
+          {readOnly && (
+            <div className="rounded-lg border border-primary/25 bg-primary/5 px-4 py-3 text-ui-body-sm text-foreground">
+              <p className="font-semibold">Portfolio Demo 조회 전용</p>
+              <p className="mt-1 text-foreground/75">
+                주문·결제·배송·취소·내부 메모 변경 기능은 숨겨져 있으며 조회 기능만 제공됩니다.
+              </p>
+            </div>
+          )}
 
           {/* 상태 요약 카드 */}
           <div className={adminSurface.statusGrid}>
@@ -1222,7 +1269,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                   </Badge>
                 );
               })()}
-              description={`주문일 ${formatDate(orderDetail.date)}`}
+              description={`주문일시 ${formatDateTime(orderDetail.date)}`}
               icon={Package}
               tone={isCancelRequested || needsCancelFinalization ? "danger" : "neutral"}
             />
@@ -1340,7 +1387,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
             nextActionTitle={nextActionGuide.title}
             nextActionDescription={nextActionGuide.description}
             primaryAction={
-              nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+              !readOnly && nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
                 <Button asChild size="sm">
                   <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                 </Button>
@@ -1499,8 +1546,12 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         orderStatus={localStatus}
                         applicationStatus={latestLinkedApplication.status}
                         shippingInfo={orderDetail.shippingInfo}
-                        disabled={Boolean(linkedStageBlockedReason)}
-                        disabledReason={linkedStageBlockedReason}
+                        disabled={readOnly || Boolean(linkedStageBlockedReason)}
+                        disabledReason={
+                          readOnly
+                            ? "Portfolio Demo에서는 연결 진행 단계를 변경할 수 없습니다."
+                            : linkedStageBlockedReason
+                        }
                         onSaved={async () => {
                           await mutateOrder();
                           await mutateHistory();
@@ -1611,18 +1662,42 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         <div className="col-span-2">
                           <span className="text-muted-foreground">장착 정보:</span>{" "}
                           <div className="mt-1 space-y-1">
-                            {latestApplicationLines.map((line, index) => (
-                              <p
-                                key={line.id ?? `${latestLinkedApplication?.id}-line-${index}`}
-                                className="font-medium text-foreground"
-                              >
-                                {line.racketLabel || line.racketType || `${index + 1}번째 라켓`} ·{" "}
-                                {line.stringName || "스트링 미입력"}
-                                {line.gauge || line.colorLabel || line.color
-                                  ? ` · 게이지(굵기) ${line.gauge ? formatGaugeLabel(line.gauge) : "-"} / 색상 ${line.colorLabel || line.color || "-"}`
-                                  : ""}
-                              </p>
-                            ))}
+                            {latestApplicationLines.map((line, index) => {
+                              const storedRacketLabel =
+                                line.racketLabel || line.racketType || `${index + 1}번째 라켓`;
+                              const storedStringLabel = line.stringName || "스트링 미입력";
+                              const hasGenericRacketLabel = /^(?:라켓|라켓명|라켓 종류|라켓 정보)$/u.test(
+                                storedRacketLabel.trim(),
+                              );
+                              const hasRacketStringCollision =
+                                Boolean(line.stringName) &&
+                                storedRacketLabel.trim() === storedStringLabel.trim();
+                              const needsRacketLabelReview =
+                                hasGenericRacketLabel || hasRacketStringCollision;
+
+                              return (
+                                <div
+                                  key={line.id ?? `${latestLinkedApplication?.id}-line-${index}`}
+                                  className="space-y-1"
+                                >
+                                  <p className="font-medium text-foreground">
+                                    {needsRacketLabelReview
+                                      ? "라켓명 확인 필요"
+                                      : storedRacketLabel}{" "}
+                                    · {storedStringLabel}
+                                    {line.gauge || line.colorLabel || line.color
+                                      ? ` · 게이지(굵기) ${line.gauge ? formatGaugeLabel(line.gauge) : "-"} / 색상 ${line.colorLabel || line.color || "-"}`
+                                      : ""}
+                                  </p>
+                                  {needsRacketLabelReview && (
+                                    <p className="text-ui-label text-warning">
+                                      저장된 라켓명이 구체적이지 않거나 스트링명과 동일합니다. 원본
+                                      신청서 확인이 필요합니다.
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -1731,7 +1806,15 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
         <Card className={cn("mb-6 overflow-hidden", adminSurface.cardMuted)}>
           <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
             <div className="flex items-center justify-between gap-3">
-              <CardTitle>{isLinkedStringingOrder ? "결제·취소·환불" : "주문 처리 정보"}</CardTitle>
+              <CardTitle>
+                {readOnly
+                  ? isLinkedStringingOrder
+                    ? "결제·취소·환불 상태"
+                    : "주문 상태"
+                  : isLinkedStringingOrder
+                    ? "결제·취소·환불"
+                    : "주문 처리 정보"}
+              </CardTitle>
               {(() => {
                 const st = getOrderStatusBadgeSpec(localStatus);
                 return (
@@ -1745,9 +1828,13 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               })()}
             </div>
             <CardDescription>
-              {isLinkedStringingOrder
-                ? "결제 상태를 확인하고 취소/환불을 처리합니다. 통합 진행 상태는 위 연결 진행 단계에서 변경하세요."
-                : "현재 주문의 상태 변경과 취소 관련 운영 액션을 한곳에서 처리합니다."}
+              {readOnly
+                ? isLinkedStringingOrder
+                  ? "결제·취소·환불 상태와 연결 진행 단계를 조회합니다."
+                  : "현재 주문 상태와 취소 관련 정보를 조회합니다."
+                : isLinkedStringingOrder
+                  ? "결제 상태를 확인하고 취소/환불을 처리합니다. 통합 진행 상태는 위 연결 진행 단계에서 변경하세요."
+                  : "현재 주문의 상태 변경과 취소 관련 운영 액션을 한곳에서 처리합니다."}
               <br />
               {/* 방문 수령 주문은 수령 전/후 기준으로 안내 문구 분기 */}
               {isVisitPickup
@@ -1790,6 +1877,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                           currentStatus={localStatus}
                           paymentStatus={orderDetail.paymentStatus}
                           shippingInfo={orderDetail.shippingInfo}
+                          readOnly={readOnly}
                         />
                       </div>
                     </>
@@ -1807,10 +1895,13 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               <div className="rounded-xl border border-border/60 bg-background p-4">
                 <div className="space-y-3">
                   <div>
-                    <p className="text-ui-body-sm font-semibold text-foreground">운영 액션</p>
+                    <p className="text-ui-body-sm font-semibold text-foreground">
+                      {readOnly ? "취소/환불 정책" : "운영 액션"}
+                    </p>
                     <p className="mt-1 text-ui-label text-foreground/75">
-                      고객 요청 기반 취소 승인/거절 또는 관리자 직접 취소를 진행합니다. 처리 전 환불
-                      계좌·결제 상태를 먼저 확인해주세요.
+                      {readOnly
+                        ? "현재 취소 요청과 환불 계좌·결제 상태를 조회합니다."
+                        : "고객 요청 기반 취소 승인/거절 또는 관리자 직접 취소를 진행합니다. 처리 전 환불 계좌·결제 상태를 먼저 확인해주세요."}
                     </p>
                   </div>
 
@@ -1818,7 +1909,11 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                     id="admin-order-cancel-controls"
                     className="flex min-h-[40px] flex-wrap items-center gap-2"
                   >
-                    {localStatus === "취소" ? (
+                    {readOnly ? (
+                      <div className="rounded-md border border-border bg-muted px-3 py-2 text-ui-body-sm text-foreground/80">
+                        Portfolio Demo 조회 전용 · 취소/환불 처리를 실행할 수 없습니다.
+                      </div>
+                    ) : localStatus === "취소" ? (
                       <div className="rounded-md border border-border bg-muted px-3 py-2 text-ui-body-sm text-foreground/80">
                         취소된 주문입니다. 추가 액션이 불가능합니다.
                       </div>
@@ -1856,7 +1951,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 </div>
               </div>
 
-              <AdminConfirmDialog
+              {!readOnly && <AdminConfirmDialog
                 open={confirmAction === "approveCancel"}
                 title="취소 요청을 승인할까요?"
                 description={
@@ -1875,9 +1970,9 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 onCancel={() => setConfirmAction(null)}
                 eventKey="admin-order-cancel-approve-confirm"
                 eventMeta={{ orderId }}
-              />
+              />}
 
-              <AlertDialog
+              {!readOnly && <AlertDialog
                 open={isRejectDialogOpen}
                 onOpenChange={(open) => {
                   setIsRejectDialogOpen(open);
@@ -1923,7 +2018,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
-              </AlertDialog>
+              </AlertDialog>}
             </div>
           </CardContent>
         </Card>
@@ -1982,7 +2077,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                     />
                     <AdminCompactField
                       label="전화번호"
-                      value={orderDetail.customer.phone}
+                      value={formatKoreanPhone(orderDetail.customer.phone)}
                       emptyValue="전화번호 미등록"
                     />
                     <AdminCompactField
@@ -1999,6 +2094,11 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                             {orderDetail.customer.postalCode ? (
                               <span className="mt-1 block text-foreground/70">
                                 우편번호: {orderDetail.customer.postalCode}
+                              </span>
+                            ) : null}
+                            {isVisitPickup ? (
+                              <span className="mt-2 block text-ui-label text-muted-foreground">
+                                고객이 입력한 주소이며 방문 수령 배송지로 사용되지 않습니다.
                               </span>
                             ) : null}
                           </>
@@ -2086,18 +2186,22 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                           </Link>
                         </Button>
 
-                        <Button
-                          size="sm"
-                          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                          onClick={() =>
-                            router.push(
-                              `/admin/applications/stringing/${linkedStringingAppId}/shipping-update`,
-                            )
-                          }
-                        >
-                          <Truck className="mr-2 h-4 w-4" />
-                          {isVisitPickup ? "수령 준비 정보 등록/수정" : "고객 발송·반송 정보 확인"}
-                        </Button>
+                        {!readOnly && (
+                          <Button
+                            size="sm"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            onClick={() =>
+                              router.push(
+                                `/admin/applications/stringing/${linkedStringingAppId}/shipping-update`,
+                              )
+                            }
+                          >
+                            <Truck className="mr-2 h-4 w-4" />
+                            {isVisitPickup
+                              ? "수령 준비 정보 등록/수정"
+                              : "고객 발송·반송 정보 확인"}
+                          </Button>
+                        )}
                       </div>
 
                       <p className="text-ui-label text-foreground/75">
@@ -2287,6 +2391,33 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                       <AdminCompactField label="결제 방식" value={paymentMethodDisplayLabel} />
                     </div>
 
+                    <div className="grid grid-cols-2 gap-2 rounded-lg border border-border/60 bg-muted/15 p-3 xl:grid-cols-3">
+                      <AdminCompactField
+                        label="상품 금액"
+                        value={formatCurrency(productSubtotal)}
+                      />
+                      <AdminCompactField
+                        label="교체서비스"
+                        value={formatCurrency(serviceFee)}
+                      />
+                      <AdminCompactField label="배송비" value={formatCurrency(shippingFee)} />
+                      <AdminCompactField
+                        label="포인트 사용"
+                        value={pointsUsed > 0 ? `-${formatCurrency(pointsUsed)}` : formatCurrency(0)}
+                      />
+                      <AdminCompactField
+                        label="최종 결제"
+                        value={formatCurrency(orderDetail.total)}
+                        valueClassName="font-semibold text-primary"
+                      />
+                    </div>
+                    {hasPaymentAmountMismatch && (
+                      <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-ui-label text-destructive">
+                        금액 구성 합계 {formatCurrency(calculatedPaymentTotal)}와 저장된 최종 결제금액{" "}
+                        {formatCurrency(orderDetail.total)}이 일치하지 않습니다.
+                      </div>
+                    )}
+
                     <details className="group rounded-lg border border-border/60 bg-background/70 p-1">
                       <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                         입금/PG 상세 정보
@@ -2312,9 +2443,10 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                           paymentCardLabel={orderDetail.paymentCardLabel}
                           paymentNiceSync={orderDetail.paymentNiceSync}
                         />
-                        {String(orderDetail.paymentProvider ?? "")
-                          .trim()
-                          .toLowerCase() === "nicepay" && (
+                        {!readOnly &&
+                          String(orderDetail.paymentProvider ?? "")
+                            .trim()
+                            .toLowerCase() === "nicepay" && (
                           <div className="mt-3">
                             <Button
                               variant="outline"
@@ -2367,14 +2499,16 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                           <Copy className="mr-2 h-4 w-4" />
                           NICE 문의 양식 복사
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleNiceSync}
-                          disabled={isSyncingNice}
-                        >
-                          {isSyncingNice ? "확인 중..." : "PG 상태 다시 확인"}
-                        </Button>
+                        {!readOnly && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleNiceSync}
+                            disabled={isSyncingNice}
+                          >
+                            {isSyncingNice ? "확인 중..." : "PG 상태 다시 확인"}
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -2413,40 +2547,60 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                     key={idx}
                     className="flex items-start justify-between gap-3 rounded-xl bg-muted p-4 transition-colors hover:bg-muted dark:hover:bg-muted"
                   >
-                    <div className="min-w-0 flex-1">
-                      <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
-                        {item.name}
-                      </h4>
-                      <p className="text-ui-body-sm text-foreground/80">수량: {item.quantity}개</p>
-                      {item.selectedStringName && (
-                        <p className="text-ui-label text-foreground/70">
-                          선택 스트링: {item.selectedStringName}
-                        </p>
-                      )}
-                      {item.selectedGauge && (
-                        <p className="text-ui-label text-foreground/70">
-                          게이지(굵기): {formatGaugeLabel(item.selectedGauge)}
-                        </p>
-                      )}
-                      {(item.selectedColorLabel || item.selectedColor) && (
-                        <p className="flex items-center gap-2 text-ui-label text-foreground/70">
-                          <span>색상:</span>
-                          {item.selectedColorHex && (
-                            <span
-                              className="h-3 w-3 rounded-full border border-border"
-                              style={{
-                                backgroundColor: item.selectedColorHex,
-                              }}
-                              aria-hidden="true"
-                            />
-                          )}
-                          <span>{item.selectedColorLabel || item.selectedColor}</span>
-                        </p>
-                      )}
+                    <div className="flex min-w-0 flex-1 gap-3">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border/60 bg-background">
+                        {item.imageUrl ? (
+                          <Image
+                            src={item.imageUrl}
+                            alt={item.name}
+                            fill
+                            sizes="64px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="flex h-full w-full items-center justify-center text-muted-foreground"
+                            aria-label="상품 이미지 없음"
+                          >
+                            <Package className="h-6 w-6" aria-hidden="true" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
+                          {item.name}
+                        </h4>
+                        <p className="text-ui-body-sm text-foreground/80">수량: {item.quantity}개</p>
+                        {item.selectedStringName && (
+                          <p className="text-ui-label text-foreground/70">
+                            선택 스트링: {item.selectedStringName}
+                          </p>
+                        )}
+                        {item.selectedGauge && (
+                          <p className="text-ui-label text-foreground/70">
+                            게이지(굵기): {formatGaugeLabel(item.selectedGauge)}
+                          </p>
+                        )}
+                        {(item.selectedColorLabel || item.selectedColor) && (
+                          <p className="flex items-center gap-2 text-ui-label text-foreground/70">
+                            <span>색상:</span>
+                            {item.selectedColorHex && (
+                              <span
+                                className="h-3 w-3 rounded-full border border-border"
+                                style={{
+                                  backgroundColor: item.selectedColorHex,
+                                }}
+                                aria-hidden="true"
+                              />
+                            )}
+                            <span>{item.selectedColorLabel || item.selectedColor}</span>
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
-                        {formatCurrency(item.price)}
+                        단가: {formatCurrency(item.price)}
                       </p>
                       {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
                         <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
@@ -2527,6 +2681,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
             targetType="order"
             targetId={orderDetail._id}
             className="h-full"
+            readOnly={readOnly}
           />
         </div>
 
