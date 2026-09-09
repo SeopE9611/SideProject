@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { showErrorToast } from "@/lib/toast";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 export default function PortfolioDemoCustomerReturnButton() {
@@ -10,8 +11,9 @@ export default function PortfolioDemoCustomerReturnButton() {
   return (
     <Button
       type="button"
-      variant="link"
-      className="h-auto p-0 text-ui-label font-semibold text-foreground"
+      variant="outline"
+      size="sm"
+      className="h-8 text-ui-label font-semibold text-foreground"
       disabled={loading}
       onClick={async () => {
         if (loading) return;
@@ -30,6 +32,7 @@ export default function PortfolioDemoCustomerReturnButton() {
         }
       }}
     >
+      {!loading && <ArrowLeft className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />}
       {loading ? "전환 중..." : "고객 데모로 돌아가기"}
     </Button>
   );

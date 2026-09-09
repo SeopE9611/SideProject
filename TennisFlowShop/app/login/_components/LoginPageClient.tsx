@@ -399,9 +399,10 @@ export default function LoginPageClient({
             <div className="space-y-4">
               {portfolioDemoMode && (
                 <div className="space-y-3 rounded-control border border-brand-highlight bg-brand-highlight-muted/35 p-4">
+                  <p className="text-ui-body-sm font-semibold text-foreground">포트폴리오 데모</p>
                   <div>
                     <p className="font-medium text-foreground">고객 화면</p>
-                    <p className="break-keep text-ui-body-sm text-muted-foreground">주문·교체서비스·대여·아카데미 등 사용자 흐름을 체험합니다.</p>
+                    <p className="break-keep text-ui-body-sm text-muted-foreground">상품 탐색·주문·교체서비스·대여·아카데미를 직접 체험합니다.</p>
                   </div>
                   <Button className="w-full" variant="highlight" onClick={handleDemoLogin} disabled={demoLoading || adminDemoLoading}>
                     {demoLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -415,6 +416,10 @@ export default function LoginPageClient({
                     {adminDemoLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     관리자 데모 보기
                   </Button>
+                  <div className="space-y-1 border-t border-border pt-3 text-ui-label text-muted-foreground">
+                    <p className="break-keep">체험 데이터는 24시간 후 자동 정리됩니다.</p>
+                    <p className="break-keep">실제 결제·외부 알림은 발생하지 않습니다.</p>
+                  </div>
                 </div>
               )}
               <div className="text-center">

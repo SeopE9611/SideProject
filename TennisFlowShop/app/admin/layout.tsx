@@ -123,8 +123,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <div className="border-b border-border bg-muted px-6 py-3 text-foreground" role="status">
           <p className="font-semibold">포트폴리오 데모 · 조회 전용</p>
           <p className="text-ui-body-sm text-muted-foreground">
-            실제 운영 환경과 분리된 시연용 데이터입니다. 등록·수정·삭제 등 변경 작업은
-            차단됩니다.
+            관리자 데이터는 조회만 가능하며 등록·수정·삭제 등 변경 작업은 제한됩니다.
+            {isDemoTour
+              ? " 고객 화면으로 돌아가 주문·신청 흐름을 계속 체험할 수 있습니다."
+              : null}
           </p>
         </div>
       ) : null}
