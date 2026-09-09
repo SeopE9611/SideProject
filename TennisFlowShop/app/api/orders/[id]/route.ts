@@ -8,7 +8,10 @@ import { hasGuestOrderAccess, verifyAccessToken, verifyOrderAccessToken } from "
 import clientPromise from "@/lib/mongodb";
 import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
-import { isMountableStringByFee, isMountableStringItem } from "@/lib/orders/string-mounting-policy";
+import {
+  isMountableStringItem,
+  resolveOrderItemIsMountableString,
+} from "@/lib/orders/string-mounting-policy";
 import { issuePassesForPaidOrder } from "@/lib/passes.service";
 import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
@@ -425,7 +428,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           return buildOrderLineSnapshotFallback(item, normalizedId, "product");
         }
         const rawMountingFee = prod.mountingFee;
-        const isMountableString = isMountableStringByFee(rawMountingFee);
+        const isMountableString = resolveOrderItemIsMountableString(item, rawMountingFee);
 
         const priceDisplay = buildOrderLinePriceDisplay(item, prod);
 

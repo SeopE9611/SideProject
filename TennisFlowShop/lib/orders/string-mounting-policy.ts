@@ -19,3 +19,31 @@ export function isMountableStringItem(item: unknown): boolean {
     (maybeItem.isMountableString !== false && isMountableStringByFee(maybeItem.mountingFee))
   );
 }
+
+export function resolveOrderItemIsMountableString(
+  item: unknown,
+  currentProductMountingFee: unknown,
+): boolean {
+  if (!item || typeof item !== "object") {
+    return isMountableStringByFee(currentProductMountingFee);
+  }
+
+  const snapshot = item as {
+    isMountableString?: unknown;
+    mountingFee?: unknown;
+  };
+
+  if (typeof snapshot.isMountableString === "boolean") {
+    return snapshot.isMountableString;
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(snapshot, "mountingFee") &&
+    snapshot.mountingFee !== null &&
+    snapshot.mountingFee !== undefined
+  ) {
+    return isMountableStringByFee(snapshot.mountingFee);
+  }
+
+  return isMountableStringByFee(currentProductMountingFee);
+}

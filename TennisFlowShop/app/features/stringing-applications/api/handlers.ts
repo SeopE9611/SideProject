@@ -30,6 +30,7 @@ import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import { getGuestRentalAccessClaims } from "@/lib/auth/guest-resource-access.server";
 import clientPromise, { getDb } from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
+import { resolveHistoricalOrderItemPrice } from "@/lib/orders/historical-order-item-price";
 import { revertConsumption } from "@/lib/passes.service";
 import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
 import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
@@ -1290,57 +1291,9 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         };
       }),
     );
-    const orderStringMetaById = new Map(orderStrings.map((item) => [String(item.id), item]));
     const linkedOrderItems = rawOrderItems.map((oi) => {
       const productId = String(oi.productId ?? oi.id ?? "").trim();
-      const meta = orderStringMetaById.get(productId);
-
-      const snapshotPrice =
-        typeof oi.price === "number" && Number.isFinite(oi.price) ? oi.price : null;
-      const snapshotSalePrice =
-        typeof oi.salePrice === "number" && Number.isFinite(oi.salePrice) ? oi.salePrice : null;
-      const snapshotDiscountRate =
-        typeof oi.discountRate === "number" && Number.isFinite(oi.discountRate)
-          ? oi.discountRate
-          : null;
-
-      const metaRegularPrice =
-        typeof meta?.regularPrice === "number" && Number.isFinite(meta.regularPrice)
-          ? meta.regularPrice
-          : null;
-
-      const metaSalePrice =
-        typeof meta?.salePrice === "number" && Number.isFinite(meta.salePrice)
-          ? meta.salePrice
-          : null;
-
-      const metaEffectivePrice =
-        typeof meta?.effectivePrice === "number" && Number.isFinite(meta.effectivePrice)
-          ? meta.effectivePrice
-          : null;
-
-      // 일부 과거 통합 주문은 실제 상품가가 있는데도 item.price가 0으로 저장됐다.
-      // 명시적인 무료 판매/100% 할인만 0원을 유지하고, 그 외에는 주문 상세과 같은
-      // 레거시 보정 규칙으로 현재 상품의 유효 가격을 사용한다.
-      const isExplicitFreeSnapshot =
-        snapshotPrice === 0 && (snapshotSalePrice === 0 || snapshotDiscountRate === 100);
-      const shouldUseSnapshotPrice =
-        snapshotPrice !== null &&
-        (snapshotPrice > 0 || isExplicitFreeSnapshot || (metaEffectivePrice ?? 0) <= 0);
-
-      const displayPrice =
-        shouldUseSnapshotPrice &&
-        snapshotPrice !== null &&
-        metaSalePrice !== null &&
-        metaRegularPrice !== null &&
-        snapshotPrice === metaRegularPrice
-          ? metaSalePrice
-          : shouldUseSnapshotPrice
-            ? snapshotPrice
-            : metaEffectivePrice;
-
-      const hasDiscount =
-        displayPrice !== null && metaRegularPrice !== null && metaRegularPrice > displayPrice;
+      const priceDisplay = resolveHistoricalOrderItemPrice(oi);
 
       return {
         id: productId,
@@ -1348,14 +1301,12 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         quantity: typeof oi.quantity === "number" ? oi.quantity : 1,
 
         // 기존 호환용. 화면에서는 이 값을 판매가로 사용.
-        price: displayPrice,
-
-        regularPrice: hasDiscount ? metaRegularPrice : null,
-        salePrice: hasDiscount ? displayPrice : null,
-        discountAmount: hasDiscount ? metaRegularPrice - displayPrice : null,
-        discountRate: hasDiscount
-          ? Math.round(((metaRegularPrice - displayPrice) / metaRegularPrice) * 100)
-          : null,
+        price: priceDisplay.displayPrice,
+        regularPrice: priceDisplay.regularPrice,
+        salePrice: priceDisplay.salePrice,
+        discountAmount: priceDisplay.discountAmount,
+        discountRate: priceDisplay.discountRate,
+        priceSnapshotStatus: priceDisplay.snapshotStatus,
 
         stringPrice: typeof oi.stringPrice === "number" ? oi.stringPrice : null,
         stringingFee:

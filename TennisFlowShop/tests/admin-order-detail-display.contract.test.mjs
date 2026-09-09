@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
+import { resolveHistoricalOrderItemPrice } from "../lib/orders/historical-order-item-price.ts";
+import { resolveOrderItemIsMountableString } from "../lib/orders/string-mounting-policy.ts";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -57,8 +59,51 @@ test("연결 신청서는 레거시 0원 주문 상품과 부모 주문 결제 �
     "app/features/stringing-applications/components/StringingApplicationDetailClient.tsx",
   );
 
-  assert.ok(handler.includes("isExplicitFreeSnapshot"));
-  assert.ok(handler.includes("shouldUseSnapshotPrice"));
+  assert.ok(handler.includes("resolveHistoricalOrderItemPrice"));
+  assert.ok(detail.includes("가격 스냅샷 확인 필요"));
   assert.ok(detail.includes("교체서비스 금액 (주문 포함)"));
   assert.ok(detail.includes("부모 주문에서 확인"));
+});
+
+test("주문 상품의 명시적 장착 불가 snapshot은 현재 상품 장착비보다 우선한다", () => {
+  const route = read("app/api/orders/[id]/route.ts");
+
+  assert.ok(route.includes("resolveOrderItemIsMountableString(item, rawMountingFee)"));
+  assert.equal(
+    resolveOrderItemIsMountableString({ isMountableString: false }, 15_000),
+    false,
+  );
+});
+
+test("장착 가능 여부는 historical 장착비 다음에만 현재 상품값을 fallback한다", () => {
+  assert.equal(resolveOrderItemIsMountableString({ mountingFee: 0 }, undefined), true);
+  assert.equal(resolveOrderItemIsMountableString({}, 15_000), true);
+});
+
+test("연결 신청서의 모호한 legacy 0원은 현재 상품가로 확정하지 않는다", () => {
+  const currentCatalogPrice = 22_000;
+  const result = resolveHistoricalOrderItemPrice({ price: 0 });
+
+  assert.equal(result.displayPrice, null);
+  assert.notEqual(result.displayPrice, currentCatalogPrice);
+  assert.equal(result.snapshotStatus, "needs_review");
+});
+
+test("명시적 무료 또는 100% 할인 snapshot은 0원을 유지한다", () => {
+  assert.deepEqual(
+    resolveHistoricalOrderItemPrice({ price: 0, salePrice: 0 }),
+    {
+      displayPrice: 0,
+      regularPrice: null,
+      salePrice: null,
+      discountAmount: null,
+      discountRate: null,
+      snapshotStatus: "confirmed",
+    },
+  );
+  assert.equal(
+    resolveHistoricalOrderItemPrice({ price: 0, regularPrice: 20_000, discountRate: 100 })
+      .displayPrice,
+    0,
+  );
 });

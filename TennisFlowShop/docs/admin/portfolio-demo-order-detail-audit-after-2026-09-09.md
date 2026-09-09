@@ -18,6 +18,15 @@
 - 브라우저 실행 환경이 1363×936으로 고정되어 요청 기준인 정확한 1440px를 재현하지 못했다. 문서 폭은 모든 확인 페이지에서 1348px로 가로 overflow가 없었다.
 - 최근 Demo Interaction 연결 주문은 최종 Preview 재검증 도중 생성 후 24시간을 넘어 자동 정리됐다. 연결 상세 로드 복구와 조회 전용 UI는 직전 Preview에서 실제 확인했으며, 마지막 라켓명/가격 문구 보완은 최종 코드·TypeScript·계약 테스트로 확인했다.
 
+## PR #2675 최종 blocker 보완
+
+- 수정 전 원격 HEAD: `cb87eed7d429e122a25dcaeb6c0781cacb89d686`
+- 수정 전 GitHub Actions CI #5677: `test-contract`가 `[contract manifest] ... manifest 누락 파일: admin-order-detail-display.contract.test.mjs`로 실패했다. `admin-path-required-gate`, `go-no-go-checklist`도 이에 따라 실패했다.
+- manifest 조치: `admin-order-detail-display.contract.test.mjs`를 `scripts/contract-test-manifest.mjs`의 `advisoryContractFiles`에 등록했다.
+- 장착 가능 여부: 주문 item의 명시적 boolean snapshot, item 장착비 snapshot, 현재 상품 장착비 compatibility fallback 순서로 고정했다. 명시적 `false`는 그대로 유지한다.
+- 연결 주문 상품 가격: 신뢰 가능한 historical snapshot과 명시적 무료/100% 할인만 확정 가격으로 표시한다. 0원/누락 snapshot이 모호하면 현재 catalog 가격으로 보정하지 않고 `가격 스냅샷 확인 필요`로 표시한다.
+- 본 문서 갱신 commit에 대한 GitHub CI: **대기**. 새 commit 실행 결과를 확인하기 전이므로 PASS로 기록하지 않는다.
+
 ## 수정 결과
 
 | 수정 전 ID | 심각도 | 조치 | 수정 후 상태 | 검증 방식 |
@@ -38,7 +47,7 @@
 | PRE-14 | P3 | 취소 Dialog에 `DialogDescription` 추가 | 해결 | Demo에서는 Dialog 미렌더링, 계약 테스트 통과 |
 | PRE-15 | P3 | 방문 수령 주소는 고객 입력 주소이며 배송지로 사용하지 않는다는 안내 추가 | 해결 | Preview 본문 확인 |
 | PRE-16 | P2 | 구체적이지 않거나 스트링명과 같은 라켓명은 임의 보정 없이 `라켓명 확인 필요` 경고 표시 | 해결 코드 반영 | 최종 코드 + 계약 테스트 |
-| 재검증 추가 | P2 | 연결 신청서의 레거시 주문 상품 0원 표시를 주문 상세과 같은 무료상품 예외 규칙으로 보정. 결제 금액·수단은 부모 주문 문맥을 명시 | 해결 코드 반영 | TypeScript + 계약 테스트 |
+| 재검증 추가 | P2 | 연결 신청서의 신뢰 가능한 가격 snapshot만 확정 가격으로 사용. 모호한 0원/누락은 현재 catalog 가격으로 보정하지 않고 확인 필요로 표시. 결제 금액·수단은 부모 주문 문맥을 명시 | 해결 코드 반영 | pure helper behavior + 계약 테스트 |
 
 ## 수정 후 브라우저 재검증
 
@@ -92,7 +101,7 @@
 | 공용 데이터 표시 문제 | 동일 주문 API를 읽는 모든 환경 | 상품의 현재 장착비를 과거 주문에 소급해 표시 | 주문 item 스냅샷만 사용 |
 | 관리자 공용 상태 문제 | Demo와 운영 관리자 | `상품준비중`이 UI/API 상태 집합에서 누락되고 역방향 단계가 노출 | 상태 집합 추가, UI는 현재 이후 단계만 노출, 결제/배송 guard 유지 |
 | 특정 저장 데이터 문제 | 해당 Demo Interaction 주문 | 저장된 라켓명이 `라켓명` 같은 일반명으로 남거나 스트링명과 같을 수 있음 | 데이터를 추정·변경하지 않고 원본 확인 경고 표시 |
-| 레거시 주문 스냅샷 문제 | 연결 신청서 API를 사용하는 모든 환경 | 과거 연결 주문의 `item.price=0`을 실제 상품가로 오인 | 명시적 무료/100% 할인만 0원을 유지하고 주문 상세과 같은 fallback 적용 |
+| 레거시 주문 스냅샷 문제 | 연결 신청서 API를 사용하는 모든 환경 | 과거 연결 주문의 `item.price=0`을 실제 상품가로 오인 | 신뢰 가능한 historical snapshot만 확정하고, 모호한 0원/누락은 확인 필요로 표시 |
 
 따라서 Demo의 활성 버튼 문제는 Demo 정책 전달 누락이지만, origin·장착비·상태 단계 문제는 같은 코드 경로를 사용하는 운영/Preview에서도 조건이 맞으면 발생할 수 있는 공용 결함이었다.
 
@@ -124,12 +133,14 @@
 
 | 검사 | 결과 |
 |---|---|
-| `./node_modules/.bin/tsc -p tsconfig.json --noEmit` | PASS |
-| Demo read-only core/advisory + 주문 상세 표시 계약 테스트 16건 | PASS (16/16) |
+| `pnpm typecheck` | PASS (app + Cypress TypeScript) |
+| `node --test tests/admin-order-detail-display.contract.test.mjs` | PASS (8/8) |
+| `pnpm test:contract` | PASS (254/254, manifest validator 포함) |
+| `pnpm test:contract:advisory` | FAIL (149/167, 기존 advisory 실패 18건; 신규 주문 상세 8건은 PASS) |
 | `node scripts/check-admin-api-boundary.mjs` | PASS |
 | `git diff --check` | PASS |
 
-연계 테스트를 63건으로 확장 실행했을 때 61건이 통과했다. 실패한 패키지 성공 화면 계약 테스트 2건은 `main` 기준 파일에서도 동일하게 기대 문자열이 존재하지 않으며, 이번 PR이 해당 화면/테스트를 변경하지 않았다. 주문 상세 수정의 회귀 실패로 분류하지 않되 전역 테스트 부채로 남긴다.
+`test:contract:advisory`의 기존 실패는 관리자 게시판 metric snapshot, 패키지 read model/성공 화면, Apps Toss legacy discriminator, 게시판 이동, display/mypage 정책, review 계약에 걸친 18건이다. 수정 전 PR HEAD의 GitHub Actions 로그에도 해당 advisory 명령은 exit 1이었고 advisory job은 비차단으로 보고됐다. 이번 작업에서 금지된 기존 패키지 성공 화면 테스트 부채 및 다른 unrelated advisory 계약은 수정하지 않았다.
 
 ## 정상 확인 항목
 
