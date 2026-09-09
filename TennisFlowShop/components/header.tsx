@@ -389,7 +389,12 @@ const Header = () => {
             </div>
             <div className="mt-2">
               {user && (
-                <div className="rounded-control border border-border/80 bg-muted/20 p-2">
+                <div className="space-y-2 rounded-control border border-border/80 bg-muted/20 p-2">
+                  {user.isDemoInteraction === true && !isAdmin && (
+                    <p className="break-keep rounded-control bg-background px-2 py-1.5 text-ui-label text-muted-foreground">
+                      관리자 데모는 데스크톱 환경에서 확인할 수 있습니다.
+                    </p>
+                  )}
                   <div className="flex min-w-0 items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">

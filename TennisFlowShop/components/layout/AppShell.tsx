@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import Footer from "@/components/footer";
 import Header from "@/components/header";
+import PortfolioDemoCustomerNotice from "@/components/portfolio-demo/PortfolioDemoCustomerNotice";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,6 +21,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         className="flex-1"
         style={{ paddingTop: showPublicChrome ? "var(--header-h, 0px)" : 0 }}
       >
+        {showPublicChrome && <PortfolioDemoCustomerNotice />}
         <div className="w-full px-0">{children}</div>
       </main>
 

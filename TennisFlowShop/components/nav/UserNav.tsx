@@ -152,7 +152,12 @@ export function UserNav() {
             }}
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
-            {demoSwitchLoading ? "전환 중..." : "관리자 데모 보기"}
+            <span className="flex flex-col">
+              <span>{demoSwitchLoading ? "전환 중..." : "관리자 데모 보기"}</span>
+              {!demoSwitchLoading && (
+                <span className="text-ui-micro text-muted-foreground">조회 전용</span>
+              )}
+            </span>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem

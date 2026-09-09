@@ -18,9 +18,11 @@ test("관리자 공통 레이아웃은 서버 환경값으로 Demo 조회 전용
   assert.ok(layout.includes("포트폴리오 데모 · 조회 전용"));
   assert.ok(
     layout.includes(
-      "실제 운영 환경과 분리된 시연용 데이터입니다. 등록·수정·삭제 등 변경 작업은",
+      "관리자 데이터는 조회만 가능하며 등록·수정·삭제 등 변경 작업은 제한됩니다.",
     ),
   );
+  assert.ok(layout.includes("{isDemoTour"));
+  assert.ok(layout.includes("고객 화면으로 돌아가 주문·신청 흐름을 계속 체험할 수 있습니다."));
 });
 
 test("Portfolio Demo의 Storage와 Seed source marker를 유지한다", () => {
