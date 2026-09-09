@@ -48,3 +48,15 @@ test("주문 상세은 방문 수령 문맥과 표시 형식을 일관되게 적
   assert.ok(detail.includes("저장된 라켓명이 구체적이지 않거나 스트링명과 동일합니다."));
   assert.ok(dialog.includes("<DialogDescription>"));
 });
+
+test("연결 신청서는 레거시 0원 주문 상품과 부모 주문 결제 문맥을 명확히 표시한다", () => {
+  const handler = read("app/features/stringing-applications/api/handlers.ts");
+  const detail = read(
+    "app/features/stringing-applications/components/StringingApplicationDetailClient.tsx",
+  );
+
+  assert.ok(handler.includes("isExplicitFreeSnapshot"));
+  assert.ok(handler.includes("shouldUseSnapshotPrice"));
+  assert.ok(detail.includes("교체서비스 금액 (주문 포함)"));
+  assert.ok(detail.includes("부모 주문에서 확인"));
+});

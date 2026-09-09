@@ -1297,6 +1297,12 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 
       const snapshotPrice =
         typeof oi.price === "number" && Number.isFinite(oi.price) ? oi.price : null;
+      const snapshotSalePrice =
+        typeof oi.salePrice === "number" && Number.isFinite(oi.salePrice) ? oi.salePrice : null;
+      const snapshotDiscountRate =
+        typeof oi.discountRate === "number" && Number.isFinite(oi.discountRate)
+          ? oi.discountRate
+          : null;
 
       const metaRegularPrice =
         typeof meta?.regularPrice === "number" && Number.isFinite(meta.regularPrice)
@@ -1313,13 +1319,25 @@ export async function handleGetStringingApplication(req: Request, id: string) {
           ? meta.effectivePrice
           : null;
 
+      // 일부 과거 통합 주문은 실제 상품가가 있는데도 item.price가 0으로 저장됐다.
+      // 명시적인 무료 판매/100% 할인만 0원을 유지하고, 그 외에는 주문 상세과 같은
+      // 레거시 보정 규칙으로 현재 상품의 유효 가격을 사용한다.
+      const isExplicitFreeSnapshot =
+        snapshotPrice === 0 && (snapshotSalePrice === 0 || snapshotDiscountRate === 100);
+      const shouldUseSnapshotPrice =
+        snapshotPrice !== null &&
+        (snapshotPrice > 0 || isExplicitFreeSnapshot || (metaEffectivePrice ?? 0) <= 0);
+
       const displayPrice =
+        shouldUseSnapshotPrice &&
+        snapshotPrice !== null &&
         metaSalePrice !== null &&
         metaRegularPrice !== null &&
-        snapshotPrice !== null &&
         snapshotPrice === metaRegularPrice
           ? metaSalePrice
-          : (snapshotPrice ?? metaEffectivePrice);
+          : shouldUseSnapshotPrice
+            ? snapshotPrice
+            : metaEffectivePrice;
 
       const hasDiscount =
         displayPrice !== null && metaRegularPrice !== null && metaRegularPrice > displayPrice;

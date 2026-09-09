@@ -3086,7 +3086,11 @@ export default function StringingApplicationDetailClient({
                         {isAdmin ? (
                           <div className="grid grid-cols-2 gap-3 bp-xl:grid-cols-3">
                             <AdminCompactField
-                              label="총 결제 금액"
+                              label={
+                                isResolvedOrderLinkedApplication
+                                  ? "교체서비스 금액 (주문 포함)"
+                                  : "총 결제 금액"
+                              }
                               className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10"
                               value={`${totalPrice === null ? "금액 확인 중" : `${totalPrice.toLocaleString()}원`}`}
                               valueClassName={
@@ -3111,10 +3115,14 @@ export default function StringingApplicationDetailClient({
                             />
                             <AdminCompactField
                               label="결제 방식"
-                              value={getCustomerPaymentMethodLabel(
-                                paymentMethodForDisplay,
-                                packageApplied,
-                              )}
+                              value={
+                                isResolvedOrderLinkedApplication && !paymentMethodForDisplay
+                                  ? "부모 주문에서 확인"
+                                  : getCustomerPaymentMethodLabel(
+                                      paymentMethodForDisplay,
+                                      packageApplied,
+                                    )
+                              }
                             />
                           </div>
                         ) : (
