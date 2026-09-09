@@ -3,7 +3,7 @@
 - 작성일: 2026-09-09 (UTC)
 - 기준 브랜치: `fix/portfolio-demo-order-detail-audit`
 - 기준 베이스: `main` / `d2969b6` (PR #2674 포함)
-- 브라우저 재검증: Vercel PR Preview (`dpl_CTzJLWEyDRkWqrnyu9uPuoTA7JLx`, `dpl_BaCo8NPYxtgAWkgBg8YnXv16BjRJ`)
+- 브라우저 재검증: Vercel PR Preview (`dpl_CTzJLWEyDRkWqrnyu9uPuoTA7JLx`, `dpl_BaCo8NPYxtgAWkgBg8YnXv16BjRJ`, `dpl_7QwnxT6PghUVNSfPkGYnr9tkTDq7`)
 - 대상 기능: 관리자 주문 상세, 연결 교체서비스 상세, 배송/수령 변경 진입 경로, 주문 상세 공용 API
 - 안전 원칙: 실제 주문·결제·배송·재고·취소 데이터 변경 및 PG 호출은 수행하지 않았다.
 
@@ -54,6 +54,7 @@
 - 고정 주문 5건의 버튼은 `고객 데모로 돌아가기`, `사이드바`, `복사`, 메모 `초기화/검색`뿐이었다.
 - 주문 5건 모두 `select`와 `textarea`가 0개였고 `undefined`, `null`, 빈 괄호가 없었다.
 - 연결 신청서, 단독 완료 신청서, 취소 요청 신청서에서 편집 모드는 disabled였고 상태 Select·메모 textarea·취소 승인/거절 CTA가 없었다.
+- 최종 Preview에서 주문의 `취소/환불 정책`과 신청서의 `작업 상태` 설명이 모두 `조회/확인` 문맥으로 표시되고 `변경/직접 관리` 문구가 사라진 것을 확인했다.
 - 주문 배송 변경 URL 2건은 각각 원래 조회 상세로 redirect됐다.
 - 1363px 뷰포트에서 `documentElement.scrollWidth`는 1348px로 가로 스크롤이 없었다.
 
