@@ -25,7 +25,9 @@
 - manifest 조치: `admin-order-detail-display.contract.test.mjs`를 `scripts/contract-test-manifest.mjs`의 `advisoryContractFiles`에 등록했다.
 - 장착 가능 여부: 주문 item의 명시적 boolean snapshot, item 장착비 snapshot, 현재 상품 장착비 compatibility fallback 순서로 고정했다. 명시적 `false`는 그대로 유지한다.
 - 연결 주문 상품 가격: 신뢰 가능한 historical snapshot과 명시적 무료/100% 할인만 확정 가격으로 표시한다. 0원/누락 snapshot이 모호하면 현재 catalog 가격으로 보정하지 않고 `가격 스냅샷 확인 필요`로 표시한다.
-- 본 문서 갱신 commit에 대한 GitHub CI: **대기**. 새 commit 실행 결과를 확인하기 전이므로 PASS로 기록하지 않는다.
+- 이전 HEAD `2cb555faea2481d91673220e1a5714cfd2aeb7f0`의 GitHub Actions CI #5679: 전체 PASS.
+- residual fallback 조치: product 문서를 찾지 못한 주문 상품도 `resolveOrderItemIsMountableString(item, undefined)`를 사용한다. racket fallback은 항상 `false`다.
+- 본 residual fix commit에 대한 GitHub CI: **대기**. 새 commit 실행 결과를 확인하기 전이므로 PASS로 기록하지 않는다.
 
 ## 수정 결과
 
@@ -134,9 +136,9 @@
 | 검사 | 결과 |
 |---|---|
 | `pnpm typecheck` | PASS (app + Cypress TypeScript) |
-| `node --test tests/admin-order-detail-display.contract.test.mjs` | PASS (8/8) |
+| `node --test tests/admin-order-detail-display.contract.test.mjs` | PASS (9/9) |
 | `pnpm test:contract` | PASS (254/254, manifest validator 포함) |
-| `pnpm test:contract:advisory` | FAIL (149/167, 기존 advisory 실패 18건; 신규 주문 상세 8건은 PASS) |
+| `pnpm test:contract:advisory` | FAIL (149/167, 기존 advisory 실패 18건; 당시 신규 주문 상세 8건은 PASS) |
 | `node scripts/check-admin-api-boundary.mjs` | PASS |
 | `git diff --check` | PASS |
 

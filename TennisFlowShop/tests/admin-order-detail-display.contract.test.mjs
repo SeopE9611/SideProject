@@ -76,8 +76,24 @@ test("주문 상품의 명시적 장착 불가 snapshot은 현재 상품 장착�
 });
 
 test("장착 가능 여부는 historical 장착비 다음에만 현재 상품값을 fallback한다", () => {
-  assert.equal(resolveOrderItemIsMountableString({ mountingFee: 0 }, undefined), true);
+  assert.equal(resolveOrderItemIsMountableString({ mountingFee: 15_000 }, undefined), true);
+  assert.equal(
+    resolveOrderItemIsMountableString(
+      { isMountableString: false, mountingFee: 15_000 },
+      undefined,
+    ),
+    false,
+  );
   assert.equal(resolveOrderItemIsMountableString({}, 15_000), true);
+});
+
+test("상품 snapshot fallback만 historical 장착 정책을 사용한다", () => {
+  const route = read("app/api/orders/[id]/route.ts");
+
+  assert.match(
+    route,
+    /isMountableString:\s*kind === "product"\s*\? resolveOrderItemIsMountableString\(item, undefined\)\s*:\s*false/,
+  );
 });
 
 test("연결 신청서의 모호한 legacy 0원은 현재 상품가로 확정하지 않는다", () => {

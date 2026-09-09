@@ -256,7 +256,8 @@ function buildOrderLineSnapshotFallback(
     imageUrl: getOrderItemSnapshotImage(item),
     selectedColorImage: getSnapshotString(item?.selectedColorImage),
     mountingFee: toFiniteNonNegativeNumber(item?.mountingFee) ?? 0,
-    isMountableString: Boolean(item?.isMountableString),
+    isMountableString:
+      kind === "product" ? resolveOrderItemIsMountableString(item, undefined) : false,
     quantity: item?.quantity ?? 1,
     kind,
     selectedStringName: getSnapshotString(item?.selectedStringName),
