@@ -1021,8 +1021,9 @@ export default function StringingApplicationDetailClient({
           : {
               label: "단독 교체서비스 신청서",
               title: "교체서비스 신청서",
-              description:
-                "이 신청서 자체가 대표 업무입니다. 접수·작업·완성 라켓 배송/수령을 이 화면에서 처리합니다.",
+              description: readOnly
+                ? "접수·작업·완성 라켓 배송/수령 상태를 이 화면에서 조회합니다."
+                : "이 신청서 자체가 대표 업무입니다. 접수·작업·완성 라켓 배송/수령을 이 화면에서 처리합니다.",
               payment: "결제는 이 신청서에서 처리합니다.",
             };
   const effectiveStockDeduction =
@@ -1385,11 +1386,13 @@ export default function StringingApplicationDetailClient({
           actionLabel: linkedStageCtaLabel,
           actionHref: linkedAdminHref ?? undefined,
         }
-      : lowerStatus.includes("접수") || lowerStatus.includes("검토")
-        ? {
-            tone: "warning",
-            title: "신청 내용 검토 필요",
-            description: "요청 스트링/장력/수령 방식을 확인한 뒤 작업 단계를 진행하세요.",
+        : lowerStatus.includes("접수") || lowerStatus.includes("검토")
+          ? {
+              tone: "warning",
+              title: "신청 내용 검토 필요",
+              description: readOnly
+                ? "요청 스트링·장력·수령 방식과 현재 작업 단계를 확인하세요."
+                : "요청 스트링/장력/수령 방식을 확인한 뒤 작업 단계를 진행하세요.",
           }
         : lowerStatus.includes("작업")
           ? {
@@ -1401,7 +1404,9 @@ export default function StringingApplicationDetailClient({
             ? {
                 tone: "success",
                 title: "완료 처리 및 이력 확인",
-                description: "완료 처리 후 연결 문서 반영 여부와 변경 이력을 확인하세요.",
+                description: readOnly
+                  ? "완료 상태와 연결 문서 반영 여부, 변경 이력을 확인하세요."
+                  : "완료 처리 후 연결 문서 반영 여부와 변경 이력을 확인하세요.",
               }
             : needsShippingCheck
               ? {
@@ -1793,7 +1798,9 @@ export default function StringingApplicationDetailClient({
                   ))}
                   note={
                     isLinkedApplication
-                      ? `연결된 ${data.orderId ? "주문" : "대여"}에서 상태 변경·취소·환불을 처리합니다.`
+                      ? readOnly
+                        ? `연결된 ${data.orderId ? "주문" : "대여"}의 상태·취소·환불 정보를 확인합니다.`
+                        : `연결된 ${data.orderId ? "주문" : "대여"}에서 상태 변경·취소·환불을 처리합니다.`
                       : applicationContext.description
                   }
                   footer={
@@ -2179,13 +2186,17 @@ export default function StringingApplicationDetailClient({
                 {isAdmin && (
                   <CardHeader className={detailCardHeaderClass}>
                     <div className="flex items-center justify-between gap-3">
-                      <CardTitle>작업 상태 관리</CardTitle>
+                      <CardTitle>{readOnly ? "작업 상태" : "작업 상태 관리"}</CardTitle>
                       <ApplicationStatusBadge status={data.status} />
                     </div>
                     <CardDescription>
-                      {isLinkedApplication
-                        ? "연결된 주문·대여의 진행 단계에서 상태를 함께 변경하세요. 이 화면에서는 현재 작업 상태를 확인합니다."
-                        : "단독 신청서는 접수·작업·완성 라켓 배송/수령 상태를 이 화면에서 직접 관리합니다."}
+                      {readOnly
+                        ? isLinkedApplication
+                          ? "연결된 주문·대여의 진행 단계와 현재 작업 상태를 확인합니다."
+                          : "접수·작업·완성 라켓 배송/수령 상태를 조회합니다."
+                        : isLinkedApplication
+                          ? "연결된 주문·대여의 진행 단계에서 상태를 함께 변경하세요. 이 화면에서는 현재 작업 상태를 확인합니다."
+                          : "단독 신청서는 접수·작업·완성 라켓 배송/수령 상태를 이 화면에서 직접 관리합니다."}
                     </CardDescription>
                   </CardHeader>
                 )}
@@ -2199,9 +2210,11 @@ export default function StringingApplicationDetailClient({
                               교체 작업 상태
                             </p>
                             <p className="mt-1 text-ui-label text-foreground/75">
-                              {isLinkedApplication
-                                ? "연결 작업의 현재 단계를 확인합니다. 상태 변경은 부모 상세의 연결 진행 단계에서 처리하세요."
-                                : "이 신청서의 접수·작업·완성 라켓 배송/수령 단계를 확인하고 필요한 경우 상태를 변경합니다."}
+                              {readOnly
+                                ? "접수·작업·완성 라켓 배송/수령의 현재 단계를 조회합니다."
+                                : isLinkedApplication
+                                  ? "연결 작업의 현재 단계를 확인합니다. 상태 변경은 부모 상세의 연결 진행 단계에서 처리하세요."
+                                  : "이 신청서의 접수·작업·완성 라켓 배송/수령 단계를 확인하고 필요한 경우 상태를 변경합니다."}
                             </p>
                           </div>
 

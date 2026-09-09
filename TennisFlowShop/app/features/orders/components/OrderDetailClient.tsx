@@ -1806,7 +1806,15 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
         <Card className={cn("mb-6 overflow-hidden", adminSurface.cardMuted)}>
           <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
             <div className="flex items-center justify-between gap-3">
-              <CardTitle>{isLinkedStringingOrder ? "결제·취소·환불" : "주문 처리 정보"}</CardTitle>
+              <CardTitle>
+                {readOnly
+                  ? isLinkedStringingOrder
+                    ? "결제·취소·환불 상태"
+                    : "주문 상태"
+                  : isLinkedStringingOrder
+                    ? "결제·취소·환불"
+                    : "주문 처리 정보"}
+              </CardTitle>
               {(() => {
                 const st = getOrderStatusBadgeSpec(localStatus);
                 return (
@@ -1820,9 +1828,13 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               })()}
             </div>
             <CardDescription>
-              {isLinkedStringingOrder
-                ? "결제 상태를 확인하고 취소/환불을 처리합니다. 통합 진행 상태는 위 연결 진행 단계에서 변경하세요."
-                : "현재 주문의 상태 변경과 취소 관련 운영 액션을 한곳에서 처리합니다."}
+              {readOnly
+                ? isLinkedStringingOrder
+                  ? "결제·취소·환불 상태와 연결 진행 단계를 조회합니다."
+                  : "현재 주문 상태와 취소 관련 정보를 조회합니다."
+                : isLinkedStringingOrder
+                  ? "결제 상태를 확인하고 취소/환불을 처리합니다. 통합 진행 상태는 위 연결 진행 단계에서 변경하세요."
+                  : "현재 주문의 상태 변경과 취소 관련 운영 액션을 한곳에서 처리합니다."}
               <br />
               {/* 방문 수령 주문은 수령 전/후 기준으로 안내 문구 분기 */}
               {isVisitPickup
@@ -1883,10 +1895,13 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
               <div className="rounded-xl border border-border/60 bg-background p-4">
                 <div className="space-y-3">
                   <div>
-                    <p className="text-ui-body-sm font-semibold text-foreground">운영 액션</p>
+                    <p className="text-ui-body-sm font-semibold text-foreground">
+                      {readOnly ? "취소/환불 정책" : "운영 액션"}
+                    </p>
                     <p className="mt-1 text-ui-label text-foreground/75">
-                      고객 요청 기반 취소 승인/거절 또는 관리자 직접 취소를 진행합니다. 처리 전 환불
-                      계좌·결제 상태를 먼저 확인해주세요.
+                      {readOnly
+                        ? "현재 취소 요청과 환불 계좌·결제 상태를 조회합니다."
+                        : "고객 요청 기반 취소 승인/거절 또는 관리자 직접 취소를 진행합니다. 처리 전 환불 계좌·결제 상태를 먼저 확인해주세요."}
                     </p>
                   </div>
 

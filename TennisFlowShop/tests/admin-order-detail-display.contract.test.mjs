@@ -28,6 +28,8 @@ test("주문 상세은 저장된 금액 구성과 상품 이미지를 표시한�
     assert.ok(detail.includes(label), `${label}: 금액 구성에 포함되어야 합니다.`);
   }
   assert.ok(detail.includes("hasPaymentAmountMismatch"));
+  assert.ok(detail.includes('readOnly ? "취소/환불 정책" : "운영 액션"'));
+  assert.ok(detail.includes("현재 주문 상태와 취소 관련 정보를 조회합니다."));
   assert.ok(detail.includes("<Image"));
   assert.ok(detail.includes('aria-label="상품 이미지 없음"'));
   assert.ok(
