@@ -116,6 +116,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const doc = await db.collection("rental_orders").findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
 
+  const snapshotImage = String((doc as any)?.racketSnapshot?.imageUrl ?? (doc as any)?.racketSnapshot?.images?.[0] ?? "").trim();
+  const racket = !snapshotImage && doc.racketId && ObjectId.isValid(String(doc.racketId))
+    ? await db.collection("rackets").findOne(
+        { _id: new ObjectId(String(doc.racketId)) },
+        { projection: { imageUrl: 1, images: 1 } },
+      )
+    : null;
+  const racketImageUrl = snapshotImage || String((racket as any)?.imageUrl ?? (racket as any)?.images?.[0] ?? "").trim() || null;
+
   const latestHistory = await db
     .collection("rental_history")
     .findOne({ rentalId: doc._id }, { sort: { at: -1 } });
@@ -215,6 +224,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     racketId: doc.racketId?.toString?.(),
     brand: doc.brand,
     model: doc.model,
+    racketImageUrl,
     days: doc.days,
     status: typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status,
     amount: doc.amount, // { deposit, fee, stringPrice?, stringingFee?, total }

@@ -70,6 +70,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 type RentalRow = AdminRentalListItemDto & {
   id: string;
   createdAt: string;
+  outAt: string | null;
   dueAt: string | null;
   depositRefundedAt: string | null;
 };
@@ -110,6 +111,7 @@ function mapApiToViewModel(response: AdminRentalsListResponseDto): {
       ...item,
       id: item.id ?? "",
       createdAt: toIsoOrNull(item.createdAt) ?? new Date(0).toISOString(),
+      outAt: toIsoOrNull(item.outAt),
       dueAt: toIsoOrNull(item.dueAt),
       depositRefundedAt: toIsoOrNull(item.depositRefundedAt),
     })),
@@ -1018,7 +1020,7 @@ export default function AdminRentalsClient() {
                       meta={
                         <>
                           <span className="tabular-nums">
-                            시작 {r.createdAt ? formatDate(r.createdAt) : "미등록"}
+                            {r.outAt ? `시작 ${formatDate(r.outAt)}` : "시작 처리 미완료"}
                           </span>
                           <span>{r.days}일</span>
                         </>

@@ -8,6 +8,12 @@ export type AcademyScheduleDisplay = {
   timeText: string | null;
 };
 
+/** 명백히 모순되는 AM/PM + 24시간제 조합만 표시 시 정리합니다. */
+export function normalizeAcademyPreferredTimeText(value: string | null | undefined): string {
+  const text = value?.trim() ?? "";
+  return text.replace(/^(?:오전|오후)\s+(?=(?:1[3-9]|2[0-3]):[0-5]\d$)/, "");
+}
+
 export function getAcademyScheduleDisplay(
   scheduleText: string | null | undefined,
 ): AcademyScheduleDisplay {

@@ -40,3 +40,15 @@ export function deriveShippingStatus(rental: any): ShippingStatus {
   if (hasRet) return "return-set";
   return "none";
 }
+
+export function getRentalOverdueDays(
+  status: string | null | undefined,
+  dueAt: string | Date | null | undefined,
+  now = new Date(),
+): number | null {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  if (["returned", "canceled", "cancelled"].includes(normalized) || !dueAt) return null;
+  const dueTime = new Date(dueAt).getTime();
+  if (!Number.isFinite(dueTime) || dueTime >= now.getTime()) return null;
+  return Math.max(1, Math.ceil((now.getTime() - dueTime) / 86_400_000));
+}

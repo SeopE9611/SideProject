@@ -2,6 +2,8 @@ import ShippingForm from "./shipping-form";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { Truck } from "lucide-react";
+import { isPortfolioDemoReadOnly } from "@/lib/admin/portfolio-demo-readonly.server";
+import { redirect } from "next/navigation";
 
 import type { Metadata } from "next";
 
@@ -15,6 +17,8 @@ type RentalShippingUpdatePageProps = {
 
 export default async function Page({ params }: RentalShippingUpdatePageProps) {
   const { id } = await params;
+
+  if (isPortfolioDemoReadOnly()) redirect(`/admin/rentals/${id}`);
 
   return (
     <AdminPageShell variant="narrow">

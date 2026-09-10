@@ -213,7 +213,7 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
   );
 }
 
-export default function PackageDetailClient({ packageId }: { packageId: string }) {
+export default function PackageDetailClient({ packageId, readOnly = false }: { packageId: string; readOnly?: boolean }) {
   const router = useRouter();
 
   const [isEditMode, setIsEditMode] = useState(false);
@@ -296,7 +296,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   const isAdjustDirty =
     editingSessions &&
     (sessionAdjustment.amount !== 0 || sessionAdjustment.reason.trim().length > 0);
-  const isDirty = isExtensionDirty || isAdjustDirty;
+  const isDirty = !readOnly && (isExtensionDirty || isAdjustDirty);
   useUnsavedChangesGuard(isDirty);
 
   const onLeaveListClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {
@@ -600,9 +600,11 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <ArrowLeft className="mr-2 h-4 w-4" />목록으로
             </Link>
           </Button>
-          <Button variant={isEditMode ? "destructive" : "outline"} size="sm" onClick={() => setIsEditMode((v) => !v)}>
-            <Edit3 className="mr-1 h-4 w-4" />{isEditMode ? "편집 취소" : "편집 모드"}
-          </Button>
+          {!readOnly ? (
+            <Button variant={isEditMode ? "destructive" : "outline"} size="sm" onClick={() => setIsEditMode((v) => !v)}>
+              <Edit3 className="mr-1 h-4 w-4" />{isEditMode ? "편집 취소" : "편집 모드"}
+            </Button>
+          ) : null}
         </>}
       />
 
@@ -740,6 +742,10 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 }
                 value={data.serviceType}
               />
+              <AdminCompactField
+                label="구매일시"
+                value={fmtDateTime(data.purchaseDate)}
+              />
             </div>
           </CardContent>
         </Card>
@@ -763,6 +769,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               </SemanticBadge>
             </div>
 
+            {!readOnly ? (<>
             <div className="flex items-center justify-between p-3 rounded-lg bg-card">
               <span className="text-sm text-muted-foreground">통합 상태 변경</span>
               {data.legacyPassStatus && data.legacyPaymentStatus ? (
@@ -784,6 +791,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               이 상태 변경 기능은 현재 결제 상태와 연결 패스 상태를 함께 변경합니다. 조회 상태와
               별개의 운영 작업이므로 변경 전 결제사 및 이용권 상태를 확인하세요.
             </p>
+            </>) : null}
             <div className="p-3 rounded-lg bg-card space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">결제 상태</span>
@@ -795,7 +803,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   {getAdminPackagePaymentLabel(data.paymentState)}
                 </SemanticBadge>
               </div>
-              {isNicePayment && (
+              {!readOnly && isNicePayment && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -926,7 +934,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </div>
           </CardContent>
 
-          {isEditMode && (
+          {!readOnly && isEditMode && (
             <CardFooter className="flex flex-wrap justify-center gap-2 bg-card">
               <Button
                 variant="outline"
@@ -1072,7 +1080,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
       </div>
 
       {/* 연장 모달 */}
-      {showExtensionForm && (
+      {!readOnly && showExtensionForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
           <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
             <CardHeader>
@@ -1175,7 +1183,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
       )}
 
       {/* 횟수 조절 모달 */}
-      {editingSessions && (
+      {!readOnly && editingSessions && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
           <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
             <CardHeader>
