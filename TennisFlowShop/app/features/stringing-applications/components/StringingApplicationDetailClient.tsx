@@ -1534,8 +1534,7 @@ export default function StringingApplicationDetailClient({
           icon={<Target className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
           status={undefined}
           statusTitle={
-                    <div className="flex flex-wrap items-center gap-2">
-                        <PortfolioDemoDataBadge kind={data.portfolioDemoDataKind} />
+            <div className="flex flex-wrap items-center gap-2">
               <Badge
                 variant={applicationStatusBadgeSpec.variant}
                 aria-label={`교체서비스 진행 상태: ${applicationStatusLabel}`}
@@ -1643,6 +1642,7 @@ export default function StringingApplicationDetailClient({
                   actions={
                     <TooltipProvider>
                       <div className="flex w-auto flex-wrap items-center justify-end gap-1.5">
+                        <PortfolioDemoDataBadge kind={data.portfolioDemoDataKind} />
                         <ApplicationStatusBadge status={data.status} />
                         <Badge
                           variant={paymentStatusBadgeSpec.variant}
