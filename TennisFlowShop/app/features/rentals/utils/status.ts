@@ -50,5 +50,5 @@ export function getRentalOverdueDays(
   if (["returned", "canceled", "cancelled"].includes(normalized) || !dueAt) return null;
   const dueTime = new Date(dueAt).getTime();
   if (!Number.isFinite(dueTime) || dueTime >= now.getTime()) return null;
-  return Math.max(1, Math.ceil((now.getTime() - dueTime) / 86_400_000));
+  return Math.floor((now.getTime() - dueTime) / 86_400_000);
 }
