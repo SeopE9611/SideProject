@@ -42,6 +42,16 @@ test("Demo 주문 상세은 서버 조회 전용 상태를 클라이언트에 �
   assert.ok(detail.includes("!readOnly &&"));
 });
 
+test("Demo 대여 상세은 내부 메모 카드에 조회 전용 상태를 전달한다", () => {
+  const detail = read("app/admin/rentals/[id]/_components/AdminRentalDetailClient.tsx");
+
+  assert.ok(
+    detail.includes(
+      '<AdminInternalNotesCard targetType="rental" targetId={data.id} readOnly={readOnly} />',
+    ),
+  );
+});
+
 test("Demo의 주문/교체서비스 배송 변경 직행 경로는 조회 상세로 되돌린다", () => {
   const orderShipping = read("app/admin/orders/[id]/shipping-update/page.tsx");
   const stringingShipping = read("app/admin/applications/stringing/[id]/shipping-update/page.tsx");

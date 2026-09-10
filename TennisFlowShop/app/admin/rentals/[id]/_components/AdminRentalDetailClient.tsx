@@ -897,9 +897,11 @@ export default function AdminRentalDetailClient({ readOnly = false }: { readOnly
                 isReturned
                   ? "반납 완료"
                   : isOut
-                    ? overdueDays
-                      ? `연체 · ${overdueDays}일 경과`
-                      : "반납 필요"
+                    ? overdueDays === null
+                      ? "반납 필요"
+                      : overdueDays === 0
+                        ? "연체 · 1일 미만 경과"
+                        : `연체 · ${overdueDays}일 경과`
                     : Outbound?.trackingNumber
                       ? "인도 완료"
                       : "인도 전"
@@ -1939,7 +1941,9 @@ export default function AdminRentalDetailClient({ readOnly = false }: { readOnly
             </div>
           </CardContent>
         </Card>
-        {data?.id ? <AdminInternalNotesCard targetType="rental" targetId={data.id} /> : null}
+        {data?.id ? (
+          <AdminInternalNotesCard targetType="rental" targetId={data.id} readOnly={readOnly} />
+        ) : null}
         <div id="admin-rental-history">
           <AdminRentalHistory id={id} servicePickupMethod={servicePickupMethod} />
         </div>
