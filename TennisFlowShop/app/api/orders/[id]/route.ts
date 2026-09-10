@@ -25,6 +25,8 @@ import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 import { z } from "zod";
 import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 
@@ -765,8 +767,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       usedRacketLookupCount: uniqueUsedRacketIds.length,
     });
 
+    const { demoSeedKey: _demoSeedKey, demoSeedVersion: _demoSeedVersion, demoSessionId: _demoSessionId, demoExpiresAt: _demoExpiresAt, isDemoData: _isDemoData, isDemoInteraction: _isDemoInteraction, ...safeOrder } = order;
+    const portfolioDemoDataKind = isAdmin
+      ? classifyPortfolioDemoData({ marker: order, tourContext: await getVerifiedPortfolioDemoTourContext(), ownerId: order.userId })
+      : null;
     return NextResponse.json({
-      ...order, // 원문은 펴주되,
+      ...safeOrder,
+      portfolioDemoDataKind,
       customer,
       items: enrichedItems,
       shippingInfo: {

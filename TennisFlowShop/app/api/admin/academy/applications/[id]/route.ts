@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 import { ObjectId, type Document } from "mongodb";
 
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
@@ -108,7 +110,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     );
   }
 
-  return NextResponse.json({ success: true, item: serializeApplication(item) });
+  return NextResponse.json({ success: true, item: { ...serializeApplication(item), portfolioDemoDataKind: classifyPortfolioDemoData({ marker: item, tourContext: await getVerifiedPortfolioDemoTourContext(), ownerId: item.userId }) } });
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {

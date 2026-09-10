@@ -1,4 +1,5 @@
 import type { AdminOrderPaymentStateKind } from "@/lib/admin/order-payment-display";
+import type { PortfolioDemoDataKind } from "@/types/portfolio-demo";
 /**
  * Responsibility: mapping only (admin operations 도메인 타입 정의).
  * - API route 로직은 이 파일을 import 해서 도메인 타입을 공유합니다.
@@ -38,6 +39,7 @@ export type LinkedFlowStatusIssue = {
 };
 
 export type AdminOperationItem = {
+  portfolioDemoDataKind?: PortfolioDemoDataKind | null;
   id: string;
   kind: AdminOperationKind;
   createdAt: string | null;

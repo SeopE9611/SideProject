@@ -54,6 +54,7 @@ export interface AdminPackageCustomerDto {
 }
 
 export interface AdminPackageListItemDto {
+  portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
   id: string;
   userId: string;
   customer: AdminPackageCustomerDto;
@@ -132,6 +133,7 @@ export interface AdminPackageUsageHistoryResponseDto {
 }
 
 export interface AdminPackageDetailDto {
+  portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
   id: string;
   userId?: string;
   customer: Required<AdminPackageCustomerDto>;

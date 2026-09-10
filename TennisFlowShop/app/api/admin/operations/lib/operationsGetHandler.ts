@@ -18,6 +18,8 @@ import { getAdminOrderPaymentState } from "@/lib/admin/order-payment-display";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 import { isLikelyEmailQuery, normalizeEmailForSearch } from "@/lib/search-email";
 import {
   isRentalReturnedStatus,
@@ -965,6 +967,7 @@ export async function handleAdminOperationsGet(
     options.measure ?? ((_, work) => Promise.resolve(typeof work === "function" ? work() : work));
   const guard = await measure("operations.requireAdmin", () => requireAdmin(req));
   if (!guard.ok) return guard.res;
+  const tourContext = await getVerifiedPortfolioDemoTourContext();
   const { db } = guard;
 
   // 운영 흐름 목록은 대량 merge/sort 조회를 수행하므로 고비용 API로 레이트리밋을 건다.
@@ -1192,6 +1195,11 @@ export async function handleAdminOperationsGet(
     cancelRequest: 1,
     collectionMethod: 1,
     shippingInfo: 1,
+    userId: 1,
+    isDemoData: 1,
+    demoSeedKey: 1,
+    isDemoInteraction: 1,
+    demoSessionId: 1,
   };
   let rawApps = await measure("operations.fetchStringingApplications", () =>
     db
@@ -1274,6 +1282,11 @@ export async function handleAdminOperationsGet(
     items: 1,
     shippingInfo: 1,
     cancelRequest: 1,
+    userId: 1,
+    isDemoData: 1,
+    demoSeedKey: 1,
+    isDemoInteraction: 1,
+    demoSessionId: 1,
   };
   let rawOrders = await measure("operations.fetchOrders", () =>
     db
@@ -1323,6 +1336,10 @@ export async function handleAdminOperationsGet(
     endDate: 1,
     dueAt: 1,
     depositRefundedAt: 1,
+    isDemoData: 1,
+    demoSeedKey: 1,
+    isDemoInteraction: 1,
+    demoSessionId: 1,
   };
   let rawRentals = await measure("operations.fetchRentals", () =>
     db
@@ -1382,6 +1399,11 @@ export async function handleAdminOperationsGet(
           serviceInfo: 1,
           shippingInfo: 1,
           packageInfo: 1,
+          userId: 1,
+          isDemoData: 1,
+          demoSeedKey: 1,
+          isDemoInteraction: 1,
+          demoSessionId: 1,
         },
       };
     },
@@ -1449,6 +1471,11 @@ export async function handleAdminOperationsGet(
         guestEmail: 1,
         cancelRequest: 1,
         shippingInfo: 1,
+        userId: 1,
+        isDemoData: 1,
+        demoSeedKey: 1,
+        isDemoInteraction: 1,
+        demoSessionId: 1,
       })
       .toArray();
 
@@ -1841,6 +1868,7 @@ export async function handleAdminOperationsGet(
     return {
       id,
       kind: "order",
+      portfolioDemoDataKind: classifyPortfolioDemoData({ marker: o, tourContext, ownerId: o.userId }),
       createdAt: toISO(o.createdAt),
       customer: cust,
       title: summarizeOrderItems(o.items),
@@ -2032,6 +2060,7 @@ export async function handleAdminOperationsGet(
     return {
       id,
       kind: "stringing_application",
+      portfolioDemoDataKind: classifyPortfolioDemoData({ marker: a, tourContext, ownerId: a.userId }),
       createdAt: toISO(a.createdAt),
       customer: cust,
       title: "교체 서비스 신청",
@@ -2152,6 +2181,7 @@ export async function handleAdminOperationsGet(
     return {
       id,
       kind: "rental",
+      portfolioDemoDataKind: classifyPortfolioDemoData({ marker: r, tourContext, ownerId: r.userId }),
       createdAt: toISO(r.createdAt),
       customer: cust,
       title:
@@ -2239,6 +2269,7 @@ export async function handleAdminOperationsGet(
         return {
           id,
           kind: "package_purchase",
+          portfolioDemoDataKind: classifyPortfolioDemoData({ marker: purchase, tourContext, ownerId: purchase.userId }),
           createdAt: toISO(purchase.createdAt),
           customer,
           title: sessions > 0 ? `${packageTitle} · ${sessions}회` : packageTitle,

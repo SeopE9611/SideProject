@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 import { ObjectId, type Document, type Filter } from "mongodb";
 import { z } from "zod";
 
@@ -134,6 +136,7 @@ export async function GET(req: Request) {
   const guard = await requireAdmin(req);
   if (!("ok" in guard) || !guard.ok) return guard.res;
   const db = guard.db;
+  const tourContext = await getVerifiedPortfolioDemoTourContext();
 
   const sp = new URL(req.url).searchParams;
   const parsed = querySchema.parse({
@@ -372,6 +375,7 @@ export async function GET(req: Request) {
     );
 
     return {
+      portfolioDemoDataKind: classifyPortfolioDemoData({ marker: rentalDoc, tourContext, ownerId: rentalDoc.userId }),
       id: rentalDoc._id?.toString(),
       racketId: rentalDoc.racketId?.toString(),
       brand: rentalDoc.brand || "",

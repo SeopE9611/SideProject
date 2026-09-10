@@ -22,6 +22,7 @@ import {
   AdminStatusGroup,
 } from "@/components/admin/AdminListTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
@@ -1105,6 +1106,7 @@ export default function OrdersClient() {
                         }
                         meta={
                           <>
+                            <PortfolioDemoDataBadge kind={order.portfolioDemoDataKind} />
                             <span>{kind.label}</span>
                             <span className="font-mono">ID {shortenId(order.id)}</span>
                             <span className="tabular-nums">{formatDate(order.date)}</span>

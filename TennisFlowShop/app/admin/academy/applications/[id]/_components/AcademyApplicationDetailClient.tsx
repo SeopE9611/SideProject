@@ -7,6 +7,7 @@ import { ArrowLeft, BookOpen, LinkIcon, Save } from "lucide-react";
 
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -42,6 +43,7 @@ import {
 } from "@/lib/types/academy";
 
 type AcademyApplicationDetail = {
+  portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
   _id: string;
   userId: string | null;
   applicantName: string;
@@ -359,6 +361,7 @@ export default function AcademyApplicationDetailClient({ id, readOnly = false }:
         helperText={`접수일 ${formatDateTime(item.createdAt)} · ${item.userId ? "회원 신청" : "비회원 신청"} · ${hasLinkedClass ? "클래스 연결" : "클래스 미연결"}`}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <PortfolioDemoDataBadge kind={item.portfolioDemoDataKind} />
             <AcademyStatusBadge status={item.status} />
             <Button asChild variant="outline" size="sm">
               <Link href="/admin/academy/applications">

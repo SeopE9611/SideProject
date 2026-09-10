@@ -18,6 +18,7 @@ export interface AdminRentalsListRequestDto {
 }
 
 export interface AdminRentalListItemDto {
+  portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
   servicePickupMethod?: AdminRentalServicePickupMethod;
   pickupMethodLabel?: string;
   id?: string;

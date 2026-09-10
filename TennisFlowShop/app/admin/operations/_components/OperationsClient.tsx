@@ -31,6 +31,7 @@ import {
   AdminStatusGroup,
 } from "@/components/admin/AdminListTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
@@ -599,7 +600,7 @@ function visibleSignalSummary(signals: AdminOperationsGroup["signals"], max = 3)
 const OPERATIONS_LIST_COLUMNS =
   "grid-cols-[130px_minmax(220px,1.15fr)_minmax(210px,1fr)_minmax(180px,0.85fr)_52px]";
 
-export default function OperationsClient() {
+export default function OperationsClient({ portfolioDemo = false }: { portfolioDemo?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -1171,6 +1172,13 @@ export default function OperationsClient() {
             </div>
           }
         />
+        {portfolioDemo ? (
+          <div className={cn(adminSurface.cardMuted, "mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 p-3", adminTypography.body)}>
+            <span className="flex items-center gap-2"><PortfolioDemoDataBadge kind="seed" /> 미리 준비된 운영 예시</span>
+            <span className="flex items-center gap-2"><PortfolioDemoDataBadge kind="current_interaction" /> 방금 고객 화면에서 만든 임시 데이터</span>
+            <span className="flex items-center gap-2"><PortfolioDemoDataBadge kind="interaction" /> Demo에서 생성된 다른 임시 데이터</span>
+          </div>
+        ) : null}
 
         {showActionsGuide && (
           <dl className={cn(adminSurface.fieldPanelMuted, "space-y-1.5")}>
@@ -2045,9 +2053,11 @@ export default function OperationsClient() {
                       }
                       meta={opsKindLabel(g.anchor.kind)}
                       supporting={
-                        displayDensity === "default"
-                          ? `${scenarioLabel}${isGroup ? ` · 연결 ${g.items.length}건` : ""}`
-                          : undefined
+                        <div className="flex flex-wrap items-center gap-2">
+                          <PortfolioDemoDataBadge kind={g.anchor.portfolioDemoDataKind} />
+                          {displayDensity === "default" ? <span>{`${scenarioLabel}${isGroup ? ` · 연결 ${g.items.length}건` : ""}`}</span> : null}
+                          {children.map((child) => <PortfolioDemoDataBadge key={`${child.kind}:${child.id}`} kind={child.portfolioDemoDataKind} />)}
+                        </div>
                       }
                     />
                   </AdminListCell>

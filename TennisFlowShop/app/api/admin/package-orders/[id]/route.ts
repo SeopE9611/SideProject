@@ -9,6 +9,8 @@ import { markPackageOrderPaid } from "@/lib/package-orders/mark-paid";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { buildAdminPackageStateStages } from "@/lib/admin/package-state-read-model";
 import { getAdminPackageOperationCapabilities } from "@/lib/admin/package-operation-capabilities";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 
 function normalizePassStatus(
   status: ServicePass["status"],
@@ -554,6 +556,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
             passStatus: "$legacyPassStatus",
             operationsHistory: "$operationsHistory",
             extensionHistory: "$operationsHistory",
+            _demoMarker: { isDemoData: "$isDemoData", demoSeedKey: "$demoSeedKey", isDemoInteraction: "$isDemoInteraction", demoSessionId: "$demoSessionId", ownerId: "$userId" },
           },
         },
       ])
@@ -572,7 +575,8 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
       now: new Date(),
     });
 
-    return NextResponse.json({ item: { ...item, operationCapabilities } });
+    const { _demoMarker, ...safeItem } = item;
+    return NextResponse.json({ item: { ...safeItem, operationCapabilities, portfolioDemoDataKind: classifyPortfolioDemoData({ marker: _demoMarker ?? {}, tourContext: await getVerifiedPortfolioDemoTourContext(), ownerId: _demoMarker?.ownerId }) } });
   } catch (e) {
     console.error("[GET /api/package-orders/[id]] error", e);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });

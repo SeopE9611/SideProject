@@ -3,6 +3,8 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId, type Document } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { buildAdminPackageStateStages } from "@/lib/admin/package-state-read-model";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 
 type SortKey =
   | "customer"
@@ -32,6 +34,7 @@ export async function GET(req: Request) {
   if (!guard.ok) return guard.res;
   try {
     const sp = new URL(req.url).searchParams;
+    const tourContext = await getVerifiedPortfolioDemoTourContext();
     const page = Math.max(1, Number(sp.get("page")) || 1);
     const limit = Math.min(50, Math.max(1, Number(sp.get("limit")) || 10));
     const usage = sp.get("usage") ?? legacyUsage[sp.get("status") ?? ""] ?? "all";
@@ -228,6 +231,7 @@ export async function GET(req: Request) {
                 isExpirySoon: 1,
                 progressPercent: 1,
                 legacyPassStatus: 1,
+                _demoMarker: { isDemoData: "$isDemoData", demoSeedKey: "$demoSeedKey", isDemoInteraction: "$isDemoInteraction", demoSessionId: "$demoSessionId", ownerId: "$userId" },
                 legacyPaymentStatus: 1,
                 paymentStatus: "$rawPaymentStatus",
                 passStatus: "$legacyPassStatus",
@@ -280,8 +284,9 @@ export async function GET(req: Request) {
       revenue: 0,
       expirySoon: 0,
     };
+    const safeItems = (result.items ?? []).map(({ _demoMarker, ...item }: any) => ({ ...item, portfolioDemoDataKind: classifyPortfolioDemoData({ marker: _demoMarker ?? {}, tourContext, ownerId: _demoMarker?.ownerId }) }));
     return NextResponse.json({
-      items: result.items ?? [],
+      items: safeItems,
       total: result.total?.[0]?.count ?? 0,
       page,
       pageSize: limit,

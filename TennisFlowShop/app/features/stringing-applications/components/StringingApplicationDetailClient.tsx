@@ -34,6 +34,7 @@ import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import LinkedDocsCard, { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
@@ -141,6 +142,7 @@ function StringingDetailShell({ isAdmin, children }: { isAdmin: boolean; childre
 }
 
 interface ApplicationDetail {
+  portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
   id: string;
   userConfirmedAt?: string | null;
   orderId?: string;
@@ -754,7 +756,7 @@ export default function StringingApplicationDetailClient({
     useStringingStore.setState({ selectedApplicationId: id });
   }, [id]);
   const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(
-    applicationId ? `/api/applications/stringing/${applicationId}` : null,
+    applicationId ? `${isAdmin ? "/api/admin" : "/api"}/applications/stringing/${applicationId}` : null,
     authenticatedSWRFetcher,
     {
       revalidateOnFocus: false,
@@ -1532,7 +1534,8 @@ export default function StringingApplicationDetailClient({
           icon={<Target className="h-6 w-6 text-brand-highlight-ink" aria-hidden="true" />}
           status={undefined}
           statusTitle={
-            <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <PortfolioDemoDataBadge kind={data.portfolioDemoDataKind} />
               <Badge
                 variant={applicationStatusBadgeSpec.variant}
                 aria-label={`교체서비스 진행 상태: ${applicationStatusLabel}`}

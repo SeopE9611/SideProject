@@ -12,6 +12,7 @@ import { AdminInfoGrid, AdminInfoItem } from "@/components/admin/AdminInfoGrid";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import AdminPageSection from "@/components/admin/AdminPageSection";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
@@ -748,6 +749,7 @@ export default function AdminRentalDetailClient({ readOnly = false }: { readOnly
             helperText={`고객 ${data.user?.name || data.user?.email || "-"}`}
             actions={
               <>
+                <PortfolioDemoDataBadge kind={data.portfolioDemoDataKind} />
                 <Badge variant={getRentalStatusBadgeSpec(data.status).variant} className={cn(badgeBase, badgeSizeSm)}>
                   현재 상태 · {rentalStatusLabels[data.status] || data.status}
                 </Badge>

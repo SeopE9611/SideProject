@@ -40,6 +40,7 @@ import useSWR from "swr";
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import {
   Select,
   SelectContent,
@@ -968,6 +969,7 @@ export default function AdminRentalsClient() {
                       }
                       meta={
                         <>
+                          <PortfolioDemoDataBadge kind={r.portfolioDemoDataKind} />
                           <span className="font-mono">ID {shortenId(rid)}</span>
                           <span className="tabular-nums">
                             {r.createdAt ? formatDate(r.createdAt) : "생성일 미등록"}

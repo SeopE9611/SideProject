@@ -37,6 +37,7 @@ import {
 } from "@/components/admin/AdminListTable";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminReferencePopover from "@/components/admin/AdminReferencePopover";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
@@ -1099,6 +1100,7 @@ export default function PackageOrdersClient() {
                         }
                         meta={
                           <>
+                            <PortfolioDemoDataBadge kind={pkg.portfolioDemoDataKind} />
                             <span>
                               {pkg.packageType}
                               {pkg.serviceType ? ` · ${pkg.serviceType}` : ""}

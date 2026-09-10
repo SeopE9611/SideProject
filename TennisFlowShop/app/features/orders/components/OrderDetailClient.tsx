@@ -15,6 +15,7 @@ import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
@@ -125,6 +126,7 @@ const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) 
 
 // 타입 정의 (서버에서 내려받는 주문 정보 형태)
 interface OrderDetail {
+  portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
   _id: string;
   stringingApplicationId?: string;
   isStringServiceApplied?: boolean;
@@ -1140,6 +1142,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
             }
             actions={
               <>
+                <PortfolioDemoDataBadge kind={orderDetail.portfolioDemoDataKind} />
                 {needsCancelFinalization ? (
                   <Badge
                     className={cn(
