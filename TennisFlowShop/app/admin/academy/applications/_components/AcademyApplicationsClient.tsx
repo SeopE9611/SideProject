@@ -19,6 +19,7 @@ import {
   AdminStatusGroup,
 } from "@/components/admin/AdminListTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -66,6 +67,7 @@ const APPLICATION_LIST_COLUMNS =
   "grid-cols-[minmax(300px,1.15fr)_minmax(320px,1.22fr)_minmax(200px,0.78fr)_130px_116px]";
 
 type AcademyApplicationListItem = {
+  portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
   _id: string;
   applicantName: string;
   phone: string;
@@ -436,6 +438,7 @@ export default function AcademyApplicationsClient() {
                       title={item.applicantName || "-"}
                       meta={
                         <>
+                          <PortfolioDemoDataBadge kind={item.portfolioDemoDataKind} />
                           <span>{item.email || "이메일 미입력"}</span>
                           <span>{item.phone || "연락처 미입력"}</span>
                         </>

@@ -4,6 +4,8 @@ import type { Document, Filter } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import type { AcademyLessonApplicationStatus } from "@/lib/types/academy";
 import { isAcademyApplicationStatus } from "@/lib/types/academy";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext, type PortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 
 const COLLECTION_NAME = "academy_lesson_applications";
 const DEFAULT_LIMIT = 20;
@@ -48,7 +50,7 @@ function serializeClassSnapshot(value: unknown) {
   };
 }
 
-function serializeApplication(doc: Document) {
+function serializeApplication(doc: Document, tourContext?: PortfolioDemoTourContext | null) {
   return {
     _id: String(serializeValue(doc._id)),
     applicantName: typeof doc.applicantName === "string" ? doc.applicantName : "",
@@ -64,6 +66,7 @@ function serializeApplication(doc: Document) {
     userId: doc.userId ? String(serializeValue(doc.userId)) : null,
     classId: doc.classId ? String(serializeValue(doc.classId)) : null,
     classSnapshot: serializeClassSnapshot(doc.classSnapshot),
+    portfolioDemoDataKind: classifyPortfolioDemoData({ marker: doc, tourContext, ownerId: doc.userId }),
   };
 }
 
@@ -111,6 +114,7 @@ export async function GET(req: Request) {
 
   const sortSpec = sort === "oldest" ? ({ createdAt: 1 } as const) : ({ createdAt: -1 } as const);
   const collection = guard.db.collection(COLLECTION_NAME);
+  const tourContext = await getVerifiedPortfolioDemoTourContext();
 
   const [itemsRaw, total, countRows] = await Promise.all([
     collection
@@ -130,6 +134,7 @@ export async function GET(req: Request) {
           userId: 1,
           classId: 1,
           classSnapshot: 1,
+          isDemoData: 1, demoSeedKey: 1, isDemoInteraction: 1, demoSessionId: 1,
         },
       })
       .sort(sortSpec)
@@ -167,7 +172,7 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     success: true,
-    items: itemsRaw.map(serializeApplication),
+    items: itemsRaw.map((item) => serializeApplication(item, tourContext)),
     pagination: {
       page,
       limit,

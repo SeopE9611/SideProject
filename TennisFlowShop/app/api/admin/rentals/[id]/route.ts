@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { normalizeRentalPaymentMeta } from "@/lib/admin-ops-normalize";
@@ -220,6 +222,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   return NextResponse.json({
+    portfolioDemoDataKind: classifyPortfolioDemoData({ marker: doc, tourContext: await getVerifiedPortfolioDemoTourContext(), ownerId: doc.userId }),
     id: doc._id.toString(),
     racketId: doc.racketId?.toString?.(),
     brand: doc.brand,

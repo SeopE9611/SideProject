@@ -12,6 +12,7 @@ export type OrderItem = {
   selectedColorImage?: string | null;
 };
 export type Order = {
+  portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
   id: string;
 
   // 기존 customer는 프론트 전용 표시용으로 유지 가능

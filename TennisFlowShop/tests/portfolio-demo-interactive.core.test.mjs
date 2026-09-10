@@ -34,6 +34,21 @@ function compileTs(path, stubs = {}) {
 const interactive = compileTs("lib/portfolio-demo/interactive.server.ts", {
   "server-only": {},
 });
+const dataKind = compileTs("lib/portfolio-demo/data-kind.server.ts", {
+  "server-only": {},
+  "@/lib/portfolio-demo/interactive.server": { isPortfolioDemo: () => true },
+});
+
+test("관리자 read model의 Demo 데이터 분류는 seed 우선 및 current fail-closed 계약을 지킨다", () => {
+  const tourContext = { demoSessionId: "session-current", demoCustomerSub: "owner-current" };
+  assert.equal(dataKind.classifyPortfolioDemoData({ portfolioDemo: false, marker: { isDemoData: true, demoSeedKey: "seed" } }), null);
+  assert.equal(dataKind.classifyPortfolioDemoData({ portfolioDemo: true, marker: { isDemoData: true, demoSeedKey: "seed", isDemoInteraction: true } }), "seed");
+  assert.equal(dataKind.classifyPortfolioDemoData({ portfolioDemo: true, marker: { isDemoInteraction: true, demoSessionId: "session-current" }, tourContext }), "current_interaction");
+  assert.equal(dataKind.classifyPortfolioDemoData({ portfolioDemo: true, marker: { isDemoInteraction: true }, ownerId: "owner-current", tourContext }), "current_interaction");
+  assert.equal(dataKind.classifyPortfolioDemoData({ portfolioDemo: true, marker: { isDemoInteraction: true }, ownerId: "other", tourContext }), "interaction");
+  assert.equal(dataKind.classifyPortfolioDemoData({ portfolioDemo: true, marker: { isDemoInteraction: true } }), "interaction");
+  assert.equal(dataKind.classifyPortfolioDemoData({ portfolioDemo: true, marker: {} }), null);
+});
 
 test("interaction metadata와 cleanup 경계가 24시간 및 seed 제외 계약을 갖는다", () => {
   const helper = read("lib/portfolio-demo/interactive.server.ts");

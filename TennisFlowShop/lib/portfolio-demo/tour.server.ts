@@ -38,18 +38,22 @@ export function portfolioDemoExpiryMatches(left: unknown, right: string): boolea
 }
 
 export async function isPortfolioDemoTourSession(): Promise<boolean> {
-  if (!isPortfolioDemo()) return false;
+  return Boolean(await getVerifiedPortfolioDemoTourContext());
+}
+
+export async function getVerifiedPortfolioDemoTourContext(): Promise<PortfolioDemoTourContext | null> {
+  if (!isPortfolioDemo()) return null;
   const jar = await cookies();
   const accessToken = jar.get("accessToken")?.value;
   const refreshToken = jar.get("refreshToken")?.value;
-  if (!accessToken || !refreshToken) return false;
+  if (!accessToken || !refreshToken) return null;
   try {
     const access = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as JwtPayload;
     const refresh = getPortfolioDemoTourContext(
       jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as JwtPayload,
     );
-    return access.portfolioDemoTour === true && !!refresh && access.sub === refresh.sub;
+    return access.portfolioDemoTour === true && refresh && access.sub === refresh.sub ? refresh : null;
   } catch {
-    return false;
+    return null;
   }
 }

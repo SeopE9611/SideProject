@@ -6,6 +6,8 @@ import clientPromise from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
 import { DBOrder } from "@/lib/types/order-db";
 import { ObjectId } from "mongodb";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 
 function hasRefundAccount(account: any): boolean {
   if (!account || typeof account !== "object") return false;
@@ -53,6 +55,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
   // - non-admin: 본인 userId 기반 필터
   const isAdmin = opts?.isAdmin === true;
   const userId = opts?.userId;
+  const tourContext = isAdmin ? await getVerifiedPortfolioDemoTourContext() : null;
 
   const orderQuery = !isAdmin && userId ? { userId } : {};
   const stringingQuery = !isAdmin && userId ? { userId } : {};
@@ -75,6 +78,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
         items: 1,
         shippingInfo: 1,
         cancelRequest: 1,
+        isDemoData: 1, demoSeedKey: 1, isDemoInteraction: 1, demoSessionId: 1,
       },
     })
     .sort({ createdAt: -1 })
@@ -153,6 +157,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
 
       return {
         id: order._id.toString(),
+        portfolioDemoDataKind: isAdmin ? classifyPortfolioDemoData({ marker: order, tourContext, ownerId: order.userId }) : null,
         __type: "order" as const,
         customer,
         userId: order.userId ? order.userId.toString() : null,
@@ -255,6 +260,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
           totalPrice: 1,
           shippingInfo: 1,
           cancelRequest: 1,
+          isDemoData: 1, demoSeedKey: 1, isDemoInteraction: 1, demoSessionId: 1,
         },
       },
     )
@@ -350,6 +356,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
 
         return {
           id: app._id.toString(),
+          portfolioDemoDataKind: isAdmin ? classifyPortfolioDemoData({ marker: app, tourContext, ownerId: app.userId }) : null,
           linkedOrderId: app.orderId?.toString() ?? null, // ← 단독 신청서는 null
           __type: "stringing_application" as const,
           customer,

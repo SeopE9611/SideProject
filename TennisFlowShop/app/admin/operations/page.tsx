@@ -1,4 +1,5 @@
 import OperationsClient from "@/app/admin/operations/_components/OperationsClient";
+import { isPortfolioDemo } from "@/lib/portfolio-demo/interactive.server";
 
 import type { Metadata } from "next";
 
@@ -9,5 +10,5 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  return <OperationsClient />;
+  return <OperationsClient portfolioDemo={isPortfolioDemo()} />;
 }

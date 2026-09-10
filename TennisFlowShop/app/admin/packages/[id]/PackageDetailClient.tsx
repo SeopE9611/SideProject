@@ -4,6 +4,7 @@ import AdminCompactField from "@/components/admin/AdminCompactField";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
@@ -576,6 +577,7 @@ export default function PackageDetailClient({ packageId, readOnly = false }: { p
         helperText="결제·이용권·활성화 상태를 함께 확인한 뒤 운영 작업을 진행하세요."
         className="flex-wrap"
         actions={<>
+          <PortfolioDemoDataBadge kind={data.portfolioDemoDataKind} />
           <SemanticBadge
             tone={
               getPaymentStatusBadgeSpec(getAdminPackagePaymentLabel(data.paymentState)).tone
