@@ -51,6 +51,7 @@ import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/ad
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { normalizeAcademyPreferredTimeText } from "@/lib/academy-display";
 import {
   ACADEMY_APPLICATION_STATUSES,
   getAcademyApplicationStatusLabel,
@@ -467,9 +468,9 @@ export default function AcademyApplicationsClient() {
                     </div>
                     <div
                       className={cn("truncate", adminDataTable.secondaryText)}
-                      title={item.preferredTimeText || "희망 시간 미입력"}
+                      title={normalizeAcademyPreferredTimeText(item.preferredTimeText) || "희망 시간 미입력"}
                     >
-                      {item.preferredTimeText || "희망 시간 미입력"}
+                      {normalizeAcademyPreferredTimeText(item.preferredTimeText) || "희망 시간 미입력"}
                     </div>
                   </AdminListCell>
                   <AdminListCell>

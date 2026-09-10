@@ -1,7 +1,11 @@
 "use client";
 
 import AdminRentalHistory from "@/app/admin/rentals/_components/AdminRentalHistory";
-import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
+import {
+  derivePaymentStatus,
+  deriveShippingStatus,
+  getRentalOverdueDays,
+} from "@/app/features/rentals/utils/status";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import { AdminInfoGrid, AdminInfoItem } from "@/components/admin/AdminInfoGrid";
@@ -68,7 +72,7 @@ import useSWR from "swr";
 const won = (n: number) => (n || 0).toLocaleString("ko-KR") + "원";
 
 const rentalStatusLabels: Record<string, string> = {
-  pending: "결제대기",
+  pending: "대기중",
   paid: "결제완료",
   out: "대여중",
   rented: "대여중",
@@ -133,7 +137,7 @@ type AdminNextActionGuide = {
   actionHref?: string;
 };
 
-export default function AdminRentalDetailClient() {
+export default function AdminRentalDetailClient({ readOnly = false }: { readOnly?: boolean }) {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? "";
   const router = useRouter();
@@ -531,6 +535,7 @@ export default function AdminRentalDetailClient() {
     .toLowerCase();
   const isOut = normalizedStatus === "out" || normalizedStatus.includes("대여중");
   const isReturned = normalizedStatus === "returned" || normalizedStatus.includes("반납완료");
+  const overdueDays = getRentalOverdueDays(normalizedStatus, data?.dueAt);
   const hasStatusOrderMismatch =
     hasLinkedApplication && (isOut || isReturned) && !isStringingComplete;
   const hasOutboundTracking = Boolean(
@@ -628,7 +633,9 @@ export default function AdminRentalDetailClient() {
                 ? {
                     tone: "info",
                     title: "반납 확인 필요",
-                    description: "반납 운송장과 라켓 상태를 확인한 뒤 반납 처리를 진행하세요.",
+                    description: isVisitPickup
+                      ? "반납 예정일과 라켓 상태를 확인한 뒤 방문 반납 처리를 진행하세요."
+                      : "반납 운송장과 라켓 상태를 확인한 뒤 반납 처리를 진행하세요.",
                   }
                 : needsDepositRefund
                   ? {
@@ -773,7 +780,8 @@ export default function AdminRentalDetailClient() {
                 </Link>
               </Button>
 
-              {data?.status !== "canceled" &&
+              {!readOnly &&
+                data?.status !== "canceled" &&
                 !isVisitPickup &&
                 (blockRentalStart ? (
                   <Button variant="outline" size="sm" disabled className="h-8 whitespace-nowrap">
@@ -889,7 +897,9 @@ export default function AdminRentalDetailClient() {
                 isReturned
                   ? "반납 완료"
                   : isOut
-                    ? "반납 필요"
+                    ? overdueDays
+                      ? `연체 · ${overdueDays}일 경과`
+                      : "반납 필요"
                     : Outbound?.trackingNumber
                       ? "인도 완료"
                       : "인도 전"
@@ -901,7 +911,7 @@ export default function AdminRentalDetailClient() {
 
         <AdminDetailSectionNav
           items={[
-            { href: "#admin-rental-return", label: "처리 작업" },
+            ...(!readOnly ? [{ href: "#admin-rental-return", label: "처리 작업" }] : []),
             ...(cancelInfo ? [{ href: "#admin-rental-cancel", label: "취소 요청" }] : []),
             ...(linkedApplication
               ? [{ href: "#admin-rental-linked-docs", label: "교체 작업" }]
@@ -929,7 +939,7 @@ export default function AdminRentalDetailClient() {
           nextActionTitle={nextActionGuide.title}
           nextActionDescription={nextActionGuide.description}
           primaryAction={
-            <>
+            !readOnly ? <>
               {canConfirmPayment ? (
                 <Button
                   size="sm"
@@ -972,11 +982,11 @@ export default function AdminRentalDetailClient() {
                   {busyAction === "return" ? "반납 처리중…" : "반납 처리"}
                 </Button>
               ) : null}
-            </>
+            </> : undefined
           }
           secondaryActions={
             <>
-              {isReturned && !data.depositRefundedAt ? (
+              {!readOnly && isReturned && !data.depositRefundedAt ? (
                 <Button
                   size="sm"
                   variant="outline"
@@ -989,7 +999,7 @@ export default function AdminRentalDetailClient() {
                   {busyAction === "refundMark" ? "환불 처리 중…" : "보증금 환불 확인"}
                 </Button>
               ) : null}
-              {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+              {!readOnly && nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
                 <Button asChild size="sm" variant="outline" className="bg-transparent">
                   <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                 </Button>
@@ -1058,7 +1068,7 @@ export default function AdminRentalDetailClient() {
               tone={cancelInfo.tone}
             >
               {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
-              {cancelInfo.status === "requested" && (
+              {!readOnly && cancelInfo.status === "requested" && (
                 <div className="mt-3 flex gap-2 flex-row items-center">
                   <Button
                     size="sm"
@@ -1322,7 +1332,7 @@ export default function AdminRentalDetailClient() {
                       교체 작업 상세 보기
                     </Link>
                   </Button>
-                  <Button
+                  {!readOnly ? <Button
                     size="sm"
                     disabled={
                       !canUpdateLinkedApplication ||
@@ -1338,7 +1348,7 @@ export default function AdminRentalDetailClient() {
                       : nextApplicationStatus
                         ? `${nextApplicationStatus} 처리`
                         : "다음 단계 없음"}
-                  </Button>
+                  </Button> : null}
                 </div>
               </div>
               <div className="space-y-1 text-xs leading-relaxed text-muted-foreground">
@@ -1363,7 +1373,7 @@ export default function AdminRentalDetailClient() {
           </Card>
         )}
 
-        <Card id="admin-rental-return" className={cn(adminSurface.card, "overflow-hidden")}>
+        {!readOnly ? <Card id="admin-rental-return" className={cn(adminSurface.card, "overflow-hidden")}>
           <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
             <CardTitle>대여 상태 관리</CardTitle>
             <CardDescription>
@@ -1472,8 +1482,8 @@ export default function AdminRentalDetailClient() {
                 ) : null)}
             </div>
           </CardFooter>
-        </Card>
-        {pendingDialogConfig && (
+        </Card> : null}
+        {!readOnly && pendingDialogConfig && (
           <AdminConfirmDialog
             open={pendingAction !== null}
             onOpenChange={(open) => {
@@ -1514,6 +1524,14 @@ export default function AdminRentalDetailClient() {
             </CardHeader>
             <CardContent className="p-6">
               <AdminInfoGrid columns="two">
+                <div className="col-span-full flex h-40 items-center justify-center overflow-hidden rounded-lg border border-border/60 bg-muted/20">
+                  {data.racketImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={data.racketImageUrl} alt={`${racketBrandLabel(data.brand)} ${data.model}`} className="h-full w-full object-contain" />
+                  ) : (
+                    <span className="text-sm text-muted-foreground">등록된 라켓 이미지가 없습니다.</span>
+                  )}
+                </div>
                 {/*
           금액 표시 정합성
           - 서버(/api/admin/rentals)가 amount.stringPrice / amount.stringingFee를 저장하므로
@@ -1548,7 +1566,7 @@ export default function AdminRentalDetailClient() {
                 {paymentSource === "derived" && (
                   <span className="text-xs text-foreground/75">대여 상태 기준 파생</span>
                 )}
-                {isNicePayment && (
+                {!readOnly && isNicePayment && (
                   <Button
                     variant="outline"
                     size="sm"

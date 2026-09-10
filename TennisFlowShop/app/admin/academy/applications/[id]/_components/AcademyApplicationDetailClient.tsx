@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
+import { normalizeAcademyPreferredTimeText } from "@/lib/academy-display";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ACADEMY_APPLICATION_STATUSES,
@@ -138,14 +139,14 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function AcademyApplicationDetailClient({ id }: { id: string }) {
+export default function AcademyApplicationDetailClient({ id, readOnly = false }: { id: string; readOnly?: boolean }) {
   const { data, error, isLoading, mutate } = useSWR<DetailResponse>(
     `/api/admin/academy/applications/${id}`,
     adminFetcher,
   );
   const item = data?.item;
   const { data: classesData } = useSWR<ClassesResponse>(
-    "/api/admin/academy/classes?limit=50",
+    readOnly ? null : "/api/admin/academy/classes?limit=50",
     adminFetcher,
   );
 
@@ -375,9 +376,9 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           { href: "#admin-academy-application-class", label: "클래스 정보" },
           { href: "#admin-academy-application-preference", label: "희망 정보" },
           { href: "#admin-academy-application-history", label: "처리 이력" },
-          { href: "#admin-academy-application-status", label: "상태 관리" },
-          { href: "#admin-academy-application-edit", label: "신청 수정" },
-          { href: "#admin-academy-application-class-link", label: "클래스 연결" },
+          { href: "#admin-academy-application-status", label: readOnly ? "상태 정보" : "상태 관리" },
+          { href: "#admin-academy-application-edit", label: readOnly ? "신청 정보" : "신청 수정" },
+          { href: "#admin-academy-application-class-link", label: readOnly ? "클래스 정보" : "클래스 연결" },
           { href: "#admin-academy-application-memo", label: "메모" },
         ]}
       />
@@ -458,7 +459,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               label="희망 요일"
               value={item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
             />
-            <InfoRow label="희망 시간대" value={item.preferredTimeText ?? "-"} />
+            <InfoRow label="희망 시간대" value={normalizeAcademyPreferredTimeText(item.preferredTimeText) || "-"} />
             <InfoRow label="레슨 목표" value={item.lessonGoal ?? "-"} />
             <InfoRow label="요청사항" value={item.requestMemo ?? "-"} />
             </AdminPageSection>
@@ -501,6 +502,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           </div>
         </div>
 
+        {!readOnly ? (
         <div className="space-y-5">
           <div id="admin-academy-application-status">
             <AdminPageSection
@@ -800,6 +802,33 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             </AdminPageSection>
           </div>
         </div>
+        ) : (
+          <div className="space-y-5">
+            <div id="admin-academy-application-status">
+              <AdminPageSection title="상태 정보" contentClassName="pt-4">
+                <InfoRow label="현재 상태" value={getAcademyApplicationStatusLabel(item.status)} />
+              </AdminPageSection>
+            </div>
+            <div id="admin-academy-application-edit">
+              <AdminPageSection title="신청 정보 확인" contentClassName="pt-4">
+                <InfoRow label="신청자명" value={item.applicantName} />
+                <InfoRow label="연락처" value={item.phone} />
+                <InfoRow label="이메일" value={item.email ?? "-"} />
+              </AdminPageSection>
+            </div>
+            <div id="admin-academy-application-class-link">
+              <AdminPageSection title="연결 클래스 확인" contentClassName="pt-4">
+                <InfoRow label="클래스" value={item.classSnapshot?.name ?? (item.classId || "미연결")} />
+              </AdminPageSection>
+            </div>
+            <div id="admin-academy-application-memo">
+              <AdminPageSection title="메모" contentClassName="pt-4">
+                <InfoRow label="관리자 내부 메모" value={item.adminMemo ?? "-"} />
+                <InfoRow label="고객 안내 메시지" value={item.customerMessage ?? "-"} />
+              </AdminPageSection>
+            </div>
+          </div>
+        )}
       </div>
     </AdminPageShell>
   );

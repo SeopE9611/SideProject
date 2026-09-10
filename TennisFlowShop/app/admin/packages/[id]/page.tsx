@@ -1,4 +1,5 @@
 import PackageDetailClient from "./PackageDetailClient";
+import { isPortfolioDemoReadOnly } from "@/lib/admin/portfolio-demo-readonly.server";
 
 import type { Metadata } from "next";
 
@@ -12,5 +13,5 @@ interface Props {
 
 export default async function PackageDetailPage({ params }: Props) {
   const { id } = await params;
-  return <PackageDetailClient packageId={id} />;
+  return <PackageDetailClient packageId={id} readOnly={isPortfolioDemoReadOnly()} />;
 }
