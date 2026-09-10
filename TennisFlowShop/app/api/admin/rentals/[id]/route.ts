@@ -118,7 +118,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const snapshotImage = String((doc as any)?.racketSnapshot?.imageUrl ?? (doc as any)?.racketSnapshot?.images?.[0] ?? "").trim();
   const racket = !snapshotImage && doc.racketId && ObjectId.isValid(String(doc.racketId))
-    ? await db.collection("rackets").findOne(
+    ? await db.collection("used_rackets").findOne(
         { _id: new ObjectId(String(doc.racketId)) },
         { projection: { imageUrl: 1, images: 1 } },
       )
