@@ -92,3 +92,29 @@ test("Demo의 연결 교체서비스 상세은 mutation UI와 메모 변경을 �
   assert.ok(notes.includes("readOnly?: boolean"));
   assert.ok(notes.includes("if (readOnly || isCreating) return"));
 });
+
+test("교체서비스 데이터 출처 Badge는 관리자 상세 헤더에만 표시한다", () => {
+  const detail = read(
+    "app/features/stringing-applications/components/StringingApplicationDetailClient.tsx",
+  );
+  const customerHero = detail.slice(
+    detail.indexOf("{!isAdmin && ("),
+    detail.indexOf("<StringingDetailShell isAdmin={isAdmin}>"),
+  );
+  const adminHeader = detail.slice(
+    detail.indexOf("<AdminPageHeader"),
+    detail.indexOf("<Button", detail.indexOf("<AdminPageHeader")),
+  );
+
+  assert.ok(
+    detail.includes(
+      'import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";',
+    ),
+  );
+  assert.ok(!customerHero.includes("PortfolioDemoDataBadge"));
+  assert.ok(
+    adminHeader.includes("<PortfolioDemoDataBadge kind={data.portfolioDemoDataKind} />"),
+  );
+  assert.ok(adminHeader.includes("<ApplicationStatusBadge status={data.status} />"));
+  assert.ok(adminHeader.includes("variant={paymentStatusBadgeSpec.variant}"));
+});
