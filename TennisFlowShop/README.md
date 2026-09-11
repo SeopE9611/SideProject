@@ -14,6 +14,11 @@
 | [Production](https://www.dokkaebitennis.com) | 실제 운영 사이트입니다. 테스트 데이터 생성이나 불필요한 조작은 권장하지 않습니다. |
 | [Source](https://github.com/SeopE9611/SideProject/tree/main/TennisFlowShop) | `TennisFlowShop` 소스 코드입니다. |
 
+<p align="center">
+  <img src="./docs/portfolio/screenshots/customer-home.webp" alt="Portfolio Demo 고객 홈 — 상품과 서비스 진입점" width="1080" />
+</p>
+<p align="center"><sub>Portfolio Demo 고객 홈 — 상품과 서비스 진입점을 한 화면에서 확인</sub></p>
+
 ## 3분 Demo Tour
 
 Demo는 계정이나 관리자 password를 README에 노출하지 않고 시작할 수 있습니다.
@@ -68,9 +73,19 @@ Production과 Demo는 별도의 mock 화면을 유지하는 방식이 아니라 
 
 고객이 만든 주문, 교체서비스 신청, 대여와 패키지 구매가 관리자 목록과 상세 화면으로 이어집니다. 같은 상태 모델을 고객에게는 진행 정보로, 관리자에게는 처리할 업무와 결제·배송 정보로 다르게 제시합니다.
 
+<p align="center">
+  <img src="./docs/portfolio/screenshots/admin-detail.webp" alt="주문 관리자 상세 — 주문·결제·배송 상태와 조회 전용 정책" width="1080" />
+</p>
+<p align="center"><sub>주문 관리자 상세 — 주문·결제·배송 상태와 조회 전용 정책</sub></p>
+
 ### 2. Admin Operations
 
 운영자가 여러 메뉴를 반복해서 확인하지 않도록 주문, 교체서비스 신청, 대여, 패키지 구매를 하나의 통합 목록에서 조회하고 각 상세 화면으로 이동할 수 있게 구성했습니다. Academy는 별도의 관리자 클래스·신청 관리 흐름을 유지합니다.
+
+<p align="center">
+  <img src="./docs/portfolio/screenshots/admin-operations.webp" alt="관리자 Operations — 업무 상태와 Demo 데이터 출처를 함께 표시" width="1080" />
+</p>
+<p align="center"><sub>관리자 Operations — 업무 상태와 Demo 데이터 출처를 함께 표시</sub></p>
 
 ### 3. 상호작용 가능한 Demo Sandbox
 
