@@ -4,158 +4,148 @@
 
 # 도깨비테니스
 
-![Next.js](https://img.shields.io/badge/Next.js-App%20Router-000000?style=for-the-badge&logo=nextdotjs)
-![TypeScript](https://img.shields.io/badge/TypeScript-Strict%20UI%20Flow-3178c6?style=for-the-badge&logo=typescript&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-Data%20Layer-47a248?style=for-the-badge&logo=mongodb&logoColor=white)
-![Operation](https://img.shields.io/badge/Admin-Operations-7c3aed?style=for-the-badge)
+**도깨비테니스**는 테니스 상품, 스트링 교체서비스, 라켓 대여, 패키지, 아카데미 신청, 주문·결제와 관리자 운영을 연결한 실서비스형 웹 플랫폼입니다. 고객 화면 몇 개를 나열하는 데 그치지 않고, 고객이 만든 주문과 신청이 운영자의 확인·처리 흐름으로 이어지도록 구현했습니다.
 
-**도깨비테니스**는 테니스 용품 구매, 스트링 교체, 아카데미 신청, 중고 라켓 탐색, 리뷰/커뮤니티, 관리자 운영을 하나로 연결한 **Next.js 기반 테니스 이커머스·예약·관리자 운영 플랫폼**입니다.
+## Quick Links
 
-- 운영 사이트: [https://www.dokkaebitennis.com](https://www.dokkaebitennis.com)
-- 저장소 폴더명: `TennisFlowShop`
-- 개발자: 윤형섭
+| 링크 | 안내 |
+| --- | --- |
+| **[Portfolio Demo · 채용 담당자 체험 권장](https://demo.dokkaebitennis.com)** | 별도 Demo 데이터 환경에서 고객 플로우와 조회 전용 관리자 화면을 안전하게 체험합니다. |
+| [Production](https://www.dokkaebitennis.com) | 실제 운영 사이트입니다. 테스트 데이터 생성이나 불필요한 조작은 권장하지 않습니다. |
+| [Source](https://github.com/SeopE9611/SideProject/tree/main/TennisFlowShop) | `TennisFlowShop` 소스 코드입니다. |
 
-> 운영 URL은 현재 정상 접근이 확인된 `www` 도메인 기준으로 정리했습니다. 배포 환경이 변경되면 `NEXT_PUBLIC_SITE_URL`과 함께 이 README의 링크도 갱신해야 합니다.
+## 3분 Demo Tour
 
-## Overview
+Demo는 계정이나 관리자 password를 README에 노출하지 않고 시작할 수 있습니다.
 
-도깨비테니스는 단순 상품 판매 페이지가 아니라, 테니스 고객의 실제 여정을 기준으로 구성된 서비스입니다. 사용자는 상품을 탐색하고, 스트링 추천/교체를 확인하고, 레슨을 신청하고, 리뷰와 커뮤니티를 통해 후기를 남길 수 있습니다. 관리자는 주문·상품·신청·리뷰·정산 흐름을 한곳에서 운영할 수 있습니다.
+1. [Demo 로그인 화면](https://demo.dokkaebitennis.com/login)에 접속합니다.
+2. **고객 데모 체험 시작**을 선택합니다.
+3. 상품 탐색·주문, 교체서비스, 대여, 패키지, 아카데미 등 고객 화면을 체험합니다.
+4. 고객 화면에서 **관리자 데모 보기**를 선택합니다.
+5. 관리자 **Operations** 통합 목록과 주문·신청·대여·패키지 상세 화면을 확인합니다.
 
-<p align="center">
-  <img src="public/brand/symbol-logo-light.png" alt="도깨비테니스 브랜드 로고" width="220" />
-</p>
+### 안전한 체험을 위한 정책
 
-## Why this project
+- **고객 Demo는 interactive 환경입니다.** 고객 플로우에서 생성한 데이터는 임시 데이터이며 24시간 후 자동 정리됩니다.
+- **관리자 Demo는 조회 전용입니다.** 화면에서 상태 변경 등 mutation UI를 제한하고, 서버에서도 관리자 `POST`·`PUT`·`PATCH`·`DELETE` 요청을 차단합니다.
+- **실제 결제는 비활성화됩니다.** Portfolio Demo의 payment request는 서버에서 차단되며 외부 결제나 알림이 발생하지 않습니다.
+- **데이터 출처를 표시합니다.** 관리자 화면의 **샘플 데이터**, **내 체험 데이터**, **체험 데이터** Badge로 미리 준비된 운영 예시, 현재 사용자가 만든 데이터, 그 밖의 임시 체험 데이터를 구분합니다.
 
-- 테니스 매장/아카데미 운영에서 반복되는 **상담, 주문, 신청, 후기 관리**를 웹 서비스로 구조화하기 위해 만들었습니다.
-- 사용자는 여러 채널을 오가지 않고 상품, 레슨, 문의, 리뷰를 한 서비스 안에서 확인할 수 있습니다.
-- 관리자는 운영 데이터를 흩어진 메시지나 스프레드시트가 아니라 관리자 화면 중심으로 다룰 수 있습니다.
-- 포트폴리오 관점에서는 프론트엔드 UI뿐 아니라 인증, 결제, 파일 업로드, 관리자 정책, 운영 문서화까지 경험한 프로젝트입니다.
+### Production과 Portfolio Demo의 차이
 
-## Key Features
+| 항목 | Production | Portfolio Demo |
+| --- | --- | --- |
+| 목적 | 실제 서비스 운영 | 포트폴리오 기능 체험 |
+| 고객 기능 | 실제 운영 흐름 | 별도 환경에서 상호작용 가능 |
+| 관리자 | 실제 운영 권한과 정책 적용 | 조회 전용, mutation UI 및 서버 요청 제한 |
+| 결제 | 운영 정책에 따른 NICE Pay 웹 결제 | 실제 결제 요청 차단 |
+| 데이터 | 운영 데이터 | 분리된 Demo 데이터 |
+| 체험 데이터 | 해당 없음 | 생성 후 24시간이 지나면 정리 |
 
-| 영역          | 주요 기능                                       | 사용자 가치                               |
-| ------------- | ----------------------------------------------- | ----------------------------------------- |
-| 쇼핑          | 상품 목록/상세, 스트링 추천, 장바구니/주문 흐름 | 필요한 테니스 용품을 빠르게 비교하고 구매 |
-| 예약/신청     | 아카데미 레슨 신청, 스트링 교체 접수            | 상담 전 필요한 정보를 구조화해 전달       |
-| 중고 라켓     | 도깨비 인증 중고 라켓 탐색                      | 신뢰 기반 중고 장비 구매 경험             |
-| 리뷰/커뮤니티 | 후기 작성, 이미지 업로드, 게시판 흐름           | 구매/이용 경험 공유                       |
-| 관리자        | 상품, 주문, 신청, 리뷰, 정산, 운영 알림         | 운영자가 서비스 상태를 통합 관리          |
+Production과 Demo는 별도의 mock 화면을 유지하는 방식이 아니라 같은 코드베이스를 사용합니다. 실행 환경에 따라 데이터 연결과 결제·관리자 쓰기 정책을 분리해, 실제 고객 플로우에 가까운 체험과 운영 데이터 보호를 함께 다룹니다.
 
-<details>
-<summary><strong>기능 상세 보기</strong></summary>
+## 왜 만들었는가
 
-- 고객 홈: 브랜드 메시지, 추천 상품, 중고 라켓, 스트링/아카데미 진입점 제공
-- 상품 도메인: 상품 카드, 필터, 상세, 추천 도우미, 주문/결제 진입
-- 아카데미 도메인: 클래스 안내, 레슨 신청, 신청 완료 페이지
-- 관리자 도메인: 대시보드, 상품 등록/수정, 주문/배송, 아카데미 클래스/신청 관리, 리뷰 관리, 정산 스냅샷
-- 운영 도메인: 스모크 체크 문서, 관리자 우회 정책, 알림/보안 관련 유틸
+테니스 매장 운영에서는 상품 판매, 스트링 작업, 라켓 대여, 패키지와 레슨뿐 아니라 주문 상태, 재고, 배송, 결제 정보가 서로 연결됩니다. 도깨비테니스는 이 업무를 독립된 페이지로만 구현하지 않고 **고객 행동 → 주문·신청 데이터 → 관리자 확인과 처리**로 이어지는 하나의 흐름으로 구성한 프로젝트입니다.
 
-</details>
+## 핵심 구현 영역
 
-## User/Admin Flow
+| 영역 | 구현 범위 |
+| --- | --- |
+| **Commerce** | 상품 목록·상세, 장바구니, 주문, NICE Pay 기반 웹 결제 흐름, 재고 확인 |
+| **Stringing Service** | 스트링 교체서비스 신청, 예약 정보와 진행 상태, 상품 주문·라켓 대여 연계 |
+| **Rental** | 라켓 대여, 배송·방문 수령, 수령·반납 처리, 연체 상태 표시 |
+| **Package** | 패키지 구매, 이용권 상태, 사용·잔여 횟수 관리 |
+| **Academy** | 클래스 안내와 신청, 별도 관리자 클래스·신청 관리 화면 |
+| **Admin Operations** | 주문, 교체서비스 신청, 대여, 패키지 구매 통합 목록, 상태·결제 정보와 상세 조회, Demo 데이터 출처 Badge |
+| **Community / Review** | 자유·장비 등 게시판, 댓글, 상품·서비스 이용 리뷰, 관리자 신고·리뷰 관리 |
 
-### 사용자 플로우
+> Admin Operations가 통합하는 종류는 `order`, `stringing_application`, `rental`, `package_purchase`입니다. Academy 신청은 Operations 종류에 섞지 않고 별도의 관리자 신청 관리 화면에서 다룹니다.
 
-```mermaid
-flowchart LR
-  A[도깨비테니스 방문] --> B{목적 선택}
-  B --> C[상품/스트링 탐색]
-  B --> D[아카데미 레슨 확인]
-  B --> E[중고 라켓 확인]
-  C --> F[상세 정보 확인]
-  F --> G[장바구니/주문]
-  G --> H[결제 및 주문 완료]
-  D --> I[레슨 신청서 작성]
-  I --> J[상담/등록 안내]
-  E --> K[라켓 상태 확인]
-  K --> G
-  H --> L[리뷰/커뮤니티 참여]
-```
+## Engineering Highlights
 
-### 관리자 플로우
+### 1. 고객과 관리자 데이터 흐름 연결
 
-```mermaid
-flowchart TD
-  A[관리자 로그인] --> B[관리자 대시보드]
-  B --> C[상품/라켓 관리]
-  B --> D[주문/배송 관리]
-  B --> E[아카데미 신청 관리]
-  B --> F[리뷰/커뮤니티 관리]
-  B --> G[정산/운영 지표 확인]
-  C --> H[노출 정보 갱신]
-  D --> I[상태 변경 및 고객 안내]
-  E --> J[상담 상태 처리]
-  F --> K[콘텐츠 품질 관리]
-  G --> L[운영 의사결정]
-```
+고객이 만든 주문, 교체서비스 신청, 대여와 패키지 구매가 관리자 목록과 상세 화면으로 이어집니다. 같은 상태 모델을 고객에게는 진행 정보로, 관리자에게는 처리할 업무와 결제·배송 정보로 다르게 제시합니다.
+
+### 2. Admin Operations
+
+운영자가 여러 메뉴를 반복해서 확인하지 않도록 주문, 교체서비스 신청, 대여, 패키지 구매를 하나의 통합 목록에서 조회하고 각 상세 화면으로 이동할 수 있게 구성했습니다. Academy는 별도의 관리자 클래스·신청 관리 흐름을 유지합니다.
+
+### 3. 상호작용 가능한 Demo Sandbox
+
+Production UI를 복제한 정적 mock이 아니라 같은 애플리케이션 코드에서 별도 Demo 데이터 환경을 사용합니다. 고객은 실제 플로우를 따라 임시 데이터를 만들 수 있고, 관리자는 그 결과와 준비된 운영 예시를 확인할 수 있습니다.
+
+### 4. Admin Read-only Defense
+
+조회 전용 정책을 버튼 숨김에만 의존하지 않습니다. 관리자 상세 화면의 mutation UI와 쓰기 전용 이동 경로를 제한하고, 서버 공통 경계에서는 Demo 환경의 `POST`, `PUT`, `PATCH`, `DELETE`를 `403`으로 차단합니다.
+
+### 5. Demo Lifecycle과 결제 차단
+
+Demo interaction 데이터에 24시간 수명을 적용하고 만료 데이터를 정리합니다. 결제 준비·요청 경로도 Demo 여부를 검사해 실제 payment request가 외부로 진행되지 않도록 막습니다.
+
+### 6. 데이터 출처 분류
+
+관리자 UX에서 미리 준비한 Seed 데이터, 현재 Demo session의 interaction, 그 밖의 interaction을 구분합니다. 내부 식별자를 화면에 노출하는 대신 **샘플 데이터**, **내 체험 데이터**, **체험 데이터** Badge로 의미를 전달합니다.
+
+### 7. 품질 Gate
+
+GitHub Actions는 Node.js 22 환경에서 lint → typecheck → build를 순차 실행합니다. 이어 관리자 타입 안전성, admin API boundary, core contract, critical admin smoke와 공지 충돌 재시도 E2E를 검사하고, Go/No-Go job에서 필수 결과를 판정합니다. 구현 문자열과 UI 문구 중심의 advisory contract는 별도 관찰 항목으로 실행합니다.
 
 ## Tech Stack
 
-| 분류       | 기술                                   |
-| ---------- | -------------------------------------- |
-| Framework  | Next.js App Router                     |
-| Language   | TypeScript                             |
-| Styling    | Tailwind CSS                           |
-| Data       | MongoDB, Supabase Storage              |
-| Payment    | Toss Payments, NICE Payments 연동 코드 |
-| E2E/Smoke  | Cypress, 운영 스모크 스크립트          |
-| Deployment | Vercel 기준 운영 문서                  |
+| 분류 | 기술 |
+| --- | --- |
+| Runtime / Framework | Node.js 22.x, Next.js 15.3.8 App Router, React 19.2.1 |
+| Language / UI | TypeScript, Tailwind CSS, Radix UI |
+| Data / Storage | MongoDB, Supabase Storage |
+| Client State / Validation | SWR, Zustand, Zod |
+| Payment | NICE Pay 기반 웹 결제 흐름 |
+| Quality / Deployment | ESLint, Cypress, contract test scripts, GitHub Actions, Vercel |
 
-<details>
-<summary><strong>기술 선택 이유</strong></summary>
-
-- Next.js App Router로 공개 페이지와 관리자 페이지를 같은 프로젝트 안에서 관리했습니다.
-- TypeScript로 상품, 주문, 신청, 관리자 화면의 데이터 흐름을 명확히 다루도록 구성했습니다.
-- MongoDB는 서비스 도메인 데이터 저장에, Supabase Storage는 상품/리뷰 이미지 업로드 흐름에 활용했습니다.
-- 결제, 배송 조회, 알림, 보안 유틸을 분리해 운영 기능이 화면 코드에 과도하게 섞이지 않도록 관리했습니다.
-
-</details>
-
-## Project Structure
-
-```text
-TennisFlowShop/
-├─ app/                 # 사용자/관리자 라우트와 페이지
-├─ components/          # 공통 UI, 헤더/푸터, 관리자 컴포넌트
-├─ lib/                 # 인증, 결제, 데이터, 보안, 운영 유틸
-├─ docs/                # 운영/검증/정책 문서
-├─ cypress/             # E2E 테스트 스펙
-├─ scripts/             # 스모크 및 운영 보조 스크립트
-└─ public/              # 브랜드 이미지, 배너, 플레이스홀더
-```
+웹 서비스의 현행 PG는 NICE Pay입니다. 관리자 주문 화면에서 Toss 계열 provider 값을 인식하는 코드는 과거 주문 표시 호환을 위한 것이며, 별도 [TossMiniApp](../TossMiniApp/README.md)의 Apps in Toss 결제 맥락을 현재 웹 PG와 혼합하지 않습니다.
 
 ## Architecture Snapshot
 
 ```mermaid
-flowchart TB
-  U[사용자 브라우저] --> N[Next.js App Router]
-  A[관리자 브라우저] --> N
-  N --> API[Route Handlers / Server Actions]
-  API --> DB[(MongoDB)]
-  API --> S[(Supabase Storage)]
-  API --> P[결제/배송 외부 API]
-  API --> M[메일/운영 알림]
-  N --> UI[공통 UI 컴포넌트]
-  UI --> B[브랜드 이미지 public/brand]
+flowchart LR
+  B[Browser] --> N[Next.js App Router]
+  N --> R[Route Handlers / Server Actions]
+  R --> M[(MongoDB)]
+  R --> S[(Supabase Storage)]
+  R --> E[Payment / Delivery APIs]
+
+  P[Production Environment] -. same codebase .-> N
+  D[Portfolio Demo Environment] -. same codebase .-> N
+  P --> PD[Production data & policies]
+  D --> DD[Demo data & safe policies]
 ```
 
-## Quality & Operation
+- App Router 안에서 공개 고객 화면과 관리자 화면을 함께 관리합니다.
+- Route Handler와 Server Action이 인증·정책을 확인하고 MongoDB, Storage 및 외부 API와 통신합니다.
+- Production과 Demo는 같은 코드베이스를 사용하지만 데이터 환경과 관리자 쓰기·결제 정책은 분리합니다.
 
-<details open>
-<summary><strong>운영 품질을 위해 정리한 내용</strong></summary>
+## Quality & Testing
 
-- 관리자 진입점과 관리자 대시보드 리다이렉트 정책 문서화
-- 로컬/스테이징/운영 환경별 점검 흐름 정리
-- 배포 후 공개 경로 스모크 체크와 주요 E2E 스펙 운영 가이드 작성
-- 운영 URL, Function region, 런타임 인덱스, 첨부 URL 정책 등 운영 문서 유지
-- 테스트 전용 관리자 우회 조건을 환경변수와 헤더 기준으로 제한
+대표적인 로컬·CI 검증 명령은 다음과 같습니다.
 
-</details>
+```bash
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test:contract
+pnpm test:contract:advisory
+pnpm test:e2e:admin-critical
+```
+
+- **정적 품질:** ESLint와 추가 UI 정책 검사, 애플리케이션·Cypress TypeScript 검사, Next.js build
+- **계약 검사:** 권한·CSRF·Demo read-only/interactive·도메인 상태·리뷰 정책 등을 core contract manifest로 관리
+- **관리자 경계:** 관리자 타입 안전성 Gate와 관리자 화면/API 경계 검사
+- **핵심 smoke:** production build 서버에서 권한·CSRF 중심의 critical admin smoke 실행
+- **배포 판단:** 필수 job 결과를 Go/No-Go checklist와 관리자 경로 required gate에서 판정
+- **Advisory 검사:** 구현 형태와 UI 문구 검사는 병합 차단 검증과 분리해 결과를 관찰
 
 ## Local Development
-
-> 이 섹션은 프로젝트 실행 안내입니다. 실제 secret 값은 저장소에 커밋하지 않습니다.
 
 ```bash
 pnpm install
@@ -163,36 +153,20 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-주요 스크립트는 다음과 같습니다.
-
-```bash
-pnpm lint       # ESLint
-pnpm typecheck  # tsc --noEmit
-pnpm build      # next build
-pnpm smoke      # 공개 경로 smoke 체크
-pnpm cy:run     # Cypress E2E
-```
-
-<details>
-<summary><strong>Cypress 및 관리자 E2E 참고</strong></summary>
-
-환경에 따라 Cypress 바이너리 캐시가 없을 수 있습니다. 이 경우 `npx cypress install`로 바이너리를 먼저 설치해야 할 수 있습니다.
-
-관리자 경로(`/admin/*`)는 서버에서 관리자 권한을 확인합니다. E2E에서만 우회가 필요하면 테스트 전용 환경에서 `NODE_ENV=test` 또는 `E2E_ADMIN_BYPASS_ENABLED=1`을 사용하고, `x-e2e-admin-bypass-token` 헤더 값이 서버 환경변수 `E2E_ADMIN_BYPASS_TOKEN`과 일치해야 합니다.
-
-</details>
+실제 secret은 저장소에 커밋하지 않습니다. 외부 연동이 필요한 기능은 로컬 환경에 필요한 값을 별도로 설정해야 합니다.
 
 ## What I Learned
 
-- 실사용자 여정을 기준으로 이커머스, 예약/신청, 커뮤니티 기능을 한 서비스 안에 연결하는 방법
-- 관리자 페이지가 단순 CRUD를 넘어 운영 상태, 정책, 알림, 정산 흐름까지 다뤄야 한다는 점
-- 결제/배송/스토리지/메일처럼 실패 가능성이 있는 외부 연동을 운영 관점에서 분리해 관리하는 방법
-- README와 운영 문서가 포트폴리오뿐 아니라 유지보수 비용을 줄이는 도구가 될 수 있다는 점
+- 고객 UI와 관리자 UI는 같은 상태 모델을 사용하더라도 서로 다른 정보 우선순위와 행동을 제공해야 합니다.
+- 결제·배송처럼 외부 상태가 있는 기능은 단일 DB 값만으로 표시를 결정하지 않고 provider와 현재 처리 상태를 함께 해석해야 합니다.
+- 포트폴리오 Demo는 정적인 read-only 복사본보다, 데이터와 외부 요청을 격리한 interactive sandbox일 때 실제 구현 흐름을 더 분명히 보여줄 수 있습니다.
+- 관리자 read-only 정책은 UI 제한뿐 아니라 서버 mutation boundary에서도 강제해야 합니다.
+- 과거 주문 데이터와 현재 provider·schema를 함께 다룰 때 명시적인 fallback과 표시 호환 정책이 필요합니다.
 
-## Roadmap
+## Project Status
 
-- [ ] 메인/상품/관리자 화면 스크린샷 추가
-- [ ] 주문부터 관리자 처리까지 이어지는 데모 GIF 추가
-- [ ] 운영 지표 대시보드 캡처와 개선 사례 정리
-- [ ] 아카데미 신청 후 상담 상태 변경 플로우 문서 보강
-- [ ] 사용자 리뷰/커뮤니티 moderation 정책 문서 보강
+- Production: [www.dokkaebitennis.com](https://www.dokkaebitennis.com)
+- 안전한 기능 체험: [demo.dokkaebitennis.com](https://demo.dokkaebitennis.com)
+- 저장소 전체 안내: [SideProject Portfolio Hub](../README.md)
+
+현재 웹 서비스와 Portfolio Demo는 같은 저장소에서 관리합니다. Production에서는 실제 운영 정책을 따르고, 기능 확인과 관리자 화면 탐색에는 데이터와 결제 정책이 분리된 Portfolio Demo 사용을 권장합니다.

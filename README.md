@@ -4,67 +4,38 @@
 
 # SideProject Portfolio Hub
 
-![Portfolio](https://img.shields.io/badge/Portfolio-Hub-111827?style=for-the-badge)
-![Main Project](https://img.shields.io/badge/Main-%EB%8F%84%EA%B9%A8%EB%B9%84%ED%85%8C%EB%8B%88%EC%8A%A4-7c3aed?style=for-the-badge)
-![Next.js](https://img.shields.io/badge/Next.js-Commerce%20%26%20Admin-000000?style=for-the-badge&logo=nextdotjs)
+이 저장소의 메인 프로젝트는 **도깨비테니스**입니다. 테니스 상품 이커머스와 서비스 신청부터 주문·결제, 관리자 운영까지 하나의 데이터 흐름으로 연결한 실서비스형 Next.js 프로젝트입니다.
 
-이 저장소는 포트폴리오용 사이드 프로젝트를 모아 둔 프로젝트 허브입니다. 핵심 프로젝트는 **TennisFlowShop 폴더에 구현된 “도깨비테니스”**이며, 테니스 상품 탐색·주문·예약·관리자 운영 흐름을 하나의 Next.js 서비스로 구성했습니다.
+## 바로 체험하기
 
-## 바로가기
-
-| 구분 | 링크 | 설명 |
+| 우선순위 | 링크 | 안내 |
 | --- | --- | --- |
-| 핵심 프로젝트 상세 | [TennisFlowShop/README.md](./TennisFlowShop/README.md) | 도깨비테니스 기능, 아키텍처, 운영 관점 정리 |
-| 운영 사이트 | [https://www.dokkaebitennis.com](https://www.dokkaebitennis.com) | 현재 정상 접근이 확인된 도깨비테니스 운영 도메인 |
-| 보조 프로젝트 | [my-portfolio](./my-portfolio) | 개인 포트폴리오 웹 프로젝트 |
+| **1. Portfolio Demo · 채용 담당자 체험 권장** | **[demo.dokkaebitennis.com](https://demo.dokkaebitennis.com)** | 별도 Demo 데이터 환경에서 고객 기능과 조회 전용 관리자 화면 체험 |
+| 2. Production | [www.dokkaebitennis.com](https://www.dokkaebitennis.com) | 실제 운영 사이트이므로 테스트 데이터 생성이나 불필요한 조작은 권장하지 않음 |
+| 3. Project README | [TennisFlowShop/README.md](./TennisFlowShop/README.md) | 기능, Demo 정책, 아키텍처와 품질 검증 상세 |
+
+Portfolio Demo에서는 고객 기능을 직접 체험할 수 있습니다. 실제 결제는 발생하지 않고 체험 데이터는 24시간 후 정리됩니다. 관리자 Demo는 조회 전용이며, 자세한 안전 정책은 [도깨비테니스 README](./TennisFlowShop/README.md)에서 확인할 수 있습니다.
+
+## 이 저장소에서 확인할 수 있는 핵심 역량
+
+- 고객의 주문·신청과 관리자 처리 화면을 연결하는 도메인 및 상태 설계
+- 상품, 스트링 교체서비스, 라켓 대여, 패키지, 아카데미를 포함한 서비스 구현
+- 주문·신청·대여·패키지 업무를 모아 보는 관리자 Operations와 상세 운영 화면
+- 같은 코드베이스에서 Production과 상호작용 가능한 Demo 환경의 데이터·정책 분리
+- 관리자 Demo의 UI 제한과 서버 mutation 차단, 실제 결제 차단, 임시 데이터 수명 관리
+- lint, typecheck, build, contract, 관리자 경계 및 핵심 관리자 smoke를 포함한 CI 품질 Gate
 
 ## 프로젝트 목록
 
-| 프로젝트 | 역할 | 기술/키워드 | 포트폴리오 포인트 |
-| --- | --- | --- | --- |
-| **TennisFlowShop / 도깨비테니스** | 메인 프로젝트 | Next.js, TypeScript, MongoDB, Supabase Storage, 결제, 관리자 | 이커머스·예약·커뮤니티·관리자 운영을 연결한 실서비스형 플랫폼 |
-| **my-portfolio** | 보조 프로젝트 | Vite, React | 개인 소개와 프로젝트 쇼케이스를 위한 프론트엔드 포트폴리오 |
+| 프로젝트 | 상태와 역할 | 기술 및 현재 범위 |
+| --- | --- | --- |
+| **[TennisFlowShop / 도깨비테니스](./TennisFlowShop/README.md)** | **Main Project** · 이커머스, 서비스 신청, 관리자 운영 · Portfolio Demo 제공 | Next.js, React, TypeScript, MongoDB, Supabase Storage |
+| **[TossMiniApp](./TossMiniApp/README.md)** | 도깨비테니스 Apps in Toss 전용 프론트엔드 | React + TypeScript + Vite 기반, 현재 초기 안내 화면과 모바일 우선 레이아웃까지 구현 |
+| **[shalom-house](./shalom-house/README.md)** | 샬롬의 집 공식 홈페이지 프로젝트 | 시설 정보, 생활 기록, 소식, 참여 절차, 공개 자료, 연락·방문 안내를 제공하며 공개 전 운영자 검토가 필요한 콘텐츠 포함 |
+| **[my-portfolio](./my-portfolio/README.md)** | 개인 포트폴리오 웹 프로젝트 | React + Vite 기반의 개인 소개 및 프로젝트 프론트엔드 |
 
-<details>
-<summary><strong>도깨비테니스에서 확인할 수 있는 역량</strong></summary>
+## README 안내
 
-- 사용자 관점: 상품 탐색, 스트링 추천, 주문/결제, 레슨 신청, 리뷰/커뮤니티 경험 설계
-- 관리자 관점: 상품·주문·신청·리뷰·정산 운영 화면과 운영 알림 흐름 구성
-- 운영 관점: 환경변수, 배포 스모크 체크, 관리자 E2E 우회 정책, 운영 문서화
-- 포트폴리오 관점: 서비스 소개 README, 실제 운영 URL, 상세 기능/아키텍처 문서 분리
-
-</details>
-
-## 저장소 구조 한눈에 보기
-
-```mermaid
-mindmap
-  root((SideProject))
-    핵심 프로젝트
-      TennisFlowShop
-        도깨비테니스
-        Next.js 플랫폼
-        이커머스
-        예약/신청
-        관리자 운영
-    보조 프로젝트
-      my-portfolio
-        React 포트폴리오
-        프로젝트 쇼케이스
-    문서 링크
-      상세 README
-      운영 사이트
-      포트폴리오
-```
-
-## README 역할 분리
-
-- **루트 README**: 저장소 전체를 빠르게 이해할 수 있는 포트폴리오 허브입니다.
-- **TennisFlowShop README**: 도깨비테니스의 문제 정의, 기능, 사용자/관리자 플로우, 기술 구성, 운영 품질을 설명하는 상세 소개 문서입니다.
-- **my-portfolio README**: 보조 프로젝트의 기본 안내 문서입니다.
-
-## 다음에 보강하면 좋은 자료
-
-- 도깨비테니스 메인 화면, 상품 상세, 관리자 대시보드 스크린샷
-- 주문/예약/관리자 처리 흐름을 보여주는 짧은 GIF
-- 운영 지표 또는 개선 전후 비교 이미지
+- 이 문서는 저장소 전체를 빠르게 탐색하는 Portfolio Hub입니다.
+- 메인 프로젝트의 구현 범위와 체험 방법은 [TennisFlowShop/README.md](./TennisFlowShop/README.md)에 정리되어 있습니다.
+- 각 보조 프로젝트의 완료 범위와 실행 방법은 해당 프로젝트 README를 기준으로 확인해 주세요.
