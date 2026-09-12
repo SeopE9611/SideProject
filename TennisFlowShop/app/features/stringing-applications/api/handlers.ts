@@ -16,7 +16,11 @@ import {
   truthyField,
 } from "@/lib/admin-alerts/formatters";
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
-import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
+import {
+  normalizeOrderStatus,
+  normalizePaymentStatus,
+  normalizeRentalAmountTotal,
+} from "@/lib/admin-ops-normalize";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import { appendAudit } from "@/lib/audit";
@@ -30,7 +34,10 @@ import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import { getGuestRentalAccessClaims } from "@/lib/auth/guest-resource-access.server";
 import clientPromise, { getDb } from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
-import { resolveHistoricalOrderItemPrice } from "@/lib/orders/historical-order-item-price";
+import {
+  resolveHistoricalOrderItemPrice,
+  resolveHistoricalStringingItemPrice,
+} from "@/lib/orders/historical-order-item-price";
 import { revertConsumption } from "@/lib/passes.service";
 import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
 import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
@@ -287,7 +294,7 @@ function buildLinkedTransactionStatusSummary(
         toNullableFiniteNumber(doc?.total) ??
         toNullableFiniteNumber(doc?.finalAmount) ??
         toNullableFiniteNumber(doc?.totalAmount))
-      : toNullableFiniteNumber(doc?.amount?.total);
+      : normalizeRentalAmountTotal(doc);
 
   return {
     id: String(doc?._id ?? ""),
@@ -1158,21 +1165,31 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     }
 
     // 1순위: 새 표준 필드(app.stringItems)가 있으면 그대로 사용
-    let stringItems: { id: string; name: string }[] = [];
+    let stringItems: {
+      id: string;
+      name: string;
+      mountingFee?: unknown;
+      quantity: number;
+    }[] = [];
 
     if (Array.isArray((app as any).stringItems) && (app as any).stringItems.length > 0) {
       stringItems = (app as any).stringItems.map((it: any) => ({
         id: it.productId ?? it.id ?? "custom",
         name: it.name ?? "알 수 없는 상품",
+        mountingFee: it.mountingFee,
+        quantity: typeof it.quantity === "number" && it.quantity > 0 ? it.quantity : 1,
       }));
     } else {
       // 2순위: 과거 구조(stringDetails.stringTypes + customStringName) 기반으로 복원
       stringItems = await Promise.all(
-        (app.stringDetails?.stringTypes || []).map(async (prodId: string) => {
+        (app.stringDetails?.stringTypes || []).map(async (prodId: string, index: number) => {
+          const historicalLine = getApplicationLines(app.stringDetails)?.[index];
           if (prodId === "custom") {
             return {
               id: "custom",
               name: app.stringDetails?.customStringName ?? "커스텀 스트링",
+              mountingFee: historicalLine?.mountingFee,
+              quantity: 1,
             };
           }
           const prod = await db
@@ -1181,36 +1198,31 @@ export async function handleGetStringingApplication(req: Request, id: string) {
           return {
             id: prodId,
             name: prod?.name ?? "알 수 없는 상품",
+            mountingFee: historicalLine?.mountingFee,
+            quantity: 1,
           };
         }),
       );
     }
 
-    //  items 배열 재구성 (id, name, price, quantity)
-    const items = await Promise.all(
-      stringItems.map(async (item) => {
-        if (item.id === "custom") {
-          return {
-            id: "custom",
-            name: item.name,
-            price: getStringingServicePrice(item.id, true), // 커스텀 요금
-            quantity: 1,
-          };
-        }
-        const prod = await db
-          .collection("products")
-          .findOne({ _id: new ObjectId(item.id) }, { projection: { mountingFee: 1 } });
-        return {
-          id: item.id,
-          name: item.name,
-          price: prod?.mountingFee ?? getStringingServicePrice(item.id, false),
-          quantity: 1,
-        };
-      }),
-    );
+    // 현재 catalog 가격은 과거 신청 가격으로 사용하지 않는다. 저장된 snapshot만 표시한다.
+    const items = stringItems.map((item) => {
+      const priceSnapshot = resolveHistoricalStringingItemPrice({
+        mountingFee: item.mountingFee,
+        isExplicitFree: Boolean((app as any).packageApplied),
+      });
+      return {
+        id: item.id,
+        name: item.name,
+        price: priceSnapshot.displayPrice,
+        priceSnapshotStatus: priceSnapshot.snapshotStatus,
+        quantity: item.quantity,
+      };
+    });
 
-    // total 계산
-    const total = items.reduce((sum, x) => sum + x.price * x.quantity, 0);
+    const total = items.every((item) => item.priceSnapshotStatus === "confirmed")
+      ? items.reduce((sum, item) => sum + (item.price ?? 0) * item.quantity, 0)
+      : null;
 
     // 주문 조회 전에 “주문에 취소요청이 걸린 상태인지” 판단
     const applicationPaymentSourceRaw = String((app as any).paymentSource ?? "").trim();
@@ -1820,7 +1832,7 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
           productId: it.id,
           name: it.name,
           quantity: typeof it.quantity === "number" ? it.quantity : 1,
-          // mountingFee는 이 단계에서 굳이 강제하지 않음(필요하면 추후 보강)
+          mountingFee: it.price,
         }));
 
         // 스트링 요금(newItems) 합산하여 totalPrice 자동 설정

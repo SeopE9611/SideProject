@@ -39,6 +39,7 @@ export type AdminPackageAttentionReason =
   | "pass_issue_pending"
   | "pass_paused"
   | "pass_unknown"
+  | "session_count_mismatch"
   | "terminal_payment_with_live_pass";
 
 export interface AdminPackageOperationCapabilities {
@@ -76,6 +77,7 @@ export interface AdminPackageListItemDto {
   daysUntilExpiry: number | null;
   isExpirySoon: boolean;
   progressPercent: number | null;
+  sessionCountConsistent: boolean | null;
   purchaseDate: string | null;
   expiryDate: string | null;
   legacyPassStatus: AdminPackagePassStatusDetail;
@@ -155,6 +157,7 @@ export interface AdminPackageDetailDto {
   daysUntilExpiry: number | null;
   isExpirySoon: boolean;
   progressPercent: number | null;
+  sessionCountConsistent: boolean | null;
   purchaseDate: string;
   expiryDate: string | null;
   legacyPassStatus: AdminPackagePassStatusDetail;

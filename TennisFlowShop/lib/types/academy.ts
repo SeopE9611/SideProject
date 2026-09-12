@@ -139,6 +139,12 @@ export function isAcademyApplicationStatus(
   );
 }
 
+/** 목록·상세·집계에서 공통으로 쓰는 레거시 읽기 정책입니다. */
+export function normalizeAcademyApplicationStatusForRead(value: unknown): string {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  return normalized || "submitted";
+}
+
 export function getAcademyApplicationStatusLabel(
   status: AcademyLessonApplicationStatus | string | null | undefined,
 ) {

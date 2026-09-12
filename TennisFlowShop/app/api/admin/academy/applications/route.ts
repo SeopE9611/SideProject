@@ -3,7 +3,10 @@ import type { Document, Filter } from "mongodb";
 
 import { requireAdmin } from "@/lib/admin.guard";
 import type { AcademyLessonApplicationStatus } from "@/lib/types/academy";
-import { isAcademyApplicationStatus } from "@/lib/types/academy";
+import {
+  isAcademyApplicationStatus,
+  normalizeAcademyApplicationStatusForRead,
+} from "@/lib/types/academy";
 import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
 import { getVerifiedPortfolioDemoTourContext, type PortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 
@@ -60,7 +63,7 @@ function serializeApplication(doc: Document, tourContext?: PortfolioDemoTourCont
     currentLevel: typeof doc.currentLevel === "string" ? doc.currentLevel : "",
     preferredDays: Array.isArray(doc.preferredDays) ? doc.preferredDays : [],
     preferredTimeText: typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
-    status: typeof doc.status === "string" ? doc.status : "submitted",
+    status: normalizeAcademyApplicationStatusForRead(doc.status),
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,
     userId: doc.userId ? String(serializeValue(doc.userId)) : null,
@@ -89,7 +92,7 @@ export async function GET(req: Request) {
   const keyword = (url.searchParams.get("keyword") ?? "").trim();
   const sort = url.searchParams.get("sort") ?? "latest";
 
-  const filter: Filter<Document> = { adminDeletedAt: { $exists: false } };
+  const filterClauses: Filter<Document>[] = [{ adminDeletedAt: { $exists: false } }];
   if (statusParam && statusParam !== "all") {
     if (!isAcademyApplicationStatus(statusParam)) {
       return NextResponse.json(
@@ -97,20 +100,52 @@ export async function GET(req: Request) {
         { status: 400 },
       );
     }
-    filter.status = statusParam;
+    filterClauses.push(
+      statusParam === "submitted"
+        ? {
+            $or: [
+              { status: "submitted" },
+              { status: null },
+              {
+                $expr: {
+                  $eq: [
+                    {
+                      $trim: {
+                        input: {
+                          $cond: [
+                            { $eq: [{ $type: "$status" }, "string"] },
+                            "$status",
+                            "",
+                          ],
+                        },
+                      },
+                    },
+                    "",
+                  ],
+                },
+              },
+            ],
+          }
+        : { status: statusParam },
+    );
   }
 
   if (keyword) {
     const regex = { $regex: escapeRegex(keyword), $options: "i" };
-    filter.$or = [
-      { applicantName: regex },
-      { phone: regex },
-      { email: regex },
-      { requestMemo: regex },
-      { lessonGoal: regex },
-      { "classSnapshot.name": regex },
-    ];
+    filterClauses.push({
+      $or: [
+        { applicantName: regex },
+        { phone: regex },
+        { email: regex },
+        { requestMemo: regex },
+        { lessonGoal: regex },
+        { "classSnapshot.name": regex },
+      ],
+    });
   }
+
+  const filter: Filter<Document> =
+    filterClauses.length === 1 ? filterClauses[0] : { $and: filterClauses };
 
   const sortSpec = sort === "oldest" ? ({ createdAt: 1 } as const) : ({ createdAt: -1 } as const);
   const collection = guard.db.collection(COLLECTION_NAME);
@@ -144,7 +179,7 @@ export async function GET(req: Request) {
     collection.countDocuments(filter),
     collection
       .aggregate<{
-        _id: AcademyLessonApplicationStatus;
+        _id: unknown;
         count: number;
       }>([
         { $match: { adminDeletedAt: { $exists: false } } },
@@ -162,9 +197,10 @@ export async function GET(req: Request) {
     cancelled: 0,
   };
   for (const row of countRows) {
-    if (isAcademyApplicationStatus(row._id)) {
-      counts[row._id] = row.count;
-      counts.all += row.count;
+    counts.all += row.count;
+    const normalizedStatus = normalizeAcademyApplicationStatusForRead(row._id);
+    if (isAcademyApplicationStatus(normalizedStatus)) {
+      counts[normalizedStatus] += row.count;
     }
   }
 

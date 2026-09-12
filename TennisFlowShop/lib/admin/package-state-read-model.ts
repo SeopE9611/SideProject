@@ -88,6 +88,20 @@ export function buildAdminPackageStateStages(): Document[] {
     },
     {
       $addFields: {
+        sessionCountConsistent: {
+          $cond: [
+            {
+              $and: [
+                "$hasIssuedPass",
+                { $ne: ["$totalSessions", null] },
+                { $ne: ["$usedSessions", null] },
+                { $ne: ["$remainingSessions", null] },
+              ],
+            },
+            { $eq: ["$totalSessions", { $add: ["$usedSessions", "$remainingSessions"] }] },
+            null,
+          ],
+        },
         paymentState: {
           $switch: {
             branches: [
@@ -297,8 +311,8 @@ export function buildAdminPackageStateStages(): Document[] {
               $and: [
                 "$hasIssuedPass",
                 { $ne: ["$usedSessions", null] },
-                { $ne: ["$remainingSessions", null] },
-                { $gt: [{ $add: ["$usedSessions", "$remainingSessions"] }, 0] },
+                { $ne: ["$totalSessions", null] },
+                { $gt: ["$totalSessions", 0] },
               ],
             },
             {
@@ -312,7 +326,7 @@ export function buildAdminPackageStateStages(): Document[] {
                         {
                           $divide: [
                             "$usedSessions",
-                            { $add: ["$usedSessions", "$remainingSessions"] },
+                            "$totalSessions",
                           ],
                         },
                         100,
@@ -355,6 +369,13 @@ export function buildAdminPackageStateStages(): Document[] {
             },
             { $cond: [{ $eq: ["$usageState", "paused"] }, ["pass_paused"], []] },
             { $cond: [{ $eq: ["$usageState", "unknown"] }, ["pass_unknown"], []] },
+            {
+              $cond: [
+                { $eq: ["$sessionCountConsistent", false] },
+                ["session_count_mismatch"],
+                [],
+              ],
+            },
             {
               $cond: [
                 {
