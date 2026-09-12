@@ -151,20 +151,17 @@ export default function AdminDashboardClientView() {
         }
       />
 
-      <section
-        className="grid gap-4 grid-cols-4"
-        aria-label="오늘 처리 필요 요약"
-      >
+      <section className="grid gap-4 grid-cols-4" aria-label="오늘 처리 필요 요약">
         <SummaryCard
-          title="우선 확인"
+          title="우선 확인 신호"
           value={`${formatAdminNumber(urgentTotal)}건`}
-          description="취소 요청, 장기 결제대기, 대여 연체"
+          description="취소 요청·장기 결제대기·대여 연체 신호 합산"
           tone={urgentTotal > 0 ? "danger" : "default"}
         />
         <SummaryCard
-          title="오늘 처리 큐"
+          title="후속 처리 신호"
           value={`${formatAdminNumber(todayQueueTotal)}건`}
-          description="송장 등록, 교체서비스 지연, 반납 예정, 패키지 결제 확인"
+          description="배송·교체·반납·패키지 신호 합산"
           tone={todayQueueTotal > 0 ? "warning" : "default"}
         />
         <SummaryCard
@@ -187,7 +184,9 @@ export default function AdminDashboardClientView() {
             <CardTitle className="flex items-center gap-2 text-base">
               <ClipboardList className="h-4 w-4" /> 운영 큐
             </CardTitle>
-            <CardDescription>처리는 운영 업무에서 진행합니다.</CardDescription>
+            <CardDescription>
+              문서별 신호는 같은 대표 업무에 중복될 수 있으며, 처리는 운영 업무에서 진행합니다.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             {[

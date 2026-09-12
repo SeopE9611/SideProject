@@ -130,8 +130,8 @@ export type AdminOperationsGroup = {
 };
 
 export type AdminOperationsSummary = {
-  urgent: number;
-  caution: number;
+  dataIssue: number;
+  priorityReview: number;
   pending: number;
 };
 
@@ -196,6 +196,15 @@ export type AdminDailyOperationsSummaryResponse = {
 export type AdminOperationsKindFilter = AdminOperationKind | "all";
 export type AdminOperationsWarnFilter = "all" | "warn" | "caution" | "review" | "pending" | "clean";
 export type AdminOperationsWarnSort = "default" | "warn_first" | "safe_first";
+export type AdminOperationsQuickView =
+  | "all"
+  | "today"
+  | "cancelRequests"
+  | "paymentCheck"
+  | "shippingMissing"
+  | "rentalDue"
+  | "linkedWork"
+  | "linkedIssues";
 
 export interface AdminOperationsListRequestDto {
   page: number;
@@ -207,6 +216,7 @@ export interface AdminOperationsListRequestDto {
   integrated: boolean | null;
   warnFilter: AdminOperationsWarnFilter;
   warnSort: AdminOperationsWarnSort;
+  view: AdminOperationsQuickView;
 }
 
 export interface AdminOperationsListResponseDto {

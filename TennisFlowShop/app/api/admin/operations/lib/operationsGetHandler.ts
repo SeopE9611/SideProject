@@ -15,6 +15,10 @@ import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
 import { isApplicationEligibleForLinkedStage } from "@/lib/admin/linked-flow-stage";
 import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidance";
 import { getAdminOrderPaymentState } from "@/lib/admin/order-payment-display";
+import {
+  countOperationSignalGroups,
+  matchesOperationsQuickView,
+} from "@/lib/admin/operations-group-classification";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
@@ -34,6 +38,7 @@ import type {
   AdminOperationsGroup,
   AdminOperationsListRequestDto,
   AdminOperationsListResponseDto,
+  AdminOperationsQuickView,
   AdminOperationsSummary,
   AdminOperationsWarnFilter,
   AdminOperationsWarnSort,
@@ -41,7 +46,6 @@ import type {
   AdminOperationKind as Kind,
   LinkedFlowStatusIssue,
   OperationSignal,
-  OperationSignalCounts,
   OperationSignalLevel,
   AdminOperationItem as OpItem,
   SettlementAnchor,
@@ -890,6 +894,21 @@ function parseWarnSort(v: string | null): AdminOperationsWarnSort {
   return "default";
 }
 
+function parseQuickView(v: string | null): AdminOperationsQuickView {
+  if (
+    v === "today" ||
+    v === "cancelRequests" ||
+    v === "paymentCheck" ||
+    v === "shippingMissing" ||
+    v === "rentalDue" ||
+    v === "linkedWork" ||
+    v === "linkedIssues"
+  ) {
+    return v;
+  }
+  return "all";
+}
+
 function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
   const page = parseIntParam(url.searchParams.get("page"), {
     defaultValue: 1,
@@ -918,6 +937,7 @@ function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
       ? "warn"
       : warnFilterRaw;
   const warnSort = parseWarnSort(url.searchParams.get("warnSort"));
+  const view = parseQuickView(url.searchParams.get("view"));
   return {
     page,
     pageSize,
@@ -928,6 +948,7 @@ function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
     integrated,
     warnFilter,
     warnSort,
+    view,
   };
 }
 
@@ -985,7 +1006,8 @@ export async function handleAdminOperationsGet(
     const url = new URL(req.url);
     return parseOperationsListRequest(url);
   });
-  const { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort } = requestDto;
+  const { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort, view } =
+    requestDto;
   const fetchLimit = q ? SEARCH_FETCH_EACH : MAX_FETCH_EACH;
   const qRegex = q ? buildSearchRegex(q) : null;
   const qPrefixRegex = q ? buildPrefixRegex(q) : null;
@@ -1868,7 +1890,11 @@ export async function handleAdminOperationsGet(
     return {
       id,
       kind: "order",
-      portfolioDemoDataKind: classifyPortfolioDemoData({ marker: o, tourContext, ownerId: o.userId }),
+      portfolioDemoDataKind: classifyPortfolioDemoData({
+        marker: o,
+        tourContext,
+        ownerId: o.userId,
+      }),
       createdAt: toISO(o.createdAt),
       customer: cust,
       title: summarizeOrderItems(o.items),
@@ -2060,7 +2086,11 @@ export async function handleAdminOperationsGet(
     return {
       id,
       kind: "stringing_application",
-      portfolioDemoDataKind: classifyPortfolioDemoData({ marker: a, tourContext, ownerId: a.userId }),
+      portfolioDemoDataKind: classifyPortfolioDemoData({
+        marker: a,
+        tourContext,
+        ownerId: a.userId,
+      }),
       createdAt: toISO(a.createdAt),
       customer: cust,
       title: "교체 서비스 신청",
@@ -2181,7 +2211,11 @@ export async function handleAdminOperationsGet(
     return {
       id,
       kind: "rental",
-      portfolioDemoDataKind: classifyPortfolioDemoData({ marker: r, tourContext, ownerId: r.userId }),
+      portfolioDemoDataKind: classifyPortfolioDemoData({
+        marker: r,
+        tourContext,
+        ownerId: r.userId,
+      }),
       createdAt: toISO(r.createdAt),
       customer: cust,
       title:
@@ -2269,7 +2303,11 @@ export async function handleAdminOperationsGet(
         return {
           id,
           kind: "package_purchase",
-          portfolioDemoDataKind: classifyPortfolioDemoData({ marker: purchase, tourContext, ownerId: purchase.userId }),
+          portfolioDemoDataKind: classifyPortfolioDemoData({
+            marker: purchase,
+            tourContext,
+            ownerId: purchase.userId,
+          }),
           createdAt: toISO(purchase.createdAt),
           customer,
           title: sessions > 0 ? `${packageTitle} · ${sessions}회` : packageTitle,
@@ -2453,12 +2491,12 @@ export async function handleAdminOperationsGet(
 
   const summaryAll: AdminOperationsSummary = allGroups.reduce(
     (acc, group) => {
-      if (isGroupWarn(group)) acc.urgent += 1;
-      if (isCautionQueueGroup(group)) acc.caution += 1;
+      if (isGroupWarn(group)) acc.dataIssue += 1;
+      if (isCautionQueueGroup(group)) acc.priorityReview += 1;
       if (isPendingQueueGroup(group)) acc.pending += 1;
       return acc;
     },
-    { urgent: 0, caution: 0, pending: 0 },
+    { dataIssue: 0, priorityReview: 0, pending: 0 },
   );
 
   const standaloneStringingRepresentativeRows = allGroups.filter(
@@ -2476,59 +2514,7 @@ export async function handleAdminOperationsGet(
     // 현재 목록 화면에서는 실제 오늘 생성/변경 기준이 아니라 남은 대표 업무 큐 기준입니다.
     todayRepresentativeTasks: allGroups.length,
   };
-  const groupHas = (group: AdminOperationsGroup, predicate: (item: OpItem) => boolean) =>
-    group.items.some(predicate);
-  const isRentalReturnedForDeposit = (item: OpItem) => {
-    const statusText = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`.toLowerCase();
-    return statusText.includes("returned") || statusText.includes("반납완료");
-  };
-  const hasDepositRefundSignal = (item: OpItem) =>
-    item.signals?.some((signal) => signal.code === "RENTAL_DEPOSIT_REFUND_REQUIRED") === true;
-  const hasDepositRefundKeyword = (item: OpItem) => item.nextAction?.includes("보증금") === true;
-  const isRentalDepositRefundRequiredItem = (item: OpItem): boolean =>
-    item.kind === "rental" &&
-    !item.depositRefundedAt &&
-    (hasDepositRefundSignal(item) ||
-      (isRentalReturnedForDeposit(item) && hasDepositRefundKeyword(item)));
-  const operationSignalCounts: OperationSignalCounts = {
-    cancelRequests: allGroups.filter((group) =>
-      groupHas(
-        group,
-        (item) =>
-          item.cancel?.status === "requested" ||
-          item.cancel?.status === "approved_pending_pg_cancel",
-      ),
-    ).length,
-    paymentCheck: allGroups.filter(
-      (group) => group.anchorKind !== "package_purchase" && groupHas(group, itemNeedsPaymentCheck),
-    ).length,
-    packagePaymentCheck: allGroups.filter((group) => group.anchorKind === "package_purchase")
-      .length,
-    shippingMissing: allGroups.filter((group) =>
-      groupHas(group, (item) =>
-        Boolean(item.nextAction?.includes("운송장") || item.nextAction?.includes("배송")),
-      ),
-    ).length,
-    stringingWork: allGroups.filter((group) =>
-      groupHas(
-        group,
-        (item) =>
-          item.kind === "stringing_application" && !String(item.statusLabel).includes("교체완료"),
-      ),
-    ).length,
-    rentalDue: allGroups.filter((group) =>
-      groupHas(
-        group,
-        (item) =>
-          (item.kind === "rental" &&
-            Boolean(item.rentalDueAt || item.nextAction?.includes("반납"))) ||
-          isRentalDepositRefundRequiredItem(item),
-      ),
-    ).length,
-    linkedReview: allGroups.filter((group) => Boolean(group.linkedFlowStatusIssue)).length,
-    offline: 0,
-    academyApplications: 0,
-  };
+  const operationSignalCounts = countOperationSignalGroups(allGroups);
 
   groups = allGroups;
 
@@ -2538,6 +2524,9 @@ export async function handleAdminOperationsGet(
     groups = groups.filter((group) => !isGroupWarn(group) && isGroupReview(group));
   if (warnFilter === "pending") groups = groups.filter((group) => isPendingQueueGroup(group));
   if (warnFilter === "clean") groups = groups.filter((group) => isCleanGroup(group));
+  if (view !== "all") {
+    groups = groups.filter((group) => matchesOperationsQuickView(group, view));
+  }
 
   if (warnSort !== "default") {
     groups = await measure("operations.sortGroups", () =>
