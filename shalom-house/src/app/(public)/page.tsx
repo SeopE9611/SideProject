@@ -1,345 +1,122 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { HomeActivityCarousel } from "@/components/home/home-activity-carousel";
 import { HomeHero } from "@/components/home/home-hero";
-import { LineIcon, type LineIconName } from "@/components/ui/line-icon";
+import { HomeLifeStories } from "@/components/home/home-life-stories";
 import { isVisualFixtureEnabled, visualHomeImage } from "@/content/fixtures/visual.fixture";
 import { siteConfig } from "@/config/site";
 import { findPublicGalleryItems } from "@/features/gallery/gallery.repository";
 import { getNewsRepository } from "@/features/news/news.repository";
-import { getNewsCategoryLabel } from "@/features/news/news.types";
+import { getProgramRepository } from "@/features/programs/program.repository";
 import { createPublicPageMetadata } from "@/features/seo/metadata";
-import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
+import { getPublicContactInformation, getPublicFacilityOverview } from "@/features/site-content/site-content.repository";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
+import { findPublicTransparencyDocuments } from "@/features/transparency/transparency.repository";
+import { transparencyCategoryLabels } from "@/features/transparency/transparency.types";
 
 export const metadata = createPublicPageMetadata("/");
 export const dynamic = "force-dynamic";
 
-const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  timeZone: "UTC",
-});
-const quickLinks: readonly {
-  label: string;
-  description: string;
-  href: string;
-  icon: LineIconName;
-}[] = [
-  {
-    label: "공지사항",
-    description: "새로운 공지와 이용 안내",
-    href: "/news/notices",
-    icon: "newspaper",
-  },
-  {
-    label: "생활·프로그램",
-    description: "생활 기록과 프로그램 안내",
-    href: "/life",
-    icon: "sparkles",
-  },
-  {
-    label: "함께하기",
-    description: "참여 방법과 절차",
-    href: "/support",
-    icon: "heart-handshake",
-  },
-  {
-    label: "찾아오시는 길",
-    description: "위치와 방문 문의",
-    href: "/about/directions",
-    icon: "map-pin",
-  },
-];
+const dateFormatter = new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "UTC" });
 
-const participationLinks: readonly {
-  href: string;
-  title: string;
-  description: string;
-  icon: LineIconName;
-}[] = [
-  { href: "/support/donation", title: "후원 안내", description: "후원 방법과 영수증 문의", icon: "heart-handshake" },
-  { href: "/support/volunteer", title: "자원봉사", description: "참여 절차와 문의 안내", icon: "sparkles" },
-  { href: "/transparency", title: "자료공개", description: "운영 자료의 유형과 기간 확인", icon: "file-text" },
-];
+const visitorLinks = [
+  { href: "/about", title: "시설을 이해하고 싶어요", description: "시설의 기본 정보와 운영 방향" },
+  { href: "/life", title: "생활과 프로그램을 보고 싶어요", description: "일상생활, 프로그램과 공개 승인된 활동 기록" },
+  { href: "/support", title: "함께하는 방법을 찾고 있어요", description: "후원, 자원봉사와 참여 문의" },
+  { href: "/about/directions", title: "방문과 연락 방법이 궁금해요", description: "주소와 방문 문의" },
+] as const;
 
 export default async function Home() {
-  const [contact, [newsResult, galleryResult]] = await Promise.all([
+  const [overview, contact, [newsResult, galleryResult, programsResult, transparencyResult]] = await Promise.all([
+    getPublicFacilityOverview(),
     getPublicContactInformation(),
-    Promise.allSettled([getNewsRepository().listPublished({ limit: 5 }), findPublicGalleryItems()]),
+    Promise.allSettled([
+      getNewsRepository().listPublished({ limit: 8 }),
+      findPublicGalleryItems(),
+      getProgramRepository().listPublished({ limit: 3 }),
+      findPublicTransparencyDocuments(),
+    ]),
   ]);
   const isPreview = process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview";
-  const newsPosts =
-    newsResult.status === "fulfilled" ? newsResult.value.filter((post) => isPreview || !post.isDemo) : [];
+  const newsPosts = newsResult.status === "fulfilled" ? newsResult.value.filter((post) => isPreview || !post.isDemo) : [];
+  const notices = newsPosts.filter((post) => post.category === "notice").slice(0, 3);
+  const activities = newsPosts.filter((post) => post.category === "activity").slice(0, 2);
   const galleryItems = galleryResult.status === "fulfilled" ? galleryResult.value.slice(0, 4) : [];
+  const programs = programsResult.status === "fulfilled" ? programsResult.value.slice(0, 3) : [];
+  const documents = transparencyResult.status === "fulfilled" ? transparencyResult.value.slice(0, 3) : [];
   const leadPhoto = galleryItems[0];
   const visualFixtureEnabled = isVisualFixtureEnabled();
-  const heroImage = visualFixtureEnabled
-    ? visualHomeImage
-    : leadPhoto
-      ? {
-          src: `/api/gallery/${leadPhoto.slug}/media`,
-          alt: leadPhoto.altText,
-          width: leadPhoto.width,
-          height: leadPhoto.height,
-          caption: leadPhoto.title,
-          href: `/life/gallery/${leadPhoto.slug}`,
-        }
-      : undefined;
-  const visibleGalleryItems = visualFixtureEnabled ? galleryItems.slice(0, 3) : galleryItems.slice(1, 4);
-  const leadNewsPost = newsPosts[0];
-  const remainingNewsPosts = newsPosts.slice(1);
+  const heroImage = visualFixtureEnabled ? visualHomeImage : leadPhoto ? {
+    src: `/api/gallery/${leadPhoto.slug}/media`, alt: leadPhoto.altText, width: leadPhoto.width, height: leadPhoto.height,
+    caption: leadPhoto.title, href: `/life/gallery/${leadPhoto.slug}`,
+  } : undefined;
+  const lifeItems = visualFixtureEnabled ? galleryItems.slice(0, 3) : galleryItems.slice(1, 4);
+
   if (newsResult.status === "rejected") console.error("홈 최근 소식 조회 실패");
   if (galleryResult.status === "rejected") console.error("홈 활동사진 조회 실패");
+  if (programsResult.status === "rejected") console.error("홈 프로그램 조회 실패");
+  if (transparencyResult.status === "rejected") console.error("홈 자료공개 조회 실패");
 
   return (
     <div className="bg-surface">
-      <HomeHero
-        siteName={siteConfig.name}
-        description="지체 및 지적 장애인이 함께 생활하는 장애인거주시설입니다."
-        image={heroImage}
-      />
-      <nav aria-label="자주 찾는 안내" className="mx-auto max-w-site px-page sm:px-page-wide">
-        <ul className="grid grid-cols-2 overflow-hidden border-b border-border bg-surface lg:grid-cols-4">
-          {quickLinks.map((item) => (
-            <li key={item.href} className="border-border even:border-l lg:border-l lg:first:border-l-0">
-              <Link
-                className="group flex min-h-28 flex-col items-start gap-3 px-4 py-5 transition-colors duration-[var(--motion-duration-fast)] hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-focus-ring sm:flex-row sm:gap-4 sm:px-6 lg:min-h-32 lg:py-6"
-                href={item.href}
-              >
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent transition-colors group-hover:bg-surface">
-                  <LineIcon name={item.icon} size={21} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="text-safe-wrap block text-[1.05rem] font-bold group-hover:text-accent sm:text-xl">
-                    {item.label}
-                  </span>
-                  <span className="text-safe-wrap mt-1 hidden text-small leading-6 text-muted-foreground sm:block">
-                    {item.description}
-                  </span>
-                </span>
-                <LineIcon
-                  className="mt-1 hidden shrink-0 text-primary transition-transform group-hover:translate-x-1 sm:block"
-                  name="arrow-right"
-                  size={18}
-                />
+      <HomeHero siteName={siteConfig.name} description={overview.pageDescription} image={heroImage} />
+
+      <nav aria-label="방문 목적별 안내" className="mx-auto max-w-site px-page sm:px-page-wide">
+        <ol className="grid border-b border-border lg:grid-cols-4">
+          {visitorLinks.map((item, index) => (
+            <li key={item.href} className="border-t border-border lg:border-t-0 lg:border-l lg:first:border-l-0">
+              <Link className="group grid min-h-36 grid-cols-[2.5rem_minmax(0,1fr)] gap-3 py-6 pr-3 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring lg:px-6 lg:first:pl-0" href={item.href}>
+                <span className="text-small font-bold tabular-nums text-accent">{String(index + 1).padStart(2, "0")}</span>
+                <span><span className="text-safe-wrap block text-lg font-bold text-primary group-hover:underline">{item.title}</span><span className="text-safe-wrap mt-2 block text-small leading-6 text-muted-foreground">{item.description}</span><span className="mt-3 block text-primary" aria-hidden="true">→</span></span>
               </Link>
             </li>
           ))}
-        </ul>
+        </ol>
       </nav>
 
-      <div className="mx-auto grid max-w-site items-start gap-10 px-page py-14 sm:px-page-wide sm:py-18 lg:grid-cols-12 lg:gap-14">
-        <section aria-labelledby="news-heading" className="min-w-0 lg:col-span-8">
-          <div className="flex flex-wrap items-end justify-between gap-x-5 border-b-2 border-primary pb-5">
-            <div className="flex items-start gap-4">
-              <span className="mt-1 inline-flex size-11 items-center justify-center rounded-full bg-primary-soft text-primary">
-                <LineIcon name="newspaper" size={22} />
-              </span>
-              <div>
-                <h2 id="news-heading" className="mt-1 text-[1.75rem] font-extrabold tracking-[-0.025em] sm:text-[2rem]">
-                  샬롬의 집 소식
-                </h2>
-              </div>
-            </div>
-            <Link className="institution-link text-small" href="/news">
-              전체 소식 <LineIcon name="arrow-right" size={18} />
-            </Link>
-          </div>
-          {newsPosts.some((post) => post.isDemo) ? (
-            <p className="py-2 text-xs text-muted-foreground">미리보기 · 아래 예시 소식은 레이아웃 검증용입니다.</p>
-          ) : null}
-          {leadNewsPost ? (
-            <div className="border-b border-border">
-              <article className="grid gap-4 py-7 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-6 sm:py-8">
-                <div>
-                  <p className="text-small font-bold text-accent">{getNewsCategoryLabel(leadNewsPost.category)}</p>
-                  <time
-                    className="mt-2 block text-small tabular-nums text-muted-foreground"
-                    dateTime={leadNewsPost.publishedAt}
-                  >
-                    {dateFormatter.format(new Date(leadNewsPost.publishedAt))}
-                  </time>
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-safe-wrap text-[1.45rem] font-bold leading-snug tracking-[-0.02em] sm:text-[1.75rem]">
-                    <Link
-                      className="text-safe-wrap hover:text-primary hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                      href={"/news/" + leadNewsPost.slug}
-                    >
-                      {leadNewsPost.title}
-                    </Link>
-                  </h3>
-                  {leadNewsPost.summary && leadNewsPost.summary !== leadNewsPost.title ? (
-                    <p className="text-safe-wrap mt-3 max-w-2xl text-small leading-7 text-muted-foreground">
-                      {leadNewsPost.summary}
-                    </p>
-                  ) : null}
-                </div>
-              </article>
-              {remainingNewsPosts.length > 0 ? (
-                <ul className="divide-y divide-border border-t border-border">
-                  {remainingNewsPosts.map((post) => (
-                    <li
-                      key={post.id}
-                      className="grid gap-2 py-4 sm:grid-cols-[7rem_minmax(0,1fr)_7.5rem] sm:items-baseline sm:gap-6"
-                    >
-                      <span className="text-small font-semibold text-muted-foreground">
-                        {getNewsCategoryLabel(post.category)}
-                      </span>
-                      <h3 className="min-w-0 font-semibold leading-relaxed">
-                        <Link
-                          className="text-safe-wrap underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                          href={"/news/" + post.slug}
-                        >
-                          {post.title}
-                        </Link>
-                      </h3>
-                      <time
-                        className="text-small tabular-nums text-muted-foreground sm:text-right"
-                        dateTime={post.publishedAt}
-                      >
-                        {dateFormatter.format(new Date(post.publishedAt))}
-                      </time>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          ) : (
-            <div className="border-b border-border py-7">
-              <p className="font-medium">
-                {newsResult.status === "rejected" ? "소식을 불러오지 못했습니다." : "아직 등록된 소식이 없습니다."}
-              </p>
-              <p className="mt-2 text-small text-muted-foreground">
-                {newsResult.status === "rejected"
-                  ? "잠시 후 소식 목록에서 다시 확인해 주세요."
-                  : "새로운 공지와 활동 소식은 이곳에서 안내합니다."}
-              </p>
-              <Link className="institution-link mt-2 text-small" href="/news">
-                소식 목록 보기
-              </Link>
-            </div>
-          )}
-        </section>
-
-        <aside
-          aria-labelledby="visit-summary-heading"
-          className="min-w-0 border-t-4 border-accent bg-paper p-7 sm:p-9 lg:col-span-4"
-        >
-          <span className="inline-flex size-12 items-center justify-center rounded-full bg-surface text-accent">
-            <LineIcon name="map-pin" />
-          </span>
-          <p className="mt-5 text-small font-bold text-accent">방문 전 확인</p>
-          <h2
-            id="visit-summary-heading"
-            className="text-safe-wrap mt-2 text-[1.75rem] font-extrabold tracking-[-0.025em]"
-          >
-            위치와 문의 방법
-          </h2>
-          <address className="text-safe-wrap mt-6 text-body leading-8 font-semibold not-italic">
-            {contact.address}
-          </address>
-          <div className="mt-6 border-t border-paper-strong pt-5">
-            <p className="text-small text-muted-foreground">대표 전화</p>
-            <a
-              className="institution-link mt-1 gap-3 whitespace-nowrap text-xl font-bold tabular-nums sm:text-[1.65rem]"
-              href={createTelephoneHref(contact.phone)}
-            >
-              <LineIcon name="phone" size={21} />
-              {contact.phone}
-            </a>
-          </div>
-          <Link
-            className="mt-6 inline-flex min-h-12 items-center justify-between gap-6 border border-primary px-5 font-bold text-primary hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring"
-            href="/about/directions"
-          >
-            찾아오시는 길 <LineIcon name="arrow-right" size={18} />
-          </Link>
-        </aside>
-      </div>
-
-      {visibleGalleryItems.length > 0 ? (
-        <section aria-labelledby="gallery-heading" className="border-y border-border bg-surface-subtle py-12 sm:py-16">
-          <div className="mx-auto max-w-site px-page sm:px-page-wide">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="text-small font-bold text-accent">생활 기록</p>
-                <h2
-                  id="gallery-heading"
-                  className="mt-2 text-[1.875rem] font-extrabold tracking-[-0.025em] sm:text-[2.25rem]"
-                >
-                  사진으로 보는 활동
-                </h2>
-              </div>
-              <Link className="institution-link text-small" href="/life/gallery">
-                활동사진 전체보기 <LineIcon name="arrow-right" size={18} />
-              </Link>
-            </div>
-            <div className="mt-7">
-              <HomeActivityCarousel
-                key={visibleGalleryItems.map((item) => item.slug).join(",")}
-                items={visibleGalleryItems.map((item) => ({
-                  slug: item.slug,
-                  title: item.title,
-                  category: item.category,
-                  altText: item.altText,
-                  activityDate: item.activityDate,
-                  dateLabel: dateFormatter.format(new Date(item.activityDate)),
-                }))}
-              />
-            </div>
-          </div>
-        </section>
-      ) : galleryResult.status === "rejected" ? (
-        <p className="mx-auto max-w-site px-page pb-8 text-small text-muted-foreground sm:px-page-wide">
-          활동사진을 불러오지 못했습니다.{" "}
-          <Link className="institution-link" href="/life/gallery">
-            활동사진 목록에서 다시 확인
-          </Link>
-        </p>
-      ) : null}
-      <section aria-labelledby="participation-heading" className="border-b border-border bg-paper">
-        <div className="mx-auto grid max-w-site gap-8 px-page py-12 sm:px-page-wide sm:py-14 lg:grid-cols-[1.1fr_1.9fr] lg:items-start lg:gap-14">
+      <section aria-labelledby="about-home-heading" className="mx-auto max-w-site px-page py-16 sm:px-page-wide sm:py-24">
+        <div className="grid gap-8 lg:grid-cols-[0.65fr_1.35fr] lg:gap-16">
+          <div><p className="text-small font-bold text-accent">About Shalom</p><h2 id="about-home-heading" className="text-safe-wrap mt-2 text-[1.9rem] font-extrabold tracking-[-0.03em] text-primary sm:text-[2.4rem]">샬롬의 집을 소개합니다</h2></div>
           <div>
-            <h2
-              id="participation-heading"
-              className="text-safe-wrap text-[1.875rem] font-extrabold tracking-[-0.025em] text-primary sm:text-[2.25rem]"
-            >
-              참여 안내와 자료공개
-            </h2>
-            <p className="text-safe-wrap mt-4 max-w-md text-small leading-7 text-muted-foreground">
-              참여 절차와 공개 자료를 각각의 안내에서 정확하게 확인할 수 있습니다.
-            </p>
+            <p className="text-safe-wrap max-w-3xl text-[1.3rem] leading-9 font-semibold sm:text-[1.6rem] sm:leading-10">{overview.pageDescription}</p>
+            <ul className="mt-8 flex flex-wrap gap-x-7 gap-y-2 border-t border-border pt-5 text-small font-bold text-primary">
+              <li><Link className="institution-link min-h-11 py-2" href="/about">시설개요</Link></li>
+              <li><Link className="institution-link min-h-11 py-2" href="/about/spaces">생활공간</Link></li>
+              <li><Link className="institution-link min-h-11 py-2" href="/about/people">함께하는 사람들</Link></li>
+            </ul>
           </div>
-          <ul className="divide-y divide-paper-strong border-y border-paper-strong lg:grid lg:grid-cols-3 lg:divide-x lg:divide-y-0">
-            {participationLinks.map((item) => (
-              <li key={item.href}>
-                <Link
-                  className="group relative flex min-h-32 items-start gap-4 px-2 py-6 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring lg:min-h-44 lg:flex-col lg:px-6"
-                  href={item.href}
-                >
-                  <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-surface text-accent">
-                    <LineIcon name={item.icon} size={21} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-xl font-bold text-primary group-hover:underline">{item.title}</span>
-                    <span className="text-safe-wrap mt-2 block text-small leading-7 text-muted-foreground">
-                      {item.description}
-                    </span>
-                  </span>
-                  <LineIcon
-                    className="mt-1 shrink-0 text-primary transition-transform group-hover:translate-x-1 lg:absolute lg:top-8 lg:right-6"
-                    name="arrow-right"
-                    size={19}
-                  />
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
+
+      <section aria-labelledby="life-home-heading" className="border-y border-border bg-surface-subtle py-14 sm:py-20">
+        <div className="mx-auto max-w-site px-page sm:px-page-wide">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-small font-bold text-accent">Life at Shalom</p><h2 id="life-home-heading" className="text-safe-wrap mt-2 text-[2rem] font-extrabold tracking-[-0.03em] text-primary sm:text-[2.6rem]">사진으로 만나는 일상</h2></div><Link className="institution-link min-h-11 py-2 text-small" href="/life/gallery">활동사진 전체보기 →</Link></div>
+          {lifeItems.length ? <HomeLifeStories items={lifeItems.map((item) => ({ slug: item.slug, title: item.title, category: item.category, altText: item.altText, activityDate: item.activityDate, dateLabel: dateFormatter.format(new Date(item.activityDate)) }))} /> : galleryResult.status === "rejected" ? <p className="border-t border-border py-5 text-small text-muted-foreground" role="status">활동사진을 불러오지 못했습니다. <Link className="institution-link" href="/life/gallery">활동사진 목록에서 다시 확인</Link></p> : <p className="border-t border-border py-5 text-small text-muted-foreground">아직 공개된 활동사진이 없습니다.</p>}
+        </div>
+      </section>
+
+      <section aria-labelledby="programs-home-heading" className="mx-auto max-w-site px-page py-16 sm:px-page-wide sm:py-20">
+        <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
+          <div><p className="text-small font-bold text-accent">Programs</p><h2 id="programs-home-heading" className="text-safe-wrap mt-2 text-[2rem] font-extrabold tracking-[-0.03em] text-primary sm:text-[2.4rem]">프로그램 안내</h2><Link className="institution-link mt-5 min-h-11 py-2 text-small" href="/life/programs">전체 프로그램 보기 →</Link></div>
+          {programs.length ? <ol className="border-t-2 border-primary">{programs.map((program, index) => <li key={program.slug} className="border-b border-border"><Link className="group grid min-h-28 grid-cols-[2.5rem_minmax(0,1fr)_1.5rem] items-start gap-3 py-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={`/life/programs/${program.slug}`}><span className="text-small tabular-nums text-accent">{String(index + 1).padStart(2, "0")}</span><span><span className="text-small font-bold text-accent">{program.category}</span><span className="text-safe-wrap mt-1 block text-xl font-bold group-hover:text-primary group-hover:underline">{program.title}</span>{program.summary ? <span className="text-safe-wrap mt-2 block text-small leading-7 text-muted-foreground">{program.summary}</span> : null}</span><span className="text-primary" aria-hidden="true">→</span></Link></li>)}</ol> : <div className="border-t-2 border-primary py-6"><p className="font-semibold">{programsResult.status === "rejected" ? "프로그램을 불러오지 못했습니다." : "현재 공개된 프로그램이 없습니다."}</p><Link className="institution-link mt-3 text-small" href="/life/programs">프로그램 목록에서 확인</Link></div>}
+        </div>
+      </section>
+
+      <section aria-labelledby="news-home-heading" className="border-y border-border py-16 sm:py-20">
+        <div className="mx-auto max-w-site px-page sm:px-page-wide"><p className="text-small font-bold text-accent">News</p><h2 id="news-home-heading" className="text-safe-wrap mt-2 text-[2rem] font-extrabold tracking-[-0.03em] text-primary sm:text-[2.4rem]">샬롬의 집 소식</h2>
+          {newsPosts.some((post) => post.isDemo) ? <p className="mt-2 text-xs text-muted-foreground">미리보기 · 아래 예시 소식은 레이아웃 검증용입니다.</p> : null}
+          <div className="mt-9 grid gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+            <section aria-labelledby="notices-heading"><div className="flex items-end justify-between border-b-2 border-primary pb-4"><h3 id="notices-heading" className="text-2xl font-extrabold">공지사항</h3><Link className="institution-link min-h-11 py-2 text-small" href="/news/notices">전체보기 →</Link></div>{notices.length ? <ul>{notices.map((post) => <li key={post.id} className="border-b border-border"><Link className="group grid min-h-20 gap-2 py-4 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-baseline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}><time className="text-small tabular-nums text-muted-foreground" dateTime={post.publishedAt}>{dateFormatter.format(new Date(post.publishedAt))}</time><span className="text-safe-wrap font-semibold group-hover:text-primary group-hover:underline">{post.title}</span></Link></li>)}</ul> : <p className="border-b border-border py-5 text-small text-muted-foreground">{newsResult.status === "rejected" ? "공지사항을 불러오지 못했습니다." : "아직 등록된 공지사항이 없습니다."}</p>}</section>
+            <section aria-labelledby="activities-heading"><div className="flex items-end justify-between border-b border-border pb-4"><h3 id="activities-heading" className="text-2xl font-extrabold">활동소식</h3><Link className="institution-link min-h-11 py-2 text-small" href="/news/activities">전체보기 →</Link></div>{activities.length ? <div className="divide-y divide-border">{activities.map((post) => <article key={post.id} className={`grid gap-5 py-6 ${post.coverImage ? "sm:grid-cols-[10rem_minmax(0,1fr)]" : ""}`}>{post.coverImage ? <Link className="relative block aspect-[4/3] overflow-hidden bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}><Image alt={post.coverImage.altText} className="object-cover" fill sizes="10rem" src={post.coverImage.src} unoptimized /></Link> : null}<div><time className="text-small tabular-nums text-muted-foreground" dateTime={post.publishedAt}>{dateFormatter.format(new Date(post.publishedAt))}</time><h4 className="text-safe-wrap mt-2 text-xl font-bold leading-snug"><Link className="hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}>{post.title}</Link></h4>{post.summary && post.summary !== post.title ? <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">{post.summary}</p> : null}</div></article>)}</div> : <p className="border-b border-border py-5 text-small text-muted-foreground">{newsResult.status === "rejected" ? "활동소식을 불러오지 못했습니다." : "아직 등록된 활동소식이 없습니다."}</p>}</section>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="together-heading" className="bg-paper"><div className="mx-auto grid max-w-site gap-8 px-page py-14 sm:px-page-wide sm:py-18 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16"><div><p className="text-small font-bold text-accent">Together</p><h2 id="together-heading" className="text-safe-wrap mt-2 text-[2rem] font-extrabold tracking-[-0.03em] text-primary sm:text-[2.4rem]">함께하는 방법</h2></div><div className="grid border-y border-paper-strong sm:grid-cols-2 sm:divide-x sm:divide-paper-strong"><Link className="group min-h-40 py-7 pr-6 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring sm:pr-8" href="/support/donation"><span className="block text-2xl font-extrabold text-primary group-hover:underline">후원 안내</span><span className="text-safe-wrap mt-3 block text-small leading-7 text-muted-foreground">후원 방법과 영수증 문의를 확인합니다.</span><span className="mt-5 block font-bold text-primary">절차 확인 →</span></Link><Link className="group min-h-40 border-t border-paper-strong py-7 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus-ring sm:border-t-0 sm:pl-8" href="/support/volunteer"><span className="block text-2xl font-extrabold text-primary group-hover:underline">자원봉사</span><span className="text-safe-wrap mt-3 block text-small leading-7 text-muted-foreground">참여 절차와 문의 안내를 확인합니다.</span><span className="mt-5 block font-bold text-primary">절차 확인 →</span></Link></div></div></section>
+
+      <section aria-labelledby="transparency-home-heading" className="mx-auto max-w-site px-page py-16 sm:px-page-wide sm:py-20"><div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16"><div><p className="text-small font-bold text-accent">Trust &amp; Transparency</p><h2 id="transparency-home-heading" className="text-safe-wrap mt-2 text-[2rem] font-extrabold tracking-[-0.03em] text-primary sm:text-[2.4rem]">자료공개</h2><p className="text-safe-wrap mt-4 text-small leading-7 text-muted-foreground">운영 및 후원 공개자료를 확인할 수 있습니다.</p><Link className="institution-link mt-4 min-h-11 py-2 text-small" href="/transparency">자료공개 전체보기 →</Link></div>{documents.length ? <ul className="border-t-2 border-primary">{documents.map((document) => <li key={document.slug} className="grid gap-3 border-b border-border py-5 sm:grid-cols-[7rem_minmax(0,1fr)_8rem] sm:items-baseline"><span className="text-small font-bold text-accent">{transparencyCategoryLabels[document.category]}</span><div><p className="text-safe-wrap font-bold">{document.title}</p><p className="text-safe-wrap mt-1 text-small text-muted-foreground">{document.periodLabel}</p></div><a className="institution-link min-h-11 py-2 text-small sm:justify-self-end" href={`/api/transparency/${document.slug}/document`} target="_blank" rel="noreferrer" aria-label={`${document.title} 문서 열기 (새 창)`}>문서 열기 →</a></li>)}</ul> : <div className="border-t-2 border-primary py-6"><p className="font-semibold">{transparencyResult.status === "rejected" ? "자료를 불러오지 못했습니다." : "현재 공개된 운영 자료가 없습니다."}</p><Link className="institution-link mt-3 text-small" href="/transparency">자료공개에서 확인</Link></div>}</div></section>
+
+      <section aria-labelledby="visit-home-heading" className="border-t border-border bg-surface-subtle"><div className="mx-auto grid max-w-site gap-8 px-page py-14 sm:px-page-wide sm:py-18 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16"><div><p className="text-small font-bold text-accent">Visit</p><h2 id="visit-home-heading" className="text-safe-wrap mt-2 text-[2rem] font-extrabold tracking-[-0.03em] text-primary sm:text-[2.4rem]">방문·연락 안내</h2></div><address className="not-italic"><p className="text-small text-muted-foreground">주소</p><p className="text-safe-wrap mt-2 text-[1.35rem] leading-8 font-bold sm:text-[1.7rem]">{contact.address}</p><p className="mt-7 text-small text-muted-foreground">대표전화</p><a className="mt-2 inline-flex min-h-11 items-center whitespace-nowrap text-[1.55rem] font-extrabold tabular-nums text-primary underline decoration-border-strong underline-offset-5 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring sm:text-[2rem]" href={createTelephoneHref(contact.phone)}>{contact.phone}</a><div className="mt-7"><Link className="institution-link min-h-11 py-2 font-bold" href="/about/directions">찾아오시는 길 →</Link></div></address></div></section>
     </div>
   );
 }
