@@ -133,7 +133,7 @@ export function normalizeRentalStatus(status?: string | null) {
     case "pending":
       return "대기중";
     case "paid":
-      return "결제완료";
+      return "인도 대기";
     case "out":
       return "대여중";
     case "returned":
@@ -194,18 +194,38 @@ export function pickCustomerFromDoc(doc: any): OpsCustomer {
  * - admin/rentals/route.ts 및 operations/route.ts에서 동일 규칙을 쓰기 위해 분리.
  * - “정산 정책”이 아니라 “대여 주문서 화면에서 보여주는 총액” 기준
  */
-export function normalizeRentalAmountTotal(r: any) {
-  const fee = Number(r?.amount?.fee ?? r?.fee ?? 0);
-  const deposit = Number(r?.amount?.deposit ?? r?.deposit ?? 0);
+export type RentalAmountBreakdown = {
+  fee: number;
+  deposit: number;
+  stringPrice: number;
+  stringingFee: number;
+  total: number;
+};
+
+function toFiniteAmount(value: unknown): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+export function normalizeRentalAmountBreakdown(r: any): RentalAmountBreakdown {
+  const fee = toFiniteAmount(r?.amount?.fee ?? r?.fee);
+  const deposit = toFiniteAmount(r?.amount?.deposit ?? r?.deposit);
   const requested = !!r?.stringing?.requested;
-  const stringPrice = Number(
+  const stringPrice = toFiniteAmount(
     r?.amount?.stringPrice ?? (requested ? (r?.stringing?.price ?? 0) : 0),
   );
-  const stringingFee = Number(
+  const stringingFee = toFiniteAmount(
     r?.amount?.stringingFee ?? (requested ? (r?.stringing?.mountingFee ?? 0) : 0),
   );
-  const total = Number(r?.amount?.total ?? fee + deposit + stringPrice + stringingFee);
-  return total;
+  const total =
+    r?.amount?.total === null || r?.amount?.total === undefined
+      ? fee + deposit + stringPrice + stringingFee
+      : toFiniteAmount(r.amount.total);
+  return { fee, deposit, stringPrice, stringingFee, total };
+}
+
+export function normalizeRentalAmountTotal(r: any) {
+  return normalizeRentalAmountBreakdown(r).total;
 }
 
 /**

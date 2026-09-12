@@ -6,7 +6,11 @@ import { z } from "zod";
 
 import { requireAdmin } from "@/lib/admin.guard";
 import type { AdminRentalListItemDto, AdminRentalsListResponseDto } from "@/types/admin/rentals";
-import { normalizeRentalPaymentMeta } from "@/lib/admin-ops-normalize";
+import {
+  normalizeRentalAmountBreakdown,
+  normalizeRentalPaymentMeta,
+} from "@/lib/admin-ops-normalize";
+import { buildRentalPaymentFilterExpression } from "@/lib/admin/rental-payment-filter";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 
 export const dynamic = "force-dynamic";
@@ -162,17 +166,9 @@ export async function GET(req: Request) {
 
   const q: Filter<Document> = {};
   if (parsed.pay === "paid") {
-    q.$or = [
-      { status: { $in: ["paid", "out", "returned"] } },
-      { "payment.paidAt": { $exists: true } },
-      { paidAt: { $exists: true } },
-    ];
+    q.$expr = buildRentalPaymentFilterExpression("paid");
   } else if (parsed.pay === "unpaid") {
-    q.$and = [
-      { status: { $nin: ["paid", "out", "returned"] } },
-      { "payment.paidAt": { $exists: false } },
-      { paidAt: { $exists: false } },
-    ];
+    q.$expr = buildRentalPaymentFilterExpression("unpaid");
   }
 
   if (parsed.ship === "outbound-set") {
@@ -343,18 +339,7 @@ export async function GET(req: Request) {
         ? { name: rentalDoc.guest.name, email: rentalDoc.guest.email }
         : { name: "", email: "" });
 
-    const fee = Number(rentalDoc?.amount?.fee ?? rentalDoc?.fee ?? 0);
-    const deposit = Number(rentalDoc?.amount?.deposit ?? rentalDoc?.deposit ?? 0);
-    const requested = !!rentalDoc?.stringing?.requested;
-    const stringPrice = Number(
-      rentalDoc?.amount?.stringPrice ?? (requested ? (rentalDoc?.stringing?.price ?? 0) : 0),
-    );
-    const stringingFee = Number(
-      rentalDoc?.amount?.stringingFee ?? (requested ? (rentalDoc?.stringing?.mountingFee ?? 0) : 0),
-    );
-    const totalAmount = Number(
-      rentalDoc?.amount?.total ?? fee + deposit + stringPrice + stringingFee,
-    );
+    const amount = normalizeRentalAmountBreakdown(rentalDoc);
 
     const record = rentalDoc as Record<string, unknown>;
     const rawAppId = record.stringingApplicationId ?? null;
@@ -382,7 +367,7 @@ export async function GET(req: Request) {
       model: rentalDoc.model || "",
       status: rentalDoc.status,
       days: rentalDoc.days ?? rentalDoc.period ?? 0,
-      amount: { fee, deposit, stringPrice, stringingFee, total: totalAmount },
+      amount,
       createdAt: rentalDoc.createdAt ?? null,
       outAt: rentalDoc.outAt ?? null,
       dueAt: rentalDoc.dueAt ?? null,
@@ -398,7 +383,7 @@ export async function GET(req: Request) {
         ? appSummary.stringNames
         : getRentalStringNames(rentalDoc),
       stringingReservationLabel: appSummary?.reservationLabel ?? null,
-      paymentStatusLabel: paymentMeta.label as "결제완료" | "결제대기",
+      paymentStatusLabel: paymentMeta.label,
       paymentStatusSource: paymentMeta.source,
       servicePickupMethod,
       pickupMethodLabel: getPickupMethodLabel(servicePickupMethod),

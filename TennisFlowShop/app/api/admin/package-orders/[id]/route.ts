@@ -538,6 +538,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
             daysUntilExpiry: 1,
             isExpirySoon: 1,
             progressPercent: 1,
+            sessionCountConsistent: 1,
             purchaseDate: "$createdAt",
             expiryDate: 1,
             status: "$status",

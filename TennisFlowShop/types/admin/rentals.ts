@@ -47,7 +47,7 @@ export interface AdminRentalListItemDto {
   stringingTensionSummary?: string | null;
   stringingNames?: string[];
   stringingReservationLabel?: string | null;
-  paymentStatusLabel: "결제완료" | "결제대기";
+  paymentStatusLabel: string;
   paymentStatusSource: "explicit" | "derived";
   shipping: {
     outbound: {

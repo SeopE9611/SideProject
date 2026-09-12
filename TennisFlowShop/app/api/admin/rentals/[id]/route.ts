@@ -3,7 +3,10 @@ import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server
 import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
-import { normalizeRentalPaymentMeta } from "@/lib/admin-ops-normalize";
+import {
+  normalizeRentalAmountBreakdown,
+  normalizeRentalPaymentMeta,
+} from "@/lib/admin-ops-normalize";
 
 function maskAccount(acct?: string) {
   if (!acct) return "";
@@ -137,6 +140,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const u = await db.collection("users").findOne({ _id: doc.userId });
     if (u) user = { name: u.name ?? "", email: u.email ?? "", phone: u.phone ?? "" };
   }
+  if (!user && doc.guest) {
+    user = {
+      name: doc.guest.name ?? "",
+      email: doc.guest.email ?? "",
+      phone: doc.guest.phone ?? "",
+    };
+  }
 
   // 환불계좌(관리자 전용, 마스킹)
   const refundAccount = doc.refundAccount
@@ -230,7 +240,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     racketImageUrl,
     days: doc.days,
     status: typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status,
-    amount: doc.amount, // { deposit, fee, stringPrice?, stringingFee?, total }
+    amount: normalizeRentalAmountBreakdown(doc),
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null,
     dueAt: doc.dueAt ?? null,
