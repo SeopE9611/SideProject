@@ -27,32 +27,33 @@ const visitorLinks = [
 ] as const;
 
 export default async function Home() {
-  const [overview, contact, [newsResult, galleryResult, programsResult, transparencyResult]] = await Promise.all([
+  const [overview, contact, [noticesResult, activitiesResult, galleryResult, programsResult, transparencyResult]] = await Promise.all([
     getPublicFacilityOverview(),
     getPublicContactInformation(),
     Promise.allSettled([
-      getNewsRepository().listPublished({ limit: 8 }),
+      getNewsRepository().searchPublished({ category: "notice", pageSize: 3 }),
+      getNewsRepository().searchPublished({ category: "activity", pageSize: 2 }),
       findPublicGalleryItems(),
       getProgramRepository().listPublished({ limit: 3 }),
       findPublicTransparencyDocuments(),
     ]),
   ]);
   const isPreview = process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview";
-  const newsPosts = newsResult.status === "fulfilled" ? newsResult.value.filter((post) => isPreview || !post.isDemo) : [];
-  const notices = newsPosts.filter((post) => post.category === "notice").slice(0, 3);
-  const activities = newsPosts.filter((post) => post.category === "activity").slice(0, 2);
+  const notices = noticesResult.status === "fulfilled" ? noticesResult.value.items.filter((post) => isPreview || !post.isDemo) : [];
+  const activities = activitiesResult.status === "fulfilled" ? activitiesResult.value.items.filter((post) => isPreview || !post.isDemo) : [];
   const galleryItems = galleryResult.status === "fulfilled" ? galleryResult.value.slice(0, 4) : [];
   const programs = programsResult.status === "fulfilled" ? programsResult.value.slice(0, 3) : [];
   const documents = transparencyResult.status === "fulfilled" ? transparencyResult.value.slice(0, 3) : [];
-  const leadPhoto = galleryItems[0];
   const visualFixtureEnabled = isVisualFixtureEnabled();
+  const leadPhoto = !visualFixtureEnabled && galleryItems.length >= 4 ? galleryItems[0] : undefined;
   const heroImage = visualFixtureEnabled ? visualHomeImage : leadPhoto ? {
     src: `/api/gallery/${leadPhoto.slug}/media`, alt: leadPhoto.altText, width: leadPhoto.width, height: leadPhoto.height,
     caption: leadPhoto.title, href: `/life/gallery/${leadPhoto.slug}`,
   } : undefined;
-  const lifeItems = visualFixtureEnabled ? galleryItems.slice(0, 3) : galleryItems.slice(1, 4);
+  const lifeItems = visualFixtureEnabled || galleryItems.length < 4 ? galleryItems.slice(0, 3) : galleryItems.slice(1, 4);
 
-  if (newsResult.status === "rejected") console.error("홈 최근 소식 조회 실패");
+  if (noticesResult.status === "rejected") console.error("홈 공지사항 조회 실패");
+  if (activitiesResult.status === "rejected") console.error("홈 활동소식 조회 실패");
   if (galleryResult.status === "rejected") console.error("홈 활동사진 조회 실패");
   if (programsResult.status === "rejected") console.error("홈 프로그램 조회 실패");
   if (transparencyResult.status === "rejected") console.error("홈 자료공개 조회 실패");
@@ -78,7 +79,7 @@ export default async function Home() {
         <div className="grid gap-8 lg:grid-cols-[0.65fr_1.35fr] lg:gap-16">
           <div><p className="text-small font-bold text-accent">About Shalom</p><h2 id="about-home-heading" className="text-safe-wrap mt-2 text-[1.9rem] font-extrabold tracking-[-0.03em] text-primary sm:text-[2.4rem]">샬롬의 집을 소개합니다</h2></div>
           <div>
-            <p className="text-safe-wrap max-w-3xl text-[1.3rem] leading-9 font-semibold sm:text-[1.6rem] sm:leading-10">{overview.pageDescription}</p>
+            <p className="text-safe-wrap max-w-3xl text-[1.3rem] leading-9 font-semibold sm:text-[1.6rem] sm:leading-10">{overview.principlesDescription}</p>
             <ul className="mt-8 flex flex-wrap gap-x-7 gap-y-2 border-t border-border pt-5 text-small font-bold text-primary">
               <li><Link className="institution-link min-h-11 py-2" href="/about">시설개요</Link></li>
               <li><Link className="institution-link min-h-11 py-2" href="/about/spaces">생활공간</Link></li>
@@ -104,10 +105,10 @@ export default async function Home() {
 
       <section aria-labelledby="news-home-heading" className="border-y border-border py-16 sm:py-20">
         <div className="mx-auto max-w-site px-page sm:px-page-wide"><p className="text-small font-bold text-accent">News</p><h2 id="news-home-heading" className="text-safe-wrap mt-2 text-[2rem] font-extrabold tracking-[-0.03em] text-primary sm:text-[2.4rem]">샬롬의 집 소식</h2>
-          {newsPosts.some((post) => post.isDemo) ? <p className="mt-2 text-xs text-muted-foreground">미리보기 · 아래 예시 소식은 레이아웃 검증용입니다.</p> : null}
+          {[...notices, ...activities].some((post) => post.isDemo) ? <p className="mt-2 text-xs text-muted-foreground">미리보기 · 아래 예시 소식은 레이아웃 검증용입니다.</p> : null}
           <div className="mt-9 grid gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-            <section aria-labelledby="notices-heading"><div className="flex items-end justify-between border-b-2 border-primary pb-4"><h3 id="notices-heading" className="text-2xl font-extrabold">공지사항</h3><Link className="institution-link min-h-11 py-2 text-small" href="/news/notices">전체보기 →</Link></div>{notices.length ? <ul>{notices.map((post) => <li key={post.id} className="border-b border-border"><Link className="group grid min-h-20 gap-2 py-4 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-baseline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}><time className="text-small tabular-nums text-muted-foreground" dateTime={post.publishedAt}>{dateFormatter.format(new Date(post.publishedAt))}</time><span className="text-safe-wrap font-semibold group-hover:text-primary group-hover:underline">{post.title}</span></Link></li>)}</ul> : <p className="border-b border-border py-5 text-small text-muted-foreground">{newsResult.status === "rejected" ? "공지사항을 불러오지 못했습니다." : "아직 등록된 공지사항이 없습니다."}</p>}</section>
-            <section aria-labelledby="activities-heading"><div className="flex items-end justify-between border-b border-border pb-4"><h3 id="activities-heading" className="text-2xl font-extrabold">활동소식</h3><Link className="institution-link min-h-11 py-2 text-small" href="/news/activities">전체보기 →</Link></div>{activities.length ? <div className="divide-y divide-border">{activities.map((post) => <article key={post.id} className={`grid gap-5 py-6 ${post.coverImage ? "sm:grid-cols-[10rem_minmax(0,1fr)]" : ""}`}>{post.coverImage ? <Link className="relative block aspect-[4/3] overflow-hidden bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}><Image alt={post.coverImage.altText} className="object-cover" fill sizes="10rem" src={post.coverImage.src} unoptimized /></Link> : null}<div><time className="text-small tabular-nums text-muted-foreground" dateTime={post.publishedAt}>{dateFormatter.format(new Date(post.publishedAt))}</time><h4 className="text-safe-wrap mt-2 text-xl font-bold leading-snug"><Link className="hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}>{post.title}</Link></h4>{post.summary && post.summary !== post.title ? <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">{post.summary}</p> : null}</div></article>)}</div> : <p className="border-b border-border py-5 text-small text-muted-foreground">{newsResult.status === "rejected" ? "활동소식을 불러오지 못했습니다." : "아직 등록된 활동소식이 없습니다."}</p>}</section>
+            <section aria-labelledby="notices-heading"><div className="flex items-end justify-between border-b-2 border-primary pb-4"><h3 id="notices-heading" className="text-2xl font-extrabold">공지사항</h3><Link className="institution-link min-h-11 py-2 text-small" href="/news/notices">전체보기 →</Link></div>{notices.length ? <ul>{notices.map((post) => <li key={post.id} className="border-b border-border"><Link className="group grid min-h-20 gap-2 py-4 sm:grid-cols-[7rem_minmax(0,1fr)] sm:items-baseline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}><time className="text-small tabular-nums text-muted-foreground" dateTime={post.publishedAt}>{dateFormatter.format(new Date(post.publishedAt))}</time><span className="text-safe-wrap font-semibold group-hover:text-primary group-hover:underline">{post.title}</span></Link></li>)}</ul> : <p className="border-b border-border py-5 text-small text-muted-foreground">{noticesResult.status === "rejected" ? "공지사항을 불러오지 못했습니다." : "아직 등록된 공지사항이 없습니다."}</p>}</section>
+            <section aria-labelledby="activities-heading"><div className="flex items-end justify-between border-b border-border pb-4"><h3 id="activities-heading" className="text-2xl font-extrabold">활동소식</h3><Link className="institution-link min-h-11 py-2 text-small" href="/news/activities">전체보기 →</Link></div>{activities.length ? <div className="divide-y divide-border">{activities.map((post) => <article key={post.id} className={`grid gap-5 py-6 ${post.coverImage ? "sm:grid-cols-[10rem_minmax(0,1fr)]" : ""}`}>{post.coverImage ? <Link className="relative block aspect-[4/3] overflow-hidden bg-primary-soft focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}><Image alt={post.coverImage.altText} className="object-cover" fill sizes="10rem" src={post.coverImage.src} unoptimized /></Link> : null}<div><time className="text-small tabular-nums text-muted-foreground" dateTime={post.publishedAt}>{dateFormatter.format(new Date(post.publishedAt))}</time><h4 className="text-safe-wrap mt-2 text-xl font-bold leading-snug"><Link className="hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-focus-ring" href={`/news/${post.slug}`}>{post.title}</Link></h4>{post.summary && post.summary !== post.title ? <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">{post.summary}</p> : null}</div></article>)}</div> : <p className="border-b border-border py-5 text-small text-muted-foreground">{activitiesResult.status === "rejected" ? "활동소식을 불러오지 못했습니다." : "아직 등록된 활동소식이 없습니다."}</p>}</section>
           </div>
         </div>
       </section>
