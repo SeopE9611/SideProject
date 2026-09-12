@@ -58,6 +58,12 @@ import {
   getElapsedHours,
   resolveOperationsSlaLevel,
 } from "@/lib/admin/operations-sla";
+import {
+  hasPaymentCheckNeeded,
+  hasRentalDue,
+  hasShippingMissing,
+  matchesOperationsQuickView,
+} from "@/lib/admin/operations-group-classification";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import {
   badgeBase,
@@ -78,6 +84,7 @@ import type {
   AdminDailyOperationsSummaryResponse,
   AdminOperationsGroup,
   AdminOperationsListResponseDto,
+  AdminOperationsQuickView,
   AdminOperationsSummary,
   OperationGroupCounts,
   OperationSignalCounts,
@@ -109,8 +116,8 @@ const PAGE_COPY = {
   description: "대표 업무와 결제·정산 확인 항목을 구분해 남은 운영 업무를 확인합니다.",
   dailyTodoTitle: "남은 대표 업무",
   dailyTodoLabels: {
-    urgent: "긴급",
-    caution: "확인 필요",
+    dataIssue: "데이터 오류",
+    priorityReview: "우선 확인",
     pending: "미처리",
   },
   actionsTitle: "도움말",
@@ -278,17 +285,8 @@ function normalizeOperationStatusLabel(value?: string | null) {
 }
 
 type PresetKey = "paymentMismatch" | "integratedReview" | "singleApplication";
-type OperationsQuickView =
-  | "all"
-  | "today"
-  | "cancelRequests"
-  | "paymentCheck"
-  | "shippingMissing"
-  | "rentalDue"
-  | "linkedReview";
-
 const QUICK_VIEWS: Array<{
-  key: OperationsQuickView;
+  key: AdminOperationsQuickView;
   label: string;
   description: string;
 }> = [
@@ -319,123 +317,23 @@ const QUICK_VIEWS: Array<{
     description: "반납 확인이 필요한 대여 업무를 확인합니다.",
   },
   {
-    key: "linkedReview",
+    key: "linkedWork",
     label: "연결된 업무",
     description: "주문·신청·대여가 함께 묶인 운영 업무를 확인합니다.",
   },
+  {
+    key: "linkedIssues",
+    label: "연결 오류",
+    description: "연결 문서 상태가 일치하지 않는 운영 업무를 확인합니다.",
+  },
 ];
 
-function normalizeText(value?: string | null) {
-  return (value ?? "").toLowerCase().trim();
-}
-
-function appendQuickViewParam(params: URLSearchParams, view: OperationsQuickView) {
+function appendQuickViewParam(params: URLSearchParams, view: AdminOperationsQuickView) {
   if (view === "all") {
     params.delete("view");
     return;
   }
   params.set("view", view);
-}
-
-function isTodayQueueGroup(group: { groupQueueBucket: string }) {
-  return ["urgent", "caution", "pending"].includes(group.groupQueueBucket);
-}
-
-function isCancelRequestedGroup(group: { items: OpItem[] }) {
-  return group.items.some(
-    (item) =>
-      item.cancel?.status === "requested" || item.cancel?.status === "approved_pending_pg_cancel",
-  );
-}
-
-function hasPaymentCheckNeeded(group: { items: OpItem[] }) {
-  const excludeKeywords = ["결제완료", "환불완료", "취소완료"];
-
-  const includeKeywords = [
-    "결제대기",
-    "입금대기",
-    "미입금",
-    "입금 확인",
-    "결제 확인",
-    "동기화 필요",
-  ];
-
-  return group.items.some((item) => {
-    // 일반 주문은 API에서 계산한 구조화된 판정값을 최우선으로 사용합니다.
-    if (item.kind === "order" && typeof item.paymentNeedsCheck === "boolean") {
-      return item.paymentNeedsCheck;
-    }
-
-    // 신청서·대여·패키지는 기존 문자열 기반 판정을 유지합니다.
-    const statusText = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`;
-
-    if (excludeKeywords.some((word) => statusText.includes(word))) {
-      return false;
-    }
-
-    const paymentStatus = normalizeText(item.stage);
-
-    if (paymentStatus.includes("pending") || paymentStatus.includes("unpaid")) {
-      return true;
-    }
-
-    const combined = `${item.paymentLabel ?? ""} ${statusText} ${item.nextAction ?? ""}`;
-
-    return includeKeywords.some((word) => combined.includes(word));
-  });
-}
-
-function hasShippingMissing(group: { items: OpItem[] }) {
-  const excludeKeywords = ["배송완료", "수령완료", "방문 수령 완료", "반납완료"];
-  const includeKeywords = [
-    "운송장",
-    "배송 등록",
-    "운송장 등록",
-    "배송 필요",
-    "발송 필요",
-    "출고 필요",
-    "인도 필요",
-    "인도 운송장",
-    "인도 정보",
-    "배송 누락",
-  ];
-  return group.items.some((item) => {
-    const statusText = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`;
-    if (excludeKeywords.some((word) => statusText.includes(word))) return false;
-    const warnText = (item.warnReasons ?? []).join(" ");
-    const nextActionText = item.nextAction ?? "";
-    const combined = `${statusText} ${warnText} ${nextActionText}`;
-    const needsTracking = item.hasShippingInfo === false || item.hasOutboundTracking === false;
-    if (needsTracking && includeKeywords.some((word) => combined.includes(word))) return true;
-    return includeKeywords.some((word) => warnText.includes(word) || nextActionText.includes(word));
-  });
-}
-
-function hasRentalDue(group: { items: OpItem[] }) {
-  const includeStageKeywords = ["overdue", "duesoon", "returndue", "active", "ongoing"];
-  const includeStatusKeywords = ["대여중", "반납대기", "반납예정"];
-  const includeActionKeywords = ["반납 확인", "반납확인", "반납 예정", "반납 필요"];
-  const excludeKeywords = ["반납완료", "완료", "환불완료"];
-  return group.items.some((item) => {
-    if (item.kind !== "rental") return false;
-    const combined = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""} ${item.nextAction ?? ""}`;
-    const isReturned = combined.toLowerCase().includes("returned") || combined.includes("반납완료");
-    const hasDepositRefundSignal =
-      item.signals?.some((signal) => signal.code === "RENTAL_DEPOSIT_REFUND_REQUIRED") === true;
-    const needsDepositRefund =
-      !item.depositRefundedAt &&
-      (hasDepositRefundSignal || (isReturned && combined.includes("보증금")));
-    if (needsDepositRefund) return true;
-    if (excludeKeywords.some((word) => combined.includes(word))) return false;
-    const stage = normalizeText(item.stage);
-    if (includeStageKeywords.some((word) => stage.includes(word))) return true;
-    if (includeStatusKeywords.some((word) => combined.includes(word))) return true;
-    return includeActionKeywords.some((word) => (item.nextAction ?? "").includes(word));
-  });
-}
-
-function isLinkedWorkGroup(group: { items: OpItem[] }) {
-  return group.items.some((item) => Boolean(item.related)) || group.items.length > 1;
 }
 
 const PRESET_CONFIG: Record<
@@ -639,7 +537,7 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
   const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
   const [displayDensity, setDisplayDensity] = useState<"default" | "compact">("default");
-  const [activeQuickView, setActiveQuickView] = useState<OperationsQuickView>("all");
+  const [activeQuickView, setActiveQuickView] = useState<AdminOperationsQuickView>("all");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [isRefreshingList, setIsRefreshingList] = useState(false);
   const [syncingNiceOrderId, setSyncingNiceOrderId] = useState<string | null>(null);
@@ -736,6 +634,7 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
     page,
     pageSize: effectivePageSize,
     warn: onlyWarn ? "1" : undefined,
+    view: activeQuickView === "all" ? undefined : activeQuickView,
   });
   const key = `/api/admin/operations?${queryString}`;
   const navigationSummaryKey = "/api/admin/navigation-summary";
@@ -823,25 +722,7 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
   }, [groups]);
   const quickViewFilteredGroups = useMemo(() => {
     if (activeQuickView === "all") return groupsToRender;
-    return groupsToRender.filter((group) => {
-      const items = group.items ?? [];
-      switch (activeQuickView) {
-        case "today":
-          return isTodayQueueGroup(group);
-        case "cancelRequests":
-          return isCancelRequestedGroup(group);
-        case "paymentCheck":
-          return hasPaymentCheckNeeded(group);
-        case "shippingMissing":
-          return hasShippingMissing(group);
-        case "rentalDue":
-          return hasRentalDue(group);
-        case "linkedReview":
-          return isLinkedWorkGroup(group);
-        default:
-          return true;
-      }
-    });
+    return groupsToRender.filter((group) => matchesOperationsQuickView(group, activeQuickView));
   }, [activeQuickView, groupsToRender]);
   const shouldShowEmptyState = hasResolvedGroups && quickViewFilteredGroups.length === 0;
 
@@ -880,7 +761,7 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
   const shouldShowGlobalError = Boolean(error) && !Array.isArray(data?.groups);
 
   const todayTodoCount: AdminOperationsSummary | null =
-    data?.summaryAll ?? (data ? { urgent: 0, caution: 0, pending: 0 } : null);
+    data?.summaryAll ?? (data ? { dataIssue: 0, priorityReview: 0, pending: 0 } : null);
 
   const shareViewHref = useMemo(() => {
     const qs = buildOperationsViewQueryString({
@@ -956,7 +837,7 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
     });
   }
 
-  function applyQuickView(view: OperationsQuickView) {
+  function applyQuickView(view: AdminOperationsQuickView) {
     setActiveQuickView(view);
     scrollToOperationsList();
     const nextParams = new URLSearchParams(sp.toString());
@@ -1022,16 +903,27 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
     }
   }, [activeFilterCount]);
 
-  const taskCounts =
-    data?.operationSignalCounts ??
-    navigationSummary?.operationSignalCounts ??
-    navigationSummary?.operationTaskCounts;
+  const navigationTaskCounts =
+    navigationSummary?.operationSignalCounts ?? navigationSummary?.operationTaskCounts;
+  const taskCounts = data?.operationSignalCounts
+    ? {
+        ...data.operationSignalCounts,
+        offline:
+          navigationTaskCounts?.offline ??
+          dailySummary?.remaining.offline ??
+          data.operationSignalCounts.offline,
+        academyApplications:
+          navigationTaskCounts?.academyApplications ??
+          dailySummary?.remaining.academyApplications ??
+          data.operationSignalCounts.academyApplications,
+      }
+    : (navigationTaskCounts ?? dailySummary?.operationSignalCounts);
   const groupCounts = data?.operationGroupCounts ?? navigationSummary?.operationGroupCounts;
   const representativeTodayCount =
     groupCounts?.todayRepresentativeTasks ??
     dailySummary?.operationGroupCounts?.todayRepresentativeTasks ??
     (todayTodoCount
-      ? todayTodoCount.urgent + todayTodoCount.caution + todayTodoCount.pending
+      ? todayTodoCount.dataIssue + todayTodoCount.priorityReview + todayTodoCount.pending
       : undefined);
   const representativeTotalCount =
     groupCounts?.totalRepresentativeTasks ??
@@ -1097,15 +989,15 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
         count: taskCounts?.linkedReview ?? 0,
         description: "연결 문서 상태 불일치 점검",
         action: "바로 처리",
-        onClick: () => applyQuickView("linkedReview"),
+        onClick: () => applyQuickView("linkedIssues"),
         tone: "warning" as const,
       },
     ];
   }, [router, taskCounts]);
 
   const activeKpi = useMemo(() => {
-    if (warnFilter === "warn") return "urgent";
-    if (warnFilter === "caution") return "caution";
+    if (warnFilter === "warn") return "dataIssue";
+    if (warnFilter === "caution") return "priorityReview";
     if (warnFilter === "pending") return "pending";
     return null;
   }, [warnFilter]);
@@ -1114,11 +1006,28 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
     typeof value === "number" ? `${value.toLocaleString("ko-KR")}건` : "-";
   const dailySummaryInlineValue = (label: string, value?: number) =>
     `${label} ${typeof value === "number" ? value.toLocaleString("ko-KR") : "-"}`;
-  const dailySummaryStatusMessage = dailySummaryError
-    ? "마감 요약을 불러오지 못했습니다. 기존 업무 목록은 계속 사용할 수 있습니다."
-    : dailySummary
-      ? dailySummary.attention.message
-      : "불러오는 중...";
+  const immediateSignalCount = taskCounts
+    ? (taskCounts.cancelRequests ?? 0) + (taskCounts.rentalDue ?? 0)
+    : undefined;
+  const followupSignalCount = taskCounts
+    ? (taskCounts.paymentCheck ?? 0) +
+      (taskCounts.packagePaymentCheck ?? 0) +
+      (taskCounts.shippingMissing ?? 0) +
+      (taskCounts.stringingWork ?? 0) +
+      (taskCounts.linkedReview ?? 0) +
+      (taskCounts.offline ?? 0) +
+      (taskCounts.academyApplications ?? 0)
+    : undefined;
+  const dailySummaryStatusMessage =
+    typeof immediateSignalCount === "number" && immediateSignalCount > 0
+      ? "즉시 처리 신호가 남아 있습니다. 취소 요청과 대여 반납/연체를 먼저 확인하세요."
+      : typeof followupSignalCount === "number" && followupSignalCount > 0
+        ? "후속 확인 신호가 남아 있습니다. 결제, 배송, 교체서비스와 상담 대기 건을 점검하세요."
+        : dailySummaryError
+          ? "마감 요약을 불러오지 못했습니다. 기존 업무 목록은 계속 사용할 수 있습니다."
+          : taskCounts
+            ? "현재 확인 신호가 모두 정리되었습니다."
+            : "불러오는 중...";
 
   return (
     <AdminPageShell variant="wide">
@@ -1173,10 +1082,23 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
           }
         />
         {portfolioDemo ? (
-          <div className={cn(adminSurface.cardMuted, "mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 p-3", adminTypography.body)}>
-            <span className="flex items-center gap-2"><PortfolioDemoDataBadge kind="seed" /> 미리 준비된 운영 예시</span>
-            <span className="flex items-center gap-2"><PortfolioDemoDataBadge kind="current_interaction" /> 방금 고객 화면에서 만든 임시 데이터</span>
-            <span className="flex items-center gap-2"><PortfolioDemoDataBadge kind="interaction" /> Demo에서 생성된 다른 임시 데이터</span>
+          <div
+            className={cn(
+              adminSurface.cardMuted,
+              "mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 p-3",
+              adminTypography.body,
+            )}
+          >
+            <span className="flex items-center gap-2">
+              <PortfolioDemoDataBadge kind="seed" /> 미리 준비된 운영 예시
+            </span>
+            <span className="flex items-center gap-2">
+              <PortfolioDemoDataBadge kind="current_interaction" /> 방금 고객 화면에서 만든 임시
+              데이터
+            </span>
+            <span className="flex items-center gap-2">
+              <PortfolioDemoDataBadge kind="interaction" /> Demo에서 생성된 다른 임시 데이터
+            </span>
           </div>
         ) : null}
 
@@ -1214,14 +1136,15 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
           />
           <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
             <AdminSummaryCard
-              title={PAGE_COPY.dailyTodoLabels.urgent}
-              value={todayTodoCount ? `${todayTodoCount.urgent}건` : "-"}
-              description="오류 또는 긴급 확인이 필요한 항목"
+              title={PAGE_COPY.dailyTodoLabels.dataIssue}
+              value={todayTodoCount ? `${todayTodoCount.dataIssue}건` : "-"}
+              description="연결·무결성 오류 신호가 있는 항목"
               icon={Siren}
               tone="danger"
               compact
-              active={activeKpi === "urgent"}
+              active={activeKpi === "dataIssue"}
               onAction={() => {
+                setActiveQuickView("all");
                 setWarnFilter("warn");
                 setOnlyWarn(false);
                 setPage(1);
@@ -1229,14 +1152,15 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
               }}
             />
             <AdminSummaryCard
-              title={PAGE_COPY.dailyTodoLabels.caution}
-              value={todayTodoCount ? `${todayTodoCount.caution}건` : "-"}
-              description="운영자 확인이 필요한 항목"
+              title={PAGE_COPY.dailyTodoLabels.priorityReview}
+              value={todayTodoCount ? `${todayTodoCount.priorityReview}건` : "-"}
+              description="운영자가 우선 확인할 항목"
               icon={BellRing}
               tone="warning"
               compact
-              active={activeKpi === "caution"}
+              active={activeKpi === "priorityReview"}
               onAction={() => {
+                setActiveQuickView("all");
                 setOnlyWarn(false);
                 setWarnFilter("caution");
                 setPage(1);
@@ -1252,6 +1176,7 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
               compact
               active={activeKpi === "pending"}
               onAction={() => {
+                setActiveQuickView("all");
                 setOnlyWarn(false);
                 setWarnFilter("pending");
                 setPage(1);
@@ -1422,18 +1347,18 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
                   <dd className="min-w-0 text-right">
                     <span className={adminTypography.kpiValue}>
                       {dailySummaryValue(
-                        dailySummary?.operationGroupCounts?.totalRepresentativeTasks ??
-                          representativeTotalCount,
+                        representativeTotalCount ??
+                          dailySummary?.operationGroupCounts?.totalRepresentativeTasks,
                       )}
                     </span>
                     <p className={adminTypography.metaMuted}>
-                      {dailySummary
+                      {taskCounts
                         ? [
-                            dailySummaryInlineValue("취소", dailySummary.remaining.cancelRequests),
-                            dailySummaryInlineValue("결제", dailySummary.remaining.paymentCheck),
-                            dailySummaryInlineValue("배송", dailySummary.remaining.shippingMissing),
-                            dailySummaryInlineValue("교체", dailySummary.remaining.stringingWork),
-                            dailySummaryInlineValue("반납", dailySummary.remaining.rentalDue),
+                            dailySummaryInlineValue("취소", taskCounts.cancelRequests),
+                            dailySummaryInlineValue("결제", taskCounts.paymentCheck),
+                            dailySummaryInlineValue("배송", taskCounts.shippingMissing),
+                            dailySummaryInlineValue("교체", taskCounts.stringingWork),
+                            dailySummaryInlineValue("반납", taskCounts.rentalDue),
                           ].join(" · ")
                         : dailySummaryError
                           ? "요약을 불러오지 못했습니다."
@@ -1446,8 +1371,8 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
                   <dd className="text-right">
                     <span className={adminTypography.kpiValue}>
                       {dailySummaryValue(
-                        dailySummary?.remaining.packagePaymentCheck ??
-                          taskCounts?.packagePaymentCheck,
+                        taskCounts?.packagePaymentCheck ??
+                          dailySummary?.remaining.packagePaymentCheck,
                       )}
                     </span>
                     <p className={adminTypography.metaMuted}>
@@ -1459,8 +1384,8 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
                   <dt className={adminTypography.bodyStrong}>마감 전 확인</dt>
                   <dd className="min-w-0 text-right">
                     <p className={adminTypography.bodyStrong}>
-                      긴급 {dailySummaryValue(dailySummary?.attention.urgentRemaining)} / 확인{" "}
-                      {dailySummaryValue(dailySummary?.attention.watchRemaining)}
+                      즉시 처리 신호 {dailySummaryValue(immediateSignalCount)} / 후속 확인 신호{" "}
+                      {dailySummaryValue(followupSignalCount)}
                     </p>
                     <p
                       className={cn(
@@ -1477,7 +1402,7 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
                         variant="outline"
                         onClick={() => applyQuickView("cancelRequests")}
                       >
-                        긴급 업무 보기
+                        취소 요청 보기
                       </Button>
                       <Button
                         type="button"
@@ -1775,12 +1700,12 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">전체</SelectItem>
-                    <SelectItem value="warn">주의만</SelectItem>
+                    <SelectItem value="warn">데이터 오류만</SelectItem>
                     <SelectItem value="caution" disabled={onlyWarn}>
-                      확인 필요 항목
+                      우선 확인만
                     </SelectItem>
                     <SelectItem value="review" disabled={onlyWarn}>
-                      확인 필요만
+                      검수 신호만
                     </SelectItem>
                     <SelectItem value="pending" disabled={onlyWarn}>
                       미처리만
@@ -1955,7 +1880,7 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
                   ? {
                       label: "긴급",
                       description: "SLA 긴급 기준 초과",
-                      tone: "warning" as const,
+                      tone: "danger" as const,
                     }
                   : priorityMeta.label === "정상" && slaLevel === "watch"
                     ? {
@@ -2055,8 +1980,15 @@ export default function OperationsClient({ portfolioDemo = false }: { portfolioD
                       supporting={
                         <div className="flex flex-wrap items-center gap-2">
                           <PortfolioDemoDataBadge kind={g.anchor.portfolioDemoDataKind} />
-                          {displayDensity === "default" ? <span>{`${scenarioLabel}${isGroup ? ` · 연결 ${g.items.length}건` : ""}`}</span> : null}
-                          {children.map((child) => <PortfolioDemoDataBadge key={`${child.kind}:${child.id}`} kind={child.portfolioDemoDataKind} />)}
+                          {displayDensity === "default" ? (
+                            <span>{`${scenarioLabel}${isGroup ? ` · 연결 ${g.items.length}건` : ""}`}</span>
+                          ) : null}
+                          {children.map((child) => (
+                            <PortfolioDemoDataBadge
+                              key={`${child.kind}:${child.id}`}
+                              kind={child.portfolioDemoDataKind}
+                            />
+                          ))}
                         </div>
                       }
                     />
