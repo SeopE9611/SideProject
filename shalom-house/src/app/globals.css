@@ -183,6 +183,10 @@
     scroll-margin-block-end: 1rem;
   }
 
+  .public-focus-ring:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+  }
+
   .admin-shell .admin-main {
     --admin-control-height: 3rem;
   }
