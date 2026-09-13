@@ -135,7 +135,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
           ) : null}
           <button
             aria-label="소식 검색"
-            className="inline-flex min-h-13 items-center justify-center gap-2 whitespace-nowrap bg-primary px-3 py-3 font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring sm:px-7"
+            className="inline-flex min-h-13 items-center justify-center gap-2 whitespace-nowrap bg-primary px-3 py-3 font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:[outline-color:var(--color-focus-ring)] sm:px-7"
             type="submit"
           >
             <LineIcon name="search" size={19} />

@@ -179,6 +179,10 @@
 }
 
 @layer components {
+  .public-shell :focus-visible {
+    scroll-margin-block-end: 1rem;
+  }
+
   .admin-shell .admin-main {
     --admin-control-height: 3rem;
   }
