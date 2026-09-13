@@ -226,15 +226,55 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             <ul>
               {posts.map((post) => (
                 <li key={post.id} className="border-b border-border">
-                  <article className="grid gap-x-7 gap-y-3 py-7 md:grid-cols-[7rem_minmax(0,1fr)_9rem] md:px-2 md:py-8">
-                    <div>
-                      <p
-                        className={`inline-flex min-h-7 items-center text-small font-bold ${post.category === "activity" ? "text-accent" : "text-primary"}`}
-                      >
-                        {getNewsCategoryLabel(post.category)}
-                      </p>
-                    </div>
-                    <div className="flex min-w-0 items-start gap-5">
+                  {post.category === "activity" ? (
+                    <article className="my-7 border-l-2 border-accent py-1 pl-5 sm:pl-7 md:my-8">
+                      <div className="flex min-w-0 items-start gap-5">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-small font-bold text-accent">
+                            활동 소식 <span className="text-muted-foreground">·</span>{" "}
+                            <time className="font-medium text-muted-foreground tabular-nums" dateTime={post.publishedAt}>
+                              {dateFormatter.format(new Date(post.publishedAt))}
+                            </time>
+                          </p>
+                          <h3 className="mt-2 text-[1.3rem] leading-relaxed font-bold tracking-[-0.015em] sm:text-[1.45rem]">
+                            <Link
+                              className="text-safe-wrap underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                              href={`/news/${post.slug}?returnTo=${encodeURIComponent(queryHref(basePath, currentPage, q, fixedCategory ? undefined : category))}`}
+                            >
+                              {post.title}
+                            </Link>
+                          </h3>
+                          {post.summary.trim() && post.summary.trim() !== post.title.trim() ? (
+                            <p className="text-safe-wrap mt-3 max-w-3xl text-small leading-7 text-muted-foreground">
+                              {post.summary}
+                            </p>
+                          ) : null}
+                          {post.attachment ? (
+                            <p className="mt-2 inline-flex items-center gap-2 text-small font-semibold text-muted-foreground">
+                              <LineIcon name="file-text" size={17} />
+                              PDF 첨부
+                            </p>
+                          ) : null}
+                        </div>
+                        {post.coverImage ? (
+                          <Image
+                            className="aspect-[4/3] w-24 shrink-0 object-cover sm:w-32"
+                            src={post.coverImage.src}
+                            alt={post.coverImage.altText}
+                            width={post.coverImage.width}
+                            height={post.coverImage.height}
+                            unoptimized
+                          />
+                        ) : null}
+                      </div>
+                    </article>
+                  ) : (
+                    <article className="grid gap-x-7 gap-y-3 py-7 md:grid-cols-[7rem_minmax(0,1fr)_9rem] md:px-2 md:py-8">
+                      <div>
+                        <p className="inline-flex min-h-7 items-center text-small font-bold text-primary">
+                          {getNewsCategoryLabel(post.category)}
+                        </p>
+                      </div>
                       <div className="min-w-0 flex-1">
                         <h3 className="text-[1.2rem] leading-relaxed font-bold tracking-[-0.015em] sm:text-[1.35rem]">
                           <Link
@@ -256,24 +296,14 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                           </p>
                         ) : null}
                       </div>
-                      {post.category === "activity" && post.coverImage ? (
-                        <Image
-                          className="aspect-[4/3] w-24 shrink-0 object-cover sm:w-32"
-                          src={post.coverImage.src}
-                          alt={post.coverImage.altText}
-                          width={post.coverImage.width}
-                          height={post.coverImage.height}
-                          unoptimized
-                        />
-                      ) : null}
-                    </div>
-                    <time
-                      className="text-small text-muted-foreground tabular-nums md:pt-1 md:text-right"
-                      dateTime={post.publishedAt}
-                    >
-                      {dateFormatter.format(new Date(post.publishedAt))}
-                    </time>
-                  </article>
+                      <time
+                        className="text-small text-muted-foreground tabular-nums md:pt-1 md:text-right"
+                        dateTime={post.publishedAt}
+                      >
+                        {dateFormatter.format(new Date(post.publishedAt))}
+                      </time>
+                    </article>
+                  )}
                 </li>
               ))}
             </ul>
