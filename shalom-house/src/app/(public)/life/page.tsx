@@ -226,21 +226,22 @@ export default async function LifePage() {
                 프로그램
               </h2>
               {programs.length > 0 ? (
-                <ul className="mt-4 divide-y divide-accent/20">
+                <ul className="mt-3 divide-y divide-accent/20">
                   {programs.map((program) => (
-                    <li key={program.id} className="py-4">
+                    <li key={program.id} className="py-3.5">
                       <p className="text-small font-semibold text-accent">{program.category}</p>
                       <h3>
                         <Link
-                          className="institution-link text-safe-wrap py-2 text-lg"
+                          className="institution-link text-safe-wrap py-1.5 text-lg"
                           href={"/life/programs/" + program.slug}
                         >
                           {program.title}
                         </Link>
                       </h3>
-                      <p className="text-safe-wrap text-small leading-7 text-muted-foreground">{program.purpose}</p>
                       {program.operationStatusLabel ? (
-                        <p className="text-safe-wrap mt-2 text-small">운영 상태 · {program.operationStatusLabel}</p>
+                        <p className="text-safe-wrap mt-1 text-small text-muted-foreground">
+                          운영 상태 · {program.operationStatusLabel}
+                        </p>
                       ) : null}
                     </li>
                   ))}
@@ -256,19 +257,19 @@ export default async function LifePage() {
                 프로그램 안내 <span aria-hidden="true">→</span>
               </Link>
             </section>
-            <nav aria-label="생활 관련 안내" className="mt-6 border-t border-accent/20 pt-5">
-              <ul className="space-y-2">
+            <nav aria-label="생활 관련 안내" className="mt-5 border-t border-accent/20 pt-4">
+              <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-small">
                 <li>
                   <Link className="institution-link" href="/life/gallery">
                     활동사진 전체보기
                   </Link>
                 </li>
-                <li>
+                <li className="inline-flex items-center gap-2 before:text-muted-foreground before:content-['·']">
                   <Link className="institution-link" href="/about/spaces">
                     생활공간 안내
                   </Link>
                 </li>
-                <li>
+                <li className="inline-flex items-center gap-2 before:text-muted-foreground before:content-['·']">
                   <Link className="institution-link" href="/support/contact">
                     문의하기
                   </Link>
