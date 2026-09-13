@@ -11,8 +11,8 @@ type HomeHeroProps = {
 export function HomeHero({ siteName, description, image }: HomeHeroProps) {
   return (
     <section aria-labelledby="home-heading" className="border-b border-border bg-surface">
-      <div className={`mx-auto max-w-site px-page py-12 sm:px-page-wide sm:py-18 ${image ? "grid gap-10 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-center lg:gap-16" : ""}`}>
-        <div className="max-w-2xl">
+      <div className={`mx-auto px-page py-12 sm:px-page-wide sm:py-18 ${image ? "grid max-w-site gap-10 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-center lg:gap-16" : "max-w-4xl"}`}>
+        <div className={image ? "max-w-2xl" : "max-w-3xl"}>
           <p className="text-small font-bold tracking-[0.08em] text-accent">장애인거주시설</p>
           <h1 id="home-heading" className="text-safe-wrap mt-4 text-[clamp(2.9rem,7vw,5.5rem)] font-extrabold leading-none tracking-[-0.055em] text-primary">{siteName}</h1>
           <p className="text-safe-wrap mt-7 max-w-xl text-lg leading-8 text-muted-foreground sm:text-xl sm:leading-9">{description}</p>

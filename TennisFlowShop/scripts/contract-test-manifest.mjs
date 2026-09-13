@@ -54,6 +54,7 @@ export const coreContractFiles = [
 
 export const advisoryContractFiles = [
   "admin-boards-brand-compat.contract.test.mjs",
+  "admin-core-data-consistency.advisory.test.mjs",
   "admin-operations-count-consistency.advisory.test.mjs",
   "admin-order-detail-display.contract.test.mjs",
   "admin-package-read-model.contract.test.mjs",

@@ -5,6 +5,7 @@ export type OrderItem = {
   imageUrl?: string | null;
   mountingFee?: number;
   quantity: number;
+  priceSnapshotStatus?: "confirmed" | "needs_review";
   selectedGauge?: string | null;
   selectedColor?: string | null;
   selectedColorLabel?: string | null;
@@ -59,6 +60,7 @@ export type Order = {
   type: "상품" | "서비스" | "클래스";
 
   total: number;
+  totalPriceSnapshotStatus?: "confirmed" | "needs_review";
 
   items: OrderItem[];
 

@@ -74,7 +74,7 @@ const won = (n: number) => (n || 0).toLocaleString("ko-KR") + "원";
 
 const rentalStatusLabels: Record<string, string> = {
   pending: "대기중",
-  paid: "결제완료",
+  paid: "인도 대기",
   out: "대여중",
   rented: "대여중",
   returned: "반납완료",
@@ -825,7 +825,7 @@ export default function AdminRentalDetailClient({ readOnly = false }: { readOnly
               value={(() => {
                 const rentalLabel =
                   data.status === "paid" && hasOutboundTracking
-                    ? "결제완료 · 수령 확인 대기"
+                    ? "인도 대기 · 수령 확인 대기"
                     : rentalStatusLabels[data.status] || data.status;
                 const rentalSpec = getRentalStatusBadgeSpec(data.status);
                 return (

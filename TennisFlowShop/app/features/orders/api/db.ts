@@ -4,6 +4,7 @@ import { isApplicationEligibleForLinkedStage } from "@/lib/admin/linked-flow-sta
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
+import { resolveHistoricalStringingItemPrice } from "@/lib/orders/historical-order-item-price";
 import { DBOrder } from "@/lib/types/order-db";
 import { ObjectId } from "mongodb";
 import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
@@ -257,7 +258,9 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
           guestEmail: 1,
           guestPhone: 1,
           stringDetails: 1,
+          stringItems: 1,
           totalPrice: 1,
+          packageApplied: 1,
           shippingInfo: 1,
           cancelRequest: 1,
           isDemoData: 1, demoSeedKey: 1, isDemoInteraction: 1, demoSessionId: 1,
@@ -292,34 +295,65 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
               };
 
         // 상품 아이템
+        const itemSnapshots = Array.isArray((app as any).stringItems)
+          ? (app as any).stringItems
+          : [];
+        const lineSnapshots = Array.isArray(app.stringDetails?.lines)
+          ? app.stringDetails.lines
+          : [];
+        const stringTypeIds = Array.isArray(app.stringDetails?.stringTypes)
+          ? app.stringDetails.stringTypes.map((value: unknown) => String(value ?? ""))
+          : [];
+        const itemTypeIds = stringTypeIds.length
+          ? stringTypeIds
+          : itemSnapshots.map((item: any) => String(item?.productId ?? item?.id ?? "custom"));
         const items = await Promise.all(
-          (app.stringDetails?.stringTypes ?? []).map(async (typeId: string) => {
+          itemTypeIds.map(async (typeId: string, index: number) => {
+            const snapshot =
+              itemSnapshots[index] ??
+              lineSnapshots.find(
+                (line: any) => String(line?.stringProductId ?? "") === String(typeId),
+              ) ??
+              lineSnapshots[index];
+            const historicalPrice = resolveHistoricalStringingItemPrice({
+              mountingFee: snapshot?.mountingFee,
+              isExplicitFree: Boolean((app as any).packageApplied),
+            });
             if (typeId === "custom") {
               return {
                 id: "custom",
-                name: app.stringDetails?.customStringName ?? "커스텀 스트링",
-                price: 15_000,
-                quantity: 1,
+                name: snapshot?.name ?? app.stringDetails?.customStringName ?? "커스텀 스트링",
+                price: historicalPrice.displayPrice ?? 0,
+                priceSnapshotStatus: historicalPrice.snapshotStatus,
+                quantity:
+                  typeof snapshot?.quantity === "number" && snapshot.quantity > 0
+                    ? snapshot.quantity
+                    : 1,
               };
             }
-            const prod = await db
-              .collection("products")
-              .findOne({ _id: new ObjectId(typeId) }, { projection: { name: 1, mountingFee: 1 } });
+            const prod = ObjectId.isValid(typeId)
+              ? await db
+                  .collection("products")
+                  .findOne({ _id: new ObjectId(typeId) }, { projection: { name: 1 } })
+              : null;
             return {
               id: typeId,
-              name: prod?.name ?? "알 수 없는 상품",
-              price: prod?.mountingFee ?? 0,
-              quantity: 1,
+              name: snapshot?.name ?? prod?.name ?? "알 수 없는 상품",
+              price: historicalPrice.displayPrice ?? 0,
+              priceSnapshotStatus: historicalPrice.snapshotStatus,
+              quantity:
+                typeof snapshot?.quantity === "number" && snapshot.quantity > 0
+                  ? snapshot.quantity
+                  : 1,
             };
           }),
         );
-        // 총액(문서 저장값 우선, 없으면 계산값)
-        const totalFromDoc =
-          typeof (app as any).totalPrice === "number" ? (app as any).totalPrice : null;
-        const totalCalculated = items.reduce(
-          (s, it) => s + (it.price || 0) * (it.quantity || 0),
-          0,
-        );
+        const rawTotal =
+          typeof (app as any).totalPrice === "number" && Number.isFinite((app as any).totalPrice)
+            ? Math.max(0, (app as any).totalPrice)
+            : null;
+        const hasConfirmedTotalSnapshot =
+          rawTotal !== null && (rawTotal > 0 || Boolean((app as any).packageApplied));
 
         // 장착 상품 요약 문자열 (첫 상품 + 종수/총수량)
         let stringSummary: string | undefined;
@@ -380,7 +414,8 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
             status: typeof app.paymentInfo?.status === "string" ? app.paymentInfo.status : null,
           },
           type: "서비스",
-          total: totalFromDoc ?? totalCalculated,
+          total: hasConfirmedTotalSnapshot ? rawTotal : 0,
+          totalPriceSnapshotStatus: hasConfirmedTotalSnapshot ? "confirmed" : "needs_review",
           items,
           stringSummary,
           shippingInfo: {

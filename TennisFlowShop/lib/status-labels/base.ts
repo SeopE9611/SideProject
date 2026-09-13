@@ -64,7 +64,7 @@ const APPLICATION_STATUS_LABEL_MAP: Record<string, string> = {
 
 const RENTAL_STATUS_LABEL_MAP: Record<string, string> = {
   pending: "대기중",
-  paid: "결제완료",
+  paid: "인도 대기",
   rented: "대여중",
   out: "대여중",
   returned: "반납완료",

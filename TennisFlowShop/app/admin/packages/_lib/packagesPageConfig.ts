@@ -111,6 +111,7 @@ export function getAdminPackageAttentionReasonLabel(reason: AdminPackageAttentio
       pass_issue_pending: "패스 발급 확인 필요",
       pass_paused: "일시정지 상태 확인 필요",
       pass_unknown: "패스 상태 확인 필요",
+      session_count_mismatch: "전체·사용·잔여 횟수 불일치",
       terminal_payment_with_live_pass: "결제 종료·이용권 상태 불일치",
     } as const
   )[reason];

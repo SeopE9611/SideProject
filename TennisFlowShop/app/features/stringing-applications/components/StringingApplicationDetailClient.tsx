@@ -81,6 +81,7 @@ import { bankLabelMap, stringColorLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
+import { getStringingPaymentMethodDisplayLabel } from "@/lib/payments/stringing-payment-method-display";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -233,7 +234,8 @@ interface ApplicationDetail {
   items: Array<{
     id: string;
     name: string;
-    price: number;
+    price: number | null;
+    priceSnapshotStatus?: "confirmed" | "needs_review";
     quantity: number;
   }>;
   linkedOrderItems?: Array<{
@@ -933,7 +935,13 @@ export default function StringingApplicationDetailClient({
 
   const groupedItemSummary = new Map<
     string,
-    { id: string; name: string; price: number; quantity: number }
+    {
+      id: string;
+      name: string;
+      price: number | null;
+      priceSnapshotStatus?: "confirmed" | "needs_review";
+      quantity: number;
+    }
   >();
   for (const item of data.items ?? []) {
     const key = `${item.id}::${item.name}::${item.price}`;
@@ -945,13 +953,14 @@ export default function StringingApplicationDetailClient({
         id: item.id,
         name: item.name,
         price: item.price,
+        priceSnapshotStatus: item.priceSnapshotStatus,
         quantity: item.quantity,
       });
     }
   }
   const itemSummary = Array.from(groupedItemSummary.values()).map((it) => ({
     ...it,
-    subtotal: it.price * it.quantity,
+    subtotal: typeof it.price === "number" ? it.price * it.quantity : null,
   }));
   const linkedOrderItems = Array.isArray(data.linkedOrderItems) ? data.linkedOrderItems : [];
 
@@ -2711,10 +2720,14 @@ export default function StringingApplicationDetailClient({
                                   x {item.quantity}개
                                 </div>
                                 <div className="text-right text-foreground">
-                                  {item.price.toLocaleString()}원
+                                  {typeof item.price === "number"
+                                    ? `${item.price.toLocaleString()}원`
+                                    : "가격 스냅샷 확인 필요"}
                                 </div>
                                 <div className="text-right font-medium text-foreground">
-                                  {item.subtotal.toLocaleString()}원
+                                  {typeof item.subtotal === "number"
+                                    ? `${item.subtotal.toLocaleString()}원`
+                                    : "확인 필요"}
                                 </div>
                               </div>
                             ))}
@@ -2744,13 +2757,17 @@ export default function StringingApplicationDetailClient({
                                   <p className="break-keep">
                                     <span className="text-muted-foreground">단가:</span>{" "}
                                     <span className="font-medium text-foreground">
-                                      {item.price.toLocaleString()}원
+                                      {typeof item.price === "number"
+                                        ? `${item.price.toLocaleString()}원`
+                                        : "가격 스냅샷 확인 필요"}
                                     </span>
                                   </p>
                                   <p className="break-keep">
                                     <span className="text-muted-foreground">소계:</span>{" "}
                                     <span className="font-semibold text-primary">
-                                      {item.subtotal.toLocaleString()}원
+                                      {typeof item.subtotal === "number"
+                                        ? `${item.subtotal.toLocaleString()}원`
+                                        : "확인 필요"}
                                     </span>
                                   </p>
                                 </div>
@@ -3139,7 +3156,7 @@ export default function StringingApplicationDetailClient({
                               value={
                                 isResolvedOrderLinkedApplication && !paymentMethodForDisplay
                                   ? "부모 주문에서 확인"
-                                  : getCustomerPaymentMethodLabel(
+                                  : getStringingPaymentMethodDisplayLabel(
                                       paymentMethodForDisplay,
                                       packageApplied,
                                     )
@@ -3160,7 +3177,7 @@ export default function StringingApplicationDetailClient({
                               </p>
                               <p>
                                 <span className="font-medium text-foreground">결제수단:</span>{" "}
-                                {getCustomerPaymentMethodLabel(
+                                {getStringingPaymentMethodDisplayLabel(
                                   paymentMethodForDisplay,
                                   packageApplied,
                                 )}
@@ -3907,23 +3924,4 @@ const isWaitingPaymentStatus = (status?: string | null) => {
   return ["결제대기", "입금확인대기", "waiting", "pending", "ready", "unpaid"].some((keyword) =>
     normalized.includes(keyword),
   );
-};
-
-const getCustomerPaymentMethodLabel = (method?: string | null, packageApplied?: boolean) => {
-  if (packageApplied || method === "package") return "패키지 사용";
-  const normalized = String(method ?? "")
-    .trim()
-    .toLowerCase();
-  if (!normalized) return "결제 정보 확인 중";
-  if (
-    normalized === ["bank", "transfer"].join("_") ||
-    normalized === "bank" ||
-    normalized === "virtual_account"
-  ) {
-    return "무통장입금";
-  }
-  if (normalized === "nicepay" || normalized === "card" || normalized === "nicepay/card")
-    return "카드결제";
-  if (normalized.includes("pay") || normalized.includes("card")) return "카드/간편결제";
-  return "결제 정보 확인 중";
 };

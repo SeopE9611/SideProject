@@ -581,7 +581,8 @@ export function getRentalStatusTone(status?: string | null): BadgeSemanticTone {
     .trim()
     .toLowerCase();
   if (!normalized) return "neutral";
-  if (normalized === "paid" || normalized === "결제완료") return "success";
+  if (normalized === "paid" || normalized === "인도 대기") return "info";
+  if (normalized === "결제완료") return "success";
   if (normalized === "out" || normalized === "rented" || normalized === "대여중") return "info";
   if (normalized === "returned" || normalized === "반납완료") return "success";
   if (normalized === "overdue" || normalized === "연체") return "danger";

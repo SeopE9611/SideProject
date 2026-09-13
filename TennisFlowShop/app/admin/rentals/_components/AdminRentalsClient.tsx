@@ -37,7 +37,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
-import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
+import {
+  derivePaymentStatus,
+  deriveShippingStatus,
+  getRentalOverdueDays,
+} from "@/app/features/rentals/utils/status";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
@@ -130,7 +134,7 @@ function isRentalReturnedStatus(status?: string | null) {
 
 const rentalStatusLabels: Record<string, string> = {
   pending: "대기중",
-  paid: "결제완료",
+  paid: "인도 대기",
   out: "대여중",
   rented: "대여중",
   returned: "반납완료",
@@ -688,7 +692,7 @@ export default function AdminRentalsClient() {
                 <SelectContent>
                   <SelectItem value="all">상태(전체)</SelectItem>
                   <SelectItem value="pending">대기중</SelectItem>
-                  <SelectItem value="paid">결제완료</SelectItem>
+                  <SelectItem value="paid">인도 대기</SelectItem>
                   <SelectItem value="out">대여중</SelectItem>
                   <SelectItem value="returned">반납완료</SelectItem>
                   <SelectItem value="canceled">취소</SelectItem>
@@ -933,6 +937,7 @@ export default function AdminRentalsClient() {
                       ? "보증금 환불 확인 필요"
                       : null;
               const rentalStatusSpec = getRentalStatusBadgeSpec(r.status);
+              const overdueDays = getRentalOverdueDays(r.status, r.dueAt);
               const paymentLabel =
                 r.paymentStatusLabel ??
                 (derivePaymentStatus(r) === "paid" ? "결제완료" : "결제대기");
@@ -1028,8 +1033,15 @@ export default function AdminRentalsClient() {
                         </>
                       }
                       supporting={
-                        <span className="tabular-nums">
-                          반납 예정 {r.dueAt ? formatDate(r.dueAt) : "미등록"}
+                        <span
+                          className={cn(
+                            "tabular-nums",
+                            overdueDays !== null && "font-medium text-destructive",
+                          )}
+                        >
+                          {overdueDays !== null
+                            ? `연체 · ${overdueDays > 0 ? `${overdueDays}일 경과` : "1일 미만 경과"}`
+                            : `반납 예정 ${r.dueAt ? formatDate(r.dueAt) : "미등록"}`}
                         </span>
                       }
                     />

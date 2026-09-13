@@ -29,6 +29,24 @@ const legacyUsage: Record<string, string> = {
   대기: "not_issued",
 };
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function firstNonBlank(fields: string[]): Document {
+  return {
+    $first: {
+      $filter: {
+        input: fields.map((field) => ({
+          $cond: [{ $eq: [{ $type: field }, "string"] }, field, ""],
+        })),
+        as: "value",
+        cond: { $gt: [{ $strLenCP: { $trim: { input: "$$value" } } }, 0] },
+      },
+    },
+  };
+}
+
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -55,17 +73,16 @@ export async function GET(req: Request) {
       match["packageInfo.sessions"] = Number(sp.get("package"));
     if (sp.get("service") && sp.get("service") !== "all")
       match["serviceInfo.serviceMethod"] = { $regex: sp.get("service"), $options: "i" };
-    if (q) {
-      const or: Document[] = [
-        { "userSnapshot.name": { $regex: q, $options: "i" } },
-        { "userSnapshot.email": { $regex: q, $options: "i" } },
-        { "serviceInfo.name": { $regex: q, $options: "i" } },
-        { "serviceInfo.email": { $regex: q, $options: "i" } },
-        { "shippingInfo.name": { $regex: q, $options: "i" } },
-      ];
-      if (ObjectId.isValid(q)) or.push({ _id: new ObjectId(q) });
-      match.$or = or;
-    }
+    const searchMatch: Document | null = q
+      ? {
+          $or: [
+            { customerName: { $regex: escapeRegex(q), $options: "i" } },
+            { customerEmail: { $regex: escapeRegex(q), $options: "i" } },
+            { customerPhone: { $regex: escapeRegex(q), $options: "i" } },
+            ...(ObjectId.isValid(q) ? [{ _id: new ObjectId(q) }] : []),
+          ],
+        }
+      : null;
     const [rawKey, rawDir] = (sp.get("sort") ?? "").split(":");
     const key = rawKey === "status" ? "usage" : (rawKey as SortKey);
     const dir = rawDir === "asc" ? 1 : -1;
@@ -103,7 +120,29 @@ export async function GET(req: Request) {
       {
         $addFields: {
           customerName: {
-            $ifNull: ["$serviceInfo.name", { $ifNull: ["$userSnapshot.name", "$userDoc.name"] }],
+            ...firstNonBlank([
+              "$serviceInfo.name",
+              "$shippingInfo.name",
+              "$userSnapshot.name",
+              "$userDoc.name",
+            ]),
+          },
+          customerEmail: {
+            ...firstNonBlank([
+              "$serviceInfo.email",
+              "$shippingInfo.email",
+              "$userSnapshot.email",
+              "$userDoc.email",
+            ]),
+          },
+          customerPhone: {
+            ...firstNonBlank([
+              "$serviceInfo.phone",
+              "$shippingInfo.phone",
+              "$userDoc.phone",
+              "$userDoc.profile.phone",
+              "$userDoc.phoneNumber",
+            ]),
           },
           serviceType: {
             $cond: [
@@ -157,6 +196,7 @@ export async function GET(req: Request) {
           },
         },
       },
+      ...(searchMatch ? [{ $match: searchMatch }] : []),
       ...(usage !== "all" ? [{ $match: { usageState: usage } }] : []),
       ...(payment !== "all"
         ? [
@@ -205,8 +245,8 @@ export async function GET(req: Request) {
                 userId: { $toString: "$userId" },
                 customer: {
                   name: "$customerName",
-                  email: "$userSnapshot.email",
-                  phone: "$serviceInfo.phone",
+                  email: "$customerEmail",
+                  phone: "$customerPhone",
                 },
                 packageType: "$packageType",
                 totalSessions: 1,
@@ -230,6 +270,7 @@ export async function GET(req: Request) {
                 daysUntilExpiry: 1,
                 isExpirySoon: 1,
                 progressPercent: 1,
+                sessionCountConsistent: 1,
                 legacyPassStatus: 1,
                 _demoMarker: { isDemoData: "$isDemoData", demoSeedKey: "$demoSeedKey", isDemoInteraction: "$isDemoInteraction", demoSessionId: "$demoSessionId", ownerId: "$userId" },
                 legacyPaymentStatus: 1,

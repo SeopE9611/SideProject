@@ -121,8 +121,8 @@ function getActionMeta(action: HistoryItem["action"], isVisitPickup: boolean) {
 }
 
 const RENTAL_STATUS_LABELS: Record<string, string> = {
-  pending: "결제대기",
-  paid: "결제완료",
+  pending: "대기중",
+  paid: "인도 대기",
   out: "대여중",
   returned: "반납완료",
   canceled: "취소됨",

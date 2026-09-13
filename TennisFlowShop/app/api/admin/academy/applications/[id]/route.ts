@@ -5,6 +5,7 @@ import { ObjectId, type Document } from "mongodb";
 
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { requireAdmin } from "@/lib/admin.guard";
+import { normalizeAcademyApplicationStatusForRead } from "@/lib/types/academy";
 
 const COLLECTION_NAME = "academy_lesson_applications";
 
@@ -48,7 +49,7 @@ function serializeHistory(history: unknown) {
   return history.map((item) => {
     const record = item && typeof item === "object" ? (item as Document) : {};
     return {
-      status: typeof record.status === "string" ? record.status : "submitted",
+      status: normalizeAcademyApplicationStatusForRead(record.status),
       date: typeof record.date === "string" ? record.date : serializeValue(record.date),
       description: typeof record.description === "string" ? record.description : "",
       actorId: record.actorId ? String(serializeValue(record.actorId)) : undefined,
@@ -69,7 +70,7 @@ function serializeApplication(doc: Document) {
     preferredTimeText: typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
     lessonGoal: typeof doc.lessonGoal === "string" ? doc.lessonGoal : null,
     requestMemo: typeof doc.requestMemo === "string" ? doc.requestMemo : null,
-    status: typeof doc.status === "string" ? doc.status : "submitted",
+    status: normalizeAcademyApplicationStatusForRead(doc.status),
     adminMemo: typeof doc.adminMemo === "string" ? doc.adminMemo : null,
     customerMessage: typeof doc.customerMessage === "string" ? doc.customerMessage : null,
     cancelReason: typeof doc.cancelReason === "string" ? doc.cancelReason : null,

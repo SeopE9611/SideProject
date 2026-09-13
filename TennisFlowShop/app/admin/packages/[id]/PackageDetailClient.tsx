@@ -375,6 +375,8 @@ export default function PackageDetailClient({ packageId, readOnly = false }: { p
   // 서버 읽기 모델을 그대로 사용해 상태와 작업 가능 여부를 표시합니다.
   const expiry = toDateSafe(data.expiryDate);
   const hasSessionCounts =
+    typeof data.totalSessions === "number" &&
+    Number.isFinite(data.totalSessions) &&
     typeof data.usedSessions === "number" &&
     Number.isFinite(data.usedSessions) &&
     typeof data.remainingSessions === "number" &&
@@ -918,7 +920,7 @@ export default function PackageDetailClient({ packageId, readOnly = false }: { p
                 연장 {canExtendPackage ? "가능" : "불가"} · 횟수 조절{" "}
                 {canAdjustSessions ? "가능" : "불가"} ·{" "}
                 {hasSessionCounts
-                  ? `총 ${data.usedSessions! + data.remainingSessions!}회`
+                  ? `총 ${data.totalSessions}회`
                   : "총 횟수 확인 필요"}
               </span>
               {operationCapabilities.blockReasons.length > 0 && (

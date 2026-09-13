@@ -1203,7 +1203,14 @@ export default function OrdersClient() {
                     </AdminListCell>
 
                     <AdminListCell align="end">
-                      <AdminMoneyBlock amount={formatCurrency(order.total)} meta={paymentMeta} />
+                      <AdminMoneyBlock
+                        amount={
+                          order.totalPriceSnapshotStatus === "needs_review"
+                            ? "금액 스냅샷 확인 필요"
+                            : formatCurrency(order.total)
+                        }
+                        meta={paymentMeta}
+                      />
                     </AdminListCell>
 
                     <AdminListCell align="end" className="px-2">

@@ -1,4 +1,5 @@
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { normalizeOrderStatus } from "@/lib/admin-ops-normalize";
 import {
   LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES,
   LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES,
@@ -808,7 +809,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       total: order.totalPrice,
       date: order.createdAt,
       history: order.history ?? [],
-      status: order.status,
+      status: normalizeOrderStatus(order.status),
       reason: order.cancelReason ?? null,
       // 의사표시와 '실제 신청 존재'를 분리해 내려줌(여기가 핵심)
       isStringServiceApplied,

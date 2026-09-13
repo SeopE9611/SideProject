@@ -1053,6 +1053,8 @@ export default function PackageOrdersClient() {
           {shouldShowRows
             ? packages!.map((pkg) => {
                 const hasSessionCounts =
+                  typeof pkg.totalSessions === "number" &&
+                  Number.isFinite(pkg.totalSessions) &&
                   typeof pkg.usedSessions === "number" &&
                   Number.isFinite(pkg.usedSessions) &&
                   typeof pkg.remainingSessions === "number" &&
@@ -1148,9 +1150,7 @@ export default function PackageOrdersClient() {
                           <p className={adminTypography.tablePrimary}>
                             {!pkg.hasIssuedPass || !hasSessionCounts
                               ? "-"
-                              : `${pkg.remainingSessions}회 / ${
-                                  pkg.usedSessions! + pkg.remainingSessions!
-                                }회`}
+                              : `${pkg.remainingSessions}회 / ${pkg.totalSessions}회`}
                           </p>
                           {!pkg.hasIssuedPass ? (
                             <p className={adminTypography.caption}>패스 미발급</p>
