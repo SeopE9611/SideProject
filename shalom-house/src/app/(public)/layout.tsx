@@ -27,7 +27,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="public-shell flex min-h-screen flex-col bg-background text-foreground">
       <JsonLd
         id="organization-json-ld"
         data={{

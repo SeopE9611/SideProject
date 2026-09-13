@@ -65,6 +65,10 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
   const described = (key: string) => (errors[key] ? `${key}-error` : undefined);
   return (
     <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-6 border-t-2 border-foreground pt-6">
+      <p className="text-small text-muted-foreground">
+        필수 항목을 입력해 주세요. <span className="font-bold text-foreground">(필수)</span>로 표시된 항목은 반드시
+        입력해야 합니다.
+      </p>
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label className="font-bold" htmlFor="inquiry-kind">
@@ -89,24 +93,32 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
         </div>
         <div>
           <label className="font-bold" htmlFor="inquiry-name">
-            이름
+            이름 (필수)
           </label>
           <input
             id="inquiry-name"
             name="name"
             autoComplete="name"
+            required
+            maxLength={80}
             className={fieldClassName}
             aria-invalid={errors.name ? true : undefined}
-            aria-describedby={described("name")}
+            aria-describedby={joinDescriptionIds("inquiry-name-help", described("name"))}
           />
+          <p id="inquiry-name-help" className="mt-1 text-small text-muted-foreground">
+            1~80자
+          </p>
           {error("name")}
         </div>
       </div>
       <fieldset
         className="border-t border-border pt-5"
-        aria-describedby={errors.contact ? "inquiry-contact-error" : undefined}
+        aria-describedby={joinDescriptionIds("inquiry-contact-help", errors.contact && "inquiry-contact-error")}
       >
-        <legend className="font-bold">연락처 (전화번호 또는 이메일 중 하나 이상)</legend>
+        <legend className="font-bold">연락처 (필수)</legend>
+        <p id="inquiry-contact-help" className="mt-2 text-small text-muted-foreground">
+          전화번호 또는 이메일 중 하나 이상 입력해 주세요.
+        </p>
         <div className="mt-4 grid gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor="inquiry-phone">전화번호</label>
@@ -144,16 +156,22 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
       </fieldset>
       <div>
         <label className="font-bold" htmlFor="inquiry-message">
-          문의 내용
+          문의 내용 (필수)
         </label>
         <textarea
           id="inquiry-message"
           name="message"
           rows={8}
+          required
+          minLength={10}
+          maxLength={2000}
           className="mt-2 block w-full rounded-control border border-border-strong bg-surface px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           aria-invalid={errors.message ? true : undefined}
-          aria-describedby={described("message")}
+          aria-describedby={joinDescriptionIds("inquiry-message-help", described("message"))}
         />
+        <p id="inquiry-message-help" className="mt-1 text-small text-muted-foreground">
+          10~2000자
+        </p>
         {error("message")}
       </div>
       <div className="sr-only" aria-hidden="true">
@@ -196,11 +214,12 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
             type="checkbox"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
+            required
             aria-invalid={errors.privacyConsent ? true : undefined}
             aria-describedby={errors.privacyConsent ? "inquiry-privacy-consent-error" : undefined}
             className="mt-1 size-5 shrink-0 accent-accent"
           />
-          <span>위 개인정보 수집·이용 내용을 확인했으며 이에 동의합니다.</span>
+          <span>위 개인정보 수집·이용 내용을 확인했으며 이에 동의합니다. (필수)</span>
         </label>
         {error("privacyConsent", "inquiry-privacy-consent-error")}
       </div>
