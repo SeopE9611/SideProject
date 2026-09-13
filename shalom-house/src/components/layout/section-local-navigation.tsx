@@ -35,7 +35,7 @@ export function SectionLocalNavigation({ sectionHref }: SectionLocalNavigationPr
               <li key={link.href}>
                 <Link
                   aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex min-h-13 items-center whitespace-nowrap border-b-3 pt-0.5 text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:[outline-color:var(--color-focus-ring)] ${
+                  className={`public-focus-ring inline-flex min-h-13 items-center whitespace-nowrap border-b-3 pt-0.5 text-base transition-colors focus-visible:outline-offset-[-2px] ${
                     isActive
                       ? "border-accent font-bold text-primary"
                       : "border-transparent text-foreground hover:border-border-strong hover:text-primary"
