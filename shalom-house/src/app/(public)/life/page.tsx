@@ -73,6 +73,13 @@ export default async function LifePage() {
   const posts =
     newsResult.status === "fulfilled" ? newsResult.value.items.filter((post) => isPreview || !post.isDemo) : [];
   const programs = programResult.status === "fulfilled" ? programResult.value : [];
+  const hasNoPublishedLifeContent =
+    galleryResult.status === "fulfilled" &&
+    newsResult.status === "fulfilled" &&
+    programResult.status === "fulfilled" &&
+    galleries.length === 0 &&
+    posts.length === 0 &&
+    programs.length === 0;
   if (galleryResult.status === "rejected") console.error("생활이야기 활동사진 조회 실패");
   if (newsResult.status === "rejected") console.error("생활이야기 활동소식 조회 실패");
   if (programResult.status === "rejected") console.error("생활이야기 프로그램 조회 실패");
@@ -122,9 +129,44 @@ export default async function LifePage() {
           </p>
         ) : null}
 
-        <div
-          className={`grid items-start gap-8 lg:grid-cols-12 lg:gap-12 ${galleries.length > 0 ? "mt-10 border-t border-border pt-10 sm:mt-12 sm:pt-12" : ""}`}
-        >
+        {hasNoPublishedLifeContent ? (
+          <section
+            aria-labelledby="life-empty-heading"
+            className="max-w-3xl border-y border-border py-7 sm:py-8"
+          >
+            <h2 id="life-empty-heading" className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">
+              생활 기록 안내
+            </h2>
+            <p className="text-safe-wrap mt-4 font-medium">
+              현재 공개된 활동사진, 활동소식, 프로그램이 없습니다.
+            </p>
+            <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">
+              새로운 활동이 등록되면 각 콘텐츠 영역에서 확인할 수 있습니다.
+            </p>
+            <nav aria-label="생활 기록 목록" className="mt-5">
+              <ul className="flex flex-col items-start gap-1 sm:flex-row sm:flex-wrap sm:gap-x-6">
+                <li>
+                  <Link className="institution-link py-2" href="/life/gallery">
+                    활동사진 보기
+                  </Link>
+                </li>
+                <li>
+                  <Link className="institution-link py-2" href="/news/activities">
+                    활동소식 보기
+                  </Link>
+                </li>
+                <li>
+                  <Link className="institution-link py-2" href="/life/programs">
+                    프로그램 보기
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          </section>
+        ) : (
+          <div
+            className={`grid items-start gap-8 lg:grid-cols-12 lg:gap-12 ${galleries.length > 0 ? "mt-10 border-t border-border pt-10 sm:mt-12 sm:pt-12" : ""}`}
+          >
           <section id="life-scenes" aria-labelledby="life-news-heading" className="min-w-0 lg:col-span-8">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-primary pb-4">
               <h2 id="life-news-heading" className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">
@@ -234,7 +276,8 @@ export default async function LifePage() {
               </ul>
             </nav>
           </aside>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
