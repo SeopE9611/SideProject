@@ -59,7 +59,7 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
           method="get"
           role="search"
           aria-label="공개 자료 찾기"
-          className="grid grid-cols-2 items-end gap-4 border-t-4 border-accent bg-surface-subtle p-5 sm:grid-cols-[14rem_minmax(0,1fr)_auto] sm:p-6"
+          className="grid grid-cols-2 items-end gap-4 border-t-4 border-accent bg-surface-subtle p-5 sm:grid-cols-[14rem_18rem_max-content] sm:justify-start sm:p-6"
         >
           <div className="min-w-0">
             <label className="block text-small font-semibold" htmlFor="document-category">
