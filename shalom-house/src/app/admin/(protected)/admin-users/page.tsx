@@ -44,36 +44,40 @@ export default async function Page({
       <Link href="/admin/admin-users/new" className="mt-4 inline-block">
         계정 추가
       </Link>
-      <form className="mt-5 flex gap-3">
-        <label htmlFor="admin-user-role-filter">역할</label>
-        <select id="admin-user-role-filter" name="role" defaultValue={filters.role ?? ""}>
-          <option value="">모든 역할</option>
-          {adminRoles.map((x) => (
-            <option key={x} value={x}>
-              {adminRoleLabels[x]}
-            </option>
-          ))}
-        </select>
-        <label htmlFor="admin-user-status-filter">상태</label>
-        <select id="admin-user-status-filter" name="status" defaultValue={filters.status ?? ""}>
-          <option value="">모든 상태</option>
-          {adminUserStatuses.map((x) => (
-            <option key={x}>{x}</option>
-          ))}
-        </select>
-        <button type="submit" className="min-h-11 border px-3">
+      <form className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+        <label htmlFor="admin-user-role-filter" className="grid min-w-0 gap-2 font-semibold">
+          역할
+          <select id="admin-user-role-filter" name="role" defaultValue={filters.role ?? ""} className="min-h-11 w-full min-w-0">
+            <option value="">모든 역할</option>
+            {adminRoles.map((x) => (
+              <option key={x} value={x}>
+                {adminRoleLabels[x]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label htmlFor="admin-user-status-filter" className="grid min-w-0 gap-2 font-semibold">
+          상태
+          <select id="admin-user-status-filter" name="status" defaultValue={filters.status ?? ""} className="min-h-11 w-full min-w-0">
+            <option value="">모든 상태</option>
+            {adminUserStatuses.map((x) => (
+              <option key={x}>{x}</option>
+            ))}
+          </select>
+        </label>
+        <button type="submit" className="min-h-11 min-w-24 self-end whitespace-nowrap border px-3">
           필터 적용
         </button>
       </form>
       {!items.length ? (
         <p className="mt-6">조건에 맞는 관리자 계정이 없습니다.</p>
       ) : (
-        <div className="mt-6 overflow-x-auto">
-          <table>
+        <div className="mt-6 max-w-full overflow-x-auto">
+          <table className="w-full min-w-[64rem]">
             <thead>
               <tr>
                 {["표시 이름", "이메일", "역할", "상태", "마지막 로그인", "활성 세션", "최근 수정", "상세"].map((x) => (
-                  <th key={x} className="p-2 text-left">
+                  <th key={x} className="whitespace-nowrap p-2 text-left">
                     {x}
                   </th>
                 ))}
@@ -86,13 +90,15 @@ export default async function Page({
                     {x.displayName} {x.isCurrentUser && <span>현재 계정</span>}
                   </td>
                   <td className="break-all p-2">{x.email}</td>
-                  <td className="p-2">{adminRoleLabels[x.role]}</td>
-                  <td className="p-2">{x.status}</td>
-                  <td className="p-2">{x.lastLoginAt ? formatAdminDate(x.lastLoginAt) : "—"}</td>
-                  <td className="p-2">활성 세션 {x.activeSessionCount}개</td>
-                  <td className="p-2">{formatAdminDate(x.updatedAt)}</td>
-                  <td className="p-2">
-                    <Link href={`/admin/admin-users/${x.id}`}>상세</Link>
+                  <td className="whitespace-nowrap p-2">{adminRoleLabels[x.role]}</td>
+                  <td className="whitespace-nowrap p-2">{x.status}</td>
+                  <td className="whitespace-nowrap p-2">{x.lastLoginAt ? formatAdminDate(x.lastLoginAt) : "—"}</td>
+                  <td className="whitespace-nowrap p-2">활성 세션 {x.activeSessionCount}개</td>
+                  <td className="whitespace-nowrap p-2">{formatAdminDate(x.updatedAt)}</td>
+                  <td className="whitespace-nowrap p-2">
+                    <Link href={`/admin/admin-users/${x.id}`} className="inline-flex min-h-11 items-center px-2">
+                      상세
+                    </Link>
                   </td>
                 </tr>
               ))}

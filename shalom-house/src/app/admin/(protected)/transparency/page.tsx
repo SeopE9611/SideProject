@@ -11,6 +11,9 @@ import {
   isTransparencyPrivacyReviewStatus,
   isTransparencyPublicationStatus,
   transparencyCategoryLabels,
+  transparencyFinalDocumentStatusLabels,
+  transparencyPrivacyReviewStatusLabels,
+  transparencyPublicationStatusLabels,
 } from "@/features/transparency/transparency.types";
 function buildTransparencyPageHref(
   page: number,
@@ -97,8 +100,8 @@ export default async function AdminTransparencyPage({
             className="block min-h-11 w-full border"
           >
             <option value="">전체</option>
-            <option value="pending">확인 중</option>
-            <option value="confirmed">확인 완료</option>
+            <option value="pending">{transparencyPrivacyReviewStatusLabels.pending}</option>
+            <option value="confirmed">{transparencyPrivacyReviewStatusLabels.confirmed}</option>
           </select>
         </label>
         <label>
@@ -109,8 +112,8 @@ export default async function AdminTransparencyPage({
             className="block min-h-11 w-full border"
           >
             <option value="">전체</option>
-            <option value="draft">작성본</option>
-            <option value="final">최종본</option>
+            <option value="draft">{transparencyFinalDocumentStatusLabels.draft}</option>
+            <option value="final">{transparencyFinalDocumentStatusLabels.final}</option>
           </select>
         </label>
         <label>
@@ -121,10 +124,10 @@ export default async function AdminTransparencyPage({
             className="block min-h-11 w-full border"
           >
             <option value="">전체</option>
-            <option value="draft">작성 중</option>
-            <option value="review">검토 중</option>
-            <option value="published">게시</option>
-            <option value="archived">보관</option>
+            <option value="draft">{transparencyPublicationStatusLabels.draft}</option>
+            <option value="review">{transparencyPublicationStatusLabels.review}</option>
+            <option value="published">{transparencyPublicationStatusLabels.published}</option>
+            <option value="archived">{transparencyPublicationStatusLabels.archived}</option>
           </select>
         </label>
         <button className="min-h-11 self-end border">필터 적용</button>
@@ -152,7 +155,9 @@ export default async function AdminTransparencyPage({
                 <div>
                   <dt className="font-semibold">개인정보 / 최종본 / 게시</dt>
                   <dd>
-                    {item.privacyReviewStatus} / {item.finalDocumentStatus} / {item.publicationStatus}
+                    {transparencyPrivacyReviewStatusLabels[item.privacyReviewStatus]} /{" "}
+                    {transparencyFinalDocumentStatusLabels[item.finalDocumentStatus]} /{" "}
+                    {transparencyPublicationStatusLabels[item.publicationStatus]}
                   </dd>
                 </div>
                 <div>

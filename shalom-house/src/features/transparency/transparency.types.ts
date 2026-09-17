@@ -10,6 +10,25 @@ export const transparencyCategoryLabels: Record<TransparencyCategory, string> = 
   donations: "후원금",
   other: "기타 공시",
 };
+export const transparencyPublicationStatusLabels: Record<TransparencyPublicationStatus, string> = {
+  draft: "작성 중",
+  review: "검토 중",
+  published: "게시",
+  archived: "보관",
+};
+export const transparencyApprovalStatusLabels: Record<TransparencyApprovalStatus, string> = {
+  pending: "승인 대기",
+  approved: "승인 완료",
+  rejected: "반려",
+};
+export const transparencyPrivacyReviewStatusLabels: Record<TransparencyPrivacyReviewStatus, string> = {
+  pending: "확인 중",
+  confirmed: "확인 완료",
+};
+export const transparencyFinalDocumentStatusLabels: Record<TransparencyFinalDocumentStatus, string> = {
+  draft: "작성본",
+  final: "최종본",
+};
 export const isTransparencyCategory = (value: unknown): value is TransparencyCategory =>
   transparencyCategories.includes(value as TransparencyCategory);
 export const isTransparencyPublicationStatus = (value: unknown): value is TransparencyPublicationStatus =>

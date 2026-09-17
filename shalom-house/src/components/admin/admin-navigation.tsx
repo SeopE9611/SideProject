@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+type AdminNavigationItem = {
+  label: string;
+  href: string;
+  activePrefixes?: string[];
+};
+
 export function AdminNavigation({
   canRestore = false,
   canManageSiteContent = false,
@@ -17,7 +23,7 @@ export function AdminNavigation({
   canManageAdminUsers?: boolean;
 }) {
   const pathname = usePathname();
-  const sections = [
+  const sections: { label: string; items: AdminNavigationItem[] }[] = [
     {
       label: "개요",
       items: [{ label: "대시보드", href: "/admin" }],
@@ -36,7 +42,9 @@ export function AdminNavigation({
       label: "운영 업무",
       items: [
         ...(canManageInquiries ? [{ label: "문의", href: "/admin/inquiries" }] : []),
-        ...(canManageDonations ? [{ label: "후원", href: "/admin/donations" }] : []),
+        ...(canManageDonations
+          ? [{ label: "후원", href: "/admin/donations", activePrefixes: ["/admin/donations", "/admin/donors"] }]
+          : []),
         ...(canManageAdminUsers ? [{ label: "관리자 계정", href: "/admin/admin-users" }] : []),
         ...(canRestore ? [{ label: "휴지통", href: "/admin/trash" }] : []),
       ],
@@ -59,7 +67,9 @@ export function AdminNavigation({
                 const current =
                   item.href === "/admin"
                     ? pathname === "/admin"
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                    : (item.activePrefixes ?? [item.href]).some(
+                        (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+                      );
                 return (
                   <li key={item.href}>
                     <Link
