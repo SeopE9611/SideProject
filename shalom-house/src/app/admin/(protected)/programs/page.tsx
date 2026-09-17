@@ -12,6 +12,7 @@ import {
   isProgramApprovalStatus,
   isProgramPublicationStatus,
 } from "@/features/programs/program.types";
+const adminProgramsDesktopGridClass = "xl:grid-cols-[2fr_1fr_0.6fr_0.8fr_0.8fr_1fr_0.7fr]";
 const date = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
   month: "long",
@@ -125,36 +126,58 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
           프로그램 목록
         </h2>
         {result.items.length ? (
-          <ul className="border-t border-foreground">
-            {result.items.map((item) => (
-              <li
-                key={item.id}
-                className="grid gap-3 border-b border-border py-5 xl:grid-cols-[2fr_1fr_0.6fr_0.8fr_0.8fr_1fr_0.7fr]"
-              >
-                <div>
-                  <Link
-                    href={`/admin/programs/${item.id}`}
-                    className="text-heading font-bold underline-offset-4 hover:underline"
-                  >
-                    {item.title}
-                  </Link>
-                  <p className="text-small text-muted-foreground">{item.category}</p>
-                </div>
-                <p>
-                  <strong className="xl:sr-only">운영 상태 </strong>
-                  {item.operationStatusLabel ?? "미입력"}
-                </p>
-                <p>
-                  <strong className="xl:sr-only">정렬 </strong>
-                  {item.sortOrder}
-                </p>
-                <p>{getProgramPublicationStatusLabel(item.publicationStatus)}</p>
-                <p>{getProgramApprovalStatusLabel(item.approvalStatus)}</p>
-                <time dateTime={item.updatedAt}>{date.format(new Date(item.updatedAt))}</time>
-                <p>{item.isPubliclyVisible ? "공개 중" : "비공개"}</p>
-              </li>
-            ))}
-          </ul>
+          <>
+            <div
+              className={`hidden gap-3 border-y border-border bg-surface-subtle px-4 py-3 text-small font-bold xl:grid ${adminProgramsDesktopGridClass}`}
+            >
+              <span>프로그램</span>
+              <span>운영 상태</span>
+              <span>정렬 순서</span>
+              <span>게시 상태</span>
+              <span>승인 상태</span>
+              <span>최근 수정</span>
+              <span>공개 여부</span>
+            </div>
+            <ul className="divide-y divide-border border-b border-border">
+              {result.items.map((item) => (
+                <li key={item.id} className={`grid gap-3 px-4 py-5 ${adminProgramsDesktopGridClass}`}>
+                  <div>
+                    <Link
+                      href={`/admin/programs/${item.id}`}
+                      className="text-heading font-bold underline-offset-4 hover:underline"
+                    >
+                      {item.title}
+                    </Link>
+                    <p className="text-small text-muted-foreground">{item.category}</p>
+                  </div>
+                  <p>
+                    <strong className="xl:sr-only">운영 상태 </strong>
+                    {item.operationStatusLabel ?? "미입력"}
+                  </p>
+                  <p>
+                    <strong className="xl:sr-only">정렬 순서 </strong>
+                    {item.sortOrder}
+                  </p>
+                  <p>
+                    <strong className="xl:sr-only">게시 상태 </strong>
+                    {getProgramPublicationStatusLabel(item.publicationStatus)}
+                  </p>
+                  <p>
+                    <strong className="xl:sr-only">승인 상태 </strong>
+                    {getProgramApprovalStatusLabel(item.approvalStatus)}
+                  </p>
+                  <p>
+                    <strong className="xl:sr-only">최근 수정 </strong>
+                    <time dateTime={item.updatedAt}>{date.format(new Date(item.updatedAt))}</time>
+                  </p>
+                  <p>
+                    <strong className="xl:sr-only">공개 여부 </strong>
+                    {item.isPubliclyVisible ? "공개 중" : "비공개"}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </>
         ) : (
           <p className="border-y border-border py-6">등록된 프로그램이 없습니다.</p>
         )}

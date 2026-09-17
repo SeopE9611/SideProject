@@ -11,7 +11,13 @@ import { AdminTransparencyReviewDecisionForm } from "@/components/admin/admin-tr
 import { AdminTransparencyReviewForm } from "@/components/admin/admin-transparency-review-form";
 import { listAdminTransparencyAuditHistory } from "@/features/transparency/transparency.audit-repository";
 import { findAdminTransparencyDocumentById } from "@/features/transparency/transparency.admin-repository";
-import { transparencyCategoryLabels } from "@/features/transparency/transparency.types";
+import {
+  transparencyApprovalStatusLabels,
+  transparencyCategoryLabels,
+  transparencyFinalDocumentStatusLabels,
+  transparencyPrivacyReviewStatusLabels,
+  transparencyPublicationStatusLabels,
+} from "@/features/transparency/transparency.types";
 export default async function TransparencyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const document = await findAdminTransparencyDocumentById((await params).id);
   if (!document) notFound();
@@ -26,10 +32,10 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
     contentId: document.id,
   });
   const rows = [
-    ["게시 상태", document.publicationStatus],
-    ["승인 상태", document.approvalStatus],
-    ["개인정보 검토 상태", document.privacyReviewStatus],
-    ["최종본 상태", document.finalDocumentStatus],
+    ["게시 상태", transparencyPublicationStatusLabels[document.publicationStatus]],
+    ["승인 상태", transparencyApprovalStatusLabels[document.approvalStatus]],
+    ["개인정보 검토 상태", transparencyPrivacyReviewStatusLabels[document.privacyReviewStatus]],
+    ["최종본 상태", transparencyFinalDocumentStatusLabels[document.finalDocumentStatus]],
     ["현재 공개 여부", document.isPubliclyVisible ? "공개 중" : `비공개 (${document.publicVisibilityReason})`],
     ["게시일", document.publishedAt ?? "없음"],
     ["제목", document.title],
