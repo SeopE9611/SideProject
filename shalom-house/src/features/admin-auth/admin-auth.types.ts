@@ -15,6 +15,11 @@ export function isAdminRole(value: unknown): value is AdminRole {
 export const adminUserStatuses = ["active", "disabled"] as const;
 export type AdminUserStatus = (typeof adminUserStatuses)[number];
 
+export const adminUserStatusLabels: Record<AdminUserStatus, string> = {
+  active: "활성",
+  disabled: "비활성",
+};
+
 export type AdminPrincipal = {
   id: string;
   email: string;

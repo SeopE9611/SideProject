@@ -2,6 +2,7 @@
 import { useState } from "react";
 import {
   adminRoleLabels,
+  adminUserStatusLabels,
   adminUserStatuses,
   type AdminRole,
   type AdminUserStatus,
@@ -153,7 +154,9 @@ export function AdminUserEditForm(props: {
         className="mt-2 min-h-11 w-full border p-2"
       >
         {adminUserStatuses.map((value) => (
-          <option key={value}>{value}</option>
+          <option key={value} value={value}>
+            {adminUserStatusLabels[value]}
+          </option>
         ))}
       </select>
       {error("status")}

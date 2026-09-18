@@ -1,6 +1,7 @@
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
+import { formatAdminDate } from "@/lib/format-admin-date";
 import {
   listAdminTransparencyDocuments,
   normalizeAdminTransparencyPage,
@@ -162,7 +163,9 @@ export default async function AdminTransparencyPage({
                 </div>
                 <div>
                   <dt className="font-semibold">수정일</dt>
-                  <dd>{item.updatedAt}</dd>
+                  <dd>
+                    <time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time>
+                  </dd>
                 </div>
               </dl>
             </article>

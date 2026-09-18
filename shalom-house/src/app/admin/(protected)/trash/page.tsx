@@ -55,14 +55,29 @@ export default async function AdminTrashPage({
       {query.deleted === "1" ? <p role="status">콘텐츠를 휴지통으로 이동했습니다.</p> : null}
       {query.restored === "1" ? <p role="status">콘텐츠를 안전한 초안으로 복구했습니다.</p> : null}
       <nav className="flex gap-3" aria-label="콘텐츠 종류 필터">
-        <Link href="/admin/trash">전체</Link>
+        <Link
+          href="/admin/trash"
+          aria-current={domain === undefined ? "page" : undefined}
+          className={`rounded-control border px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+            domain === undefined ? "border-primary bg-surface-subtle font-semibold text-primary" : "border-border"
+          }`}
+        >
+          전체
+        </Link>
         {[
           ["news", "뉴스"],
           ["programs", "프로그램"],
           ["gallery", "활동사진"],
           ["transparency", "자료공개"],
         ].map(([value, label]) => (
-          <Link key={value} href={buildAdminTrashHref(1, value as AdminTrashDomain)}>
+          <Link
+            key={value}
+            href={buildAdminTrashHref(1, value as AdminTrashDomain)}
+            aria-current={domain === value ? "page" : undefined}
+            className={`rounded-control border px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+              domain === value ? "border-primary bg-surface-subtle font-semibold text-primary" : "border-border"
+            }`}
+          >
             {label}
           </Link>
         ))}

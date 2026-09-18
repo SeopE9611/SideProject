@@ -4,6 +4,7 @@ import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization
 import {
   adminRoleLabels,
   adminRoles,
+  adminUserStatusLabels,
   adminUserStatuses,
   isAdminRole,
   type AdminUserStatus,
@@ -61,7 +62,9 @@ export default async function Page({
           <select id="admin-user-status-filter" name="status" defaultValue={filters.status ?? ""} className="min-h-11 w-full min-w-0">
             <option value="">모든 상태</option>
             {adminUserStatuses.map((x) => (
-              <option key={x}>{x}</option>
+              <option key={x} value={x}>
+                {adminUserStatusLabels[x]}
+              </option>
             ))}
           </select>
         </label>
@@ -91,7 +94,7 @@ export default async function Page({
                   </td>
                   <td className="break-all p-2">{x.email}</td>
                   <td className="whitespace-nowrap p-2">{adminRoleLabels[x.role]}</td>
-                  <td className="whitespace-nowrap p-2">{x.status}</td>
+                  <td className="whitespace-nowrap p-2">{adminUserStatusLabels[x.status]}</td>
                   <td className="whitespace-nowrap p-2">{x.lastLoginAt ? formatAdminDate(x.lastLoginAt) : "—"}</td>
                   <td className="whitespace-nowrap p-2">활성 세션 {x.activeSessionCount}개</td>
                   <td className="whitespace-nowrap p-2">{formatAdminDate(x.updatedAt)}</td>

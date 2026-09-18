@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
 import { AdminUserSessionForm } from "@/components/admin/admin-user-session-form";
 import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
-import { adminRoleLabels } from "@/features/admin-auth/admin-auth.types";
+import { adminRoleLabels, adminUserStatusLabels } from "@/features/admin-auth/admin-auth.types";
 import { getAdminUserDetail } from "@/features/admin-users/admin-user.admin-repository";
 export default async function Page({
   params,
@@ -48,7 +48,7 @@ export default async function Page({
         </div>
         <div>
           <dt>상태</dt>
-          <dd>{u.status}</dd>
+          <dd>{adminUserStatusLabels[u.status]}</dd>
         </div>
         <div>
           <dt>마지막 로그인</dt>
