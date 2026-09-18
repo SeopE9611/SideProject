@@ -72,7 +72,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
         <p className="mt-2 text-small text-muted-foreground">
           새 게시물은 작성 중·승인 대기 상태로 저장됩니다.
           <br />
-          수정과 검토·승인·공개 상태 변경은 다음 작업에서 연결합니다.
+          저장 후 상세 화면에서 수정·검토·승인과 공개 상태를 관리할 수 있습니다.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           {canCreate ? (

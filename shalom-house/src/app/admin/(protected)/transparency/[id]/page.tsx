@@ -1,6 +1,7 @@
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
 import { AdminContentDeleteForm } from "@/components/admin/admin-content-delete-form";
 import { notFound } from "next/navigation";
@@ -11,6 +12,7 @@ import { AdminTransparencyReviewDecisionForm } from "@/components/admin/admin-tr
 import { AdminTransparencyReviewForm } from "@/components/admin/admin-transparency-review-form";
 import { listAdminTransparencyAuditHistory } from "@/features/transparency/transparency.audit-repository";
 import { findAdminTransparencyDocumentById } from "@/features/transparency/transparency.admin-repository";
+import { formatAdminDate } from "@/lib/format-admin-date";
 import {
   transparencyApprovalStatusLabels,
   transparencyCategoryLabels,
@@ -31,20 +33,37 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
   const auditHistory = await listAdminTransparencyAuditHistory({
     contentId: document.id,
   });
-  const rows = [
+  const rows: Array<[string, ReactNode]> = [
     ["게시 상태", transparencyPublicationStatusLabels[document.publicationStatus]],
     ["승인 상태", transparencyApprovalStatusLabels[document.approvalStatus]],
     ["개인정보 검토 상태", transparencyPrivacyReviewStatusLabels[document.privacyReviewStatus]],
     ["최종본 상태", transparencyFinalDocumentStatusLabels[document.finalDocumentStatus]],
     ["현재 공개 여부", document.isPubliclyVisible ? "공개 중" : `비공개 (${document.publicVisibilityReason})`],
-    ["게시일", document.publishedAt ?? "없음"],
+    [
+      "게시일",
+      document.publishedAt ? (
+        <time dateTime={document.publishedAt}>{formatAdminDate(document.publishedAt)}</time>
+      ) : (
+        "없음"
+      ),
+    ],
     ["제목", document.title],
     ["분류", transparencyCategoryLabels[document.category]],
     ["기준 기간", document.periodLabel],
     ["문서일", document.documentDate],
     ["요약", document.summary || "없음"],
-    ["생성일", document.createdAt],
-    ["수정일", document.updatedAt],
+    [
+      "생성일",
+      <time dateTime={document.createdAt}>
+        {formatAdminDate(document.createdAt)}
+      </time>,
+    ],
+    [
+      "수정일",
+      <time dateTime={document.updatedAt}>
+        {formatAdminDate(document.updatedAt)}
+      </time>,
+    ],
   ];
   return (
     <div className="min-w-0 space-y-8">
