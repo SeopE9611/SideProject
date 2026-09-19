@@ -1,3 +1,6 @@
+import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
+import { AdminListPagination } from "@/components/admin/admin-list-pagination";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
@@ -67,24 +70,26 @@ export default async function AdminTransparencyPage({
     publicationStatus: isTransparencyPublicationStatus(query.publicationStatus) ? query.publicationStatus : undefined,
   };
   const result = await listAdminTransparencyDocuments(filters);
+  const hasFilters = Boolean(
+    filters.category || filters.privacyReviewStatus || filters.finalDocumentStatus || filters.publicationStatus,
+  );
   return (
     <div className="min-w-0 space-y-8">
-      <header className="flex flex-wrap justify-between gap-4">
-        <div>
-          <h1 className="text-title font-bold">자료공개 관리</h1>
-          <p>PDF 비공개 초안과 검토 상태를 관리합니다.</p>
-        </div>
-        {canCreate ? (
-          <Link href="/admin/transparency/new" className="min-h-11 bg-primary px-4 py-3 text-primary-foreground">
+      <AdminPageHeader
+        title="자료공개 관리"
+        description="PDF 비공개 초안과 검토 상태를 관리합니다."
+        actions={canCreate ? (
+          <Link href="/admin/transparency/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">
             새 자료공개 초안
           </Link>
-        ) : null}
-      </header>
-      <form className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        ) : undefined}
+      />
+      <AdminFilterPanel headingId="transparency-filter" title="자료공개 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
+      <form className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <input type="hidden" name="page" value="1" />
         <label>
           분류
-          <select name="category" defaultValue={filters.category ?? ""} className="block min-h-11 w-full border">
+          <select name="category" defaultValue={filters.category ?? ""} className="block min-h-11 w-full rounded-control border border-border-strong bg-background px-3">
             <option value="">전체</option>
             {Object.entries(transparencyCategoryLabels).map(([value, label]) => (
               <option key={value} value={value}>
@@ -98,7 +103,7 @@ export default async function AdminTransparencyPage({
           <select
             name="privacyReviewStatus"
             defaultValue={filters.privacyReviewStatus ?? ""}
-            className="block min-h-11 w-full border"
+            className="block min-h-11 w-full rounded-control border border-border-strong bg-background px-3"
           >
             <option value="">전체</option>
             <option value="pending">{transparencyPrivacyReviewStatusLabels.pending}</option>
@@ -110,7 +115,7 @@ export default async function AdminTransparencyPage({
           <select
             name="finalDocumentStatus"
             defaultValue={filters.finalDocumentStatus ?? ""}
-            className="block min-h-11 w-full border"
+            className="block min-h-11 w-full rounded-control border border-border-strong bg-background px-3"
           >
             <option value="">전체</option>
             <option value="draft">{transparencyFinalDocumentStatusLabels.draft}</option>
@@ -122,7 +127,7 @@ export default async function AdminTransparencyPage({
           <select
             name="publicationStatus"
             defaultValue={filters.publicationStatus ?? ""}
-            className="block min-h-11 w-full border"
+            className="block min-h-11 w-full rounded-control border border-border-strong bg-background px-3"
           >
             <option value="">전체</option>
             <option value="draft">{transparencyPublicationStatusLabels.draft}</option>
@@ -131,58 +136,40 @@ export default async function AdminTransparencyPage({
             <option value="archived">{transparencyPublicationStatusLabels.archived}</option>
           </select>
         </label>
-        <button className="min-h-11 self-end border">필터 적용</button>
+        <div className="flex flex-wrap gap-3 lg:col-span-4"><button className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground">필터 적용</button><Link href="/admin/transparency" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary">필터 초기화</Link></div>
       </form>
-      <div className="grid gap-4">
+      </AdminFilterPanel>
+      <section aria-labelledby="transparency-list">
+        <h2 id="transparency-list" className="sr-only">자료공개 목록</h2>
         {result.items.length ? (
-          result.items.map((item) => (
-            <article key={item.id} className="min-w-0 rounded-card border p-5">
-              <h2 className="text-safe-wrap font-bold">
-                <Link href={`/admin/transparency/${item.id}`} className="underline">
-                  {item.title}
-                </Link>
-              </h2>
-              <dl className="mt-3 grid gap-2 text-small sm:grid-cols-4">
-                <div>
-                  <dt className="font-semibold">분류</dt>
-                  <dd>{transparencyCategoryLabels[item.category]}</dd>
-                </div>
-                <div>
-                  <dt className="font-semibold">기준 기간 / 문서일</dt>
-                  <dd>
-                    {item.periodLabel} / {item.documentDate}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-semibold">개인정보 / 최종본 / 게시</dt>
-                  <dd>
-                    {transparencyPrivacyReviewStatusLabels[item.privacyReviewStatus]} /{" "}
-                    {transparencyFinalDocumentStatusLabels[item.finalDocumentStatus]} /{" "}
-                    {transparencyPublicationStatusLabels[item.publicationStatus]}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-semibold">수정일</dt>
-                  <dd>
-                    <time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time>
-                  </dd>
-                </div>
-              </dl>
-            </article>
-          ))
+          <>
+            <div className={`hidden gap-3 border-y border-border bg-surface-subtle px-4 py-3 text-small font-bold xl:grid ${"xl:grid-cols-[2fr_1.2fr_1fr_0.8fr_0.8fr_1fr]"}`}>
+              <span>자료</span><span>기준 기간 / 문서일</span><span>개인정보 검토</span><span>최종본</span><span>게시 상태</span><span>최근 수정</span>
+            </div>
+            <ul className="divide-y divide-border border-b border-border">
+              {result.items.map((item) => (
+                <li key={item.id} className={`grid min-w-0 gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${"xl:grid-cols-[2fr_1.2fr_1fr_0.8fr_0.8fr_1fr]"}`}>
+                  <div className="min-w-0 md:col-span-2 xl:col-span-1"><Link href={`/admin/transparency/${item.id}`} className="text-safe-wrap text-heading font-bold underline-offset-4 hover:underline">{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{transparencyCategoryLabels[item.category]}</p></div>
+                  <p><strong className="text-small font-semibold xl:sr-only">기준 기간 / 문서일 </strong>{item.periodLabel} / {item.documentDate}</p>
+                  <p><strong className="text-small font-semibold xl:sr-only">개인정보 검토 </strong>{transparencyPrivacyReviewStatusLabels[item.privacyReviewStatus]}</p>
+                  <p><strong className="text-small font-semibold xl:sr-only">최종본 </strong>{transparencyFinalDocumentStatusLabels[item.finalDocumentStatus]}</p>
+                  <p><strong className="text-small font-semibold xl:sr-only">게시 상태 </strong>{transparencyPublicationStatusLabels[item.publicationStatus]}</p>
+                  <p><strong className="text-small font-semibold xl:sr-only">최근 수정 </strong><time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time></p>
+                </li>
+              ))}
+            </ul>
+          </>
         ) : (
-          <p className="rounded-card border p-5">조건에 맞는 자료공개 초안이 없습니다.</p>
+          <div className="rounded-card border border-border bg-surface p-6"><h3 className="text-heading font-bold">{hasFilters ? "선택한 조건에 맞는 자료공개 문서가 없습니다." : "등록된 자료공개 문서가 없습니다."}</h3>{hasFilters ? <Link href="/admin/transparency" className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">필터 초기화</Link> : null}</div>
         )}
-      </div>
-      <nav aria-label="자료공개 목록 페이지" className="flex gap-4">
-        {result.page > 1 ? <Link href={buildTransparencyPageHref(result.page - 1, filters)}>이전</Link> : null}
-        <span>
-          {result.page} / {result.totalPages}
-        </span>
-        {result.page < result.totalPages ? (
-          <Link href={buildTransparencyPageHref(result.page + 1, filters)}>다음</Link>
-        ) : null}
-      </nav>
+      </section>
+      <AdminListPagination
+        label="자료공개 목록 페이지"
+        page={result.page}
+        totalPages={result.totalPages}
+        previousHref={buildTransparencyPageHref(result.page - 1, filters)}
+        nextHref={buildTransparencyPageHref(result.page + 1, filters)}
+      />
     </div>
   );
 }

@@ -199,6 +199,7 @@ export async function listAdminTransparencyDocuments(input: {
   return {
     items: documents.map(serialize),
     page: input.page,
+    totalItems: total,
     totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
   };
 }
