@@ -1,3 +1,6 @@
+import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
+import { AdminListPagination } from "@/components/admin/admin-list-pagination";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
@@ -64,53 +67,22 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-title font-bold">소식 관리</h1>
-        <p className="mt-3 text-body text-muted-foreground">
-          공지사항과 활동 소식의 게시 상태와 승인 상태를 확인합니다.
-        </p>
-        <p className="mt-2 text-small text-muted-foreground">
-          새 게시물은 작성 중·승인 대기 상태로 저장됩니다.
-          <br />
-          저장 후 상세 화면에서 수정·검토·승인과 공개 상태를 관리할 수 있습니다.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          {canCreate ? (
-            <Link
-              href="/admin/news/new"
-              className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-            >
-              새 게시물 작성
-            </Link>
-          ) : null}
-          <Link
-            href="/news"
-            className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            공개 뉴스 페이지 보기
-          </Link>
-        </div>
-      </div>
-
+      <AdminPageHeader
+        title="소식 관리"
+        description="공지사항과 활동 소식의 게시 상태와 승인 상태를 확인합니다."
+        actions={<>
+          {canCreate ? <Link href="/admin/news/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">새 게시물 작성</Link> : null}
+          <Link href="/news" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">공개 뉴스 페이지 보기</Link>
+        </>}
+      />
       {wasCreated ? (
         <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
           새 게시물을 작성 중·승인 대기 상태로 저장했습니다.
         </p>
       ) : null}
 
-      <section aria-labelledby="admin-news-filter-heading" className="rounded-card border border-border bg-surface p-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 id="admin-news-filter-heading" className="text-heading font-bold">
-              뉴스 필터
-            </h2>
-            <p className="mt-2 text-small text-muted-foreground">
-              전체 {result.totalItems}건 · 현재 {result.page} / {result.totalPages}
-              페이지 · 한 페이지 최대 {result.pageSize}건
-            </p>
-          </div>
-        </div>
-        <form method="get" action="/admin/news" className="mt-5 grid gap-4 lg:grid-cols-3">
+      <AdminFilterPanel headingId="admin-news-filter-heading" title="뉴스 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
+        <form method="get" action="/admin/news" className="mt-4 grid gap-3 lg:grid-cols-3">
           <label className="grid gap-2 font-semibold">
             분류
             <select
@@ -165,7 +137,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
             </Link>
           </div>
         </form>
-      </section>
+      </AdminFilterPanel>
 
       <section aria-labelledby="admin-news-list-heading">
         <h2 id="admin-news-list-heading" className="sr-only">
@@ -187,7 +159,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
               {result.items.map((item) => (
                 <li key={item.id}>
                   <article
-                    className={`grid min-w-0 gap-5 px-4 py-5 md:grid-cols-2 xl:items-start xl:gap-4 ${adminNewsDesktopGridClass}`}
+                    className={`grid min-w-0 gap-3 px-4 py-4 md:grid-cols-2 xl:items-start xl:gap-4 ${adminNewsDesktopGridClass}`}
                   >
                     <div className="min-w-0 md:col-span-2 xl:col-span-1">
                       <p className="text-small font-semibold text-primary">{getNewsCategoryLabel(item.category)}</p>
@@ -199,8 +171,8 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
                           {item.title}
                         </Link>
                       </h3>
-                      <p className="mt-2 break-words text-small text-muted-foreground">{item.summary}</p>
-                      <p className="mt-2 break-all text-small text-muted-foreground">slug: {item.slug}</p>
+                      <p className="mt-1 break-words text-small text-muted-foreground">{item.summary}</p>
+                      <p className="mt-1 break-all text-small text-muted-foreground">slug: {item.slug}</p>
                     </div>
                     <div className="min-w-0">
                       <p className="text-small font-semibold xl:hidden">게시 상태</p>
@@ -260,37 +232,13 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
         )}
       </section>
 
-      {result.totalPages > 1 && (
-        <nav aria-label="뉴스 목록 페이지 이동" className="flex items-center justify-center gap-4">
-          {result.page > 1 ? (
-            <Link
-              href={createAdminNewsPageHref(result.page - 1, filters)}
-              className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-            >
-              이전
-            </Link>
-          ) : (
-            <span className="inline-flex min-h-11 items-center px-4 py-2 text-muted-foreground" aria-disabled="true">
-              이전
-            </span>
-          )}
-          <span className="font-semibold">
-            {result.page} / {result.totalPages}
-          </span>
-          {result.page < result.totalPages ? (
-            <Link
-              href={createAdminNewsPageHref(result.page + 1, filters)}
-              className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-            >
-              다음
-            </Link>
-          ) : (
-            <span className="inline-flex min-h-11 items-center px-4 py-2 text-muted-foreground" aria-disabled="true">
-              다음
-            </span>
-          )}
-        </nav>
-      )}
+      <AdminListPagination
+        label="뉴스 목록 페이지 이동"
+        page={result.page}
+        totalPages={result.totalPages}
+        previousHref={createAdminNewsPageHref(result.page - 1, filters)}
+        nextHref={createAdminNewsPageHref(result.page + 1, filters)}
+      />
     </div>
   );
 }

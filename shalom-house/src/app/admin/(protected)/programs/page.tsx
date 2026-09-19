@@ -1,3 +1,6 @@
+import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
+import { AdminListPagination } from "@/components/admin/admin-list-pagination";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
@@ -65,62 +68,26 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
     ["archived", "프로그램을 보관했습니다."],
   ];
   const message = messages.find(([key]) => q[key] === "1")?.[1];
+  const hasFilters = Boolean(publicationStatus || approvalStatus);
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-title font-bold">프로그램 관리</h1>
-        <p className="mt-3 text-body text-muted-foreground">프로그램의 작성, 검토, 승인과 공개 상태를 관리합니다.</p>
-        {canCreate ? (
-          <Link
-            href="/admin/programs/new"
-            className="mt-4 inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground"
-          >
-            프로그램 작성
-          </Link>
-        ) : null}
-      </header>
+      <AdminPageHeader
+        title="프로그램 관리"
+        description="프로그램의 작성, 검토, 승인과 공개 상태를 관리합니다."
+        actions={canCreate ? <Link href="/admin/programs/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">프로그램 작성</Link> : undefined}
+      />
       {message ? (
         <p role="status" className="border border-border-strong bg-surface p-4 font-semibold">
           {message}
         </p>
       ) : null}
-      <section aria-labelledby="program-filter">
-        <h2 id="program-filter" className="text-heading font-bold">
-          상태 필터
-        </h2>
-        <form className="mt-4 grid gap-4 sm:grid-cols-2" action="/admin/programs">
-          <label className="grid gap-2 font-semibold">
-            게시 상태
-            <select
-              name="publicationStatus"
-              defaultValue={publicationStatus ?? ""}
-              className="min-h-11 border border-border-strong bg-background px-3"
-            >
-              <option value="">전체</option>
-              <option value="draft">작성 중</option>
-              <option value="review">검토 중</option>
-              <option value="published">게시</option>
-              <option value="archived">보관</option>
-            </select>
-          </label>
-          <label className="grid gap-2 font-semibold">
-            승인 상태
-            <select
-              name="approvalStatus"
-              defaultValue={approvalStatus ?? ""}
-              className="min-h-11 border border-border-strong bg-background px-3"
-            >
-              <option value="">전체</option>
-              <option value="pending">승인 대기</option>
-              <option value="approved">승인 완료</option>
-              <option value="rejected">반려</option>
-            </select>
-          </label>
-          <button className="min-h-11 bg-primary px-4 font-semibold text-primary-foreground sm:col-span-2">
-            필터 적용
-          </button>
+      <AdminFilterPanel headingId="program-filter" title="프로그램 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
+        <form className="mt-4 grid gap-3 sm:grid-cols-2" action="/admin/programs">
+          <label className="grid gap-2 font-semibold">게시 상태<select name="publicationStatus" defaultValue={publicationStatus ?? ""} className="min-h-11 rounded-control border border-border-strong bg-background px-3 font-normal"><option value="">전체</option><option value="draft">작성 중</option><option value="review">검토 중</option><option value="published">게시</option><option value="archived">보관</option></select></label>
+          <label className="grid gap-2 font-semibold">승인 상태<select name="approvalStatus" defaultValue={approvalStatus ?? ""} className="min-h-11 rounded-control border border-border-strong bg-background px-3 font-normal"><option value="">전체</option><option value="pending">승인 대기</option><option value="approved">승인 완료</option><option value="rejected">반려</option></select></label>
+          <div className="flex flex-wrap gap-3 sm:col-span-2"><button className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground">필터 적용</button><Link href="/admin/programs" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary">필터 초기화</Link></div>
         </form>
-      </section>
+      </AdminFilterPanel>
       <section aria-labelledby="program-list">
         <h2 id="program-list" className="sr-only">
           프로그램 목록
@@ -140,8 +107,8 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
             </div>
             <ul className="divide-y divide-border border-b border-border">
               {result.items.map((item) => (
-                <li key={item.id} className={`grid gap-3 px-4 py-5 ${adminProgramsDesktopGridClass}`}>
-                  <div>
+                <li key={item.id} className={`grid gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${adminProgramsDesktopGridClass}`}>
+                  <div className="md:col-span-2 xl:col-span-1">
                     <Link
                       href={`/admin/programs/${item.id}`}
                       className="text-heading font-bold underline-offset-4 hover:underline"
@@ -179,22 +146,10 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
             </ul>
           </>
         ) : (
-          <p className="border-y border-border py-6">등록된 프로그램이 없습니다.</p>
+          <div className="rounded-card border border-border bg-surface p-6"><h3 className="text-heading font-bold">{hasFilters ? "선택한 조건에 맞는 프로그램이 없습니다." : "등록된 프로그램이 없습니다."}</h3>{hasFilters ? <Link href="/admin/programs" className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">필터 초기화</Link> : null}</div>
         )}
       </section>
-      {result.totalPages > 1 ? (
-        <nav aria-label="프로그램 목록 페이지 이동" className="flex justify-center gap-4">
-          {result.page > 1 ? <Link href={href(result.page - 1, filters)}>이전</Link> : <span>이전</span>}
-          <span>
-            {result.page} / {result.totalPages}
-          </span>
-          {result.page < result.totalPages ? (
-            <Link href={href(result.page + 1, filters)}>다음</Link>
-          ) : (
-            <span>다음</span>
-          )}
-        </nav>
-      ) : null}
+      <AdminListPagination label="프로그램 목록 페이지 이동" page={result.page} totalPages={result.totalPages} previousHref={href(result.page - 1, filters)} nextHref={href(result.page + 1, filters)} />
     </div>
   );
 }
