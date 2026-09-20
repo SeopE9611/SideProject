@@ -14,6 +14,7 @@ import { AdminGalleryConsentWithdrawalForm } from "@/components/admin/admin-gall
 import { AdminGalleryArchiveForm } from "@/components/admin/admin-gallery-archive-form";
 import { listAdminGalleryAuditHistory } from "@/features/gallery/gallery.audit-repository";
 import { findAdminGalleryItemById } from "@/features/gallery/gallery.admin-repository";
+import { formatAdminDate } from "@/lib/format-admin-date";
 import {
   getGalleryApprovalStatusLabel,
   getGalleryConsentStatusLabel,
@@ -82,7 +83,10 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
           { label: "승인 상태", value: getGalleryApprovalStatusLabel(item.approvalStatus) },
           { label: "공개 여부", value: item.isPubliclyVisible ? "공개 중" : "비공개", emphasized: true },
           { label: "동의 상태", value: getGalleryConsentStatusLabel(item.consentStatus) },
-          { label: "최근 수정", value: item.updatedAt },
+          {
+            label: "최근 수정",
+            value: <time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time>,
+          },
         ]}
       />
       <section>
