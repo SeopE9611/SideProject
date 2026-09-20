@@ -5,6 +5,8 @@ import Link from "next/link";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
 import { AdminDirectPublishForm } from "@/components/admin/admin-direct-publish-form";
 import { AdminContentDeleteForm } from "@/components/admin/admin-content-delete-form";
+import { AdminDetailHeader } from "@/components/admin/admin-detail-header";
+import { AdminStatusSummary } from "@/components/admin/admin-status-summary";
 import { notFound } from "next/navigation";
 
 import { AdminNewsReviewRequestForm } from "@/components/admin/admin-news-review-request-form";
@@ -83,26 +85,34 @@ export default async function AdminNewsDetailPage({
   const isArchived = post.publicationStatus === "archived" && post.approvalStatus === "approved";
   const wasMediaUpdated = query.mediaUpdated === "1";
 
-  const details = [
-    ["게시 상태", getNewsPublicationStatusLabel(post.publicationStatus)],
-    ["승인 상태", getNewsApprovalStatusLabel(post.approvalStatus)],
-    ["공개 여부", post.isPubliclyVisible ? "공개 중" : "비공개"],
-    ["slug", post.slug],
-  ] as const;
-
   return (
     <div className="space-y-8">
-      <header>
-        <Link
-          href="/admin/news"
-          className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-        >
-          ← 소식 관리로 돌아가기
-        </Link>
-        <p className="mt-4 text-small font-semibold text-primary">{getNewsCategoryLabel(post.category)}</p>
-        <h1 className="mt-1 text-title font-bold">게시물 상세 관리</h1>
-        <p className="mt-3 break-words text-heading font-bold">{post.title}</p>
-      </header>
+      <AdminDetailHeader
+        backHref="/admin/news"
+        backLabel="소식 관리로 돌아가기"
+        eyebrow={`소식 · ${getNewsCategoryLabel(post.category)}`}
+        title={post.title}
+        actions={
+          <>
+            {post.isEditable && canUpdate ? (
+              <Link
+                href={`/admin/news/${post.id}/edit`}
+                className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              >
+                게시물 수정
+              </Link>
+            ) : null}
+            {post.isPubliclyVisible ? (
+              <Link
+                href={`/news/${post.slug}`}
+                className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              >
+                공개 페이지 보기
+              </Link>
+            ) : null}
+          </>
+        }
+      />
 
       {wasUpdated ? (
         <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
@@ -160,24 +170,14 @@ export default async function AdminNewsDetailPage({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-3">
-        {post.isEditable && canUpdate ? (
-          <Link
-            href={`/admin/news/${post.id}/edit`}
-            className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            게시물 수정
-          </Link>
-        ) : null}
-        {post.isPubliclyVisible ? (
-          <Link
-            href={`/news/${post.slug}`}
-            className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            공개 페이지 보기
-          </Link>
-        ) : null}
-      </div>
+      <AdminStatusSummary
+        items={[
+          { label: "게시 상태", value: getNewsPublicationStatusLabel(post.publicationStatus) },
+          { label: "승인 상태", value: getNewsApprovalStatusLabel(post.approvalStatus) },
+          { label: "공개 여부", value: post.isPubliclyVisible ? "공개 중" : "비공개", emphasized: true },
+          { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
+        ]}
+      />
 
       {!post.isEditable ? (
         <aside className="rounded-card border border-border-strong bg-surface p-5">
@@ -223,17 +223,15 @@ export default async function AdminNewsDetailPage({
         </aside>
       ) : null}
 
-      <section aria-labelledby="admin-news-status-heading" className="rounded-card border border-border bg-surface p-5">
-        <h2 id="admin-news-status-heading" className="text-heading font-bold">
-          상태 정보
+      <section aria-labelledby="admin-news-management-heading" className="rounded-card border border-border bg-surface p-5">
+        <h2 id="admin-news-management-heading" className="text-heading font-bold">
+          관리 정보
         </h2>
         <dl className="mt-5 grid gap-5 sm:grid-cols-2">
-          {details.map(([label, value]) => (
-            <div key={label} className="min-w-0">
-              <dt className="text-small font-semibold text-muted-foreground">{label}</dt>
-              <dd className="mt-1 break-all">{value}</dd>
-            </div>
-          ))}
+          <div className="min-w-0">
+            <dt className="text-small font-semibold text-muted-foreground">slug</dt>
+            <dd className="mt-1 break-all">{post.slug}</dd>
+          </div>
           <div>
             <dt className="text-small font-semibold text-muted-foreground">게시일</dt>
             <dd className="mt-1">
@@ -244,12 +242,6 @@ export default async function AdminNewsDetailPage({
             <dt className="text-small font-semibold text-muted-foreground">생성일</dt>
             <dd className="mt-1">
               <DateValue value={post.createdAt} />
-            </dd>
-          </div>
-          <div>
-            <dt className="text-small font-semibold text-muted-foreground">최근 수정일</dt>
-            <dd className="mt-1">
-              <DateValue value={post.updatedAt} />
             </dd>
           </div>
         </dl>
