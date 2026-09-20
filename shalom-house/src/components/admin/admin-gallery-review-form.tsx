@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { AdminWorkflowPanel } from "./admin-workflow-panel";
 
 export function AdminGalleryTransitionForm({
   id,
@@ -66,29 +67,30 @@ export function AdminGalleryTransitionForm({
   }
 
   return (
-    <form
-      onSubmit={submit}
-      aria-busy={busy}
-      className={`grid gap-4 rounded-card border p-5 ${danger ? "border-danger" : ""}`}
-    >
-      <p className="font-semibold">{label}</p>
-      <p className="text-safe-wrap text-small text-muted-foreground">{description}</p>
-      <label className="flex items-start gap-3">
-        <input name="confirmed" type="checkbox" required className="mt-1 size-5" />
-        <span>위 내용을 확인했으며 이 작업을 진행합니다.</span>
-      </label>
-      {error ? (
-        <p role="alert" className="text-danger">
-          {error}
-        </p>
-      ) : null}
-      <button
-        disabled={busy}
-        className={`min-h-11 rounded-control px-5 font-semibold ${danger ? "bg-danger text-white" : "bg-primary text-primary-foreground"}`}
-      >
-        {busy ? "처리 중…" : label}
-      </button>
-    </form>
+    <AdminWorkflowPanel title={label} description={description} tone={danger ? "danger" : "default"}>
+      <form onSubmit={submit} aria-busy={busy} className="mt-5 max-w-3xl space-y-5">
+        <label className="flex items-start gap-3 font-semibold">
+          <input
+            name="confirmed"
+            type="checkbox"
+            required
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <span>위 내용을 확인했으며 이 작업을 진행합니다.</span>
+        </label>
+        {error ? (
+          <p role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">
+            {error}
+          </p>
+        ) : null}
+        <button
+          disabled={busy}
+          className={`inline-flex min-h-11 items-center justify-center rounded-control px-5 py-2 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60 ${danger ? "border border-danger text-danger" : "bg-primary text-primary-foreground"}`}
+        >
+          {busy ? "처리 중…" : label}
+        </button>
+      </form>
+    </AdminWorkflowPanel>
   );
 }
 

@@ -1,6 +1,7 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { AdminWorkflowPanel } from "./admin-workflow-panel";
 type ResponseBody = { error?: string; redirectTo?: string };
 export function AdminTransparencyPublicationStateForm({
   id,
@@ -58,21 +59,21 @@ export function AdminTransparencyPublicationStateForm({
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={isBusy} className="space-y-3 rounded-card border p-5">
-      <h2 className="font-bold">게시 중단</h2>
-      <p>게시를 중단하면 공개 목록과 공개 PDF 경로에서 즉시 제외됩니다. Storage 원본은 유지됩니다.</p>
-      <label htmlFor="transparency-publication-state-confirmed" className="flex gap-2">
-        <input id="transparency-publication-state-confirmed" name="transitionConfirmed" type="checkbox" required />
-        게시 중단 확인
+    <AdminWorkflowPanel title="게시 중단" description="게시를 중단하면 공개 목록과 공개 PDF 경로에서 즉시 제외됩니다. Storage 원본은 유지됩니다.">
+    <form onSubmit={submit} aria-busy={isBusy} className="mt-5 max-w-3xl space-y-5">
+      <label htmlFor="transparency-publication-state-confirmed" className="flex items-start gap-3 font-semibold">
+        <input id="transparency-publication-state-confirmed" name="transitionConfirmed" type="checkbox" required className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+        <span>게시 중단 확인</span>
       </label>
       {error ? (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">
           {error}
         </p>
       ) : null}
-      <button type="submit" disabled={isBusy} className="min-h-11 border px-4 disabled:opacity-60">
+      <button type="submit" disabled={isBusy} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">
         {isBusy ? "처리 중…" : "게시 중단"}
       </button>
     </form>
+    </AdminWorkflowPanel>
   );
 }

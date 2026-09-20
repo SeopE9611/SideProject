@@ -1,6 +1,7 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { AdminWorkflowPanel } from "./admin-workflow-panel";
 type ResponseBody = { error?: string; redirectTo?: string };
 export function AdminTransparencyReviewDecisionForm({
   id,
@@ -54,30 +55,32 @@ export function AdminTransparencyReviewDecisionForm({
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={isBusy} className="space-y-3 rounded-card border p-5">
-      <h2 className="font-bold">승인·반려</h2>
-      <p>검토 결과를 확인하고 승인 또는 반려합니다.</p>
-      <fieldset>
+    <AdminWorkflowPanel title="승인·반려" description="검토 결과를 확인하고 승인 또는 반려합니다.">
+    <form onSubmit={submit} aria-busy={isBusy} className="mt-5 max-w-3xl space-y-5">
+      <fieldset className="space-y-3">
         <legend className="font-semibold">검토 결정</legend>
-        <label className="mr-4">
-          <input type="radio" name="decision" value="approve" required /> 승인
+        <label className="flex items-start gap-3">
+          <input type="radio" name="decision" value="approve" required className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <span><span className="font-semibold">승인</span><span className="block text-small text-muted-foreground">검토 완료 상태를 기록하고 게시 준비를 계속합니다.</span></span>
         </label>
-        <label>
-          <input type="radio" name="decision" value="reject" required /> 반려
+        <label className="flex items-start gap-3">
+          <input type="radio" name="decision" value="reject" required className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <span><span className="font-semibold">반려</span><span className="block text-small text-muted-foreground">수정할 수 있는 초안 상태로 되돌립니다.</span></span>
         </label>
       </fieldset>
-      <label htmlFor="transparency-decision-confirmed" className="flex gap-2">
-        <input id="transparency-decision-confirmed" type="checkbox" required />
-        선택한 검토 결과를 확인했습니다.
+      <label htmlFor="transparency-decision-confirmed" className="flex items-start gap-3 font-semibold">
+        <input id="transparency-decision-confirmed" type="checkbox" required className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+        <span>선택한 검토 결과를 확인했습니다.</span>
       </label>
       {error ? (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">
           {error}
         </p>
       ) : null}
-      <button type="submit" disabled={isBusy} className="min-h-11 border px-4 disabled:opacity-60">
+      <button type="submit" disabled={isBusy} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">
         {isBusy ? "처리 중…" : "검토 결과 저장"}
       </button>
     </form>
+    </AdminWorkflowPanel>
   );
 }
