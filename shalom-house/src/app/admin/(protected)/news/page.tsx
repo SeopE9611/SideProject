@@ -70,6 +70,11 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
       <AdminPageHeader
         title="소식 관리"
         description="공지사항과 활동 소식의 게시 상태와 승인 상태를 확인합니다."
+        supportingContent={<>
+          새 게시물은 작성 중·승인 대기 상태로 저장됩니다.
+          <br />
+          저장 후 상세 화면에서 수정·검토·승인과 공개 상태를 관리할 수 있습니다.
+        </>}
         actions={<>
           {canCreate ? <Link href="/admin/news/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">새 게시물 작성</Link> : null}
           <Link href="/news" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">공개 뉴스 페이지 보기</Link>
