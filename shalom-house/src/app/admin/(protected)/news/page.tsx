@@ -64,6 +64,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
   const requestedPage = normalizeAdminNewsPage(typeof query.page === "string" ? query.page : undefined);
   const result = await listAdminNewsPosts({ page: requestedPage, filters });
   const hasFilters = Boolean(category || publicationStatus || approvalStatus);
+  const filterFormKey = [category ?? "", publicationStatus ?? "", approvalStatus ?? ""].join("|");
 
   return (
     <div className="space-y-8">
@@ -87,7 +88,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
       ) : null}
 
       <AdminFilterPanel headingId="admin-news-filter-heading" title="뉴스 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
-        <form method="get" action="/admin/news" className="mt-4 grid gap-3 lg:grid-cols-3">
+        <form key={filterFormKey} method="get" action="/admin/news" className="mt-4 grid gap-3 lg:grid-cols-3">
           <label className="grid gap-2 font-semibold">
             분류
             <select

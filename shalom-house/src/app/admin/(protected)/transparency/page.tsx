@@ -73,6 +73,12 @@ export default async function AdminTransparencyPage({
   const hasFilters = Boolean(
     filters.category || filters.privacyReviewStatus || filters.finalDocumentStatus || filters.publicationStatus,
   );
+  const filterFormKey = [
+    filters.category ?? "",
+    filters.privacyReviewStatus ?? "",
+    filters.finalDocumentStatus ?? "",
+    filters.publicationStatus ?? "",
+  ].join("|");
   return (
     <div className="min-w-0 space-y-8">
       <AdminPageHeader
@@ -85,7 +91,7 @@ export default async function AdminTransparencyPage({
         ) : undefined}
       />
       <AdminFilterPanel headingId="transparency-filter" title="자료공개 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
-      <form className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <form key={filterFormKey} className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <input type="hidden" name="page" value="1" />
         <label>
           분류

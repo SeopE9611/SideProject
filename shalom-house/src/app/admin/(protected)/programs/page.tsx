@@ -69,6 +69,7 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
   ];
   const message = messages.find(([key]) => q[key] === "1")?.[1];
   const hasFilters = Boolean(publicationStatus || approvalStatus);
+  const filterFormKey = [publicationStatus ?? "", approvalStatus ?? ""].join("|");
   return (
     <div className="space-y-8">
       <AdminPageHeader
@@ -82,7 +83,7 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
         </p>
       ) : null}
       <AdminFilterPanel headingId="program-filter" title="프로그램 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
-        <form className="mt-4 grid gap-3 sm:grid-cols-2" action="/admin/programs">
+        <form key={filterFormKey} className="mt-4 grid gap-3 sm:grid-cols-2" action="/admin/programs">
           <label className="grid gap-2 font-semibold">게시 상태<select name="publicationStatus" defaultValue={publicationStatus ?? ""} className="min-h-11 rounded-control border border-border-strong bg-background px-3 font-normal"><option value="">전체</option><option value="draft">작성 중</option><option value="review">검토 중</option><option value="published">게시</option><option value="archived">보관</option></select></label>
           <label className="grid gap-2 font-semibold">승인 상태<select name="approvalStatus" defaultValue={approvalStatus ?? ""} className="min-h-11 rounded-control border border-border-strong bg-background px-3 font-normal"><option value="">전체</option><option value="pending">승인 대기</option><option value="approved">승인 완료</option><option value="rejected">반려</option></select></label>
           <div className="flex flex-wrap gap-3 sm:col-span-2"><button className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground">필터 적용</button><Link href="/admin/programs" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary">필터 초기화</Link></div>

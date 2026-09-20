@@ -28,6 +28,7 @@ export default async function AdminGalleryPage({ searchParams }: { searchParams:
   const publicationStatus = isGalleryPublicationStatus(q.publicationStatus) ? q.publicationStatus : undefined;
   const result = await listAdminGalleryItems({ page, subjectPresence, consentStatus, publicationStatus });
   const hasFilters = Boolean(subjectPresence || consentStatus || publicationStatus);
+  const filterFormKey = [subjectPresence ?? "", consentStatus ?? "", publicationStatus ?? ""].join("|");
 
   return (
     <div className="min-w-0 space-y-8">
@@ -35,7 +36,7 @@ export default async function AdminGalleryPage({ searchParams }: { searchParams:
         actions={canCreate ? <Link href="/admin/gallery/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">새 활동사진 초안</Link> : undefined}
       />
       <AdminFilterPanel headingId="gallery-filter" title="활동사진 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
-        <form className="mt-4 grid gap-3 lg:grid-cols-3" action="/admin/gallery">
+        <form key={filterFormKey} className="mt-4 grid gap-3 lg:grid-cols-3" action="/admin/gallery">
           <label className="grid gap-2 font-semibold">인물 상태<select name="subjectPresence" defaultValue={subjectPresence ?? ""} className="min-h-11 rounded-control border border-border-strong bg-background px-3 font-normal"><option value="">전체</option><option value="none">인물 없음</option><option value="non_identifiable">개인 식별 불가</option><option value="identifiable">개인 식별 가능</option></select></label>
           <label className="grid gap-2 font-semibold">동의 상태<select name="consentStatus" defaultValue={consentStatus ?? ""} className="min-h-11 rounded-control border border-border-strong bg-background px-3 font-normal"><option value="">전체</option><option value="not_required">별도 동의 불필요</option><option value="pending">동의 확인 중</option><option value="confirmed">공개 동의 확인</option><option value="withdrawn">공개 동의 철회</option></select></label>
           <label className="grid gap-2 font-semibold">게시 상태<select name="publicationStatus" defaultValue={publicationStatus ?? ""} className="min-h-11 rounded-control border border-border-strong bg-background px-3 font-normal"><option value="">전체</option><option value="draft">작성 중</option><option value="review">검토 중</option><option value="published">게시</option><option value="archived">보관</option></select></label>
