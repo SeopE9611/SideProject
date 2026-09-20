@@ -91,7 +91,7 @@ export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProf
       </label>
       <input
         id={key}
-        required={key === "role" || ((key === "name" || key === "nameDisclosureReference") && profile.showName)}
+        required={key === "role" || (key === "nameDisclosureReference" && profile.showName)}
         maxLength={key === "role" || key === "name" ? 80 : 120}
         className="min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         value={profile[key]}
