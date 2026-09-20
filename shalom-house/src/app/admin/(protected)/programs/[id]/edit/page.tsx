@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { AdminFormPageHeader } from "@/components/admin/admin-form-page-header";
 import { AdminProgramDraftForm } from "@/components/admin/admin-program-draft-form";
 import { findAdminProgramPostById } from "@/features/programs/program.admin-repository";
 import { getProgramPublicationStatusLabel } from "@/features/programs/program.types";
@@ -24,19 +25,18 @@ export default async function AdminProgramEditPage({ params }: { params: Promise
 
   return (
     <div className="space-y-8">
-      <header>
-        <Link
-          href={`/admin/programs/${post.id}`}
-          className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-        >
-          ← 프로그램 상세로 돌아가기
-        </Link>
-        <h1 className="mt-4 text-title font-bold">프로그램 수정</h1>
-        <p className="mt-3 text-body text-muted-foreground">
+      <AdminFormPageHeader
+        backHref={`/admin/programs/${post.id}`}
+        backLabel="프로그램 상세로 돌아가기"
+        eyebrow="프로그램 · 수정"
+        title="프로그램 수정"
+        description={
+          <>
           현재 게시 상태는 {getProgramPublicationStatusLabel(post.publicationStatus)}이며, 저장 후에도 자동 공개되지
           않습니다.
-        </p>
-      </header>
+          </>
+        }
+      />
 
       {!post.isEditable ? (
         <aside className="rounded-card border border-border-strong bg-surface p-5">
@@ -48,7 +48,9 @@ export default async function AdminProgramEditPage({ params }: { params: Promise
           ) : (
             <>
               <p className="font-semibold">현재 게시 상태에서는 내용을 수정할 수 없습니다.</p>
-              <p className="mt-2 text-small text-muted-foreground">상태 전환 기능은 후속 작업에서 연결합니다.</p>
+              <p className="mt-2 text-small text-muted-foreground">
+                현재 게시·승인 상태를 상세 화면에서 확인해 주세요.
+              </p>
             </>
           )}
           <Link
