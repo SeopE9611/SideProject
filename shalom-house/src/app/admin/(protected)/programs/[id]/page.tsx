@@ -1,6 +1,8 @@
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
 import { AdminContentDeleteForm } from "@/components/admin/admin-content-delete-form";
 import { AdminDirectPublishForm } from "@/components/admin/admin-direct-publish-form";
+import { AdminDetailHeader } from "@/components/admin/admin-detail-header";
+import { AdminStatusSummary } from "@/components/admin/admin-status-summary";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import type { Metadata } from "next";
@@ -24,7 +26,7 @@ import {
 } from "@/features/programs/program.types";
 
 export const metadata: Metadata = {
-  title: "프로그램 상세 관리",
+  title: "프로그램 상세",
   robots: { index: false, follow: false },
 };
 
@@ -83,26 +85,28 @@ export default async function AdminProgramDetailPage({
   const isArchived = post.publicationStatus === "archived" && post.approvalStatus === "approved";
   const wasMediaUpdated = query.mediaUpdated === "1";
 
-  const details = [
-    ["게시 상태", getProgramPublicationStatusLabel(post.publicationStatus)],
-    ["승인 상태", getProgramApprovalStatusLabel(post.approvalStatus)],
-    ["공개 여부", post.isPubliclyVisible ? "공개 중" : "비공개"],
-    ["slug", post.slug],
-  ] as const;
-
   return (
     <div className="space-y-8">
-      <header>
-        <Link
-          href="/admin/programs"
-          className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-        >
-          ← 프로그램 관리로 돌아가기
-        </Link>
-        <p className="mt-4 text-small font-semibold text-primary">{getProgramCategoryLabel(post.category)}</p>
-        <h1 className="mt-1 text-title font-bold">프로그램 상세 관리</h1>
-        <p className="mt-3 break-words text-heading font-bold">{post.title}</p>
-      </header>
+      <AdminDetailHeader
+        backHref="/admin/programs"
+        backLabel="프로그램 관리로 돌아가기"
+        eyebrow={`프로그램 · ${getProgramCategoryLabel(post.category)}`}
+        title={post.title}
+        actions={
+          <>
+            {post.isEditable && canUpdate ? (
+              <Link href={`/admin/programs/${post.id}/edit`} className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+                프로그램 수정
+              </Link>
+            ) : null}
+            {post.isPubliclyVisible ? (
+              <Link href={`/life/programs/${post.slug}`} className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+                공개 페이지 보기
+              </Link>
+            ) : null}
+          </>
+        }
+      />
 
       {wasMediaUpdated ? <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">대표 이미지 또는 첨부파일을 저장했습니다.</p> : null}
 
@@ -163,24 +167,14 @@ export default async function AdminProgramDetailPage({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-3">
-        {post.isEditable && canUpdate ? (
-          <Link
-            href={`/admin/programs/${post.id}/edit`}
-            className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            프로그램 수정
-          </Link>
-        ) : null}
-        {post.isPubliclyVisible ? (
-          <Link
-            href={`/life/programs/${post.slug}`}
-            className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-          >
-            공개 페이지 보기
-          </Link>
-        ) : null}
-      </div>
+      <AdminStatusSummary
+        items={[
+          { label: "게시 상태", value: getProgramPublicationStatusLabel(post.publicationStatus) },
+          { label: "승인 상태", value: getProgramApprovalStatusLabel(post.approvalStatus) },
+          { label: "공개 여부", value: post.isPubliclyVisible ? "공개 중" : "비공개", emphasized: true },
+          { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
+        ]}
+      />
 
       {!post.isEditable ? (
         <aside className="rounded-card border border-border-strong bg-surface p-5">
@@ -227,19 +221,17 @@ export default async function AdminProgramDetailPage({
       ) : null}
 
       <section
-        aria-labelledby="admin-program-status-heading"
+        aria-labelledby="admin-program-management-heading"
         className="rounded-card border border-border bg-surface p-5"
       >
-        <h2 id="admin-program-status-heading" className="text-heading font-bold">
-          상태 정보
+        <h2 id="admin-program-management-heading" className="text-heading font-bold">
+          관리 정보
         </h2>
         <dl className="mt-5 grid gap-5 sm:grid-cols-2">
-          {details.map(([label, value]) => (
-            <div key={label} className="min-w-0">
-              <dt className="text-small font-semibold text-muted-foreground">{label}</dt>
-              <dd className="mt-1 break-all">{value}</dd>
-            </div>
-          ))}
+          <div className="min-w-0">
+            <dt className="text-small font-semibold text-muted-foreground">slug</dt>
+            <dd className="mt-1 break-all">{post.slug}</dd>
+          </div>
           <div>
             <dt className="text-small font-semibold text-muted-foreground">게시일</dt>
             <dd className="mt-1">
@@ -250,12 +242,6 @@ export default async function AdminProgramDetailPage({
             <dt className="text-small font-semibold text-muted-foreground">생성일</dt>
             <dd className="mt-1">
               <DateValue value={post.createdAt} />
-            </dd>
-          </div>
-          <div>
-            <dt className="text-small font-semibold text-muted-foreground">최근 수정일</dt>
-            <dd className="mt-1">
-              <DateValue value={post.updatedAt} />
             </dd>
           </div>
         </dl>
