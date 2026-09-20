@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdminWorkflowPanel } from "./admin-workflow-panel";
 export function AdminGalleryArchiveForm({ id, expectedUpdatedAt }: { id: string; expectedUpdatedAt: string }) {
   const router = useRouter(),
     [busy, setBusy] = useState(false),
@@ -25,21 +26,26 @@ export function AdminGalleryArchiveForm({ id, expectedUpdatedAt }: { id: string;
     setBusy(false);
   }
   return (
-    <div className="space-y-3">
-      <p>보관해도 비공개 Storage object는 영구 삭제되지 않습니다.</p>
-      {error ? (
-        <p role="alert" className="text-danger">
-          {error}
-        </p>
-      ) : null}
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => void archive()}
-        className="min-h-11 rounded-control border border-border-strong px-4 font-semibold disabled:opacity-60"
-      >
-        {busy ? "보관 중…" : "초안 보관"}
-      </button>
-    </div>
+    <AdminWorkflowPanel
+      title="초안 보관"
+      description="보관해도 비공개 Storage object는 영구 삭제되지 않습니다."
+      tone="danger"
+    >
+      <div className="mt-5 max-w-3xl space-y-5">
+        {error ? (
+          <p role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">
+            {error}
+          </p>
+        ) : null}
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void archive()}
+          className="inline-flex min-h-11 items-center justify-center rounded-control border border-danger px-5 py-2 font-semibold text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {busy ? "보관 중…" : "초안 보관"}
+        </button>
+      </div>
+    </AdminWorkflowPanel>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { AdminWorkflowPanel } from "./admin-workflow-panel";
 type ResponseBody = { error?: string; redirectTo?: string };
 export function AdminTransparencyReviewForm({ id, expectedUpdatedAt }: { id: string; expectedUpdatedAt: string }) {
   const router = useRouter();
@@ -51,21 +52,21 @@ export function AdminTransparencyReviewForm({ id, expectedUpdatedAt }: { id: str
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={isBusy} className="space-y-3 rounded-card border p-5">
-      <h2 className="font-bold">검토 요청</h2>
-      <p>개인정보 검토 완료와 최종본 여부를 확인한 뒤 검토를 요청합니다.</p>
-      <label htmlFor="transparency-review-confirmed" className="flex gap-2">
-        <input id="transparency-review-confirmed" name="reviewConfirmed" type="checkbox" required />
-        검토 요청 확인
+    <AdminWorkflowPanel title="검토 요청" description="개인정보 검토 완료와 최종본 여부를 확인한 뒤 검토를 요청합니다.">
+    <form onSubmit={submit} aria-busy={isBusy} className="mt-5 max-w-3xl space-y-5">
+      <label htmlFor="transparency-review-confirmed" className="flex items-start gap-3 font-semibold">
+        <input id="transparency-review-confirmed" name="reviewConfirmed" type="checkbox" required className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+        <span>검토 요청 확인</span>
       </label>
       {error ? (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="rounded-control border border-border-strong bg-background p-4 text-danger">
           {error}
         </p>
       ) : null}
-      <button type="submit" disabled={isBusy} className="min-h-11 border px-4 disabled:opacity-60">
+      <button type="submit" disabled={isBusy} className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">
         {isBusy ? "검토 요청 중…" : "검토 요청"}
       </button>
     </form>
+    </AdminWorkflowPanel>
   );
 }

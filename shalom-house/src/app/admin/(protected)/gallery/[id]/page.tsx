@@ -115,10 +115,7 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
           ))}
         </dl>
       </section>
-      <section className="grid gap-5" aria-labelledby="gallery-actions">
-        <h2 id="gallery-actions" className="text-heading font-bold">
-          상태 변경
-        </h2>
+      <div className="grid gap-5">
         {item.canRequestReview && canRequestReview ? (
           <AdminGalleryReviewForm id={id} expectedUpdatedAt={item.updatedAt} />
         ) : null}
@@ -132,12 +129,9 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
         {item.canWithdrawConsent && canWithdrawConsent ? (
           <AdminGalleryConsentWithdrawalForm id={id} expectedUpdatedAt={item.updatedAt} />
         ) : null}
-      </section>
+      </div>
       {item.isArchivable && canArchive ? (
-        <section className="rounded-card border p-5">
-          <h2 className="text-heading font-bold">초안 보관</h2>
-          <AdminGalleryArchiveForm id={id} expectedUpdatedAt={item.updatedAt} />
-        </section>
+        <AdminGalleryArchiveForm id={id} expectedUpdatedAt={item.updatedAt} />
       ) : null}
       {canDelete ? (
         <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5">

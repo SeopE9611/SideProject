@@ -26,7 +26,6 @@ async function readJsonResponse(response: Response): Promise<unknown | null> {
 export function AdminDirectPublishForm(props: AdminDirectPublishFormProps) {
   const router = useRouter();
   const checkboxId = useId();
-  const descriptionId = `${checkboxId}-description`;
   const errorId = `${checkboxId}-error`;
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,11 +79,6 @@ export function AdminDirectPublishForm(props: AdminDirectPublishFormProps) {
 
   return (
     <form onSubmit={submit} aria-busy={busy} className="mt-5 max-w-3xl space-y-5">
-      <p id={descriptionId} className="text-small text-muted-foreground">
-        검토·승인 단계를 생략하고 현재 내용을 즉시 홈페이지에 공개합니다.
-        <br />
-        제목, 본문과 개인정보 포함 여부를 확인한 뒤 진행해 주세요.
-      </p>
       {error ? (
         <p
           id={errorId}
@@ -100,9 +94,9 @@ export function AdminDirectPublishForm(props: AdminDirectPublishFormProps) {
           type="checkbox"
           checked={confirmed}
           onChange={(event) => setConfirmed(event.target.checked)}
-          aria-describedby={`${descriptionId}${error ? ` ${errorId}` : ""}`}
+          aria-describedby={error ? errorId : undefined}
           aria-invalid={error ? true : undefined}
-          className="mt-1 size-5 shrink-0 accent-primary"
+          className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         />
         <label htmlFor={checkboxId} className="font-semibold">
           현재 내용과 공개 가능 여부를 확인했으며 바로 게시하는 것에 동의합니다.
@@ -111,7 +105,7 @@ export function AdminDirectPublishForm(props: AdminDirectPublishFormProps) {
       <button
         type="submit"
         disabled={busy}
-        className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
       >
         {busy ? "바로 게시 중…" : `${props.contentLabel} 바로 게시`}
       </button>

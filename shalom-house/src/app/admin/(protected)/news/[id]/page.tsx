@@ -7,6 +7,7 @@ import { AdminDirectPublishForm } from "@/components/admin/admin-direct-publish-
 import { AdminContentDeleteForm } from "@/components/admin/admin-content-delete-form";
 import { AdminDetailHeader } from "@/components/admin/admin-detail-header";
 import { AdminStatusSummary } from "@/components/admin/admin-status-summary";
+import { AdminWorkflowPanel } from "@/components/admin/admin-workflow-panel";
 import { notFound } from "next/navigation";
 
 import { AdminNewsReviewRequestForm } from "@/components/admin/admin-news-review-request-form";
@@ -210,7 +211,7 @@ export default async function AdminNewsDetailPage({
           ) : (
             <>
               <p className="font-semibold">현재 게시 상태에서는 내용을 수정할 수 없습니다.</p>
-              <p className="mt-2 text-small text-muted-foreground">상태 전환 기능은 후속 작업에서 연결합니다.</p>
+              <p className="mt-2 text-small text-muted-foreground">현재 게시·승인 상태를 확인해 주세요.</p>
             </>
           )}
         </aside>
@@ -275,100 +276,75 @@ export default async function AdminNewsDetailPage({
           downloadUrl: `/api/admin/news/${post.id}/attachment` } : null} />
 
       {post.canDirectPublish && canDirectPublish ? (
-        <section
-          aria-labelledby="admin-news-direct-publish-heading"
-          className="rounded-card border border-border-strong bg-surface p-5"
-        >
-          <h2 id="admin-news-direct-publish-heading" className="text-heading font-bold">
-            바로 게시
-          </h2>
-          <p className="mt-3 text-small text-muted-foreground">
+        <AdminWorkflowPanel title="바로 게시" description={<>
+          <p>
             시스템 관리자는 별도의 검토·승인 단계를 거치지 않고 현재 게시물을 즉시 공개할 수 있습니다.
             <br />
             역할을 나눠 검토하려면 아래의 검토 요청 절차를 사용해 주세요.
           </p>
+        </>}>
           <AdminDirectPublishForm
             id={post.id}
             endpoint={`/api/admin/news/${post.id}/direct-publish`}
             expectedUpdatedAt={post.updatedAt}
             contentLabel="게시물"
           />
-        </section>
+        </AdminWorkflowPanel>
       ) : null}
 
       {post.canRequestReview && canRequestReview ? (
-        <section
-          aria-labelledby="admin-news-review-heading"
-          className="rounded-card border border-border-strong bg-surface p-5"
-        >
-          <h2 id="admin-news-review-heading" className="text-heading font-bold">
-            {isRejectedDraft ? "재검토 요청" : "검토 요청"}
-          </h2>
+        <AdminWorkflowPanel title={isRejectedDraft ? "재검토 요청" : "검토 요청"} description={<>
           {isRejectedDraft ? (
-            <p className="mt-3 text-small text-muted-foreground">
+            <p>
               반려 사항을 반영한 뒤 다시 검토 중 상태로 전환합니다.
               <br />
               재검토 요청 시 승인 상태는 다시 승인 대기로 변경됩니다.
             </p>
           ) : (
-            <p className="mt-3 text-small text-muted-foreground">
+            <p>
               검토 요청 후 게시 상태가 검토 중으로 변경되며 내용 수정이 잠깁니다.
               <br />이 작업만으로 게시물이 승인되거나 공개되지는 않습니다.
             </p>
           )}
+        </>}>
           <AdminNewsReviewRequestForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
-        </section>
+        </AdminWorkflowPanel>
       ) : null}
 
       {post.canDecideReview && canDecideReview ? (
-        <section
-          aria-labelledby="admin-news-decision-heading"
-          className="rounded-card border border-border-strong bg-surface p-5"
-        >
-          <h2 id="admin-news-decision-heading" className="text-heading font-bold">
-            검토 결과 처리
-          </h2>
-          <p className="mt-3 text-small text-muted-foreground">
+        <AdminWorkflowPanel title="검토 결과 처리" description={<>
+          <p>
             승인은 검토 완료 상태만 기록하며 게시물을 공개하지 않습니다.
             <br />
             반려하면 수정 가능한 초안으로 돌아가며 다시 검토를 요청할 수 있습니다.
           </p>
+        </>}>
           <AdminNewsReviewDecisionForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
-        </section>
+        </AdminWorkflowPanel>
       ) : null}
 
       {post.canPublish && canPublish ? (
-        <section
-          aria-labelledby="admin-news-publish-heading"
-          className="rounded-card border border-border-strong bg-surface p-5"
-        >
-          <h2 id="admin-news-publish-heading" className="text-heading font-bold">
-            게시
-          </h2>
-          <p className="mt-3 text-small text-muted-foreground">
+        <AdminWorkflowPanel title="게시" description={<>
+          <p>
             게시하면 현재 승인된 내용이 즉시 공개 뉴스 목록과 상세 페이지에 표시됩니다.
             <br />
             게시 후 내용 수정과 게시 중단은 별도 상태 전환이 필요합니다.
           </p>
+        </>}>
           <AdminNewsPublishForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
-        </section>
+        </AdminWorkflowPanel>
       ) : null}
 
       {post.canManagePublicationState && canPublish ? (
-        <section
-          aria-labelledby="admin-news-publication-state-heading"
-          className="rounded-card border border-border-strong bg-surface p-5"
-        >
-          <h2 id="admin-news-publication-state-heading" className="text-heading font-bold">
-            게시 상태 변경
-          </h2>
-          <p className="mt-3 text-small text-muted-foreground">
+        <AdminWorkflowPanel title="게시 상태 변경" description={<>
+          <p>
             게시 중단은 공개를 종료한 뒤 다시 게시할 수 있는 승인 완료 상태로 되돌립니다.
             <br />
             보관은 공개를 종료하고 현재 작업 범위에서 복구할 수 없는 보관 상태로 전환합니다.
           </p>
+        </>}>
           <AdminNewsPublicationStateForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
-        </section>
+        </AdminWorkflowPanel>
       ) : null}
       {canDelete ? (
         <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5">
