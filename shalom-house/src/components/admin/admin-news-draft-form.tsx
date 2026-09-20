@@ -303,7 +303,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
             required
             aria-invalid={fieldErrors.contentSafetyConfirmed ? true : undefined}
             aria-describedby={describedBy("contentSafetyConfirmed", fieldErrors)}
-            className="mt-1 size-5 shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           />
           <label htmlFor="admin-news-content-safety" className="text-small leading-relaxed">
             거주인·직원·보호자 등의 개인정보, 민감정보와 공개 금지 정보가 포함되지 않았으며 홈페이지 검토용으로 저장해도
@@ -317,7 +317,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex min-h-12 items-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "저장 중…" : props.mode === "create" ? "초안 저장" : "변경 사항 저장"}
         </button>

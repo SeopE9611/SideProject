@@ -149,7 +149,8 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
           defaultValue: String(initial[name]),
           "aria-invalid": error ? true : undefined,
           "aria-describedby": `${help ? `${id}-help ` : ""}${error ? `${id}-error` : ""}`.trim() || undefined,
-          className: "min-h-12 rounded-control border border-border-strong bg-background px-3 py-2",
+          className:
+            "min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
         };
         const required = name !== "operationStatusLabel";
         const maxLength =
@@ -203,8 +204,8 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
           </div>
         );
       })}
-      <div>
-        <div className="flex items-start gap-3">
+      <div className="grid gap-2">
+        <div className="flex items-start gap-3 border-l-4 border-warning bg-warning-soft p-4">
           <input
             id="admin-program-safety"
             name="contentSafetyConfirmed"
@@ -212,8 +213,9 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
             required
             aria-invalid={errors.contentSafetyConfirmed ? true : undefined}
             aria-describedby={errors.contentSafetyConfirmed ? "admin-program-safety-error" : undefined}
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           />
-          <label htmlFor="admin-program-safety">
+          <label htmlFor="admin-program-safety" className="text-small leading-relaxed">
             거주인 개인정보, 장애·건강 정보, 내부 기록과 공개 권한이 없는 내용이 포함되지 않았음을 확인했습니다.
           </label>
         </div>
@@ -227,13 +229,13 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
         <button
           type="submit"
           disabled={busy}
-          className="min-h-12 rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground disabled:opacity-60"
+          className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? "저장 중…" : props.mode === "create" ? "프로그램 초안 저장" : "변경 사항 저장"}
         </button>
         <Link
           href={props.mode === "create" ? "/admin/programs" : `/admin/programs/${props.programId}`}
-          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 py-2 font-bold text-primary"
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 py-2 font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           취소
         </Link>

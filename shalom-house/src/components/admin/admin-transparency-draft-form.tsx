@@ -83,6 +83,8 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
     }
   }
   const described = (name: string) => `${name}-help${errors[name] ? ` ${name}-error` : ""}`;
+  const controlClass =
+    "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
   return (
     <form onSubmit={submit} aria-busy={busy} className="min-w-0 max-w-4xl space-y-6">
       {formError ? (
@@ -91,8 +93,8 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
         </p>
       ) : null}
       {mode === "create" ? (
-        <div className="border-b border-border pb-6">
-          <label htmlFor="document" className="block font-semibold">
+        <div className="grid gap-2 border-b border-border pb-6">
+          <label htmlFor="document" className="font-semibold">
             PDF 파일 <span className="text-danger">*</span>
           </label>
           <input
@@ -104,25 +106,25 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
             aria-invalid={Boolean(errors.document)}
             aria-describedby={described("document")}
             onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-            className="min-h-11 w-full"
+            className={`min-h-11 ${controlClass}`}
           />
-          <p id="document-help">
+          <p id="document-help" className="text-small text-muted-foreground">
             PDF만 허용하며 최대 3MB입니다. {file ? `선택: ${file.name} (${file.size.toLocaleString()} bytes)` : ""}
           </p>
           {errors.document ? (
-            <p id="document-error" role="alert" className="text-danger">
+            <p id="document-error" role="alert" className="text-small font-semibold text-danger">
               {errors.document}
             </p>
           ) : null}
         </div>
       ) : (
-        <p className="border-l-4 border-warning bg-warning-soft px-4 py-3 font-semibold">
+        <p className="border-l-4 border-warning bg-warning-soft p-4 font-semibold">
           PDF는 이 화면에서 교체할 수 없습니다. 문서 정보만 수정할 수 있습니다.
         </p>
       )}
       {fields.map(([name, label]) => (
-        <div key={name} className="border-b border-border pb-6">
-          <label htmlFor={name} className="block font-semibold">
+        <div key={name} className="grid gap-2 border-b border-border pb-6">
+          <label htmlFor={name} className="font-semibold">
             {label} <span className="text-danger">*</span>
           </label>
           <input
@@ -137,20 +139,20 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
             defaultValue={initial?.[name] ?? ""}
             aria-invalid={Boolean(errors[name])}
             aria-describedby={described(name)}
-            className="min-h-11 w-full rounded-control border p-2"
+            className={`min-h-11 ${controlClass}`}
           />
           <span id={`${name}-help`} className="sr-only">
             {label}을 입력해 주세요.
           </span>
           {errors[name] ? (
-            <p id={`${name}-error`} role="alert" className="text-danger">
+            <p id={`${name}-error`} role="alert" className="text-small font-semibold text-danger">
               {errors[name]}
             </p>
           ) : null}
         </div>
       ))}
-      <div className="border-b border-border pb-6">
-        <label htmlFor="category" className="block font-semibold">
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label htmlFor="category" className="font-semibold">
           분류 <span className="text-danger">*</span>
         </label>
         <select
@@ -160,7 +162,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           required
           aria-invalid={Boolean(errors.category)}
           aria-describedby={described("category")}
-          className="min-h-11 w-full border"
+          className={`min-h-11 ${controlClass}`}
         >
           <option value="">선택</option>
           <option value="operations">운영 보고</option>
@@ -172,13 +174,13 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           분류를 선택해 주세요.
         </span>
         {errors.category ? (
-          <p id="category-error" role="alert">
+          <p id="category-error" role="alert" className="text-small font-semibold text-danger">
             {errors.category}
           </p>
         ) : null}
       </div>
-      <div className="border-b border-border pb-6">
-        <label htmlFor="summary" className="block font-semibold">
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label htmlFor="summary" className="font-semibold">
           요약 (선택)
         </label>
         <textarea
@@ -188,17 +190,19 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           maxLength={500}
           aria-invalid={Boolean(errors.summary)}
           aria-describedby={described("summary")}
-          className="w-full border p-2"
+          className={controlClass}
         />
-        <span id="summary-help">500자 이하</span>
+        <span id="summary-help" className="text-small text-muted-foreground">
+          500자 이하
+        </span>
         {errors.summary ? (
-          <p id="summary-error" role="alert">
+          <p id="summary-error" role="alert" className="text-small font-semibold text-danger">
             {errors.summary}
           </p>
         ) : null}
       </div>
-      <div className="border-b border-border pb-6">
-        <label htmlFor="privacyReviewStatus" className="block font-semibold">
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label htmlFor="privacyReviewStatus" className="font-semibold">
           개인정보 검토 상태
         </label>
         <select
@@ -207,7 +211,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           defaultValue={initial?.privacyReviewStatus ?? "pending"}
           aria-invalid={Boolean(errors.privacyReviewStatus)}
           aria-describedby={described("privacyReviewStatus")}
-          className="min-h-11 w-full border"
+          className={`min-h-11 ${controlClass}`}
         >
           <option value="pending">확인 중</option>
           <option value="confirmed">확인 완료</option>
@@ -216,13 +220,13 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           개인정보 검토 상태
         </span>
         {errors.privacyReviewStatus ? (
-          <p id="privacyReviewStatus-error" role="alert">
+          <p id="privacyReviewStatus-error" role="alert" className="text-small font-semibold text-danger">
             {errors.privacyReviewStatus}
           </p>
         ) : null}
       </div>
-      <div className="border-b border-border pb-6">
-        <label htmlFor="finalDocumentStatus" className="block font-semibold">
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label htmlFor="finalDocumentStatus" className="font-semibold">
           최종본 상태
         </label>
         <select
@@ -231,7 +235,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           defaultValue={initial?.finalDocumentStatus ?? "draft"}
           aria-invalid={Boolean(errors.finalDocumentStatus)}
           aria-describedby={described("finalDocumentStatus")}
-          className="min-h-11 w-full border"
+          className={`min-h-11 ${controlClass}`}
         >
           <option value="draft">작성본</option>
           <option value="final">최종본</option>
@@ -240,7 +244,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           최종본 상태
         </span>
         {errors.finalDocumentStatus ? (
-          <p id="finalDocumentStatus-error" role="alert">
+          <p id="finalDocumentStatus-error" role="alert" className="text-small font-semibold text-danger">
             {errors.finalDocumentStatus}
           </p>
         ) : null}
@@ -249,13 +253,13 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
         <button
           type="submit"
           disabled={busy}
-          className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground"
+          className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? "저장 중…" : mode === "create" ? "비공개 초안 저장" : "문서 정보 저장"}
         </button>
         <Link
           href={mode === "create" ? "/admin/transparency" : `/admin/transparency/${id}`}
-          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold text-primary"
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 py-2 font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           취소
         </Link>

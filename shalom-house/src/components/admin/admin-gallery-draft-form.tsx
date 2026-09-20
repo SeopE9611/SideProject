@@ -190,6 +190,8 @@ export function AdminGalleryDraftForm(props: Props) {
       setBusy(false);
     }
   }
+  const controlClass =
+    "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
   return (
     <form onSubmit={submit} className="max-w-4xl space-y-6" aria-busy={busy || undefined}>
       {formError ? (
@@ -210,20 +212,21 @@ export function AdminGalleryDraftForm(props: Props) {
             onChange={(e) => void choose(e.target.files?.[0])}
             aria-invalid={Boolean(fieldErrors.image) || undefined}
             aria-describedby={`gallery-image-help gallery-image-status${fieldErrors.image ? " gallery-image-error" : ""}`}
+            className={`min-h-11 ${controlClass}`}
           />
           <p id="gallery-image-help" className="text-small text-muted-foreground">
             JPEG, PNG, WebP 원본을 선택하면 긴 변 1920px 이하, quality 0.82 WebP로 변환합니다.
           </p>
-          <p id="gallery-image-status" role="status">
+          <p id="gallery-image-status" role="status" className="text-small text-muted-foreground">
             {status}
           </p>
           {conversionError ? (
-            <p role="alert" className="text-danger">
+            <p role="alert" className="text-small font-semibold text-danger">
               {conversionError}
             </p>
           ) : null}
           {fieldErrors.image ? (
-            <p id="gallery-image-error" role="alert" className="text-danger">
+            <p id="gallery-image-error" role="alert" className="text-small font-semibold text-danger">
               {fieldErrors.image}
             </p>
           ) : null}
@@ -244,7 +247,7 @@ export function AdminGalleryDraftForm(props: Props) {
           ) : null}
         </div>
       ) : (
-        <p className="rounded-card border p-4">
+        <p className="border-l-4 border-warning bg-warning-soft p-4 font-semibold">
           이번 단계에서는 이미지 교체를 지원하지 않습니다.
           <br />
           다른 이미지를 사용해야 하면 새 활동사진 초안을 등록해 주세요.
@@ -289,6 +292,7 @@ export function AdminGalleryDraftForm(props: Props) {
                       : undefined
                 }
                 onChange={name === "altText" ? (e) => setAlt(e.target.value) : undefined}
+                className={controlClass}
               />
             ) : (
               <input
@@ -307,6 +311,7 @@ export function AdminGalleryDraftForm(props: Props) {
                 defaultValue={initial[name]}
                 aria-invalid={Boolean(fieldErrors[name]) || undefined}
                 aria-describedby={fieldErrors[name] ? `gallery-${name}-error` : undefined}
+                className={`min-h-11 ${controlClass}`}
               />
             )}{" "}
             {name === "altText" ? (
@@ -315,14 +320,14 @@ export function AdminGalleryDraftForm(props: Props) {
               </p>
             ) : null}
             {fieldErrors[name] ? (
-              <p id={`gallery-${name}-error`} role="alert" className="text-small text-danger">
+              <p id={`gallery-${name}-error`} role="alert" className="text-small font-semibold text-danger">
                 {fieldErrors[name]}
               </p>
             ) : null}
           </div>
         );
       })}
-      <div className="grid gap-2">
+      <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="gallery-subjectPresence" className="font-semibold">
           사진 속 인물 상태
         </label>
@@ -330,7 +335,7 @@ export function AdminGalleryDraftForm(props: Props) {
           id="gallery-subjectPresence"
           name="subjectPresence"
           defaultValue={initial.subjectPresence}
-          className="min-h-11 border"
+          className={`min-h-11 ${controlClass}`}
           aria-invalid={Boolean(fieldErrors.subjectPresence) || undefined}
           aria-describedby={fieldErrors.subjectPresence ? "gallery-subjectPresence-error" : undefined}
         >
@@ -339,12 +344,12 @@ export function AdminGalleryDraftForm(props: Props) {
           <option value="identifiable">개인 식별 가능</option>
         </select>
         {fieldErrors.subjectPresence ? (
-          <p id="gallery-subjectPresence-error" role="alert" className="text-small text-danger">
+          <p id="gallery-subjectPresence-error" role="alert" className="text-small font-semibold text-danger">
             {fieldErrors.subjectPresence}
           </p>
         ) : null}
       </div>
-      <div className="grid gap-2">
+      <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="gallery-consentStatus" className="font-semibold">
           공개 동의 상태
         </label>
@@ -352,7 +357,7 @@ export function AdminGalleryDraftForm(props: Props) {
           id="gallery-consentStatus"
           name="consentStatus"
           defaultValue={initial.consentStatus}
-          className="min-h-11 border"
+          className={`min-h-11 ${controlClass}`}
           aria-invalid={Boolean(fieldErrors.consentStatus) || undefined}
           aria-describedby={fieldErrors.consentStatus ? "gallery-consentStatus-error" : undefined}
         >
@@ -361,25 +366,33 @@ export function AdminGalleryDraftForm(props: Props) {
           <option value="confirmed">공개 동의 확인</option>
         </select>
         {fieldErrors.consentStatus ? (
-          <p id="gallery-consentStatus-error" role="alert" className="text-small text-danger">
+          <p id="gallery-consentStatus-error" role="alert" className="text-small font-semibold text-danger">
             {fieldErrors.consentStatus}
           </p>
         ) : null}
       </div>
-      <div className="flex items-start gap-3 border-l-4 border-warning bg-warning-soft p-4">
-        <input
-          id="gallery-safety"
-          name="contentSafetyConfirmed"
-          type="checkbox"
-          required
-          aria-invalid={Boolean(fieldErrors.contentSafetyConfirmed) || undefined}
-          aria-describedby={fieldErrors.contentSafetyConfirmed ? "gallery-contentSafetyConfirmed-error" : undefined}
-        />
-        <label htmlFor="gallery-safety">
-          얼굴·이름표·문서·주소·차량번호와 개인정보·민감정보를 확인했고 공개 권한 없는 내용이 없음을 확인했습니다.
-        </label>
+      <div className="grid gap-2">
+        <div className="flex items-start gap-3 border-l-4 border-warning bg-warning-soft p-4">
+          <input
+            id="gallery-safety"
+            name="contentSafetyConfirmed"
+            type="checkbox"
+            required
+            aria-invalid={Boolean(fieldErrors.contentSafetyConfirmed) || undefined}
+            aria-describedby={fieldErrors.contentSafetyConfirmed ? "gallery-contentSafetyConfirmed-error" : undefined}
+            className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <label htmlFor="gallery-safety" className="text-small leading-relaxed">
+            얼굴·이름표·문서·주소·차량번호와 개인정보·민감정보를 확인했고 공개 권한 없는 내용이 없음을
+            확인했습니다.
+          </label>
+        </div>
         {fieldErrors.contentSafetyConfirmed ? (
-          <p id="gallery-contentSafetyConfirmed-error" role="alert" className="text-small text-danger">
+          <p
+            id="gallery-contentSafetyConfirmed-error"
+            role="alert"
+            className="text-small font-semibold text-danger"
+          >
             {fieldErrors.contentSafetyConfirmed}
           </p>
         ) : null}
@@ -388,13 +401,13 @@ export function AdminGalleryDraftForm(props: Props) {
         <button
           type="submit"
           disabled={busy}
-          className="min-h-12 rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground disabled:opacity-60"
+          className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? "저장 중…" : props.mode === "create" ? "활동사진 초안 저장" : "변경 사항 저장"}
         </button>
         <Link
           href={props.mode === "create" ? "/admin/gallery" : `/admin/gallery/${props.galleryItemId}`}
-          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 py-2 font-bold text-primary"
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 py-2 font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           취소
         </Link>
