@@ -60,11 +60,11 @@ export default async function Page({
       <section aria-labelledby="donor-audit-heading" className="min-w-0 rounded-card border border-border bg-surface p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2"><h2 id="donor-audit-heading" className="text-heading font-bold">감사 이력</h2><p className="text-small text-muted-foreground">총 {donor.audit.length}건</p></div>
         {donor.audit.length ? <ol className="mt-5 space-y-5">{donor.audit.map((event, index) => <li key={`${event.occurredAt}-${index}`} className="min-w-0 border-t border-border pt-4 first:border-t-0 first:pt-0">
-          <p className="font-bold">{donorAuditActionLabels[event.action]}</p>
+          <p className="font-bold">{(donorAuditActionLabels as Record<string, string>)[event.action]}</p>
           <dl className="mt-2 grid gap-3 sm:grid-cols-2">
             <div><dt className="text-small font-semibold text-muted-foreground">작업 관리자</dt><dd className="break-words">{event.displayName}</dd></div>
             <div><dt className="text-small font-semibold text-muted-foreground">변경 시각</dt><dd><time dateTime={event.occurredAt}>{formatAdminDate(event.occurredAt)}</time></dd></div>
-            <div className="sm:col-span-2"><dt className="text-small font-semibold text-muted-foreground">변경 필드</dt><dd>{event.changedFields.map((field) => donorAuditFieldLabels[field]).join(", ")}</dd></div>
+            <div className="sm:col-span-2"><dt className="text-small font-semibold text-muted-foreground">변경 필드</dt><dd>{event.changedFields.map((field: string) => (donorAuditFieldLabels as Record<string, string>)[field]).join(", ")}</dd></div>
           </dl>
         </li>)}</ol> : <p className="mt-4">아직 기록된 수정 이력이 없습니다.</p>}
       </section>
