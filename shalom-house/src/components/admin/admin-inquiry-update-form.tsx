@@ -74,7 +74,7 @@ export function AdminInquiryUpdateForm({
   return (
     <form onSubmit={submit} aria-busy={busy} className="space-y-5">
       {(errors.expectedUpdatedAt || errors.form) && (
-        <div id="inquiry-update-form-error" role="alert" className="space-y-1 text-small text-danger">
+        <div id="inquiry-update-form-error" role="alert" className="space-y-1 border-l-4 border-danger bg-danger-soft p-4 text-small font-semibold text-danger">
           {errors.expectedUpdatedAt && <p>{errors.expectedUpdatedAt}</p>}
           {errors.form && <p>{errors.form}</p>}
         </div>
@@ -93,7 +93,7 @@ export function AdminInquiryUpdateForm({
           }}
           aria-invalid={errors.status ? true : undefined}
           aria-describedby={errors.status ? "inquiry-status-error" : undefined}
-          className="mt-2 block min-h-11 w-full rounded-control border p-2"
+          className="mt-2 block min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           {options.map((s) => (
             <option key={s} value={s}>
@@ -123,7 +123,7 @@ export function AdminInquiryUpdateForm({
           }}
           aria-invalid={errors.internalNote ? true : undefined}
           aria-describedby={`inquiry-internal-note-help${errors.internalNote ? " inquiry-internal-note-error" : ""}`}
-          className="mt-2 block w-full rounded-control border p-2"
+          className="mt-2 block w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         />
         <p id="inquiry-internal-note-help" className="mt-2 text-small font-bold">
           내부 메모에도 주민등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보를 기록하지 마세요.
@@ -134,8 +134,8 @@ export function AdminInquiryUpdateForm({
           </p>
         )}
       </div>
-      <div>
-        <label className="flex gap-3" htmlFor="inquiry-update-confirmed">
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex items-start gap-3" htmlFor="inquiry-update-confirmed">
           <input
             id="inquiry-update-confirmed"
             type="checkbox"
@@ -146,6 +146,7 @@ export function AdminInquiryUpdateForm({
             }}
             aria-invalid={errors.updateConfirmed ? true : undefined}
             aria-describedby={errors.updateConfirmed ? "inquiry-update-confirmed-error" : undefined}
+            className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           />
           <span>선택한 처리 상태와 내부 메모를 확인했습니다.</span>
         </label>
@@ -158,11 +159,11 @@ export function AdminInquiryUpdateForm({
       <button
         type="submit"
         disabled={busy}
-        className="min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground disabled:opacity-50"
+        className="min-h-12 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-50"
       >
         저장
       </button>
-      <p role="alert">{message}</p>
+      {message ? <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">{message}</p> : null}
     </form>
   );
 }
