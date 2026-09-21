@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import type { DonationGuidanceContent } from "@/features/site-content/site-content.types";
 
@@ -82,10 +83,7 @@ export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }:
   }
 
   return (
-    <form onSubmit={submit} aria-busy={busy} className="space-y-6">
-      <p className="rounded-card border bg-surface-subtle p-4">
-        공식 확인이 끝나지 않은 계좌번호, 예금주나 결제 정보는 입력하지 마세요.
-      </p>
+    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
       {fields.slice(0, 2).map(({ key, label, multiline }) => (
         <TextField key={key} {...{ keyName: key, label, multiline, value: content[key], errors, updateText }} />
       ))}
@@ -95,7 +93,7 @@ export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }:
           const id = `donation-steps-${index}`;
           const error = errors[`steps.${index}`] ?? (index === 0 ? errors.steps : undefined);
           return (
-            <div key={id}>
+            <div key={id} className="grid gap-2 border-b border-border pb-6">
               <label className="block font-semibold" htmlFor={id}>
                 후원 절차 {index + 1}
               </label>
@@ -105,10 +103,10 @@ export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }:
                 onChange={(event) => updateStep(index, event.target.value)}
                 aria-describedby={error ? `${id}-error` : undefined}
                 aria-invalid={error ? true : undefined}
-                className="mt-2 min-h-11 w-full rounded-control border px-3 py-2"
+                className="w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               />
               {error ? (
-                <p id={`${id}-error`} role="alert" className="text-small text-danger">
+                <p id={`${id}-error`} role="alert" className="text-small font-semibold text-danger">
                   {error}
                 </p>
               ) : null}
@@ -119,33 +117,22 @@ export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }:
       {fields.slice(2).map(({ key, label, multiline }) => (
         <TextField key={key} {...{ keyName: key, label, multiline, value: content[key], errors, updateText }} />
       ))}
-      <label className="flex gap-3">
-        <input
-          type="checkbox"
-          checked={confirmed}
-          onChange={(event) => setConfirmed(event.target.checked)}
-          aria-describedby={errors.saveConfirmed ? "donation-confirm-error" : undefined}
-          aria-invalid={errors.saveConfirmed ? true : undefined}
-        />
-        <span>입력한 후원 안내가 공개 홈페이지에 즉시 반영되는 것을 확인했습니다.</span>
-      </label>
-      {errors.saveConfirmed ? (
-        <p id="donation-confirm-error" role="alert" className="text-small text-danger">
-          {errors.saveConfirmed}
-        </p>
-      ) : null}
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex items-start gap-3">
+          <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} aria-describedby={errors.saveConfirmed ? "donation-confirm-error" : undefined} aria-invalid={errors.saveConfirmed ? true : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <span>입력한 후원 안내가 공개 홈페이지에 즉시 반영되는 것을 확인했습니다.</span>
+        </label>
+        {errors.saveConfirmed ? <p id="donation-confirm-error" role="alert" className="mt-3 text-small font-semibold text-danger">{errors.saveConfirmed}</p> : null}
+      </div>
       {message ? (
-        <p role="alert" className="font-semibold text-danger">
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {message}
         </p>
       ) : null}
-      <button
-        type="submit"
-        disabled={busy}
-        className="min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground disabled:opacity-60"
-      >
-        {busy ? "저장 중…" : "후원 안내 저장"}
-      </button>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button type="submit" disabled={busy} className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">{busy ? "저장 중…" : "후원 안내 저장"}</button>
+        <Link href="/admin/site-content" className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">취소</Link>
+      </div>
     </form>
   );
 }
@@ -174,16 +161,16 @@ function TextField({
       updateText(keyName, event.target.value),
     "aria-describedby": error ? `${id}-error` : undefined,
     "aria-invalid": error ? (true as const) : undefined,
-    className: "mt-2 min-h-11 w-full rounded-control border px-3 py-2",
+    className: "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
   };
   return (
-    <div>
+    <div className="grid gap-2 border-b border-border pb-6">
       <label className="block font-semibold" htmlFor={id}>
         {label}
       </label>
       {multiline ? <textarea {...common} className={`${common.className} min-h-24`} /> : <input {...common} />}
       {error ? (
-        <p id={`${id}-error`} role="alert" className="text-small text-danger">
+        <p id={`${id}-error`} role="alert" className="text-small font-semibold text-danger">
           {error}
         </p>
       ) : null}
