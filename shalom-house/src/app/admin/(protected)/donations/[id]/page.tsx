@@ -68,12 +68,12 @@ export default async function Page({
       <section aria-labelledby="donation-audit-heading" className="min-w-0 rounded-card border border-border bg-surface p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2"><h2 id="donation-audit-heading" className="text-heading font-bold">감사 이력</h2><p className="text-small text-muted-foreground">총 {donation.audit.length}건</p></div>
         {donation.audit.length ? <ol className="mt-5 space-y-5">{donation.audit.map((event, index) => <li key={`${event.occurredAt}-${index}`} className="min-w-0 border-t border-border pt-4 first:border-t-0 first:pt-0">
-          <p className="font-bold">{donationAuditActionLabels[event.action]}</p>
+          <p className="font-bold">{(donationAuditActionLabels as Record<string, string>)[event.action]}</p>
           <dl className="mt-2 grid gap-3 sm:grid-cols-2">
             <div><dt className="text-small font-semibold text-muted-foreground">작업 관리자</dt><dd className="break-words">{event.displayName}</dd></div>
             <div><dt className="text-small font-semibold text-muted-foreground">변경 시각</dt><dd><time dateTime={event.occurredAt}>{formatAdminDate(event.occurredAt)}</time></dd></div>
-            <div><dt className="text-small font-semibold text-muted-foreground">변경 필드</dt><dd>{event.changedFields.map((field) => donationAuditFieldLabels[field]).join(", ")}</dd></div>
-            <div><dt className="text-small font-semibold text-muted-foreground">이전 상태 → 변경 상태</dt><dd>{event.fromStatus ? donationStatusLabels[event.fromStatus] : "신규"} → {donationStatusLabels[event.toStatus]}</dd></div>
+            <div><dt className="text-small font-semibold text-muted-foreground">변경 필드</dt><dd>{event.changedFields.map((field: string) => (donationAuditFieldLabels as Record<string, string>)[field]).join(", ")}</dd></div>
+            <div><dt className="text-small font-semibold text-muted-foreground">이전 상태 → 변경 상태</dt><dd>{event.fromStatus ? (donationStatusLabels as Record<string, string>)[event.fromStatus] : "신규"} → {(donationStatusLabels as Record<string, string>)[event.toStatus]}</dd></div>
           </dl>
         </li>)}</ol> : <p className="mt-4">아직 기록된 수정 이력이 없습니다.</p>}
       </section>
