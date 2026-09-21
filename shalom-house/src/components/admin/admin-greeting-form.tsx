@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import type { GreetingContent } from "@/features/site-content/site-content.types";
 export function AdminGreetingForm({
@@ -8,7 +9,6 @@ export function AdminGreetingForm({
   content: GreetingContent;
   updatedAt: string | null;
 }) {
-  const confirmationDescriptionId = "greeting-save-description";
   const confirmationErrorId = "greeting-save-error";
   const signerDisclosureDescriptionId = "greeting-signer-disclosure-description";
   const [content, setContent] = useState(() => structuredClone(initial));
@@ -25,7 +25,7 @@ export function AdminGreetingForm({
     const id = `greeting-${key}`;
     const E = area ? "textarea" : "input";
     return (
-      <div>
+      <div className="grid gap-2 border-b border-border pb-6">
         <label className="block font-semibold" htmlFor={id}>
           {label}
         </label>
@@ -36,10 +36,10 @@ export function AdminGreetingForm({
           rows={area ? 4 : undefined}
           aria-invalid={Boolean(errors[key])}
           aria-describedby={errors[key] ? `${id}-error` : undefined}
-          className="mt-2 min-h-11 w-full rounded-control border px-3 py-2"
+          className="w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         />
         {errors[key] ? (
-          <p id={`${id}-error`} className="text-small text-danger">
+          <p id={`${id}-error`} className="text-small font-semibold text-danger">
             {errors[key]}
           </p>
         ) : null}
@@ -91,10 +91,7 @@ export function AdminGreetingForm({
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={busy} className="space-y-6">
-      <p id={confirmationDescriptionId} className="rounded-card border bg-surface-subtle p-4">
-        저장하면 현재 공개 콘텐츠가 즉시 변경됩니다.
-      </p>
+    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
       {field("페이지 설명", "pageDescription", true)}
       {field("공개 안내", "notice", true)}
       {field("상태 문구", "statusLabel")}
@@ -106,7 +103,7 @@ export function AdminGreetingForm({
           const paragraphErrorId = `${paragraphId}-error`;
           const paragraphError = errors[`paragraphs.${i}`];
           return (
-            <div key={i}>
+            <div key={i} className="grid gap-2 border-b border-border pb-6">
               <label className="block font-semibold" htmlFor={paragraphId}>
                 문단 {i + 1}
               </label>
@@ -121,10 +118,10 @@ export function AdminGreetingForm({
                 }
                 aria-describedby={paragraphError ? paragraphErrorId : undefined}
                 aria-invalid={paragraphError ? true : undefined}
-                className="mt-2 min-h-28 w-full rounded-control border px-3 py-2"
+                className="min-h-28 w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               />
               {paragraphError ? (
-                <p id={paragraphErrorId} role="alert" className="text-small text-danger">
+                <p id={paragraphErrorId} role="alert" className="text-small font-semibold text-danger">
                   {paragraphError}
                 </p>
               ) : null}
@@ -137,7 +134,7 @@ export function AdminGreetingForm({
                     paragraphs: c.paragraphs.filter((_, j) => j !== i),
                   }))
                 }
-                className="mt-2 min-h-11 underline disabled:opacity-50"
+                className="min-h-11 justify-self-start underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50"
               >
                 문단 삭제
               </button>
@@ -148,25 +145,26 @@ export function AdminGreetingForm({
           type="button"
           disabled={content.paragraphs.length >= 8}
           onClick={() => setContent((c) => ({ ...c, paragraphs: [...c.paragraphs, ""] }))}
-          className="min-h-11 rounded-control border px-4"
+          className="min-h-11 rounded-control border border-border-strong px-4 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-50"
         >
           문단 추가
         </button>
         {errors.paragraphs ? (
-          <p role="alert" className="text-small text-danger">
+          <p role="alert" className="text-small font-semibold text-danger">
             {errors.paragraphs}
           </p>
         ) : null}
       </fieldset>
       {field("서명 직책", "signerRole")}
       {field("서명 이름", "signerName")}
-      <div>
-        <label className="flex gap-3">
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label className="flex items-start gap-3">
           <input
             type="checkbox"
             checked={content.showSignerName}
             onChange={(e) => update("showSignerName", e.target.checked)}
             aria-describedby={signerDisclosureDescriptionId}
+            className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           />
           <span>원장 이름 공개</span>
         </label>
@@ -174,35 +172,22 @@ export function AdminGreetingForm({
           체크한 경우에만 입력한 원장 이름이 공개 페이지에 표시됩니다.
         </p>
       </div>
-      <label className="flex gap-3">
-        <input
-          type="checkbox"
-          checked={confirmed}
-          onChange={(e) => setConfirmed(e.target.checked)}
-          aria-describedby={
-            errors.saveConfirmed ? `${confirmationDescriptionId} ${confirmationErrorId}` : confirmationDescriptionId
-          }
-          aria-invalid={errors.saveConfirmed ? true : undefined}
-        />
-        <span>입력한 내용이 공개 홈페이지에 즉시 반영되는 것을 확인했습니다.</span>
-      </label>
-      {errors.saveConfirmed ? (
-        <p id={confirmationErrorId} role="alert" className="text-small text-danger">
-          {errors.saveConfirmed}
-        </p>
-      ) : null}
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex items-start gap-3">
+          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} aria-describedby={errors.saveConfirmed ? confirmationErrorId : undefined} aria-invalid={errors.saveConfirmed ? true : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <span>입력한 내용이 공개 홈페이지에 즉시 반영되는 것을 확인했습니다.</span>
+        </label>
+        {errors.saveConfirmed ? <p id={confirmationErrorId} role="alert" className="mt-3 text-small font-semibold text-danger">{errors.saveConfirmed}</p> : null}
+      </div>
       {message ? (
-        <p role="alert" className="font-semibold text-danger">
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {message}
         </p>
       ) : null}
-      <button
-        type="submit"
-        disabled={busy}
-        className="min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground disabled:opacity-60"
-      >
-        {busy ? "저장 중…" : "공식 콘텐츠 저장"}
-      </button>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button type="submit" disabled={busy} className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">{busy ? "저장 중…" : "공식 콘텐츠 저장"}</button>
+        <Link href="/admin/site-content" className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">취소</Link>
+      </div>
     </form>
   );
 }

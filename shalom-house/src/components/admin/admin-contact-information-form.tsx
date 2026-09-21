@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import type { ContactInformationContent } from "@/features/site-content/site-content.types";
 
@@ -73,10 +74,7 @@ export function AdminContactInformationForm({ initialContent, expectedUpdatedAt 
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={busy} className="space-y-6">
-      <p className="rounded-card border bg-surface-subtle p-4">
-        주소와 대표 전화는 찾아오시는 길, 문의하기와 사이트 푸터에 함께 표시됩니다.
-      </p>
+    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
       {fields.map(({ key, label, multiline }) => {
         const id = `contact-${key}`,
           error = errors[key],
@@ -88,10 +86,10 @@ export function AdminContactInformationForm({ initialContent, expectedUpdatedAt 
             updateTextField(key, e.target.value),
           "aria-describedby": described,
           "aria-invalid": error ? (true as const) : undefined,
-          className: "mt-2 w-full rounded-control border px-3 py-2",
+          className: "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
         };
         return (
-          <div key={key}>
+          <div key={key} className="grid gap-2 border-b border-border pb-6">
             <label className="block font-semibold" htmlFor={id}>
               {label}
             </label>
@@ -101,59 +99,36 @@ export function AdminContactInformationForm({ initialContent, expectedUpdatedAt 
               <input {...props} disabled={key === "instagramUrl" && !content.showInstagram} />
             )}
             {error ? (
-              <p id={`${id}-error`} role="alert" className="text-small text-danger">
+              <p id={`${id}-error`} role="alert" className="text-small font-semibold text-danger">
                 {error}
               </p>
             ) : null}
           </div>
         );
       })}
-      <label className="flex gap-3">
-        <input
-          id={instagramDisclosureId}
-          type="checkbox"
-          checked={content.showInstagram}
-          onChange={(e) => {
-            setContent((v) => ({ ...v, showInstagram: e.target.checked }));
-            setConfirmed(false);
-          }}
-          aria-invalid={errors.showInstagram ? true : undefined}
-          aria-describedby={errors.showInstagram ? instagramDisclosureErrorId : undefined}
-        />
-        <span>인스타그램 공개</span>
-      </label>
-      {errors.showInstagram ? (
-        <p id={instagramDisclosureErrorId} role="alert" className="text-small text-danger">
-          {errors.showInstagram}
-        </p>
-      ) : null}
-      <label className="flex gap-3">
-        <input
-          type="checkbox"
-          checked={confirmed}
-          onChange={(e) => setConfirmed(e.target.checked)}
-          aria-invalid={errors.saveConfirmed ? true : undefined}
-          aria-describedby={errors.saveConfirmed ? "contact-confirm-error" : undefined}
-        />
-        <span>입력한 주소와 연락처가 공개 홈페이지 전체에 반영되는 것을 확인했습니다.</span>
-      </label>
-      {errors.saveConfirmed ? (
-        <p id="contact-confirm-error" role="alert" className="text-small text-danger">
-          {errors.saveConfirmed}
-        </p>
-      ) : null}
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label className="flex items-start gap-3">
+          <input id={instagramDisclosureId} type="checkbox" checked={content.showInstagram} onChange={(e) => { setContent((v) => ({ ...v, showInstagram: e.target.checked })); setConfirmed(false); }} aria-invalid={errors.showInstagram ? true : undefined} aria-describedby={errors.showInstagram ? instagramDisclosureErrorId : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <span>인스타그램 공개</span>
+        </label>
+        {errors.showInstagram ? <p id={instagramDisclosureErrorId} role="alert" className="text-small font-semibold text-danger">{errors.showInstagram}</p> : null}
+      </div>
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex items-start gap-3">
+          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} aria-invalid={errors.saveConfirmed ? true : undefined} aria-describedby={errors.saveConfirmed ? "contact-confirm-error" : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <span>입력한 주소와 연락처가 공개 홈페이지 전체에 반영되는 것을 확인했습니다.</span>
+        </label>
+        {errors.saveConfirmed ? <p id="contact-confirm-error" role="alert" className="mt-3 text-small font-semibold text-danger">{errors.saveConfirmed}</p> : null}
+      </div>
       {message ? (
-        <p role="alert" className="font-semibold text-danger">
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {message}
         </p>
       ) : null}
-      <button
-        type="submit"
-        disabled={busy}
-        className="min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground disabled:opacity-60"
-      >
-        {busy ? "저장 중…" : "연락처 정보 저장"}
-      </button>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button type="submit" disabled={busy} className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">{busy ? "저장 중…" : "연락처 정보 저장"}</button>
+        <Link href="/admin/site-content" className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">취소</Link>
+      </div>
     </form>
   );
 }

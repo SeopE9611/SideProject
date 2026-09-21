@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import type { FacilityOverviewContent } from "@/features/site-content/site-content.types";
 
@@ -7,7 +8,6 @@ type Props = { content: FacilityOverviewContent; updatedAt: string | null };
 type Errors = Record<string, string>;
 
 export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props) {
-  const confirmationDescriptionId = "facility-overview-save-description";
   const confirmationErrorId = "facility-overview-save-error";
   const [content, setContent] = useState(() => structuredClone(initial));
   const [confirmed, setConfirmed] = useState(false);
@@ -19,7 +19,7 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
     const error = errors[path];
     const Element = area ? "textarea" : "input";
     return (
-      <div>
+      <div className="grid gap-2 border-b border-border pb-6">
         <label className="block font-semibold" htmlFor={id}>
           {label}
         </label>
@@ -29,11 +29,11 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
           onChange={(event) => update(event.target.value)}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : undefined}
-          className="mt-2 min-h-11 w-full rounded-control border border-border px-3 py-2"
+          className="min-w-0 w-full rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           rows={area ? 4 : undefined}
         />
         {error ? (
-          <p id={`${id}-error`} className="mt-1 text-small text-danger">
+          <p id={`${id}-error`} className="text-small font-semibold text-danger">
             {error}
           </p>
         ) : null}
@@ -88,15 +88,12 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
   const set = (key: keyof FacilityOverviewContent, value: string) =>
     setContent((current) => ({ ...current, [key]: value }));
   return (
-    <form onSubmit={submit} aria-busy={busy} className="space-y-8">
-      <p id={confirmationDescriptionId} className="rounded-card border border-border bg-surface-subtle p-4">
-        저장하면 현재 공개 콘텐츠가 즉시 변경됩니다.
-      </p>
+    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-8">
       {field("페이지 설명", "pageDescription", content.pageDescription, (v) => set("pageDescription", v), true)}
       <fieldset className="space-y-5">
         <legend className="text-heading font-bold">시설 기본 정보 3개</legend>
         {content.facts.map((item, index) => (
-          <div key={index} className="grid gap-4 rounded-card border p-4 sm:grid-cols-2">
+          <div key={index} className="grid gap-4 rounded-card border border-border bg-surface p-4 sm:grid-cols-2">
             {field(`기본 정보 ${index + 1} 라벨`, `facts.${index}.label`, item.label, (v) =>
               setContent((c) => ({
                 ...c,
@@ -128,7 +125,7 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
           true,
         )}
         {content.principles.map((item, index) => (
-          <div key={index} className="space-y-4 rounded-card border p-4">
+          <div key={index} className="space-y-4 rounded-card border border-border bg-surface p-4">
             {field(`생활 원칙 ${index + 1} 제목`, `principles.${index}.title`, item.title, (v) =>
               setContent((c) => ({
                 ...c,
@@ -159,7 +156,7 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
         {field("제목", "scenesTitle", content.scenesTitle, (v) => set("scenesTitle", v))}
         {field("설명", "scenesDescription", content.scenesDescription, (v) => set("scenesDescription", v), true)}
         {content.scenes.map((item, index) => (
-          <div key={index} className="grid gap-4 rounded-card border p-4">
+          <div key={index} className="grid gap-4 rounded-card border border-border bg-surface p-4">
             {field(`생활 장면 ${index + 1} 라벨`, `scenes.${index}.label`, item.label, (v) =>
               setContent((c) => ({
                 ...c,
@@ -197,7 +194,7 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
         {field("눈썹 문구", "policyEyebrow", content.policyEyebrow, (v) => set("policyEyebrow", v))}
         {field("제목", "policyTitle", content.policyTitle, (v) => set("policyTitle", v))}
         {content.policyItems.map((item, index) => (
-          <div key={index} className="space-y-4 rounded-card border p-4">
+          <div key={index} className="space-y-4 rounded-card border border-border bg-surface p-4">
             {field(`공개 원칙 ${index + 1} 제목`, `policyItems.${index}.title`, item.title, (v) =>
               setContent((c) => ({
                 ...c,
@@ -222,37 +219,35 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
           </div>
         ))}
       </section>
-      <div>
-        <label className="flex gap-3">
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex items-start gap-3">
           <input
             type="checkbox"
             checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
-            aria-describedby={
-              errors.saveConfirmed ? `${confirmationDescriptionId} ${confirmationErrorId}` : confirmationDescriptionId
-            }
+            aria-describedby={errors.saveConfirmed ? confirmationErrorId : undefined}
             aria-invalid={errors.saveConfirmed ? true : undefined}
+            className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           />
           <span>입력한 내용이 공개 홈페이지에 즉시 반영되는 것을 확인했습니다.</span>
         </label>
         {errors.saveConfirmed ? (
-          <p id={confirmationErrorId} role="alert" className="text-small text-danger">
+          <p id={confirmationErrorId} role="alert" className="mt-3 text-small font-semibold text-danger">
             {errors.saveConfirmed}
           </p>
         ) : null}
       </div>
       {message ? (
-        <p role="alert" className="font-semibold text-danger">
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {message}
         </p>
       ) : null}
-      <button
-        type="submit"
-        disabled={busy}
-        className="min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground disabled:opacity-60"
-      >
-        {busy ? "저장 중…" : "공식 콘텐츠 저장"}
-      </button>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button type="submit" disabled={busy} className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">
+          {busy ? "저장 중…" : "공식 콘텐츠 저장"}
+        </button>
+        <Link href="/admin/site-content" className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">취소</Link>
+      </div>
     </form>
   );
 }
