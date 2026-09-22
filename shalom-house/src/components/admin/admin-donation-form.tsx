@@ -36,6 +36,9 @@ const empty: Data = {
   voidReason: "",
   internalNote: "",
 };
+const fieldClass =
+  "w-full min-w-0 min-h-11 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-muted-foreground";
+const fieldGroupClass = "grid gap-2 border-b border-border pb-6 font-semibold";
 export function AdminDonationForm({
   id,
   expectedUpdatedAt,
@@ -62,7 +65,7 @@ export function AdminDonationForm({
     field(key) ? { "aria-invalid": true as const, "aria-describedby": `donation-${key}-error` } : {};
   const error = (key: string) =>
     field(key) && (
-      <p id={`donation-${key}-error`} role="alert">
+      <p id={`donation-${key}-error`} role="alert" className="mt-1 text-small font-semibold text-danger">
         {field(key)}
       </p>
     );
@@ -114,22 +117,18 @@ export function AdminDonationForm({
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={busy} className="mt-6 max-w-4xl space-y-6">
-      <p className="border-l-4 border-warning bg-warning-soft p-4">
-        주민등록번호, 사업자등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보는 입력하지 마세요. 영수증 상태는
-        외부 처리 결과를 표시할 뿐 실제 영수증을 발급하지 않습니다.
-      </p>
+    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
       {errors.form && (
         <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {errors.form}
         </p>
       )}
-      <label className="flex min-h-11 items-center gap-2">
-        익명 후원
+      <label className="flex min-h-11 items-center gap-3 border-b border-border pb-6 font-semibold">
         <input
           id="donation-anonymous"
           {...aria("anonymous")}
           type="checkbox"
+          className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed"
           disabled={locked || voided}
           checked={d.anonymous}
           onChange={(e) => {
@@ -137,14 +136,15 @@ export function AdminDonationForm({
             setD((x) => ({ ...x, anonymous: e.target.checked, donorId: null }));
           }}
         />
+        익명 후원
         {error("anonymous")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         후원자
         <select
           id="donation-donorId"
           {...aria("donorId")}
-          className="block min-h-11"
+          className={fieldClass}
           disabled={d.anonymous || locked || voided}
           required={!d.anonymous}
           value={d.donorId ?? ""}
@@ -159,21 +159,21 @@ export function AdminDonationForm({
         </select>
         {error("donorId")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         후원 일자
         <input
           id="donation-donatedOn"
           {...aria("donatedOn")}
           type="date"
           required
-          className="block min-h-11"
+          className={fieldClass}
           disabled={locked || voided}
           value={d.donatedOn}
           onChange={(e) => set("donatedOn", e.target.value)}
         />
         {error("donatedOn")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         후원 금액
         <input
           id="donation-amountWon"
@@ -184,19 +184,22 @@ export function AdminDonationForm({
           max={1_000_000_000_000}
           step={1}
           required
-          className="block min-h-11"
+          className={fieldClass}
           disabled={locked || voided}
           value={d.amountWon || ""}
           onChange={(e) => set("amountWon", Number(e.target.value))}
         />
-        <span>입력 금액: {new Intl.NumberFormat("ko-KR").format(d.amountWon)}원</span>
+        <span className="text-small font-normal text-muted-foreground">
+          입력 금액: {new Intl.NumberFormat("ko-KR").format(d.amountWon)}원
+        </span>
         {error("amountWon")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         후원 방식
         <select
           id="donation-method"
           {...aria("method")}
+          className={fieldClass}
           disabled={locked || voided}
           value={d.method}
           onChange={(e) => set("method", e.target.value as Data["method"])}
@@ -207,11 +210,12 @@ export function AdminDonationForm({
         </select>
         {error("method")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         후원 목적
         <select
           id="donation-purpose"
           {...aria("purpose")}
+          className={fieldClass}
           disabled={locked || voided}
           value={d.purpose}
           onChange={(e) => {
@@ -229,7 +233,7 @@ export function AdminDonationForm({
         {error("purpose")}
       </label>
       {d.purpose === "designated" && (
-        <label className="block">
+        <label className={fieldGroupClass}>
           지정 후원 설명
           <input
             id="donation-purposeDescription"
@@ -237,17 +241,19 @@ export function AdminDonationForm({
             disabled={locked || voided}
             required
             maxLength={300}
+            className={fieldClass}
             value={d.purposeDescription}
             onChange={(e) => set("purposeDescription", e.target.value)}
           />
           {error("purposeDescription")}
         </label>
       )}
-      <label className="block">
+      <label className={fieldGroupClass}>
         영수증 처리 상태
         <select
           id="donation-receiptStatus"
           {...aria("receiptStatus")}
+          className={fieldClass}
           disabled={voided}
           value={d.receiptStatus}
           onChange={(e) => {
@@ -266,7 +272,7 @@ export function AdminDonationForm({
         {error("receiptStatus")}
       </label>
       {d.receiptStatus === "issued" && (
-        <label className="block">
+        <label className={fieldGroupClass}>
           영수증 발급 처리일
           <input
             id="donation-receiptIssuedOn"
@@ -274,17 +280,19 @@ export function AdminDonationForm({
             type="date"
             required
             disabled={voided}
+            className={fieldClass}
             value={d.receiptIssuedOn ?? ""}
             onChange={(e) => set("receiptIssuedOn", e.target.value || null)}
           />
           {error("receiptIssuedOn")}
         </label>
       )}
-      <label className="block">
+      <label className={fieldGroupClass}>
         상태
         <select
           id="donation-status"
           {...aria("status")}
+          className={fieldClass}
           disabled={voided}
           value={d.status}
           onChange={(e) => {
@@ -303,7 +311,7 @@ export function AdminDonationForm({
         {error("status")}
       </label>
       {d.status === "voided" && (
-        <label className="block">
+        <label className={fieldGroupClass}>
           무효 사유
           <input
             id="donation-voidReason"
@@ -312,54 +320,63 @@ export function AdminDonationForm({
             required
             minLength={10}
             maxLength={500}
+            className={fieldClass}
             value={d.voidReason}
             onChange={(e) => set("voidReason", e.target.value)}
           />
           {error("voidReason")}
         </label>
       )}
-      <label className="block">
+      <label className={fieldGroupClass}>
         내부 메모
         <textarea
           id="donation-internalNote"
           {...aria("internalNote")}
           disabled={voided}
           maxLength={2000}
+          className={`${fieldClass} min-h-28`}
           value={d.internalNote}
           onChange={(e) => set("internalNote", e.target.value)}
         />
         {error("internalNote")}
       </label>
-      <label className="flex min-h-11 items-center gap-2">
-        <input
-          id="donation-saveConfirmed"
-          type="checkbox"
-          required
-          disabled={voided}
-          checked={confirmed}
-          aria-invalid={errors.saveConfirmed ? true : undefined}
-          aria-describedby={errors.saveConfirmed ? "donation-saveConfirmed-error" : undefined}
-          onChange={(e) => setConfirmed(e.target.checked)}
-        />
-        후원자, 후원 일자, 금액과 처리 상태를 확인했습니다.
-      </label>
-      {errors.saveConfirmed && (
-        <p id="donation-saveConfirmed-error" role="alert">
-          {errors.saveConfirmed}
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex min-h-11 items-center gap-3 font-semibold">
+          <input
+            id="donation-saveConfirmed"
+            type="checkbox"
+            required
+            disabled={voided}
+            checked={confirmed}
+            aria-invalid={errors.saveConfirmed ? true : undefined}
+            aria-describedby={errors.saveConfirmed ? "donation-saveConfirmed-error" : undefined}
+            onChange={(e) => setConfirmed(e.target.checked)}
+            className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed"
+          />
+          후원자, 후원 일자, 금액과 처리 상태를 확인했습니다.
+        </label>
+        {errors.saveConfirmed && (
+          <p id="donation-saveConfirmed-error" role="alert" className="mt-1 text-small font-semibold text-danger">
+            {errors.saveConfirmed}
+          </p>
+        )}
+      </div>
+      {errors.expectedUpdatedAt && (
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
+          {errors.expectedUpdatedAt}
         </p>
       )}
-      {errors.expectedUpdatedAt && <p role="alert">{errors.expectedUpdatedAt}</p>}
       <div className="flex flex-wrap gap-3 border-t border-border pt-6">
         <button
           type="submit"
           disabled={busy || voided}
-          className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground"
+          className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? "저장 중…" : id ? "변경 사항 저장" : "후원금 등록"}
         </button>
         <Link
           href={id ? `/admin/donations/${id}` : "/admin/donations"}
-          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold text-primary"
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           취소
         </Link>

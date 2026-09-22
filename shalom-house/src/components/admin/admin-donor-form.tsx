@@ -22,6 +22,9 @@ const empty = {
   email: "",
   internalNote: "",
 };
+const fieldClass =
+  "w-full min-w-0 min-h-11 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
+const fieldGroupClass = "grid gap-2 border-b border-border pb-6 font-semibold";
 export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props) {
   const [d, setD] = useState(initial),
     [confirmed, setConfirmed] = useState(false),
@@ -84,26 +87,23 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
     field(key) ? { "aria-invalid": true as const, "aria-describedby": `donor-${key}-error` } : {};
   const error = (key: string) =>
     field(key) && (
-      <p id={`donor-${key}-error`} role="alert">
+      <p id={`donor-${key}-error`} role="alert" className="mt-1 text-small font-semibold text-danger">
         {field(key)}
       </p>
     );
   return (
-    <form onSubmit={submit} aria-busy={busy} className="mt-6 max-w-4xl space-y-6">
-      <p className="border-l-4 border-warning bg-warning-soft p-4">
-        주민등록번호, 사업자등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보는 입력하지 마세요.
-      </p>
+    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
       {errors.form && (
         <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {errors.form}
         </p>
       )}
-      <label className="block">
+      <label className={fieldGroupClass}>
         후원자 유형
         <select
           id="donor-type"
           {...aria("type")}
-          className="block min-h-11"
+          className={fieldClass}
           value={d.type}
           onChange={(e) => change("type", e.target.value)}
         >
@@ -112,21 +112,21 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
         </select>
         {error("type")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         표시 이름
         <input
           id="donor-displayName"
           {...aria("displayName")}
           required
           maxLength={100}
-          className="block min-h-11"
+          className={fieldClass}
           value={d.displayName}
           onChange={(e) => change("displayName", e.target.value)}
           aria-invalid={!!field("displayName")}
         />
         {error("displayName")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         전화번호
         <input
           id="donor-phone"
@@ -135,13 +135,13 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
           maxLength={30}
           pattern="\+?[0-9 ()-]{8,30}"
           autoComplete="tel"
-          className="block min-h-11"
+          className={fieldClass}
           value={d.phone}
           onChange={(e) => change("phone", e.target.value)}
         />
         {error("phone")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         이메일
         <input
           id="donor-email"
@@ -149,18 +149,18 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
           type="email"
           maxLength={254}
           autoComplete="email"
-          className="block min-h-11"
+          className={fieldClass}
           value={d.email}
           onChange={(e) => change("email", e.target.value)}
         />
         {error("email")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         상태
         <select
           id="donor-status"
           {...aria("status")}
-          className="block min-h-11"
+          className={fieldClass}
           value={d.status}
           onChange={(e) => change("status", e.target.value)}
         >
@@ -169,47 +169,54 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
         </select>
         {error("status")}
       </label>
-      <label className="block">
+      <label className={fieldGroupClass}>
         내부 메모
         <textarea
           id="donor-internalNote"
           {...aria("internalNote")}
           maxLength={2000}
-          className="block min-h-28"
+          className={`${fieldClass} min-h-28`}
           value={d.internalNote}
           onChange={(e) => change("internalNote", e.target.value)}
         />
         {error("internalNote")}
       </label>
-      <label className="flex min-h-11 items-center gap-2">
-        <input
-          id="donor-saveConfirmed"
-          type="checkbox"
-          required
-          checked={confirmed}
-          aria-invalid={errors.saveConfirmed ? true : undefined}
-          aria-describedby={errors.saveConfirmed ? "donor-saveConfirmed-error" : undefined}
-          onChange={(e) => setConfirmed(e.target.checked)}
-        />
-        입력한 후원자 정보와 개인정보 취급 주의사항을 확인했습니다.
-      </label>
-      {errors.saveConfirmed && (
-        <p id="donor-saveConfirmed-error" role="alert">
-          {errors.saveConfirmed}
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex min-h-11 items-center gap-3 font-semibold">
+          <input
+            id="donor-saveConfirmed"
+            type="checkbox"
+            required
+            checked={confirmed}
+            aria-invalid={errors.saveConfirmed ? true : undefined}
+            aria-describedby={errors.saveConfirmed ? "donor-saveConfirmed-error" : undefined}
+            onChange={(e) => setConfirmed(e.target.checked)}
+            className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          입력한 후원자 정보와 개인정보 취급 주의사항을 확인했습니다.
+        </label>
+        {errors.saveConfirmed && (
+          <p id="donor-saveConfirmed-error" role="alert" className="mt-1 text-small font-semibold text-danger">
+            {errors.saveConfirmed}
+          </p>
+        )}
+      </div>
+      {errors.expectedUpdatedAt && (
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
+          {errors.expectedUpdatedAt}
         </p>
       )}
-      {errors.expectedUpdatedAt && <p role="alert">{errors.expectedUpdatedAt}</p>}
       <div className="flex flex-wrap gap-3 border-t border-border pt-6">
         <button
           type="submit"
           disabled={busy}
-          className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground"
+          className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? "저장 중…" : id ? "변경 사항 저장" : "후원자 등록"}
         </button>
         <Link
           href={id ? `/admin/donors/${id}` : "/admin/donors"}
-          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold text-primary"
+          className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           취소
         </Link>
