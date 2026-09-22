@@ -97,90 +97,52 @@ export function AdminUserEditForm(props: {
     fieldErrors[name] ? { "aria-invalid": true as const, "aria-describedby": `edit-${name}-error` } : {};
   const error = (name: string) =>
     fieldErrors[name] && (
-      <p id={`edit-${name}-error`} role="alert">
+      <p id={`edit-${name}-error`} role="alert" className="text-small font-semibold text-danger">
         {fieldErrors[name]}
       </p>
     );
   return (
-    <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-5">
-      <label className="block" htmlFor="edit-email">
-        이메일
-      </label>
-      <input id="edit-email" readOnly value={props.email} className="mt-2 min-h-11 w-full border p-2" />
-      <label className="block" htmlFor="edit-display-name">
-        표시 이름
-      </label>
-      <input
-        id="edit-display-name"
-        name="displayName"
-        defaultValue={props.displayName}
-        required
-        minLength={2}
-        maxLength={50}
-        onChange={() => setConfirmed(false)}
-        {...aria("displayName")}
-        className="mt-2 min-h-11 w-full border p-2"
-      />
-      {error("displayName")}
-      <label className="block" htmlFor="edit-role">
-        역할
-      </label>
-      <select
-        id="edit-role"
-        name="role"
-        defaultValue={props.role}
-        disabled={props.isCurrentUser}
-        onChange={() => setConfirmed(false)}
-        {...aria("role")}
-        className="mt-2 min-h-11 w-full border p-2"
-      >
-        {Object.entries(adminRoleLabels).map(([value, label]) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
-      {error("role")}
-      <label className="block" htmlFor="edit-status">
-        상태
-      </label>
-      <select
-        id="edit-status"
-        name="status"
-        defaultValue={props.status}
-        disabled={props.isCurrentUser}
-        onChange={() => setConfirmed(false)}
-        {...aria("status")}
-        className="mt-2 min-h-11 w-full border p-2"
-      >
-        {adminUserStatuses.map((value) => (
-          <option key={value} value={value}>
-            {adminUserStatusLabels[value]}
-          </option>
-        ))}
-      </select>
-      {error("status")}
-      {props.isCurrentUser && <p>현재 로그인한 계정은 역할과 상태를 변경할 수 없습니다.</p>}
-      <p>역할 또는 상태를 변경하면 이 계정의 모든 로그인 세션이 해제됩니다.</p>
-      <label className="flex gap-2" htmlFor="edit-confirmed">
-        <input
-          id="edit-confirmed"
-          type="checkbox"
-          checked={confirmed}
-          onChange={(event) => setConfirmed(event.target.checked)}
-          {...aria("updateConfirmed")}
-        />
-        역할과 상태 변경이 접근 권한과 로그인 세션에 즉시 영향을 주는 것을 확인했습니다.
-      </label>
-      {error("updateConfirmed")}
+    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label className="font-semibold" htmlFor="edit-email">이메일</label>
+        <input id="edit-email" readOnly value={props.email} className="min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-surface-subtle px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+      </div>
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label className="font-semibold" htmlFor="edit-display-name">표시 이름</label>
+        <input id="edit-display-name" name="displayName" defaultValue={props.displayName} required minLength={2} maxLength={50} onChange={() => setConfirmed(false)} {...aria("displayName")} className="min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+        {error("displayName")}
+      </div>
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label className="font-semibold" htmlFor="edit-role">역할</label>
+        <select id="edit-role" name="role" defaultValue={props.role} disabled={props.isCurrentUser} onChange={() => setConfirmed(false)} {...aria("role")} className="min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+          {Object.entries(adminRoleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+        {error("role")}
+      </div>
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label className="font-semibold" htmlFor="edit-status">상태</label>
+        <select id="edit-status" name="status" defaultValue={props.status} disabled={props.isCurrentUser} onChange={() => setConfirmed(false)} {...aria("status")} className="min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+          {adminUserStatuses.map((value) => <option key={value} value={value}>{adminUserStatusLabels[value]}</option>)}
+        </select>
+        {error("status")}
+      </div>
+      {props.isCurrentUser && <p className="border-l-4 border-warning bg-warning-soft p-4 font-semibold">현재 로그인한 계정은 역할과 상태를 변경할 수 없습니다.</p>}
+      <p className="border-l-4 border-warning bg-warning-soft p-4 font-semibold">역할 또는 상태를 변경하면 이 계정의 모든 로그인 세션이 해제됩니다.</p>
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex gap-3 font-semibold" htmlFor="edit-confirmed">
+          <input id="edit-confirmed" type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} {...aria("updateConfirmed")} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          역할과 상태 변경이 접근 권한과 로그인 세션에 즉시 영향을 주는 것을 확인했습니다.
+        </label>
+        {error("updateConfirmed")}
+      </div>
       {error("expectedUpdatedAt")}
       {formMessage && (
-        <p id="edit-form-error" role="alert">
+        <p id="edit-form-error" role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formMessage}
         </p>
       )}
       <p aria-live="polite">{busy ? "저장 중입니다." : ""}</p>
-      <button type="submit" disabled={busy} className="min-h-11 bg-primary px-4 text-primary-foreground">
+      <button type="submit" disabled={busy} className="min-h-12 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
         저장
       </button>
     </form>
