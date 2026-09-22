@@ -77,33 +77,33 @@ export function AdminUserSessionForm(props: {
     fieldErrors[name] ? { "aria-invalid": true as const, "aria-describedby": `session-${name}-error` } : {};
   const error = (name: string) =>
     fieldErrors[name] && (
-      <p id={`session-${name}-error`} role="alert">
+      <p id={`session-${name}-error`} role="alert" className="text-small font-semibold text-danger">
         {fieldErrors[name]}
       </p>
     );
   return (
-    <form onSubmit={submit} aria-busy={busy} className="mt-5 space-y-3">
-      <p>이 계정의 모든 로그인 세션을 해제합니다.</p>
-      {props.isCurrentUser && <p>현재 사용 중인 이 세션도 종료되며 로그인 화면으로 이동합니다.</p>}
-      <label className="flex gap-2" htmlFor="session-confirmed">
+    <form onSubmit={submit} aria-busy={busy} className="mt-5 space-y-4">
+      {props.isCurrentUser && <p className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">현재 사용 중인 이 세션도 종료되며 로그인 화면으로 이동합니다.</p>}
+      <label className="flex gap-3 rounded-control border border-danger bg-danger-soft p-4 font-semibold" htmlFor="session-confirmed">
         <input
           id="session-confirmed"
           type="checkbox"
           checked={confirmed}
           onChange={(event) => setConfirmed(event.target.checked)}
           {...aria("revokeConfirmed")}
+          className="mt-0.5 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         />
-        이 계정의 모든 로그인 세션을 해제합니다.
+        <span>이 계정의 모든 로그인 세션을 해제합니다.</span>
       </label>
       {error("revokeConfirmed")}
       {error("expectedUpdatedAt")}
       {formMessage && (
-        <p id="session-form-error" role="alert">
+        <p id="session-form-error" role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formMessage}
         </p>
       )}
       <p aria-live="polite">{busy ? "처리 중입니다." : ""}</p>
-      <button type="submit" disabled={busy || props.activeSessionCount === 0} className="min-h-11 border px-4">
+      <button type="submit" disabled={busy || props.activeSessionCount === 0} className="inline-flex min-h-12 items-center justify-center rounded-control border border-danger px-6 py-2 font-bold text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">
         전체 세션 해제
       </button>
     </form>
