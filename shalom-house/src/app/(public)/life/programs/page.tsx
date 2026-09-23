@@ -42,6 +42,7 @@ export default async function ProgramsPage() {
           <div className="border-b border-border py-6" role="status">
             <h3 className="font-semibold">프로그램을 불러오지 못했습니다.</h3>
             <p className="mt-2 text-small text-muted-foreground">잠시 후 다시 시도하거나 문의해 주세요.</p>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Intentional document reload to retry a transient server fetch failure. */}
             <a className="institution-link mt-3" href="/life/programs">
               다시 불러오기
             </a>
