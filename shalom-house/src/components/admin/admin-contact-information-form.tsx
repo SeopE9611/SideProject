@@ -1,13 +1,15 @@
 "use client";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { ContactInformationContent } from "@/features/site-content/site-content.types";
 
-type AdminContactInformationFormProps = { initialContent: ContactInformationContent; expectedUpdatedAt: string | null };
+type AdminContactInformationFormProps = { initialContent: ContactInformationContent; expectedUpdatedAt: string | null; debugPhone?: boolean };
 type TextKey = Exclude<keyof ContactInformationContent, "showInstagram">;
 type ResponseBody = { error?: string; fieldErrors?: Record<string, string>; redirectTo?: string };
+type PhoneDebugSnapshot = { elapsedMs: number; statePhone: string; domPhone: string | null };
 const instagramDisclosureId = "contact-showInstagram";
 const instagramDisclosureErrorId = "contact-showInstagram-error";
+const phoneDebugCheckpoints = [0, 50, 250, 1000, 3000];
 const fields: { key: TextKey; label: string; multiline?: boolean }[] = [
   { key: "directionsPageDescription", label: "찾아오시는 길 페이지 설명", multiline: true },
   { key: "address", label: "주소" },
@@ -18,13 +20,41 @@ const fields: { key: TextKey; label: string; multiline?: boolean }[] = [
   { key: "contactIntroduction", label: "문의 경로 소개", multiline: true },
   { key: "instagramUrl", label: "인스타그램 URL" },
 ];
-export function AdminContactInformationForm({ initialContent, expectedUpdatedAt }: AdminContactInformationFormProps) {
+function formatPhoneDebugValue(value: string | null) {
+  if (value === null) return "(not mounted)";
+  return value || "(empty)";
+}
+export function AdminContactInformationForm({ initialContent, expectedUpdatedAt, debugPhone }: AdminContactInformationFormProps) {
   const [content, setContent] = useState(initialContent),
     [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false),
     [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
+  const [phoneDebugSnapshots, setPhoneDebugSnapshots] = useState<PhoneDebugSnapshot[]>([]);
+  const phoneInputRef = useRef<HTMLInputElement | null>(null);
+  const contentRef = useRef(content);
+  const phoneOnChangeCountRef = useRef(0);
+  const renderCountRef = useRef(0);
+  contentRef.current = content;
+  renderCountRef.current += 1;
+  useEffect(() => {
+    if (!debugPhone) return;
+    const timeoutIds = phoneDebugCheckpoints.map((elapsedMs) =>
+      window.setTimeout(() => {
+        setPhoneDebugSnapshots((current) => [
+          ...current.filter((snapshot) => snapshot.elapsedMs !== elapsedMs),
+          {
+            elapsedMs,
+            statePhone: contentRef.current.phone,
+            domPhone: phoneInputRef.current?.value ?? null,
+          },
+        ]);
+      }, elapsedMs),
+    );
+    return () => timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
+  }, [debugPhone]);
   function updateTextField(key: TextKey, value: string) {
+    if (debugPhone && key === "phone") phoneOnChangeCountRef.current += 1;
     setContent((current) => ({ ...current, [key]: value }));
     setConfirmed(false);
   }
@@ -75,6 +105,30 @@ export function AdminContactInformationForm({ initialContent, expectedUpdatedAt 
   }
   return (
     <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
+      {debugPhone ? (
+        <section className="space-y-3 rounded-control border border-warning bg-warning-soft p-4" aria-labelledby="phone-runtime-diagnostic-title">
+          <h2 id="phone-runtime-diagnostic-title" className="font-bold">대표 전화 런타임 진단</h2>
+          <dl className="grid gap-2">
+            <div><dt className="font-semibold">Server prop / initialContent.phone</dt><dd>{formatPhoneDebugValue(initialContent.phone)}</dd></div>
+            <div><dt className="font-semibold">React state / content.phone</dt><dd>{formatPhoneDebugValue(content.phone)}</dd></div>
+            <div><dt className="font-semibold">현재 DOM / phoneInputRef.current.value</dt><dd>{formatPhoneDebugValue(phoneInputRef.current?.value ?? null)}</dd></div>
+            <div><dt className="font-semibold">phone onChange count</dt><dd>{phoneOnChangeCountRef.current}</dd></div>
+            <div><dt className="font-semibold">render count</dt><dd>{renderCountRef.current}</dd></div>
+          </dl>
+          <ol className="grid gap-2">
+            {phoneDebugCheckpoints.map((elapsedMs) => {
+              const snapshot = phoneDebugSnapshots.find((item) => item.elapsedMs === elapsedMs);
+              return (
+                <li key={elapsedMs} className="border-t border-border pt-2">
+                  <p className="font-semibold">{elapsedMs}ms</p>
+                  <p>React state: {snapshot ? formatPhoneDebugValue(snapshot.statePhone) : "(pending)"}</p>
+                  <p>DOM: {snapshot ? formatPhoneDebugValue(snapshot.domPhone) : "(pending)"}</p>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ) : null}
       {fields.map(({ key, label, multiline }) => {
         const id = `contact-${key}`,
           error = errors[key],
@@ -96,7 +150,7 @@ export function AdminContactInformationForm({ initialContent, expectedUpdatedAt 
             {multiline ? (
               <textarea {...props} className={`${props.className} min-h-24`} />
             ) : (
-              <input {...props} disabled={key === "instagramUrl" && !content.showInstagram} />
+              <input {...props} ref={key === "phone" ? phoneInputRef : undefined} disabled={key === "instagramUrl" && !content.showInstagram} />
             )}
             {error ? (
               <p id={`${id}-error`} role="alert" className="text-small font-semibold text-danger">
