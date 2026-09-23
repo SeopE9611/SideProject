@@ -104,8 +104,8 @@ export function AdminUserEditForm(props: {
   return (
     <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
       <div className="grid gap-2 border-b border-border pb-6">
-        <label className="font-semibold" htmlFor="edit-email">이메일</label>
-        <input id="edit-email" readOnly value={props.email} className="min-h-11 w-full min-w-0 rounded-control border border-border-strong bg-surface-subtle px-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+        <p className="font-semibold">이메일</p>
+        <p id="edit-email" className="flex min-h-11 items-center break-all text-foreground">{props.email}</p>
       </div>
       <div className="grid gap-2 border-b border-border pb-6">
         <label className="font-semibold" htmlFor="edit-display-name">표시 이름</label>
