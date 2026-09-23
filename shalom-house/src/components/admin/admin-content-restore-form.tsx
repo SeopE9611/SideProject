@@ -59,27 +59,28 @@ export function AdminContentRestoreForm({
           setBusy(false);
         }
       }}
-      className="space-y-3"
+      className="min-w-0 space-y-4"
     >
-      <p id={descriptionId}>복구하면 게시 상태와 승인 상태가 초기화되며 초안부터 다시 검토해야 합니다.</p>
-      <label className="flex gap-3">
+      <p id={descriptionId} className="text-small text-muted-foreground">복구하면 게시 상태와 승인 상태가 초기화되며 초안부터 다시 검토해야 합니다.</p>
+      <label className="flex items-start gap-3 border-l-4 border-warning bg-warning-soft p-4">
         <input
           type="checkbox"
           checked={confirmed}
           onChange={(e) => setConfirmed(e.target.checked)}
           aria-describedby={error ? `${descriptionId} ${errorId}` : descriptionId}
           aria-invalid={error ? true : undefined}
+          className="mt-0.5 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         />
-        <span>
+        <span className="text-small font-semibold">
           {RESTORE_CONFIRMATION} <strong>(필수)</strong>
         </span>
       </label>
       {error ? (
-        <p id={errorId} role="alert">
+        <p id={errorId} role="alert" className="rounded-control border border-border-strong bg-background p-4 text-small font-semibold text-danger">
           {error}
         </p>
       ) : null}
-      <button type="submit" className="min-h-11 border px-4 py-2 font-bold" disabled={busy}>
+      <button type="submit" className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60" disabled={busy}>
         {busy ? "복구 중…" : "복구"}
       </button>
     </form>
