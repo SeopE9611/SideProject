@@ -8,6 +8,7 @@ import { findPublicGalleryBySlug } from "@/features/gallery/gallery.repository";
 import { JsonLd } from "@/features/seo/json-ld";
 import { createDynamicPublicMetadata } from "@/features/seo/metadata";
 import { createAbsolutePublicUrl } from "@/features/seo/site-url";
+import { formatPublicDate } from "@/lib/format-public-date";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -37,15 +38,10 @@ export default async function GalleryDetail({ params }: Props) {
   const item = await getPublishedItem(slug);
   if (!item) notFound();
   const metadata = [
-    { label: "활동일", value: item.activityDate.replace(/-/g, "."), dateTime: item.activityDate },
+    { label: "활동일", value: formatPublicDate(item.activityDate), dateTime: item.activityDate },
     {
       label: "게시일",
-      value: new Intl.DateTimeFormat("ko-KR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        timeZone: "UTC",
-      }).format(new Date(item.publishedAt)),
+      value: formatPublicDate(item.publishedAt),
       dateTime: item.publishedAt,
     },
   ];

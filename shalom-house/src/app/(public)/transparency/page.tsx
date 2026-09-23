@@ -7,6 +7,7 @@ import {
   transparencyCategories,
   transparencyCategoryLabels,
 } from "@/features/transparency/transparency.types";
+import { formatPublicDate } from "@/lib/format-public-date";
 
 export const metadata = createPublicPageMetadata("/transparency");
 export const runtime = "nodejs";
@@ -14,12 +15,6 @@ export const dynamic = "force-dynamic";
 
 type SearchParams = { category?: string | string[]; period?: string | string[] };
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
-const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  timeZone: "UTC",
-});
 
 export default async function TransparencyPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const [raw, documents] = await Promise.all([
@@ -173,14 +168,14 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
                       <div className="border-l border-border pl-3">
                         <dt className="text-muted-foreground">문서일</dt>
                         <dd className="mt-1 font-medium">
-                          <time dateTime={document.documentDate}>{document.documentDate.replace(/-/g, ".")}</time>
+                          <time dateTime={document.documentDate}>{formatPublicDate(document.documentDate)}</time>
                         </dd>
                       </div>
                       <div className="border-l border-border pl-3">
                         <dt className="text-muted-foreground">게시일</dt>
                         <dd className="mt-1 font-medium">
                           <time dateTime={document.publishedAt}>
-                            {dateFormatter.format(new Date(document.publishedAt))}
+                            {formatPublicDate(document.publishedAt)}
                           </time>
                         </dd>
                       </div>

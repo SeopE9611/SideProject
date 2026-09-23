@@ -105,31 +105,6 @@ export default async function DirectionsPage() {
           </aside>
         </div>
 
-        <section aria-labelledby="visit-order-heading" className="mt-8 border-y border-border py-7 sm:mt-10 sm:py-8">
-          <h2 id="visit-order-heading" className="sr-only">
-            방문 정보 확인 순서
-          </h2>
-          <ol className="grid gap-6 sm:grid-cols-3 sm:gap-0">
-            {[
-              ["01", "주소 확인", "방문 위치를 먼저 확인합니다."],
-              ["02", "지도 열기", "이동 경로는 지도 서비스에서 확인합니다."],
-              ["03", "방문 전 문의", "일정과 출입 안내는 대표 전화로 확인합니다."],
-            ].map(([number, title, description]) => (
-              <li
-                key={number}
-                className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-3 sm:border-l sm:border-border sm:px-6 sm:first:border-l-0 sm:first:pl-0"
-              >
-                <span className="text-small font-bold tabular-nums text-accent" aria-hidden="true">
-                  {number}
-                </span>
-                <div>
-                  <h3 className="font-bold">{title}</h3>
-                  <p className="text-safe-wrap mt-1 text-small text-muted-foreground">{description}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
       </div>
     </div>
   );

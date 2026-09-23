@@ -4,6 +4,7 @@ import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { findPublicGalleryItems } from "@/features/gallery/gallery.repository";
 import { createPublicPageMetadata } from "@/features/seo/metadata";
 import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
+import { formatPublicDate } from "@/lib/format-public-date";
 
 export const metadata = createPublicPageMetadata("/life/gallery");
 export const runtime = "nodejs";
@@ -65,7 +66,7 @@ export default async function GalleryPage() {
                   unoptimized
                 />
                 <p className="text-safe-wrap mt-3 text-small text-muted-foreground">
-                  {item.category} · <time dateTime={item.activityDate}>{item.activityDate.replace(/-/g, ".")}</time>
+                  {item.category} · <time dateTime={item.activityDate}>{formatPublicDate(item.activityDate)}</time>
                 </p>
                 <h3 className="mt-2 text-lg font-semibold">
                   <Link
