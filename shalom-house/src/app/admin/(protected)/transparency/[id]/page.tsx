@@ -50,7 +50,7 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
     ["요약", document.summary || "없음"],
     [
       "생성일",
-      <time dateTime={document.createdAt}>
+      <time key="created-at" dateTime={document.createdAt}>
         {formatAdminDate(document.createdAt)}
       </time>,
     ],

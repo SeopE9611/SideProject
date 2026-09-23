@@ -211,7 +211,10 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                 {q ? `, 검색어 “${q}”` : ""}에 해당하는 결과가 없습니다.
               </p>
               <div className="mt-5">
-                <Link className="font-bold text-primary underline underline-offset-4" href={basePath}>
+                <Link
+                  className="inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                  href={basePath}
+                >
                   조건 초기화
                 </Link>
               </div>
