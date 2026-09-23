@@ -10,15 +10,9 @@ import {
   normalizePublicNewsSearchQuery,
 } from "@/features/news/news.pagination";
 import { getNewsCategoryLabel, isNewsCategory, type NewsCategory } from "@/features/news/news.types";
+import { formatPublicDate } from "@/lib/format-public-date";
 
 const PAGE_SIZE = 8;
-const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  timeZone: "UTC",
-});
-
 export type NewsSearchParams = {
   q?: string | string[];
   category?: string | string[];
@@ -157,7 +151,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                 </p>
               ) : null}
             </div>
-            {hasUserFilter ? (
+            {hasUserFilter && total > 0 ? (
               <Link
                 className="inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                 href={basePath}
@@ -233,7 +227,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                           <p className="text-small font-bold text-accent">
                             활동 소식 <span className="text-muted-foreground">·</span>{" "}
                             <time className="font-medium text-muted-foreground tabular-nums" dateTime={post.publishedAt}>
-                              {dateFormatter.format(new Date(post.publishedAt))}
+                              {formatPublicDate(post.publishedAt)}
                             </time>
                           </p>
                           <h3 className="mt-2 text-[1.3rem] leading-relaxed font-bold tracking-[-0.015em] sm:text-[1.45rem]">
@@ -300,7 +294,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                         className="text-small text-muted-foreground tabular-nums md:pt-1 md:text-right"
                         dateTime={post.publishedAt}
                       >
-                        {dateFormatter.format(new Date(post.publishedAt))}
+                        {formatPublicDate(post.publishedAt)}
                       </time>
                     </article>
                   )}

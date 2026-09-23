@@ -9,12 +9,7 @@ import { getProgramRepository } from "@/features/programs/program.repository";
 import { JsonLd } from "@/features/seo/json-ld";
 import { createDynamicPublicMetadata } from "@/features/seo/metadata";
 import { createAbsolutePublicUrl, getSiteOrigin } from "@/features/seo/site-url";
-const formatter = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  timeZone: "UTC",
-});
+import { formatPublicDate } from "@/lib/format-public-date";
 const getProgram = cache((slug: string) => getProgramRepository().findPublishedBySlug(slug));
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -48,9 +43,9 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
   if (!program) notFound();
   const metadata = [
     ...(program.operationStatusLabel ? [{ label: "운영 상태", value: program.operationStatusLabel }] : []),
-    { label: "게시일", value: formatter.format(new Date(program.publishedAt)), dateTime: program.publishedAt },
+    { label: "게시일", value: formatPublicDate(program.publishedAt), dateTime: program.publishedAt },
     ...(program.updatedAt !== program.publishedAt
-      ? [{ label: "수정일", value: formatter.format(new Date(program.updatedAt)), dateTime: program.updatedAt }]
+      ? [{ label: "수정일", value: formatPublicDate(program.updatedAt), dateTime: program.updatedAt }]
       : []),
   ];
   return (

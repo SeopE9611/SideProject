@@ -6,17 +6,11 @@ import { findPublicGalleryItems, type PublicGallerySummary } from "@/features/ga
 import { getNewsRepository } from "@/features/news/news.repository";
 import { getProgramRepository } from "@/features/programs/program.repository";
 import { createPublicPageMetadata } from "@/features/seo/metadata";
+import { formatPublicDate } from "@/lib/format-public-date";
 
 export const metadata = createPublicPageMetadata("/life");
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  timeZone: "UTC",
-});
 
 function GalleryStory({
   item,
@@ -44,7 +38,7 @@ function GalleryStory({
       <div className="min-w-0">
         <p className="text-safe-wrap text-small text-muted-foreground">
           {item.category} ·{" "}
-          <time dateTime={item.activityDate}>{dateFormatter.format(new Date(item.activityDate))}</time>
+          <time dateTime={item.activityDate}>{formatPublicDate(item.activityDate)}</time>
         </p>
         <h3 className={`mt-2 font-bold tracking-tight ${featured ? "text-xl sm:text-2xl" : "text-lg"}`}>
           <Link
@@ -186,7 +180,7 @@ export default async function LifePage() {
                 {posts.map((post) => (
                   <li key={post.id} className="py-5">
                     <time className="text-small text-muted-foreground" dateTime={post.publishedAt}>
-                      {dateFormatter.format(new Date(post.publishedAt))}
+                      {formatPublicDate(post.publishedAt)}
                     </time>
                     <h3 className="mt-2 text-lg font-bold tracking-tight sm:text-xl">
                       <Link

@@ -12,6 +12,7 @@ import { getNewsCategoryLabel } from "@/features/news/news.types";
 import { JsonLd } from "@/features/seo/json-ld";
 import { createDynamicPublicMetadata } from "@/features/seo/metadata";
 import { createAbsolutePublicUrl, getSiteOrigin } from "@/features/seo/site-url";
+import { formatPublicDate } from "@/lib/format-public-date";
 
 export const dynamic = "force-dynamic";
 
@@ -19,13 +20,6 @@ type NewsPostPageProps = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ returnTo?: string | string[] }>;
 };
-
-const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  timeZone: "UTC",
-});
 
 const getPublishedItem = cache((slug: string) => getNewsRepository().findPublishedBySlug(slug));
 
@@ -69,9 +63,9 @@ export default async function NewsPostPage({ params, searchParams }: NewsPostPag
     .filter((item) => item.slug !== post.slug)
     .slice(0, 2);
   const metadata = [
-    { label: "게시일", value: dateFormatter.format(new Date(post.publishedAt)), dateTime: post.publishedAt },
+    { label: "게시일", value: formatPublicDate(post.publishedAt), dateTime: post.publishedAt },
     ...(post.updatedAt !== post.publishedAt
-      ? [{ label: "수정일", value: dateFormatter.format(new Date(post.updatedAt)), dateTime: post.updatedAt }]
+      ? [{ label: "수정일", value: formatPublicDate(post.updatedAt), dateTime: post.updatedAt }]
       : []),
   ];
   return (
