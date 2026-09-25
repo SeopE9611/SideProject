@@ -45,7 +45,7 @@ export default async function SpacesPage() {
           <ul className="divide-y divide-border border-b border-border">
             {spaces.map((space, index) => (
               <li
-                className="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)] gap-x-4 gap-y-3 py-6 md:grid-cols-[3rem_minmax(0,0.9fr)_minmax(0,1.6fr)] md:gap-x-8"
+                className={`grid min-w-0 grid-cols-[3rem_minmax(0,1fr)] gap-x-4 gap-y-3 py-6 md:gap-x-8 ${space.media ? "lg:grid-cols-[3rem_minmax(0,0.8fr)_minmax(0,1.2fr)_minmax(18rem,1fr)]" : "md:grid-cols-[3rem_minmax(0,0.9fr)_minmax(0,1.6fr)]"}`}
                 key={space.id}
               >
                 <span className="text-lg font-bold text-accent" aria-hidden="true">
@@ -55,6 +55,17 @@ export default async function SpacesPage() {
                 <p className="text-safe-wrap col-start-2 max-w-content whitespace-pre-wrap text-body leading-8 md:col-start-auto">
                   {space.description}
                 </p>
+                {space.media ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- no-store 공개 프록시의 즉시 접근 차단 의미를 유지합니다.
+                  <img
+                    src={space.media.src}
+                    alt={space.media.altText}
+                    width={space.media.width}
+                    height={space.media.height}
+                    loading="lazy"
+                    className="col-start-2 aspect-[3/2] w-full min-w-0 rounded-card object-cover lg:col-start-auto"
+                  />
+                ) : null}
               </li>
             ))}
           </ul>

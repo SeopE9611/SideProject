@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { convertImageToWebp, type ConvertedWebpImage } from "@/lib/client-image-conversion";
 type Values = {
   slug: string;
   title: string;
@@ -59,13 +60,7 @@ export function AdminGalleryDraftForm(props: Props) {
   const router = useRouter(),
     previewRef = useRef<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null),
-    [converted, setConverted] = useState<{
-      blob: Blob;
-      width: number;
-      height: number;
-      originalName: string;
-      originalSize: number;
-    } | null>(null),
+    [converted, setConverted] = useState<ConvertedWebpImage | null>(null),
     [status, setStatus] = useState(""),
     [conversionError, setConversionError] = useState(""),
     [formError, setFormError] = useState(""),
@@ -83,52 +78,21 @@ export function AdminGalleryDraftForm(props: Props) {
     setConversionError("");
     setConverted(null);
     if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setConversionError("JPEG, PNG 또는 WebP 이미지만 선택해 주세요.");
-      return;
-    }
     setStatus("이미지를 WebP로 변환하고 있습니다.");
     try {
-      const bitmap = await createImageBitmap(file);
-      let blob: Blob;
-      let width: number;
-      let height: number;
-
-      try {
-        const scale = Math.min(1, 1920 / Math.max(bitmap.width, bitmap.height));
-        width = Math.max(1, Math.round(bitmap.width * scale));
-        height = Math.max(1, Math.round(bitmap.height * scale));
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext("2d");
-
-        if (!context) {
-          throw new Error("canvas_context_unavailable");
-        }
-
-        context.drawImage(bitmap, 0, 0, width, height);
-        blob = await new Promise<Blob>((resolve, reject) =>
-          canvas.toBlob((value) => (value ? resolve(value) : reject(new Error())), "image/webp", 0.82),
-        );
-      } finally {
-        bitmap.close();
-      }
-      if (blob.size > 3 * 1024 * 1024) throw new Error("변환된 이미지가 3MB를 초과합니다.");
+      const result = await convertImageToWebp(file);
       if (previewRef.current) URL.revokeObjectURL(previewRef.current);
-      previewRef.current = URL.createObjectURL(blob);
+      previewRef.current = URL.createObjectURL(result.blob);
       setPreview(previewRef.current);
-      setConverted({
-        blob,
-        width,
-        height,
-        originalName: file.name,
-        originalSize: file.size,
-      });
+      setConverted(result);
       setStatus("WebP 변환을 완료했습니다.");
-    } catch {
+    } catch (error) {
       setStatus("");
-      setConversionError("이미지를 변환할 수 없습니다. 다른 이미지를 선택해 주세요.");
+      setConversionError(
+        error instanceof Error && error.message === "unsupported_media_type"
+          ? "JPEG, PNG 또는 WebP 이미지만 선택해 주세요."
+          : "이미지를 변환할 수 없습니다. 다른 이미지를 선택해 주세요.",
+      );
     }
   }
   async function submit(e: FormEvent<HTMLFormElement>) {

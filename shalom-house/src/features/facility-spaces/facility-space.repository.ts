@@ -60,6 +60,9 @@ export async function listPublicFacilitySpaces(): Promise<readonly PublicFacilit
 }
 
 export async function findPublicFacilitySpaceMediaById(id: string) {
+  const source = process.env.SHALOM_CONTENT_SOURCE || "fixture";
+  if (source === "fixture" || source === "empty") return null;
+  if (source !== "mongodb") throw new Error(`지원하지 않는 SHALOM_CONTENT_SOURCE입니다: ${source}`);
   if (!ObjectId.isValid(id) || new ObjectId(id).toHexString() !== id.toLowerCase()) return null;
   const document = await (await getMongoDatabase())
     .collection<MongoFacilitySpaceDocument>(FACILITY_SPACE_COLLECTION_NAME)
