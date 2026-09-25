@@ -64,6 +64,20 @@ export default async function Page({
         ))}
         </dl>
       </section>
+      <section className="rounded-card border border-border bg-surface p-5" aria-labelledby="facility-space-media-title">
+        <h2 id="facility-space-media-title" className="text-heading font-bold">공간 사진</h2>
+        {d.media ? (
+          <div className="mt-4 grid gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element -- 인증된 no-store 프록시의 즉시 접근 차단 의미를 유지합니다. */}
+            <img src={`/api/admin/site-content/spaces/${id}/media`} alt={d.media.altText} width={d.media.width} height={d.media.height} className="aspect-[3/2] w-full max-w-3xl rounded-card object-cover" />
+            <dl className="grid gap-3 sm:grid-cols-3">
+              <div className="min-w-0"><dt className="font-bold text-muted-foreground">대체 텍스트</dt><dd className="break-words">{d.media.altText}</dd></div>
+              <div className="min-w-0"><dt className="font-bold text-muted-foreground">원본 파일명</dt><dd className="break-all">{d.media.originalFileName}</dd></div>
+              <div><dt className="font-bold text-muted-foreground">크기</dt><dd>{d.media.width}×{d.media.height}</dd></div>
+            </dl>
+          </div>
+        ) : <p className="mt-4 text-muted-foreground">등록된 공간 사진이 없습니다.</p>}
+      </section>
       <AdminAuditHistory items={d.auditHistory} />
     </div>
   );

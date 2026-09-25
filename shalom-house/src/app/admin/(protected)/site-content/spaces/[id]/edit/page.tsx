@@ -15,7 +15,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <div className="space-y-6">
       <AdminFormPageHeader backHref={`/admin/site-content/spaces/${id}`} backLabel="생활공간 상세" eyebrow="생활공간 · 수정" title="생활공간 수정" description="생활공간 설명과 공개 상태를 수정합니다." />
       <AdminFormGuidance title="공개 전 확인">
-        입소자 개인정보가 포함되지 않아야 합니다. 시설 보안에 영향을 줄 수 있는 상세 위치·출입 정보는 입력하지 마세요.
+        입소자 개인정보와 상세 위치·출입 정보는 입력하지 마세요. 사진에는 사람, 이름표, 문서, 연락처,
+        차량번호, 민감정보와 출입 보안정보가 보이지 않아야 합니다.
       </AdminFormGuidance>
       <section aria-labelledby="facility-space-form-title">
         <h2 id="facility-space-form-title" className="sr-only">생활공간 정보 입력</h2>
@@ -23,6 +24,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         mode="edit"
         id={id}
         expectedUpdatedAt={detail.updatedAt}
+        initialMedia={detail.media ? {
+          src: `/api/admin/site-content/spaces/${id}/media`,
+          altText: detail.media.altText,
+          width: detail.media.width,
+          height: detail.media.height,
+          originalFileName: detail.media.originalFileName,
+        } : null}
         initialSpace={{
           title: detail.title,
           description: detail.description,

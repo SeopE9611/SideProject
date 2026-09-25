@@ -9,7 +9,6 @@ import {
 import { insertFacilitySpaceAuditEvent, listAdminFacilitySpaceAuditHistory } from "./facility-space.audit-repository";
 import { FACILITY_SPACE_COLLECTION_NAME, type MongoFacilitySpaceDocument } from "./facility-space.mongo-schema";
 import { isValidStoredFacilitySpace } from "./facility-space.document-validation";
-import { validateFacilitySpaceInput } from "./facility-space.validation";
 import {
   type FacilitySpaceMedia,
   type FacilitySpaceInput,
