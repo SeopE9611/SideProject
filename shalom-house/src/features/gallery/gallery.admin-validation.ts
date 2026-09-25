@@ -1,5 +1,9 @@
 import "server-only";
-import { createHash } from "node:crypto";
+import {
+  SERVER_WEBP_MAX_BYTES,
+  SERVER_WEBP_MAX_DIMENSION,
+  validateServerWebp,
+} from "@/lib/server-webp-validation";
 import {
   isCanonicalGalleryDate,
   isGalleryConsentStatus,
@@ -9,8 +13,8 @@ import {
   type GallerySubjectPresence,
 } from "./gallery.types";
 
-export const ADMIN_GALLERY_IMAGE_MAX_BYTES = 3 * 1024 * 1024;
-export const ADMIN_GALLERY_IMAGE_MAX_DIMENSION = 4096;
+export const ADMIN_GALLERY_IMAGE_MAX_BYTES = SERVER_WEBP_MAX_BYTES;
+export const ADMIN_GALLERY_IMAGE_MAX_DIMENSION = SERVER_WEBP_MAX_DIMENSION;
 export const ADMIN_GALLERY_REQUEST_MAX_BYTES = 4 * 1024 * 1024;
 export const ADMIN_GALLERY_SLUG_MAX_LENGTH = 80;
 export const ADMIN_GALLERY_TITLE_MAX_LENGTH = 100;
@@ -193,64 +197,14 @@ export function validateAdminGalleryPublicationInput(value: unknown) {
 export const validateAdminGalleryConsentWithdrawalInput = (value: unknown) =>
   transition(value, (input) => input.withdrawalConfirmed === true);
 
-function webpDimensions(buffer: Buffer): { width: number; height: number } | null {
-  if (buffer.length < 30) return null;
-  const kind = buffer.toString("ascii", 12, 16);
-  if (kind === "VP8X")
-    return {
-      width: 1 + buffer.readUIntLE(24, 3),
-      height: 1 + buffer.readUIntLE(27, 3),
-    };
-  if (kind === "VP8 " && buffer.length >= 30 && buffer[23] === 0x9d && buffer[24] === 0x01 && buffer[25] === 0x2a)
-    return {
-      width: buffer.readUInt16LE(26) & 0x3fff,
-      height: buffer.readUInt16LE(28) & 0x3fff,
-    };
-  if (kind === "VP8L" && buffer.length >= 25 && buffer[20] === 0x2f) {
-    const bits = buffer.readUInt32LE(21);
-    return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
-  }
-  return null;
-}
 export async function validateAdminGalleryImage(file: File) {
-  if (file.type !== "image/webp" || file.size < 1 || file.size > ADMIN_GALLERY_IMAGE_MAX_BYTES)
-    return {
-      ok: false as const,
-      error: "올바른 3MB 이하 WebP 이미지를 선택해 주세요.",
-    };
-  const buffer = Buffer.from(await file.arrayBuffer());
-  if (
-    buffer.length !== file.size ||
-    buffer.length > ADMIN_GALLERY_IMAGE_MAX_BYTES ||
-    buffer.toString("ascii", 0, 4) !== "RIFF" ||
-    buffer.toString("ascii", 8, 12) !== "WEBP"
-  )
-    return {
-      ok: false as const,
-      error: "WebP 이미지 파일을 확인할 수 없습니다.",
-    };
-  const dimensions = webpDimensions(buffer);
-  if (
-    !dimensions ||
-    !Number.isInteger(dimensions.width) ||
-    !Number.isInteger(dimensions.height) ||
-    dimensions.width < 1 ||
-    dimensions.height < 1 ||
-    dimensions.width > ADMIN_GALLERY_IMAGE_MAX_DIMENSION ||
-    dimensions.height > ADMIN_GALLERY_IMAGE_MAX_DIMENSION
-  )
-    return {
-      ok: false as const,
-      error: "이미지 크기를 확인할 수 없거나 허용 범위를 초과했습니다.",
-    };
-  return {
-    ok: true as const,
-    value: {
-      buffer,
-      width: dimensions.width,
-      height: dimensions.height,
-      byteSize: buffer.length,
-      sha256: createHash("sha256").update(buffer).digest("hex"),
-    },
-  };
+  const result = await validateServerWebp(file);
+  if (result.ok) return result;
+  const error =
+    result.reason === "file"
+      ? "올바른 3MB 이하 WebP 이미지를 선택해 주세요."
+      : result.reason === "signature"
+        ? "WebP 이미지 파일을 확인할 수 없습니다."
+        : "이미지 크기를 확인할 수 없거나 허용 범위를 초과했습니다.";
+  return { ok: false as const, error };
 }
