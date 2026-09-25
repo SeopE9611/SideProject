@@ -46,12 +46,14 @@ export const visualSpaceFixtures: readonly PublicFacilitySpace[] = [
     id: "fixture-space-short",
     title: "[테스트] 짧은 공간명",
     description: "공간명과 설명의 정렬을 확인하는 예시입니다. 실제 시설의 공간이나 용도를 나타내지 않습니다.",
+    media: null,
   },
   {
     id: "fixture-space-long",
     title: "[테스트] 긴 공간명이 여러 줄에 걸쳐 표시되는 경우",
     description:
       "공간 설명이 길어졌을 때 제목과 본문의 읽기 순서를 확인합니다.\n두 번째 줄에서도 기존 문단의 흐름과 간격이 유지되어야 합니다. 실제 위치나 출입 안내는 포함하지 않습니다.",
+    media: null,
   },
 ];
 

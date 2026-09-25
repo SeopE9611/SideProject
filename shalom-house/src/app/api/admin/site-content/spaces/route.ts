@@ -44,6 +44,8 @@ export async function POST(request: Request) {
     return response(
       {
         ok: true,
+        id: result.id,
+        updatedAt: result.updatedAt,
         redirectTo: `/admin/site-content/spaces/${result.id}?saved=1`,
       },
       201,

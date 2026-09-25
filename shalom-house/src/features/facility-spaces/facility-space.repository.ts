@@ -2,9 +2,15 @@ import { ObjectId } from "mongodb";
 import { getVisualAboutFixtures, isVisualFixtureEnabled, visualSpaceFixtures } from "@/content/fixtures/visual.fixture";
 import { getMongoDatabase } from "@/lib/mongodb";
 import { FACILITY_SPACE_COLLECTION_NAME, type MongoFacilitySpaceDocument } from "./facility-space.mongo-schema";
+import { isValidStoredFacilitySpace } from "./facility-space.document-validation";
 import { validateFacilitySpaceInput } from "./facility-space.validation";
 import { isValidFacilitySpaceDate } from "./facility-space.types";
-export type PublicFacilitySpace = { id: string; title: string; description: string };
+export type PublicFacilitySpace = {
+  id: string;
+  title: string;
+  description: string;
+  media: null | { src: string; altText: string; width: number; height: number };
+};
 export async function listPublicFacilitySpaces(): Promise<readonly PublicFacilitySpace[]> {
   if (isVisualFixtureEnabled()) return getVisualAboutFixtures(visualSpaceFixtures);
   const source = process.env.SHALOM_CONTENT_SOURCE || "fixture";
@@ -25,7 +31,7 @@ export async function listPublicFacilitySpaces(): Promise<readonly PublicFacilit
       displayOrder: document.displayOrder,
     });
     const valid =
-      document._id instanceof ObjectId &&
+      isValidStoredFacilitySpace(document) &&
       validation.ok &&
       document.publicationStatus === "published" &&
       isValidFacilitySpaceDate(document.createdAt) &&
@@ -40,7 +46,25 @@ export async function listPublicFacilitySpaces(): Promise<readonly PublicFacilit
       return [];
     }
     return [
-      { id: document._id.toHexString(), title: validation.value.title, description: validation.value.description },
+      {
+        id: document._id.toHexString(),
+        title: validation.value.title,
+        description: validation.value.description,
+        media: document.media
+          ? { src: `/api/facility-spaces/${document._id.toHexString()}/media`, altText: document.media.altText,
+              width: document.media.width, height: document.media.height }
+          : null,
+      },
     ];
   });
+}
+
+export async function findPublicFacilitySpaceMediaById(id: string) {
+  if (!ObjectId.isValid(id) || new ObjectId(id).toHexString() !== id.toLowerCase()) return null;
+  const document = await (await getMongoDatabase())
+    .collection<MongoFacilitySpaceDocument>(FACILITY_SPACE_COLLECTION_NAME)
+    .findOne({ _id: new ObjectId(id), publicationStatus: "published" });
+  if (!document || !isValidStoredFacilitySpace(document) || document.publicationStatus !== "published" ||
+      !isValidFacilitySpaceDate(document.publishedAt) || document.archivedAt !== null || !document.media) return null;
+  return document.media;
 }

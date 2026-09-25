@@ -58,7 +58,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             : 503;
       return response({ ok: false, error: result.reason }, status);
     }
-    return response({ ok: true, redirectTo: `/admin/site-content/spaces/${id}?saved=1` }, 200);
+    return response({ ok: true, updatedAt: result.updatedAt, redirectTo: `/admin/site-content/spaces/${id}?saved=1` }, 200);
   } catch (error) {
     console.error("생활공간 수정 실패", {
       facilitySpaceId: id,

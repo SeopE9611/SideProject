@@ -8,9 +8,10 @@ import {
 } from "./facility-space.audit";
 import { insertFacilitySpaceAuditEvent, listAdminFacilitySpaceAuditHistory } from "./facility-space.audit-repository";
 import { FACILITY_SPACE_COLLECTION_NAME, type MongoFacilitySpaceDocument } from "./facility-space.mongo-schema";
+import { isValidStoredFacilitySpace } from "./facility-space.document-validation";
 import { validateFacilitySpaceInput } from "./facility-space.validation";
 import {
-  isValidFacilitySpaceDate,
+  type FacilitySpaceMedia,
   type FacilitySpaceInput,
   type FacilitySpacePublicationStatus,
 } from "./facility-space.types";
@@ -27,34 +28,12 @@ export type AdminFacilitySpaceDetail = FacilitySpaceInput & {
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  media: FacilitySpaceMedia | null;
   auditHistory: Awaited<ReturnType<typeof listAdminFacilitySpaceAuditHistory>>;
 };
 export type SaveAdminFacilitySpaceResult =
   | { ok: true; id: string; created: boolean; updatedAt: string }
   | { ok: false; reason: "not_found" | "edit_conflict" | "invalid_transition" | "invalid_document" };
-function isValidStoredFacilitySpace(d: MongoFacilitySpaceDocument): boolean {
-  const validInput = validateFacilitySpaceInput({
-    title: d.title,
-    description: d.description,
-    publicationStatus: d.publicationStatus,
-    displayOrder: d.displayOrder,
-  }).ok;
-  const validDates =
-    d.publicationStatus === "draft"
-      ? d.publishedAt === null && d.archivedAt === null
-      : d.publicationStatus === "published"
-        ? isValidFacilitySpaceDate(d.publishedAt) && d.archivedAt === null
-        : d.publicationStatus === "archived"
-          ? d.publishedAt === null && isValidFacilitySpaceDate(d.archivedAt)
-          : false;
-  return (
-    validInput &&
-    d._id instanceof ObjectId &&
-    isValidFacilitySpaceDate(d.createdAt) &&
-    isValidFacilitySpaceDate(d.updatedAt) &&
-    validDates
-  );
-}
 async function transaction<T>(work: (database: Db, session: ClientSession) => Promise<T>): Promise<T> {
   const client = await getMongoClient();
   const database = await getMongoDatabase();
@@ -114,9 +93,67 @@ export async function getAdminFacilitySpace(id: string): Promise<AdminFacilitySp
     archivedAt: d.archivedAt?.toISOString() ?? null,
     createdAt: d.createdAt.toISOString(),
     updatedAt: d.updatedAt.toISOString(),
+    media: d.media ?? null,
     auditHistory: await listAdminFacilitySpaceAuditHistory(id),
   };
 }
+
+export type MutateAdminFacilitySpaceMediaResult =
+  | { ok: true; id: string; updatedAt: string; previousMedia: FacilitySpaceMedia | null }
+  | { ok: false; reason: "not_found" | "edit_conflict" | "invalid_document" | "media_not_found" };
+
+async function mutateAdminFacilitySpaceMedia(input: {
+  id: string;
+  expectedUpdatedAt: Date;
+  actor: AdminPrincipal;
+  media: FacilitySpaceMedia | null;
+  requireExisting: boolean;
+  now: Date;
+}): Promise<MutateAdminFacilitySpaceMediaResult> {
+  if (!ObjectId.isValid(input.id) || new ObjectId(input.id).toHexString() !== input.id.toLowerCase())
+    return { ok: false, reason: "not_found" };
+  const objectId = new ObjectId(input.id);
+  return transaction(async (database, session) => {
+    const collection = database.collection<MongoFacilitySpaceDocument>(FACILITY_SPACE_COLLECTION_NAME);
+    const before = await collection.findOne({ _id: objectId }, { session });
+    if (!before) return { ok: false, reason: "not_found" };
+    if (!isValidStoredFacilitySpace(before)) return { ok: false, reason: "invalid_document" };
+    if (before.updatedAt.getTime() !== input.expectedUpdatedAt.getTime())
+      return { ok: false, reason: "edit_conflict" };
+    if (input.requireExisting && !before.media) return { ok: false, reason: "media_not_found" };
+    const transitionAt = new Date(Math.max(input.now.getTime(), input.expectedUpdatedAt.getTime() + 1));
+    const after: MongoFacilitySpaceDocument = { ...before, media: input.media, updatedAt: transitionAt };
+    const result = await collection.replaceOne(
+      { _id: objectId, updatedAt: input.expectedUpdatedAt },
+      after,
+      { session },
+    );
+    if (result.modifiedCount !== 1) return { ok: false, reason: "edit_conflict" };
+    await insertFacilitySpaceAuditEvent({
+      database,
+      session,
+      eventId: new ObjectId(),
+      facilitySpaceId: objectId,
+      action: "updated",
+      actor: input.actor,
+      occurredAt: transitionAt,
+      fromVersionAt: input.expectedUpdatedAt,
+      toVersionAt: transitionAt,
+      before: createFacilitySpaceAuditSnapshot(before),
+      after: createFacilitySpaceAuditSnapshot(after),
+      changedFields: ["media"],
+    });
+    return { ok: true, id: input.id, updatedAt: transitionAt.toISOString(), previousMedia: before.media ?? null };
+  });
+}
+
+export const setAdminFacilitySpaceMedia = (input: {
+  id: string; expectedUpdatedAt: Date; actor: AdminPrincipal; media: FacilitySpaceMedia; now?: Date;
+}) => mutateAdminFacilitySpaceMedia({ ...input, requireExisting: false, now: input.now ?? new Date() });
+
+export const removeAdminFacilitySpaceMedia = (input: {
+  id: string; expectedUpdatedAt: Date; actor: AdminPrincipal; now?: Date;
+}) => mutateAdminFacilitySpaceMedia({ ...input, media: null, requireExisting: true, now: input.now ?? new Date() });
 export async function createAdminFacilitySpace(
   input: FacilitySpaceInput,
   actor: AdminPrincipal,
@@ -146,7 +183,7 @@ export async function createAdminFacilitySpace(
       toVersionAt: now,
       before: null,
       after: createFacilitySpaceAuditSnapshot(document),
-      changedFields: facilitySpaceAuditChangedFields,
+      changedFields: facilitySpaceAuditChangedFields.filter((field) => field !== "media"),
     });
     return { ok: true, id: id.toHexString(), created: true, updatedAt: now.toISOString() };
   });

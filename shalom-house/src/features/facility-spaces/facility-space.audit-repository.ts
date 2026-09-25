@@ -60,6 +60,7 @@ const fieldLabels: Record<FacilitySpaceAuditChangedField, string> = {
   description: "공간 설명",
   publicationStatus: "공개 상태",
   displayOrder: "표시 순서",
+  media: "공간 사진",
 };
 export async function listAdminFacilitySpaceAuditHistory(facilitySpaceId: string): Promise<AdminAuditHistoryItem[]> {
   if (!ObjectId.isValid(facilitySpaceId)) return [];

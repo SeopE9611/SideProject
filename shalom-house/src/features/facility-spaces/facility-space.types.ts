@@ -8,12 +8,24 @@ export type FacilitySpaceInput = {
   publicationStatus: FacilitySpacePublicationStatus;
   displayOrder: number;
 };
+export type FacilitySpaceMedia = {
+  bucket: string;
+  objectPath: string;
+  mimeType: "image/webp";
+  byteSize: number;
+  width: number;
+  height: number;
+  altText: string;
+  originalFileName: string;
+  sha256: string;
+};
 export type FacilitySpaceDocument = FacilitySpaceInput & {
   _id: ObjectId;
   publishedAt: Date | null;
   archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  media?: FacilitySpaceMedia | null;
 };
 export function isValidFacilitySpaceDate(value: unknown): value is Date {
   return value instanceof Date && !Number.isNaN(value.getTime());
