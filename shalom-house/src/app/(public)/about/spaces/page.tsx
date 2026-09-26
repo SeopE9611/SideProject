@@ -52,7 +52,9 @@ export default async function SpacesPage() {
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <h3 className="text-safe-wrap text-[1.2rem] font-semibold">{space.title}</h3>
-                <p className="text-safe-wrap col-start-2 max-w-content whitespace-pre-wrap text-body leading-8 md:col-start-auto">
+                <p
+                  className={`text-safe-wrap col-start-2 max-w-content whitespace-pre-wrap text-body leading-8 ${space.media ? "lg:col-start-auto" : "md:col-start-auto"}`}
+                >
                   {space.description}
                 </p>
                 {space.media ? (
