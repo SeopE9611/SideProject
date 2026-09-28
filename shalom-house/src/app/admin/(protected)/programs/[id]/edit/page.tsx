@@ -24,7 +24,7 @@ export default async function AdminProgramEditPage({ params }: { params: Promise
   const isRejectedDraft = post.publicationStatus === "draft" && post.approvalStatus === "rejected";
 
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref={`/admin/programs/${post.id}`}
         backLabel="프로그램 상세로 돌아가기"

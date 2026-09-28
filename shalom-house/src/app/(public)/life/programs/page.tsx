@@ -17,7 +17,7 @@ export default async function ProgramsPage() {
       return null;
     });
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/life"

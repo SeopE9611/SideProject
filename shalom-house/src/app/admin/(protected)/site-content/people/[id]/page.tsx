@@ -36,7 +36,7 @@ export default async function Page({
     },
   ];
   return (
-    <div className="space-y-8">
+    <div className="admin-detail-layout">
       <AdminDetailHeader
         backHref="/admin/site-content/people"
         backLabel="함께하는 사람들 관리"

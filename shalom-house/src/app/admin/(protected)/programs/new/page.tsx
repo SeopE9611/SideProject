@@ -17,7 +17,7 @@ export default async function AdminProgramCreatePage() {
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "content.create")) redirect("/admin?forbidden=1");
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref="/admin/programs"
         backLabel="프로그램 관리로 돌아가기"

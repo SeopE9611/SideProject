@@ -89,7 +89,7 @@ export default async function AdminProgramDetailPage({
   const wasMediaUpdated = query.mediaUpdated === "1";
 
   return (
-    <div className="space-y-8">
+    <div className="admin-detail-layout">
       <AdminDetailHeader
         backHref="/admin/programs"
         backLabel="프로그램 관리로 돌아가기"

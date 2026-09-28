@@ -56,7 +56,7 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
   ];
   const editable = item.isEditable && canUpdate;
   return (
-    <div className="space-y-8">
+    <div className="admin-detail-layout">
       <AdminDetailHeader
         backHref="/admin/gallery"
         backLabel="활동사진 관리로 돌아가기"

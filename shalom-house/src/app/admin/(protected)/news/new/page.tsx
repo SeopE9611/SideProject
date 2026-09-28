@@ -17,7 +17,7 @@ export default async function AdminNewsCreatePage() {
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "content.create")) redirect("/admin?forbidden=1");
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref="/admin/news"
         backLabel="소식 관리로 돌아가기"

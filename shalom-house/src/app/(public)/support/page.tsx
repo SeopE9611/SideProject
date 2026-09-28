@@ -29,7 +29,7 @@ const participation = [
 export default async function SupportPage() {
   const contact = await getPublicContactInformation();
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/support"

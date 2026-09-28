@@ -17,7 +17,7 @@ export default async function DirectionsPage() {
     { label: "카카오맵", href: "https://map.kakao.com/?q=" + encodeURIComponent(contact.address) },
   ];
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/about"

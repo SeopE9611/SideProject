@@ -61,7 +61,7 @@ export default async function Page({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="admin-list-layout">
       <AdminPageHeader
         title="후원금 관리대장"
         description="후원금 기록과 처리 상태를 확인하고 관리합니다."

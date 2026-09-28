@@ -26,8 +26,8 @@ export function SectionLocalNavigation({ sectionHref }: SectionLocalNavigationPr
   const activeHref = matchingLinks.sort((a, b) => b.href.length - a.href.length)[0]?.href ?? section.href;
 
   return (
-    <nav aria-label={`${section.label} 세부 메뉴`} className="section-tabs">
-      <div className="mx-auto max-w-site px-page sm:px-page-wide">
+    <nav aria-label={`${section.label} 세부 메뉴`} className="rail-navigation">
+      <div className="rail-navigation-inner">
         <ul className="items-stretch">
           {links.map((link) => {
             const isActive = link.href === activeHref;

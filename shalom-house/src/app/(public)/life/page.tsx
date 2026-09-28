@@ -78,7 +78,7 @@ export default async function LifePage() {
   if (programResult.status === "rejected") console.error("생활이야기 프로그램 조회 실패");
 
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/life"

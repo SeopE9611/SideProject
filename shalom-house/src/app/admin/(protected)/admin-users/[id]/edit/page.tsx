@@ -14,7 +14,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   if (!u) notFound();
   if (u === "invalid_document") throw new Error("invalid_document");
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref={`/admin/admin-users/${id}`}
         backLabel="관리자 계정 상세"

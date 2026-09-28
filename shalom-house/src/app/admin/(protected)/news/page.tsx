@@ -67,7 +67,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
   const filterFormKey = [category ?? "", publicationStatus ?? "", approvalStatus ?? ""].join("|");
 
   return (
-    <div className="space-y-8">
+    <div className="admin-list-layout">
       <AdminPageHeader
         title="소식 관리"
         description="공지사항과 활동 소식의 게시 상태와 승인 상태를 확인합니다."

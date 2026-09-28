@@ -8,7 +8,7 @@ export default async function Page() {
   const a = await authorizeCurrentAdmin("admin_users.manage");
   if (!a.ok) redirect("/admin?forbidden=1");
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref="/admin/admin-users"
         backLabel="관리자 계정 관리"

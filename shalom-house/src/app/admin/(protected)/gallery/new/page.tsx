@@ -9,7 +9,7 @@ export default async function NewGalleryPage() {
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "content.create")) redirect("/admin?forbidden=1");
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref="/admin/gallery"
         backLabel="활동사진 관리로 돌아가기"

@@ -23,7 +23,7 @@ const relatedLinks = [
 export default async function AboutPage() {
   const [content, contact] = await Promise.all([getPublicFacilityOverview(), getPublicContactInformation()]);
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/about"

@@ -15,7 +15,7 @@ export default async function SpacesPage() {
   });
 
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/about"

@@ -70,7 +70,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
   const paginationItems = getPublicNewsPaginationItems(currentPage, totalPages);
 
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/news"

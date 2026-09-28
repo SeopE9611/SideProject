@@ -15,7 +15,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
     listAdminSiteContentAuditHistory({ key: "greeting", limit: 50 }),
   ]);
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref="/admin/site-content"
         backLabel="공식 콘텐츠 관리"

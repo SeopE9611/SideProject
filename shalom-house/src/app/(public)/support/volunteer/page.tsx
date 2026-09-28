@@ -18,7 +18,7 @@ const steps = [
 export default async function VolunteerPage() {
   const contact = await getPublicContactInformation();
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/support"

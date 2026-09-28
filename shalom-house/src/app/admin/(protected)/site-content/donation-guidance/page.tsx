@@ -18,7 +18,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
     listAdminSiteContentAuditHistory({ key: "donation-guidance", limit: 50 }),
   ]);
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader backHref="/admin/site-content" backLabel="공식 콘텐츠 관리" eyebrow="시설 공식 정보 · 후원 안내" title="후원 안내 관리" description="공개 후원 페이지의 안내 문구와 문의 경로를 관리합니다." />
       {(await searchParams).saved === "1" ? (
         <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">후원 안내를 저장했습니다.</p>

@@ -47,7 +47,7 @@ export default async function Page({
     return `/admin/admin-users?${params}`;
   };
   return (
-    <div className="space-y-8">
+    <div className="admin-list-layout">
       <AdminPageHeader
         title="관리자 계정 관리"
         description="관리자 계정의 역할, 상태와 로그인 세션 현황을 확인하고 관리합니다."

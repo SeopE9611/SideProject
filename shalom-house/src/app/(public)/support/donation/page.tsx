@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function DonationPage() {
   const [contact, guidance] = await Promise.all([getPublicContactInformation(), getPublicDonationGuidance()]);
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/support"

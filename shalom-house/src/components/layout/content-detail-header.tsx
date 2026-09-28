@@ -20,32 +20,26 @@ export function ContentDetailHeader({
   isDemo,
 }: ContentDetailHeaderProps) {
   return (
-    <header className="detail-heading">
-      <nav aria-label="목록 탐색">
-        <Link className="institution-link text-small" href={backHref}>
-          <span aria-hidden="true">←</span> {backLabel}
+    <header className="article-intro">
+      <div className="article-index">
+        <Link className="institution-link" href={backHref}>
+          ← {backLabel}
         </Link>
-      </nav>
-      <p className="text-safe-wrap mt-4 text-small font-bold text-accent">{category}</p>
-      <h1 className="text-safe-wrap mt-4">{title}</h1>
-      {summary?.trim() && summary.trim() !== title.trim() ? (
-        <p className="text-safe-wrap mt-3 max-w-content text-body leading-7 text-muted-foreground">{summary}</p>
-      ) : null}
-      <dl className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-small">
-        {metadata.map((item) => (
-          <div key={item.label} className="min-w-0 border-l border-border pl-3">
-            <dt className="text-muted-foreground">{item.label}</dt>
-            <dd className="text-safe-wrap mt-1 font-medium">
-              {item.dateTime ? <time dateTime={item.dateTime}>{item.value}</time> : item.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      {isDemo ? (
-        <p className="mt-5 border-l-4 border-accent bg-surface-subtle px-4 py-3 text-small text-muted-foreground">
-          개발용 예시 콘텐츠이며 공식 시설 소식이 아닙니다.
-        </p>
-      ) : null}
+        <p className="article-category">{category}</p>
+        <dl>
+          {metadata.map((item) => (
+            <div key={item.label}>
+              <dt>{item.label}</dt>
+              <dd>{item.dateTime ? <time dateTime={item.dateTime}>{item.value}</time> : item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div className="article-title">
+        <h1 className="text-safe-wrap">{title}</h1>
+        {summary?.trim() && summary.trim() !== title.trim() ? <p className="text-safe-wrap">{summary}</p> : null}
+        {isDemo ? <p className="article-demo">개발용 예시 콘텐츠이며 공식 시설 소식이 아닙니다.</p> : null}
+      </div>
     </header>
   );
 }

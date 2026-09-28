@@ -41,7 +41,7 @@ export default async function Page({
     `/admin/donors?${new URLSearchParams({ ...(type ? { type } : {}), ...(status ? { status } : {}), page: String(next) })}`;
 
   return (
-    <div className="space-y-8">
+    <div className="admin-list-layout">
       <AdminPageHeader
         title="후원자 관리"
         description="후원자 기본 정보와 이용 상태를 확인하고 관리합니다."

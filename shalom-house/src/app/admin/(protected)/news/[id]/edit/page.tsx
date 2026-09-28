@@ -24,7 +24,7 @@ export default async function AdminNewsEditPage({ params }: { params: Promise<{ 
   const isRejectedDraft = post.publicationStatus === "draft" && post.approvalStatus === "rejected";
 
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref={`/admin/news/${post.id}`}
         backLabel="게시물 상세로 돌아가기"

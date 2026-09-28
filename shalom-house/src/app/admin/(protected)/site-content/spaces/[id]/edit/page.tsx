@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const detail = await getAdminFacilitySpace(id);
   if (!detail) notFound();
   return (
-    <div className="space-y-6">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader backHref={`/admin/site-content/spaces/${id}`} backLabel="생활공간 상세" eyebrow="생활공간 · 수정" title="생활공간 수정" description="생활공간 설명과 공개 상태를 수정합니다." />
       <AdminFormGuidance title="공개 전 확인">
         입소자 개인정보와 상세 위치·출입 정보는 입력하지 마세요. 사진에는 사람, 이름표, 문서, 연락처,

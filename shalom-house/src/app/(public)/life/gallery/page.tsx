@@ -19,7 +19,7 @@ export default async function GalleryPage() {
     getPublicContactInformation(),
   ]);
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/life"
