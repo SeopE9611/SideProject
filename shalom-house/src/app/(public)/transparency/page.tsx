@@ -54,7 +54,7 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
           method="get"
           role="search"
           aria-label="공개 자료 찾기"
-          className="grid grid-cols-2 items-end gap-4 border-t-4 border-accent bg-surface-subtle p-5 lg:grid-cols-[14rem_18rem_max-content] lg:justify-start sm:p-6"
+          className="grid grid-cols-2 items-end gap-4 filter-toolbar p-5 lg:grid-cols-[14rem_18rem_max-content] lg:justify-start sm:p-6"
         >
           <div className="min-w-0">
             <label className="block text-small font-semibold" htmlFor="document-category">
@@ -101,7 +101,7 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
           </button>
         </form>
         <section id="public-documents" aria-labelledby="documents-heading" className="mt-9">
-          <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-foreground pb-4">
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border-strong pb-4">
             <div className="min-w-0">
               <p className="text-small font-bold text-accent">문서 목록</p>
               <h2 id="documents-heading" className="mt-1 text-heading font-bold">
@@ -150,7 +150,7 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
               {filtered.map((document) => (
                 <li
                   key={document.slug}
-                  className="grid min-w-0 gap-4 border-b border-border py-6 last:border-b-0 lg:grid-cols-[7rem_minmax(0,1fr)_13rem] lg:gap-7"
+                  className="news-row grid min-w-0 gap-4 border-b border-border py-6 last:border-b-0 lg:grid-cols-[7rem_minmax(0,1fr)_13rem] lg:gap-7"
                 >
                   <p className="text-small font-bold text-accent">{transparencyCategoryLabels[document.category]}</p>
                   <article className="min-w-0">
@@ -174,9 +174,7 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
                       <div className="border-l border-border pl-3">
                         <dt className="text-muted-foreground">게시일</dt>
                         <dd className="mt-1 font-medium">
-                          <time dateTime={document.publishedAt}>
-                            {formatPublicDate(document.publishedAt)}
-                          </time>
+                          <time dateTime={document.publishedAt}>{formatPublicDate(document.publishedAt)}</time>
                         </dd>
                       </div>
                     </dl>

@@ -41,7 +41,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
         </section>
         <aside
           aria-labelledby="contact-paths-heading"
-          className="min-w-0 border-t-4 border-accent bg-accent-soft p-6 sm:p-8 lg:col-span-4"
+          className="min-w-0 rounded-panel bg-paper p-6 sm:p-8 lg:col-span-4"
         >
           <p className="text-small font-bold text-accent">대표 문의</p>
           <h2 id="contact-paths-heading" className="mt-2 text-heading font-bold">

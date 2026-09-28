@@ -30,7 +30,7 @@ export default async function GreetingPage() {
         <article className="grid items-start gap-8 lg:grid-cols-12 lg:gap-12" aria-labelledby="greeting-heading">
           {greeting ? (
             <>
-              <header className="border-t-4 border-accent bg-surface-subtle p-5 sm:p-8 lg:col-span-4">
+              <header className="rounded-panel bg-paper p-6 sm:p-9 lg:col-span-4">
                 {greeting.statusLabel.trim() ? (
                   <p className="text-safe-wrap text-small font-bold text-accent">{greeting.statusLabel}</p>
                 ) : null}
@@ -42,7 +42,7 @@ export default async function GreetingPage() {
                 </h2>
               </header>
               <div className="lg:col-span-7 lg:col-start-6">
-                <div className="space-y-5">
+                <div className="space-y-6 border-t border-border pt-6">
                   {greeting.paragraphs.map((paragraph, index) => (
                     <p key={index} className="text-safe-wrap whitespace-pre-wrap text-body leading-8">
                       {paragraph}

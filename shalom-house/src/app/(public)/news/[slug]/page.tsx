@@ -104,7 +104,7 @@ export default async function NewsPostPage({ params, searchParams }: NewsPostPag
           })),
         }}
       />
-      <article className="mx-auto max-w-5xl px-page py-6 sm:px-page-wide sm:py-8">
+      <article className="mx-auto max-w-5xl px-page py-8 sm:px-page-wide sm:py-14">
         <ContentDetailHeader
           title={post.title}
           summary={post.summary}

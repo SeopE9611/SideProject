@@ -38,11 +38,11 @@ export default async function AboutPage() {
           <h2 id="about-summary-heading" className="text-heading font-bold">
             시설 기본정보
           </h2>
-          <dl className="mt-5 grid gap-px border-y border-border border-t-3 border-t-accent bg-border sm:grid-cols-3">
+          <dl className="mt-5 grid gap-px overflow-hidden rounded-panel bg-border sm:grid-cols-3">
             {content.facts.map((item, index) => (
               <div
                 key={index}
-                className="grid grid-cols-[4.5rem_minmax(0,1fr)] items-baseline gap-3 bg-surface-subtle px-5 py-5 sm:block sm:px-7 sm:py-7"
+                className="grid grid-cols-[4.5rem_minmax(0,1fr)] items-baseline gap-3 bg-paper px-5 py-5 sm:block sm:px-7 sm:py-7"
               >
                 <dt className="text-safe-wrap text-small font-medium text-muted-foreground">{item.label}</dt>
                 <dd className="text-safe-wrap text-lg leading-relaxed font-bold text-primary sm:mt-3 sm:text-xl">
@@ -124,7 +124,7 @@ export default async function AboutPage() {
             </details>
           </div>
           <aside aria-label="시설 안내와 방문 문의" className="min-w-0 lg:col-span-4">
-            <nav aria-label="시설 관련 안내" className="bg-primary-soft p-6 sm:p-7">
+            <nav aria-label="시설 관련 안내" className="rounded-panel bg-primary-soft p-6 sm:p-7">
               <h2 className="text-heading font-bold">관련 안내</h2>
               <ul className="mt-3 divide-y divide-border">
                 {relatedLinks.map((item) => (

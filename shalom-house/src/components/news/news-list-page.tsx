@@ -91,7 +91,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
           method="get"
           role="search"
           aria-label="소식 검색"
-          className={`grid items-end gap-4 border-t-4 border-accent bg-paper p-5 sm:px-7 sm:py-6 ${
+          className={`grid items-end gap-4 filter-toolbar p-5 sm:px-7 sm:py-6 ${
             fixedCategory
               ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]"
               : "grid-cols-2 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
@@ -102,7 +102,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
               검색어
             </label>
             <input
-              className="mt-2 min-h-13 w-full border border-border-strong bg-surface px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              className="mt-2 min-h-13 w-full rounded-control border border-border-strong bg-surface px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               id="news-query"
               name="q"
               type="search"
@@ -116,7 +116,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
                 분류
               </label>
               <select
-                className="mt-2 min-h-13 w-full border border-border-strong bg-surface px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                className="mt-2 min-h-13 w-full rounded-control border border-border-strong bg-surface px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                 id="news-category"
                 name="category"
                 defaultValue={category ?? ""}
@@ -138,7 +138,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
         </form>
 
         <section aria-labelledby="results-heading" className="mt-8 sm:mt-10">
-          <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-primary pb-5">
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border-strong pb-5">
             <div>
               <h2 id="results-heading" className="text-xl font-bold sm:text-2xl">
                 {result === null ? "소식 목록" : hasUserFilter ? "검색 결과" : "전체"}{" "}
@@ -222,14 +222,17 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
           ) : (
             <ul>
               {posts.map((post) => (
-                <li key={post.id} className="border-b border-border">
+                <li key={post.id} className="news-row border-b border-border">
                   {post.category === "activity" ? (
-                    <article className="my-7 border-l-2 border-accent py-1 pl-5 sm:pl-7 md:my-8">
+                    <article className="my-7 py-1 px-2 md:my-8">
                       <div className="flex min-w-0 items-start gap-5">
                         <div className="min-w-0 flex-1">
                           <p className="text-small font-bold text-accent">
                             활동 소식 <span className="text-muted-foreground">·</span>{" "}
-                            <time className="font-medium text-muted-foreground tabular-nums" dateTime={post.publishedAt}>
+                            <time
+                              className="font-medium text-muted-foreground tabular-nums"
+                              dateTime={post.publishedAt}
+                            >
                               {formatPublicDate(post.publishedAt)}
                             </time>
                           </p>

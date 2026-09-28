@@ -29,7 +29,7 @@ export default async function PeoplePage() {
         <p className="text-small font-bold text-accent">공개된 역할</p>
         <h2
           id="staff-heading"
-          className="mt-2 border-b-2 border-foreground pb-5 text-[1.75rem] font-bold tracking-[-0.025em]"
+          className="mt-2 border-b border-border pb-5 text-[1.75rem] font-bold tracking-[-0.025em]"
         >
           직원과 담당 업무
         </h2>
@@ -48,7 +48,10 @@ export default async function PeoplePage() {
                 key={profile.id}
                 className="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)] gap-x-4 gap-y-3 py-6 md:grid-cols-[3rem_minmax(0,0.9fr)_minmax(0,1.6fr)] md:gap-x-8"
               >
-                <span className="text-lg font-bold text-accent" aria-hidden="true">
+                <span
+                  className="flex size-11 items-center justify-center rounded-full bg-primary-soft text-sm font-semibold text-accent"
+                  aria-hidden="true"
+                >
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div className="min-w-0">

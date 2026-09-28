@@ -7,7 +7,7 @@ import { createTelephoneHref } from "@/features/site-content/site-content.types"
 export async function SiteFooter() {
   const contact = await getPublicContactInformation();
   return (
-    <footer className="border-t border-primary-foreground/10 bg-primary-hover text-primary-foreground">
+    <footer className="site-footer">
       <div className="mx-auto max-w-site px-page py-7 sm:px-page-wide sm:py-9">
         <nav aria-label="푸터 이용 안내">
           <ul className="flex flex-wrap gap-x-6 gap-y-1 border-b border-primary-foreground/20 pb-4">
@@ -37,7 +37,7 @@ export async function SiteFooter() {
         </nav>
         <div className="grid items-start gap-3 pt-5 sm:grid-cols-[auto_1fr] sm:gap-x-10">
           <Link
-            className="inline-flex min-h-11 items-center text-2xl font-bold tracking-tight hover:underline focus-visible:outline-2 focus-visible:outline-surface"
+            className="inline-flex min-h-11 items-center text-3xl font-semibold tracking-tight hover:underline focus-visible:outline-2 focus-visible:outline-surface"
             href="/"
           >
             {siteConfig.name}

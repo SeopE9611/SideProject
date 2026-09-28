@@ -32,14 +32,14 @@ export default async function AdminProgramEditPage({ params }: { params: Promise
         title="프로그램 수정"
         description={
           <>
-          현재 게시 상태는 {getProgramPublicationStatusLabel(post.publicationStatus)}이며, 저장 후에도 자동 공개되지
-          않습니다.
+            현재 게시 상태는 {getProgramPublicationStatusLabel(post.publicationStatus)}이며, 저장 후에도 자동 공개되지
+            않습니다.
           </>
         }
       />
 
       {!post.isEditable ? (
-        <aside className="rounded-card border border-border-strong bg-surface p-5">
+        <aside className="admin-notice">
           {isPendingReview ? (
             <>
               <p className="font-semibold">검토 중인 프로그램은 내용을 수정할 수 없습니다.</p>
@@ -63,17 +63,14 @@ export default async function AdminProgramEditPage({ params }: { params: Promise
       ) : (
         <>
           {isRejectedDraft ? (
-            <aside className="max-w-3xl rounded-card border border-border-strong bg-surface p-5">
+            <aside className="max-w-3xl admin-notice">
               <p className="font-semibold">이 프로그램은 검토에서 반려됐습니다.</p>
               <p className="mt-2 text-small text-muted-foreground">
                 내용을 수정해 저장한 뒤 상세 화면에서 재검토를 요청해 주세요.
               </p>
             </aside>
           ) : null}
-          <aside
-            aria-labelledby="admin-program-edit-safety-heading"
-            className="max-w-3xl rounded-card border border-border-strong bg-surface p-5"
-          >
+          <aside aria-labelledby="admin-program-edit-safety-heading" className="max-w-3xl admin-notice">
             <h2 id="admin-program-edit-safety-heading" className="text-heading font-bold">
               저장 전 안전 확인
             </h2>

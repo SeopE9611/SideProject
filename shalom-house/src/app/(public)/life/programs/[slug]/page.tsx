@@ -85,7 +85,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
           })),
         }}
       />
-      <article className="mx-auto max-w-5xl px-page py-6 sm:px-page-wide sm:py-8">
+      <article className="mx-auto max-w-5xl px-page py-8 sm:px-page-wide sm:py-14">
         <ContentDetailHeader
           title={program.title}
           summary={program.summary}

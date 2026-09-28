@@ -64,7 +64,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
     ) : null;
   const described = (key: string) => (errors[key] ? `${key}-error` : undefined);
   return (
-    <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-6 border-t-2 border-foreground pt-6">
+    <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-6 border-t border-border pt-6">
       <p className="text-small text-muted-foreground">
         필수 항목을 입력해 주세요. <span className="font-bold text-foreground">(필수)</span>로 표시된 항목은 반드시
         입력해야 합니다.
@@ -178,7 +178,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
         <label htmlFor="inquiry-website">웹사이트</label>
         <input id="inquiry-website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
-      <div className="border-l-4 border-accent bg-surface-subtle p-5 text-small">
+      <div className="rounded-control bg-surface-subtle p-5 text-small">
         <dl className="space-y-2">
           <div>
             <dt className="font-bold">수집 목적</dt>

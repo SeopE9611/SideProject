@@ -26,7 +26,7 @@ function GalleryStory({
       className={`grid items-start ${featured ? (single ? "gap-6 md:grid-cols-2 md:gap-9" : "gap-4") : "grid-cols-[6rem_minmax(0,1fr)] gap-4 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-5"}`}
     >
       <Image
-        className={`w-full bg-surface-subtle object-cover ${featured ? "aspect-[3/2]" : "aspect-[4/3]"}`}
+        className={`w-full rounded-panel bg-surface-subtle object-cover ${featured ? "aspect-[3/2]" : "aspect-[4/3]"}`}
         src={"/api/gallery/" + item.slug + "/media"}
         alt={item.altText}
         width={item.width}
@@ -37,8 +37,7 @@ function GalleryStory({
       />
       <div className="min-w-0">
         <p className="text-safe-wrap text-small text-muted-foreground">
-          {item.category} ·{" "}
-          <time dateTime={item.activityDate}>{formatPublicDate(item.activityDate)}</time>
+          {item.category} · <time dateTime={item.activityDate}>{formatPublicDate(item.activityDate)}</time>
         </p>
         <h3 className={`mt-2 font-bold tracking-tight ${featured ? "text-xl sm:text-2xl" : "text-lg"}`}>
           <Link
@@ -124,16 +123,11 @@ export default async function LifePage() {
         ) : null}
 
         {hasNoPublishedLifeContent ? (
-          <section
-            aria-labelledby="life-empty-heading"
-            className="max-w-3xl border-y border-border py-7 sm:py-8"
-          >
+          <section aria-labelledby="life-empty-heading" className="max-w-3xl border-y border-border py-7 sm:py-8">
             <h2 id="life-empty-heading" className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">
               생활 기록 안내
             </h2>
-            <p className="text-safe-wrap mt-4 font-medium">
-              현재 공개된 활동사진, 활동소식, 프로그램이 없습니다.
-            </p>
+            <p className="text-safe-wrap mt-4 font-medium">현재 공개된 활동사진, 활동소식, 프로그램이 없습니다.</p>
             <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">
               새로운 활동이 등록되면 각 콘텐츠 영역에서 확인할 수 있습니다.
             </p>
@@ -161,116 +155,119 @@ export default async function LifePage() {
           <div
             className={`grid items-start gap-8 lg:grid-cols-12 lg:gap-12 ${galleries.length > 0 ? "mt-10 border-t border-border pt-10 sm:mt-12 sm:pt-12" : ""}`}
           >
-          <section id="life-scenes" aria-labelledby="life-news-heading" className="min-w-0 lg:col-span-8">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-primary pb-4">
-              <h2 id="life-news-heading" className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">
-                최근 활동 소식
-              </h2>
-              <Link className="institution-link text-small" href="/news/activities">
-                활동소식 전체보기
-              </Link>
-            </div>
-            {posts.some((post) => post.isDemo) ? (
-              <p className="border-b border-border py-3 text-small text-muted-foreground">
-                미리보기 · 아래 예시 소식은 레이아웃 검증용입니다.
-              </p>
-            ) : null}
-            {posts.length > 0 ? (
-              <ul className="divide-y divide-border border-b border-border">
-                {posts.map((post) => (
-                  <li key={post.id} className="py-5">
-                    <time className="text-small text-muted-foreground" dateTime={post.publishedAt}>
-                      {formatPublicDate(post.publishedAt)}
-                    </time>
-                    <h3 className="mt-2 text-lg font-bold tracking-tight sm:text-xl">
-                      <Link
-                        className="text-safe-wrap underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                        href={"/news/" + post.slug}
-                      >
-                        {post.title}
-                      </Link>
-                    </h3>
-                    {post.summary.trim() && post.summary.trim() !== post.title.trim() ? (
-                      <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">{post.summary}</p>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="border-b border-border py-6">
-                <p className="font-medium">
-                  {newsResult.status === "rejected"
-                    ? "활동 소식을 불러오지 못했습니다."
-                    : "아직 등록된 활동 소식이 없습니다."}
-                </p>
-                <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
-                  {newsResult.status === "rejected"
-                    ? "잠시 후 활동소식 목록에서 다시 확인해 주세요."
-                    : "새로운 활동 기록은 이곳에서 안내합니다."}
-                </p>
-                <Link className="institution-link mt-2 text-small" href="/news/activities">
-                  활동소식 목록 보기
+            <section id="life-scenes" aria-labelledby="life-news-heading" className="min-w-0 lg:col-span-8">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-strong pb-4">
+                <h2 id="life-news-heading" className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">
+                  최근 활동 소식
+                </h2>
+                <Link className="institution-link text-small" href="/news/activities">
+                  활동소식 전체보기
                 </Link>
               </div>
-            )}
-          </section>
-          <aside aria-label="프로그램과 관련 안내" className="min-w-0 bg-accent-soft p-6 sm:p-7 lg:col-span-4">
-            <section aria-labelledby="life-program-heading">
-              <h2 id="life-program-heading" className="text-heading font-bold">
-                프로그램
-              </h2>
-              {programs.length > 0 ? (
-                <ul className="mt-3 divide-y divide-accent/20">
-                  {programs.map((program) => (
-                    <li key={program.id} className="py-3.5">
-                      <p className="text-small font-semibold text-accent">{program.category}</p>
-                      <h3>
+              {posts.some((post) => post.isDemo) ? (
+                <p className="border-b border-border py-3 text-small text-muted-foreground">
+                  미리보기 · 아래 예시 소식은 레이아웃 검증용입니다.
+                </p>
+              ) : null}
+              {posts.length > 0 ? (
+                <ul className="divide-y divide-border border-b border-border">
+                  {posts.map((post) => (
+                    <li key={post.id} className="py-5">
+                      <time className="text-small text-muted-foreground" dateTime={post.publishedAt}>
+                        {formatPublicDate(post.publishedAt)}
+                      </time>
+                      <h3 className="mt-2 text-lg font-bold tracking-tight sm:text-xl">
                         <Link
-                          className="institution-link text-safe-wrap py-1.5 text-lg"
-                          href={"/life/programs/" + program.slug}
+                          className="text-safe-wrap underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                          href={"/news/" + post.slug}
                         >
-                          {program.title}
+                          {post.title}
                         </Link>
                       </h3>
-                      {program.operationStatusLabel ? (
-                        <p className="text-safe-wrap mt-1 text-small text-muted-foreground">
-                          운영 상태 · {program.operationStatusLabel}
-                        </p>
+                      {post.summary.trim() && post.summary.trim() !== post.title.trim() ? (
+                        <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">{post.summary}</p>
                       ) : null}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-safe-wrap mt-3 text-small leading-7 text-muted-foreground">
-                  {programResult.status === "rejected"
-                    ? "프로그램을 불러오지 못했습니다. 목록에서 다시 확인해 주세요."
-                    : "아직 등록된 프로그램 안내가 없습니다."}
-                </p>
+                <div className="border-b border-border py-6">
+                  <p className="font-medium">
+                    {newsResult.status === "rejected"
+                      ? "활동 소식을 불러오지 못했습니다."
+                      : "아직 등록된 활동 소식이 없습니다."}
+                  </p>
+                  <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
+                    {newsResult.status === "rejected"
+                      ? "잠시 후 활동소식 목록에서 다시 확인해 주세요."
+                      : "새로운 활동 기록은 이곳에서 안내합니다."}
+                  </p>
+                  <Link className="institution-link mt-2 text-small" href="/news/activities">
+                    활동소식 목록 보기
+                  </Link>
+                </div>
               )}
-              <Link className="institution-link mt-3" href="/life/programs">
-                프로그램 안내 <span aria-hidden="true">→</span>
-              </Link>
             </section>
-            <nav aria-label="생활 관련 안내" className="mt-5 border-t border-accent/20 pt-4">
-              <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-small">
-                <li>
-                  <Link className="institution-link" href="/life/gallery">
-                    활동사진 전체보기
-                  </Link>
-                </li>
-                <li className="inline-flex items-center gap-2 before:text-muted-foreground before:content-['·']">
-                  <Link className="institution-link" href="/about/spaces">
-                    생활공간 안내
-                  </Link>
-                </li>
-                <li className="inline-flex items-center gap-2 before:text-muted-foreground before:content-['·']">
-                  <Link className="institution-link" href="/support/contact">
-                    문의하기
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          </aside>
+            <aside
+              aria-label="프로그램과 관련 안내"
+              className="min-w-0 rounded-panel bg-paper p-6 sm:p-7 lg:col-span-4"
+            >
+              <section aria-labelledby="life-program-heading">
+                <h2 id="life-program-heading" className="text-heading font-bold">
+                  프로그램
+                </h2>
+                {programs.length > 0 ? (
+                  <ul className="mt-3 divide-y divide-accent/20">
+                    {programs.map((program) => (
+                      <li key={program.id} className="py-3.5">
+                        <p className="text-small font-semibold text-accent">{program.category}</p>
+                        <h3>
+                          <Link
+                            className="institution-link text-safe-wrap py-1.5 text-lg"
+                            href={"/life/programs/" + program.slug}
+                          >
+                            {program.title}
+                          </Link>
+                        </h3>
+                        {program.operationStatusLabel ? (
+                          <p className="text-safe-wrap mt-1 text-small text-muted-foreground">
+                            운영 상태 · {program.operationStatusLabel}
+                          </p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-safe-wrap mt-3 text-small leading-7 text-muted-foreground">
+                    {programResult.status === "rejected"
+                      ? "프로그램을 불러오지 못했습니다. 목록에서 다시 확인해 주세요."
+                      : "아직 등록된 프로그램 안내가 없습니다."}
+                  </p>
+                )}
+                <Link className="institution-link mt-3" href="/life/programs">
+                  프로그램 안내 <span aria-hidden="true">→</span>
+                </Link>
+              </section>
+              <nav aria-label="생활 관련 안내" className="mt-5 border-t border-accent/20 pt-4">
+                <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-small">
+                  <li>
+                    <Link className="institution-link" href="/life/gallery">
+                      활동사진 전체보기
+                    </Link>
+                  </li>
+                  <li className="inline-flex items-center gap-2 before:text-muted-foreground before:content-['·']">
+                    <Link className="institution-link" href="/about/spaces">
+                      생활공간 안내
+                    </Link>
+                  </li>
+                  <li className="inline-flex items-center gap-2 before:text-muted-foreground before:content-['·']">
+                    <Link className="institution-link" href="/support/contact">
+                      문의하기
+                    </Link>
+                  </li>
+                </ul>
+              </nav>
+            </aside>
           </div>
         )}
       </div>

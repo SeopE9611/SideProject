@@ -8,7 +8,7 @@ export type AdminStatusSummaryItem = {
 
 export function AdminStatusSummary({ items }: { items: readonly AdminStatusSummaryItem[] }) {
   return (
-    <section aria-labelledby="admin-status-summary-heading" className="rounded-card border border-border bg-surface p-5">
+    <section aria-labelledby="admin-status-summary-heading" className="admin-summary">
       <h2 id="admin-status-summary-heading" className="text-heading font-bold">
         현재 상태
       </h2>

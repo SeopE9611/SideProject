@@ -43,12 +43,19 @@ export default async function Page({
         eyebrow="함께하는 사람들 · 상세"
         title={d.role}
         actions={
-          <Link className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href={`/admin/site-content/people/${id}/edit`}>
+          <Link
+            className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            href={`/admin/site-content/people/${id}/edit`}
+          >
             편집
           </Link>
         }
       />
-      {(await searchParams).saved === "1" ? <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">저장했습니다.</p> : null}
+      {(await searchParams).saved === "1" ? (
+        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
+          저장했습니다.
+        </p>
+      ) : null}
       <AdminStatusSummary
         items={[
           { label: "공개 상태", value: getStaffPublicationStatusLabel(d.publicationStatus) },
@@ -57,15 +64,15 @@ export default async function Page({
           { label: "최근 수정", value: <time dateTime={d.updatedAt}>{formatAdminDate(d.updatedAt)}</time> },
         ]}
       />
-      <section className="rounded-card border border-border bg-surface p-5">
+      <section className="admin-section">
         <h2 className="text-heading font-bold">직원 정보</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-        {rows.map(({ label, value }) => (
-          <div key={label} className="min-w-0">
-            <dt className="font-bold text-muted-foreground">{label}</dt>
-            <dd className="whitespace-pre-wrap break-words">{value}</dd>
-          </div>
-        ))}
+          {rows.map(({ label, value }) => (
+            <div key={label} className="min-w-0">
+              <dt className="font-bold text-muted-foreground">{label}</dt>
+              <dd className="whitespace-pre-wrap break-words">{value}</dd>
+            </div>
+          ))}
         </dl>
       </section>
       <AdminAuditHistory items={d.auditHistory} />

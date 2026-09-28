@@ -21,15 +21,26 @@ export function HomeLifeStories({ items }: { items: readonly HomeLifeStory[] }) 
           className="group grid gap-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring lg:grid-cols-[minmax(0,1.35fr)_minmax(16rem,0.65fr)] lg:items-end lg:gap-8"
           href={`/life/gallery/${featured.slug}`}
         >
-          <div className="relative aspect-[4/3] overflow-hidden bg-primary-soft sm:aspect-[16/10] lg:h-80 lg:aspect-auto">
-            <Image alt={featured.altText} className="object-cover" fill sizes="(max-width: 1023px) 100vw, 36rem" src={`/api/gallery/${featured.slug}/media`} unoptimized />
+          <div className="relative aspect-[4/3] photo-link overflow-hidden bg-primary-soft sm:aspect-[16/10] lg:h-80 lg:aspect-auto">
+            <Image
+              alt={featured.altText}
+              className="object-cover"
+              fill
+              sizes="(max-width: 1023px) 100vw, 36rem"
+              src={`/api/gallery/${featured.slug}/media`}
+              unoptimized
+            />
           </div>
           <div className="border-t border-border pt-5 lg:pb-2">
             <p className="flex flex-wrap gap-x-3 text-small font-semibold text-accent">
               <span>{featured.category}</span>
-              <time className="text-muted-foreground" dateTime={featured.activityDate}>{featured.dateLabel}</time>
+              <time className="text-muted-foreground" dateTime={featured.activityDate}>
+                {featured.dateLabel}
+              </time>
             </p>
-            <h3 className="text-safe-wrap mt-2 text-[1.65rem] font-extrabold leading-snug tracking-[-0.025em] group-hover:text-primary group-hover:underline sm:text-[2rem]">{featured.title}</h3>
+            <h3 className="text-safe-wrap mt-2 text-[1.65rem] font-extrabold leading-snug tracking-[-0.025em] group-hover:text-primary group-hover:underline sm:text-[2rem]">
+              {featured.title}
+            </h3>
           </div>
         </Link>
       </article>
@@ -44,30 +55,58 @@ export function HomeLifeStories({ items }: { items: readonly HomeLifeStory[] }) 
           href={`/life/gallery/${featured.slug}`}
         >
           <figure>
-            <div className="relative aspect-[4/3] overflow-hidden bg-primary-soft sm:aspect-[16/10]">
-              <Image alt={featured.altText} className="object-cover" fill sizes="(max-width: 1023px) 100vw, 68vw" src={`/api/gallery/${featured.slug}/media`} unoptimized />
+            <div className="relative aspect-[4/3] photo-link overflow-hidden bg-primary-soft sm:aspect-[16/10]">
+              <Image
+                alt={featured.altText}
+                className="object-cover"
+                fill
+                sizes="(max-width: 1023px) 100vw, 68vw"
+                src={`/api/gallery/${featured.slug}/media`}
+                unoptimized
+              />
             </div>
             <figcaption className="pt-5">
               <p className="flex flex-wrap gap-x-3 text-small font-semibold text-accent">
                 <span>{featured.category}</span>
-                <time className="text-muted-foreground" dateTime={featured.activityDate}>{featured.dateLabel}</time>
+                <time className="text-muted-foreground" dateTime={featured.activityDate}>
+                  {featured.dateLabel}
+                </time>
               </p>
-              <h3 className="text-safe-wrap mt-2 text-[1.65rem] font-extrabold leading-snug tracking-[-0.025em] group-hover:text-primary group-hover:underline sm:text-[2rem]">{featured.title}</h3>
+              <h3 className="text-safe-wrap mt-2 text-[1.65rem] font-extrabold leading-snug tracking-[-0.025em] group-hover:text-primary group-hover:underline sm:text-[2rem]">
+                {featured.title}
+              </h3>
             </figcaption>
           </figure>
         </Link>
       </article>
-      <ul className="divide-y divide-border border-y border-border">
+      <ul className="divide-y divide-border">
         {supporting.map((item) => (
           <li key={item.slug} className="py-6 first:pt-0 lg:first:pt-6">
             <article>
-              <Link className="group grid gap-4 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring sm:grid-cols-[11rem_minmax(0,1fr)] lg:grid-cols-1" href={`/life/gallery/${item.slug}`}>
-                <div className="relative aspect-[16/10] overflow-hidden bg-primary-soft">
-                  <Image alt={item.altText} className="object-cover" fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 11rem, 28vw" src={`/api/gallery/${item.slug}/media`} unoptimized />
+              <Link
+                className="group grid gap-4 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring sm:grid-cols-[11rem_minmax(0,1fr)] lg:grid-cols-1"
+                href={`/life/gallery/${item.slug}`}
+              >
+                <div className="relative aspect-[16/10] photo-link overflow-hidden bg-primary-soft">
+                  <Image
+                    alt={item.altText}
+                    className="object-cover"
+                    fill
+                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 11rem, 28vw"
+                    src={`/api/gallery/${item.slug}/media`}
+                    unoptimized
+                  />
                 </div>
                 <div>
-                  <p className="flex flex-wrap gap-x-3 text-xs font-semibold text-accent"><span>{item.category}</span><time className="text-muted-foreground" dateTime={item.activityDate}>{item.dateLabel}</time></p>
-                  <h3 className="text-safe-wrap mt-2 text-xl font-bold leading-snug group-hover:text-primary group-hover:underline">{item.title}</h3>
+                  <p className="flex flex-wrap gap-x-3 text-xs font-semibold text-accent">
+                    <span>{item.category}</span>
+                    <time className="text-muted-foreground" dateTime={item.activityDate}>
+                      {item.dateLabel}
+                    </time>
+                  </p>
+                  <h3 className="text-safe-wrap mt-2 text-xl font-bold leading-snug group-hover:text-primary group-hover:underline">
+                    {item.title}
+                  </h3>
                 </div>
               </Link>
             </article>

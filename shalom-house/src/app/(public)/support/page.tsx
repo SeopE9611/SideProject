@@ -49,12 +49,9 @@ export default async function SupportPage() {
               필요한 안내를 먼저 선택해 주세요
             </h2>
           </div>
-          <ul className="mt-6 grid border-y border-border lg:grid-cols-2">
+          <ul className="mt-6 grid gap-5 lg:grid-cols-2">
             {participation.map((item, index) => (
-              <li
-                key={item.href}
-                className="border-b border-border px-1 py-7 last:border-b-0 sm:p-8 lg:border-r lg:border-b-0 lg:last:border-r-0"
-              >
+              <li key={item.href} className="rounded-panel bg-paper p-6 sm:p-9 even:bg-primary-soft">
                 <p className="text-small font-bold text-accent">{String(index + 1).padStart(2, "0")}</p>
                 <h3 className="mt-3 text-title font-bold">{item.title}</h3>
                 <p className="text-safe-wrap mt-3 max-w-xl text-body text-muted-foreground">{item.description}</p>
@@ -106,7 +103,7 @@ export default async function SupportPage() {
           </section>
           <aside
             aria-labelledby="support-contact-heading"
-            className="min-w-0 border-t-4 border-accent bg-accent-soft p-6 sm:p-8 lg:col-span-5"
+            className="min-w-0 rounded-panel bg-accent-soft p-6 sm:p-8 lg:col-span-5"
           >
             <p className="text-small font-bold text-accent">대표 문의</p>
             <h2 id="support-contact-heading" className="mt-2 text-heading font-bold">

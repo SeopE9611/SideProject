@@ -26,22 +26,14 @@ export function SectionLocalNavigation({ sectionHref }: SectionLocalNavigationPr
   const activeHref = matchingLinks.sort((a, b) => b.href.length - a.href.length)[0]?.href ?? section.href;
 
   return (
-    <nav aria-label={`${section.label} 세부 메뉴`} className="border-y border-border bg-surface">
+    <nav aria-label={`${section.label} 세부 메뉴`} className="section-tabs">
       <div className="mx-auto max-w-site px-page sm:px-page-wide">
-        <ul className="flex flex-wrap items-stretch gap-x-6 sm:gap-x-9">
+        <ul className="items-stretch">
           {links.map((link) => {
             const isActive = link.href === activeHref;
             return (
               <li key={link.href}>
-                <Link
-                  aria-current={isActive ? "page" : undefined}
-                  className={`public-focus-ring inline-flex min-h-13 items-center whitespace-nowrap border-b-3 pt-0.5 text-base transition-colors focus-visible:outline-offset-[-2px] ${
-                    isActive
-                      ? "border-accent font-bold text-primary"
-                      : "border-transparent text-foreground hover:border-border-strong hover:text-primary"
-                  }`}
-                  href={link.href}
-                >
+                <Link aria-current={isActive ? "page" : undefined} className="public-focus-ring" href={link.href}>
                   {link.label}
                 </Link>
               </li>

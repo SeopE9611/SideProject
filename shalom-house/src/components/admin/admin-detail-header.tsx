@@ -15,7 +15,7 @@ export function AdminDetailHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header>
+    <header className="admin-page-heading">
       <Link
         href={backHref}
         className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"

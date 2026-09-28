@@ -1,48 +1,30 @@
 import Link from "next/link";
-
 import { SiteNavigation } from "@/components/layout/site-navigation";
-import { LineIcon } from "@/components/ui/line-icon";
 import { siteConfig } from "@/config/site";
 import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
-import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
 export async function SiteHeader() {
   const contact = await getPublicContactInformation();
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-surface">
-      <div className="hidden border-b border-border lg:block">
-        <div className="mx-auto flex min-h-8 max-w-site items-center justify-between gap-6 px-page-wide text-xs text-muted-foreground">
-          <p>샬롬의 집 · 장애인거주시설</p>
-          <div className="flex items-center gap-6">
-            <Link
-              className="inline-flex items-center gap-1.5 py-1 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              href="/about/directions"
-            >
-              <LineIcon name="map-pin" size={14} />
-              찾아오시는 길
-            </Link>
-            <a
-              className="inline-flex items-center gap-1.5 py-1 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              href={createTelephoneHref(contact.phone)}
-            >
-              <LineIcon name="phone" size={14} />
-              대표 전화 {contact.phone}
-            </a>
-          </div>
-        </div>
-      </div>
-      <div className="mx-auto flex min-h-20 max-w-site items-center justify-between gap-5 px-page py-3 sm:px-page-wide lg:min-h-24">
-        <Link
-          aria-label={siteConfig.name + " 홈"}
-          className="inline-flex min-h-11 min-w-0 flex-col items-start justify-center text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
-          href="/"
-        >
-          <span className="text-xs font-medium tracking-wide text-muted-foreground lg:hidden">장애인거주시설</span>
-          <span className="text-[1.875rem] font-extrabold leading-tight tracking-[-0.055em] lg:text-[2.125rem]">
+    <header className="site-header">
+      <div className="site-header-inner">
+        <Link aria-label={siteConfig.name + " 홈"} className="site-wordmark" href="/">
+          <span className="brand-symbol" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+          <span>
             {siteConfig.name}
+            <small>장애인거주시설</small>
           </span>
         </Link>
-        <SiteNavigation phone={contact.phone} />
+        <div className="flex items-center gap-4 xl:gap-8">
+          <SiteNavigation phone={contact.phone} />
+          <Link className="action-link hidden lg:inline-flex" href="/support/donation">
+            후원 안내 <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
       </div>
     </header>
   );

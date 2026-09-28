@@ -65,15 +65,28 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
         actions={
           <>
             {document.isEditable && canUpdate ? (
-              <Link href={`/admin/transparency/${document.id}/edit`} className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+              <Link
+                href={`/admin/transparency/${document.id}/edit`}
+                className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              >
                 메타데이터 수정
               </Link>
             ) : null}
-            <a href={`/api/admin/transparency/${document.id}/media`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+            <a
+              href={`/api/admin/transparency/${document.id}/media`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
               문서 미리보기
             </a>
             {document.isPubliclyVisible ? (
-              <a href={`/api/transparency/${document.slug}/document`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+              <a
+                href={`/api/transparency/${document.slug}/document`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              >
                 공개 PDF 확인
               </a>
             ) : null}
@@ -84,10 +97,17 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
         items={[
           { label: "게시 상태", value: transparencyPublicationStatusLabels[document.publicationStatus] },
           { label: "승인 상태", value: transparencyApprovalStatusLabels[document.approvalStatus] },
-          { label: "공개 여부", value: document.isPubliclyVisible ? "공개 중" : `비공개 (${document.publicVisibilityReason})`, emphasized: true },
+          {
+            label: "공개 여부",
+            value: document.isPubliclyVisible ? "공개 중" : `비공개 (${document.publicVisibilityReason})`,
+            emphasized: true,
+          },
           { label: "개인정보 검토", value: transparencyPrivacyReviewStatusLabels[document.privacyReviewStatus] },
           { label: "최종본", value: transparencyFinalDocumentStatusLabels[document.finalDocumentStatus] },
-          { label: "최근 수정", value: <time dateTime={document.updatedAt}>{formatAdminDate(document.updatedAt)}</time> },
+          {
+            label: "최근 수정",
+            value: <time dateTime={document.updatedAt}>{formatAdminDate(document.updatedAt)}</time>,
+          },
         ]}
       />
       <section className="rounded-card border p-5">
@@ -99,8 +119,10 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
           <dd>{document.file.byteSize.toLocaleString()} bytes</dd>
         </dl>
       </section>
-      <section aria-labelledby="admin-transparency-document-heading" className="rounded-card border border-border bg-surface p-5">
-        <h2 id="admin-transparency-document-heading" className="text-heading font-bold">문서 정보</h2>
+      <section aria-labelledby="admin-transparency-document-heading" className="admin-section">
+        <h2 id="admin-transparency-document-heading" className="text-heading font-bold">
+          문서 정보
+        </h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
           {rows.map(([label, value]) => (
             <div key={label}>

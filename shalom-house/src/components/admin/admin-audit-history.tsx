@@ -41,13 +41,11 @@ function formatDate(value: string): string {
 export function AdminAuditHistory({ heading = "수정 이력", items }: AdminAuditHistoryProps) {
   const headingId = "admin-audit-history-heading";
   return (
-    <section aria-labelledby={headingId} className="min-w-0 rounded-card border border-border bg-surface p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id={headingId} className="text-heading font-bold">
-          {heading}
-        </h2>
-        <p className="text-small text-muted-foreground">총 {items.length}건</p>
-      </div>
+    <details className="admin-history min-w-0 border-y border-border py-4">
+      <summary className="min-h-11 cursor-pointer py-2 font-semibold">
+        <span id={headingId}>{heading}</span>{" "}
+        <span className="ml-2 text-small font-normal text-muted-foreground">{items.length}건 · 펼쳐 보기</span>
+      </summary>
       {items.length === 0 ? (
         <p className="mt-4">아직 기록된 수정 이력이 없습니다.</p>
       ) : (
@@ -84,6 +82,6 @@ export function AdminAuditHistory({ heading = "수정 이력", items }: AdminAud
           ))}
         </ol>
       )}
-    </section>
+    </details>
   );
 }

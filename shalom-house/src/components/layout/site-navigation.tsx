@@ -118,7 +118,7 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
       }}
     >
       <nav aria-label="주요 메뉴" className="hidden lg:block">
-        <ul className="flex items-center gap-5 xl:gap-9">
+        <ul className="flex items-center gap-1 xl:gap-4">
           {siteConfig.mainNavigation.map((item, index) => {
             const hasChildren = item.children.length > 0;
             const isActive = isCurrentNavigationItem(pathname, item);
@@ -143,7 +143,7 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
                 >
                   <Link
                     aria-current={isCurrentPage(pathname, item.href) ? "page" : undefined}
-                    className="text-safe-wrap inline-flex min-h-11 items-center whitespace-nowrap px-2 py-3 text-lg font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3 xl:text-xl"
+                    className="text-safe-wrap inline-flex min-h-11 items-center whitespace-nowrap px-2 py-3 text-base font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring xl:px-3"
                     href={item.href}
                     onNavigate={() => closeMenuOnNavigate(item.href)}
                   >
@@ -188,7 +188,7 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
                     className={`absolute top-full w-72 pt-3 ${index === siteConfig.mainNavigation.length - 1 ? "right-0" : "left-0"}`}
                     hidden={!isSubmenuOpen}
                   >
-                    <div className="border border-border bg-surface p-3 shadow-elevated">
+                    <div className="site-menu-panel">
                       <p className="text-safe-wrap border-b border-border px-3 pb-3 pt-1 text-xs font-semibold text-muted-foreground">
                         {item.description}
                       </p>
@@ -200,7 +200,7 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
                             <li key={child.href}>
                               <Link
                                 aria-current={isChildActive ? "page" : undefined}
-                                className={`block border-l-2 px-3 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
+                                className={`block rounded-control border-l-2 px-3 py-3 transition-colors duration-[var(--motion-duration-fast)] ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
                                   isChildActive
                                     ? "border-primary bg-primary-soft text-primary"
                                     : "border-transparent text-foreground hover:border-primary hover:bg-primary-soft hover:text-primary"
