@@ -34,7 +34,7 @@ export default async function Page({
             ? "관리자 계정의 로그인 세션을 해제했습니다."
             : null;
   return (
-    <div className="space-y-8">
+    <div className="admin-detail-layout">
       {msg ? (
         <p role="status" className="rounded-control border border-border bg-surface px-4 py-3 font-semibold">
           {msg}

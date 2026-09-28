@@ -80,7 +80,7 @@ export default async function AdminTransparencyPage({
     filters.publicationStatus ?? "",
   ].join("|");
   return (
-    <div className="min-w-0 space-y-8">
+    <div className="admin-list-layout">
       <AdminPageHeader
         title="자료공개 관리"
         description="PDF 비공개 초안과 검토 상태를 관리합니다."

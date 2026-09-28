@@ -38,7 +38,7 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
   const retryHref = retryParams.size ? "/transparency?" + retryParams.toString() : "/transparency";
 
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/news"

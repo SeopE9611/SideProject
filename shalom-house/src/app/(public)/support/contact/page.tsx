@@ -18,7 +18,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
     ? (params.kind as InquiryKind)
     : "general";
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/support"

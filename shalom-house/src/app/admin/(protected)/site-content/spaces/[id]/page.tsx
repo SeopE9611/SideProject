@@ -33,7 +33,7 @@ export default async function Page({
     },
   ];
   return (
-    <div className="space-y-8">
+    <div className="admin-detail-layout">
       <AdminDetailHeader
         backHref="/admin/site-content/spaces"
         backLabel="생활공간 관리"

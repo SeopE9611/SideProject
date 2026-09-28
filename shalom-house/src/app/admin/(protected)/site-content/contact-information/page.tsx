@@ -17,7 +17,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
     listAdminSiteContentAuditHistory({ key: "contact-information", limit: 50 }),
   ]);
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader backHref="/admin/site-content" backLabel="공식 콘텐츠 관리" eyebrow="시설 공식 정보 · 연락처" title="연락처·찾아오시는 길 관리" description="주소, 대표 연락처와 공개 문의 경로를 관리합니다." />
       {(await searchParams).saved === "1" ? (
         <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">주소와 대표 연락처를 저장했습니다.</p>

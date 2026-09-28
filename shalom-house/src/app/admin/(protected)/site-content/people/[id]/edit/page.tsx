@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const detail = await getAdminStaffProfile(id);
   if (!detail) notFound();
   return (
-    <div className="space-y-6">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader backHref={`/admin/site-content/people/${id}`} backLabel="직원 소개 상세" eyebrow="함께하는 사람들 · 수정" title="직원 정보 수정" description="직원 정보와 홈페이지 공개 범위를 수정합니다." />
       <AdminFormGuidance title="공개 정보 확인">
         직원 이름은 본인의 홈페이지 공개 확인을 마친 경우에만 표시합니다. 이름 공개 확인 근거는 내부 참조값이며 공개 페이지에 노출하지 않습니다.

@@ -43,7 +43,7 @@ export default async function InquiriesPage({
     `/admin/inquiries?${new URLSearchParams({ ...(status ? { status } : {}), ...(kind ? { kind } : {}), page: String(next) })}`;
 
   return (
-    <div className="space-y-8">
+    <div className="admin-list-layout">
       <AdminPageHeader title="문의 관리" description="접수된 문의의 종류와 처리 상태를 확인하고 관리합니다." />
 
       <section aria-labelledby="inquiry-summary-heading" className="admin-section">

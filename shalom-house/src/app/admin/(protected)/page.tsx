@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AdminDashboard } from "@/components/admin/admin-dashboard";
 
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
@@ -56,99 +56,11 @@ export default async function AdminDashboardPage({
   ];
 
   return (
-    <div className="space-y-10">
-      {forbidden ? (
-        <div role="alert" className="border-l-4 border-danger bg-danger-soft px-5 py-4 font-semibold text-danger">
-          현재 계정에는 요청한 작업 권한이 없습니다. 아래에서 사용 가능한 관리 메뉴를 선택해 주세요.
-        </div>
-      ) : null}
-
-      <header className="border-b border-border pb-7">
-        <p className="text-small font-bold text-accent">관리자 대시보드</p>
-        <h1 className="mt-2">홈페이지 운영 업무</h1>
-        <p className="mt-4 max-w-3xl text-body text-muted-foreground">
-          작성할 콘텐츠를 선택하거나, 검토와 공개가 필요한 항목의 상태를 확인하세요.
-        </p>
-      </header>
-
-      <section aria-labelledby="content-tasks-heading">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-small font-bold text-accent">콘텐츠</p>
-            <h2 id="content-tasks-heading" className="mt-1 text-heading font-extrabold">
-              홈페이지 콘텐츠 관리
-            </h2>
-          </div>
-          <Link className="institution-link text-small" href="/" target="_blank" rel="noreferrer">
-            공개 홈페이지 확인 <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-        <ul className="admin-task-list">
-          {contentTasks.map((task) => (
-            <li key={task.href}>
-              <Link href={task.href}>
-                <span>
-                  <strong>{task.title}</strong>
-                  <small>{task.description}</small>
-                </span>
-                <span aria-hidden="true">↗</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {operationTasks.some((task) => task.available) ? (
-        <section aria-labelledby="operation-tasks-heading" className="border-t border-border pt-8">
-          <p className="text-small font-bold text-accent">운영</p>
-          <h2 id="operation-tasks-heading" className="mt-1 text-heading font-extrabold">
-            기관 운영 관리
-          </h2>
-          <ul className="mt-5 grid gap-3 md:grid-cols-2">
-            {operationTasks
-              .filter((task) => task.available)
-              .map((task) => (
-                <li key={task.href}>
-                  <Link
-                    href={task.href}
-                    className="group flex min-h-28 items-start justify-between gap-5 rounded-control bg-primary-soft px-5 py-5 hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring"
-                  >
-                    <span>
-                      <span className="block text-lg font-extrabold text-primary">{task.title}</span>
-                      <span className="mt-2 block text-small text-muted-foreground">{task.description}</span>
-                    </span>
-                    <span
-                      className="text-xl text-primary transition-transform group-hover:translate-x-1"
-                      aria-hidden="true"
-                    >
-                      →
-                    </span>
-                  </Link>
-                </li>
-              ))}
-          </ul>
-        </section>
-      ) : null}
-
-      <section aria-labelledby="content-flow-heading" className="border-t border-border pt-8">
-        <p className="text-small font-bold text-accent">공개 절차</p>
-        <h2 id="content-flow-heading" className="mt-1 text-heading font-extrabold">
-          작성한 내용은 바로 공개되지 않습니다
-        </h2>
-        <ol className="mt-5 grid gap-4 sm:grid-cols-3">
-          {[
-            ["01", "초안 작성", "내용과 공개 금지 정보를 확인해 저장합니다."],
-            ["02", "검토·승인", "공개 범위와 개인정보 포함 여부를 다시 확인합니다."],
-            ["03", "게시", "승인된 최종 내용을 홈페이지에 공개합니다."],
-          ].map(([number, title, description]) => (
-            <li key={number} className="border-t border-border px-5 py-5">
-              <span className="text-small font-extrabold tabular-nums text-accent">{number}</span>
-              <h3 className="mt-3 text-lg font-extrabold">{title}</h3>
-              <p className="mt-2 text-small leading-7 text-muted-foreground">{description}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-    </div>
+    <AdminDashboard
+      forbidden={forbidden}
+      contentTasks={contentTasks}
+      operationTasks={operationTasks.filter((task) => task.available)}
+      canCreate={Boolean(admin && hasAdminPermission(admin, "content.create"))}
+    />
   );
 }

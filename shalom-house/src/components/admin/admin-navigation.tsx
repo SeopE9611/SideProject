@@ -1,37 +1,31 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useId } from "react";
+import { useState } from "react";
 
-type AdminNavigationItem = {
-  label: string;
-  href: string;
-  activePrefixes?: string[];
+export type AdminNavigationPermissions = {
+  canRestore?: boolean;
+  canManageSiteContent?: boolean;
+  canManageInquiries?: boolean;
+  canManageDonations?: boolean;
+  canManageAdminUsers?: boolean;
 };
-
 export function AdminNavigation({
   canRestore = false,
   canManageSiteContent = false,
   canManageInquiries = false,
   canManageDonations = false,
   canManageAdminUsers = false,
-}: {
-  canRestore?: boolean;
-  canManageSiteContent?: boolean;
-  canManageInquiries?: boolean;
-  canManageDonations?: boolean;
-  canManageAdminUsers?: boolean;
-}) {
-  const pathname = usePathname();
-  const navigationId = useId();
-  const sections: { label: string; items: AdminNavigationItem[] }[] = [
+  preview = false,
+}: AdminNavigationPermissions & { preview?: boolean }) {
+  const rawPath = usePathname();
+  const pathname = preview ? rawPath.replace("/design-preview", "") : rawPath;
+  const groups = [
+    { id: "home", label: "업무 홈", mark: "⌂", items: [{ label: "대시보드", href: "/admin" }] },
     {
-      label: "개요",
-      items: [{ label: "대시보드", href: "/admin" }],
-    },
-    {
-      label: "홈페이지 콘텐츠",
+      id: "content",
+      label: "콘텐츠",
+      mark: "≡",
       items: [
         { label: "소식", href: "/admin/news" },
         { label: "프로그램", href: "/admin/programs" },
@@ -41,50 +35,73 @@ export function AdminNavigation({
       ],
     },
     {
-      label: "운영 업무",
+      id: "operations",
+      label: "운영",
+      mark: "↗",
       items: [
         ...(canManageInquiries ? [{ label: "문의", href: "/admin/inquiries" }] : []),
         ...(canManageDonations
-          ? [{ label: "후원", href: "/admin/donations", activePrefixes: ["/admin/donations", "/admin/donors"] }]
+          ? [
+              { label: "후원금", href: "/admin/donations" },
+              { label: "후원자", href: "/admin/donors" },
+            ]
           : []),
+      ],
+    },
+    {
+      id: "settings",
+      label: "관리",
+      mark: "⋯",
+      items: [
         ...(canManageAdminUsers ? [{ label: "관리자 계정", href: "/admin/admin-users" }] : []),
         ...(canRestore ? [{ label: "휴지통", href: "/admin/trash" }] : []),
       ],
     },
-  ].filter((section) => section.items.length > 0);
-
+  ].filter((group) => group.items.length);
+  const matches = (href: string) =>
+    href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+  const activeGroup = groups.find((group) => group.items.some((item) => matches(item.href)))?.id ?? "home";
+  const [selection, setSelection] = useState<{ path: string; id: string } | null>(null);
+  const selected = selection?.path === pathname ? selection.id : activeGroup;
+  const group = groups.find((item) => item.id === selected) ?? groups[0];
   return (
-    <nav aria-label="관리자 메뉴">
-      <div className="grid gap-5 sm:grid-cols-3 lg:grid-cols-1">
-        {sections.map((section) => (
-          <section key={section.label} aria-labelledby={`${navigationId}-${section.label}`}>
-            <h2
-              id={`${navigationId}-${section.label}`}
-              className="mb-2 px-2 text-xs font-bold tracking-[0.08em] text-muted-foreground"
-            >
-              {section.label}
-            </h2>
-            <ul className="grid grid-cols-2 gap-1 sm:grid-cols-1">
-              {section.items.map((item) => {
-                const current =
-                  item.href === "/admin"
-                    ? pathname === "/admin"
-                    : (item.activePrefixes ?? [item.href]).some(
-                        (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-                      );
-                return (
-                  <li key={item.href}>
-                    <Link href={item.href} aria-current={current ? "page" : undefined} className="admin-nav-link">
-                      {item.label}
-                      {current ? <span aria-hidden="true">•</span> : null}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+    <>
+      <nav className="workbench-rail" aria-label="업무 영역">
+        <Link
+          className="workbench-monogram"
+          href={preview ? "/design-preview/admin" : "/admin"}
+          aria-label="샬롬의 집 관리 홈"
+        >
+          샬롬
+        </Link>
+        {groups.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            aria-pressed={group.id === item.id}
+            aria-controls="workspace-navigation"
+            onClick={() => setSelection({ path: pathname, id: item.id })}
+          >
+            <span aria-hidden="true">{item.mark}</span>
+            {item.label}
+          </button>
         ))}
-      </div>
-    </nav>
+      </nav>
+      <nav id="workspace-navigation" className="workbench-context" aria-label="관리자 메뉴">
+        <strong>{group.label}</strong>
+        <ul>
+          {group.items.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={preview ? "/design-preview" + item.href : item.href}
+                aria-current={matches(item.href) ? "page" : undefined}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </>
   );
 }

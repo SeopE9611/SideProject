@@ -16,7 +16,7 @@ export default async function GreetingPage() {
   const signerName = greeting?.showSignerName ? greeting.signerName.trim() : "";
 
   return (
-    <div className="bg-surface">
+    <div className="section-layout">
       <SectionPageHeader
         compact
         sectionHref="/about"

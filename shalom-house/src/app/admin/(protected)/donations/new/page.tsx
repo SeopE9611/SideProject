@@ -10,7 +10,7 @@ export default async function Page() {
   const a = await authorizeCurrentAdmin("donations.manage");
   if (!a.ok) redirect("/admin?forbidden=1");
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref="/admin/donations"
         backLabel="후원금 관리대장"

@@ -24,7 +24,7 @@ export default async function InquiryPage({ params }: { params: Promise<{ id: st
   if (!inquiry) notFound();
 
   return (
-    <div className="space-y-8">
+    <div className="admin-detail-layout">
       <AdminDetailHeader
         backHref="/admin/inquiries"
         backLabel="문의 관리"

@@ -26,7 +26,7 @@ export default async function Page({
   if (!donor) notFound();
 
   return (
-    <div className="space-y-8">
+    <div className="admin-detail-layout">
       {saved ? (
         <p role="status" className="rounded-control border border-border bg-surface px-4 py-3 font-semibold">
           후원자 정보를 저장했습니다.

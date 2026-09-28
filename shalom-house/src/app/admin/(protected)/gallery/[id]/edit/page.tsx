@@ -12,7 +12,7 @@ export default async function EditGallery({ params }: { params: Promise<{ id: st
   if (!admin || !hasAdminPermission(admin, "content.update")) redirect("/admin?forbidden=1");
   const editable = item.isEditable;
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref={`/admin/gallery/${id}`}
         backLabel="활동사진 상세로 돌아가기"

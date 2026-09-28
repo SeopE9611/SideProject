@@ -13,7 +13,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const d = await getAdminDonation((await params).id);
   if (!d) notFound();
   return (
-    <div className="space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref={`/admin/donations/${d.id}`}
         backLabel="후원금 상세"

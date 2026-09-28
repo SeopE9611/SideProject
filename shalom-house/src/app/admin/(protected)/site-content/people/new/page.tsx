@@ -8,7 +8,7 @@ export default async function Page() {
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "site_content.manage")) redirect("/admin?forbidden=1");
   return (
-    <div className="space-y-6">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref="/admin/site-content/people"
         backLabel="함께하는 사람들 관리"
