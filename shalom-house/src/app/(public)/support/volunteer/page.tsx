@@ -36,13 +36,16 @@ export default async function VolunteerPage() {
           <p className="text-safe-wrap mt-5 border-l-4 border-accent bg-surface-subtle px-5 py-4 text-small leading-7">
             문의 접수 후 실제 참여 가능 일정과 활동 범위는 담당자 확인을 거쳐 확정됩니다.
           </p>
-          <ol className="mt-6 border-t-2 border-foreground">
+          <ol className="mt-6 border-t border-border">
             {steps.map((step, index) => (
               <li
                 key={step.title}
                 className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 border-b border-border py-6 sm:grid-cols-[4.5rem_minmax(0,1fr)]"
               >
-                <span className="text-title font-bold text-accent" aria-hidden="true">
+                <span
+                  className="inline-flex size-11 items-center justify-center rounded-full bg-primary-soft text-base font-semibold text-accent"
+                  aria-hidden="true"
+                >
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div>
@@ -58,7 +61,7 @@ export default async function VolunteerPage() {
         </section>
         <aside
           aria-labelledby="volunteer-contact-heading"
-          className="min-w-0 border-t-4 border-accent bg-accent-soft p-6 sm:p-8 lg:col-span-4"
+          className="min-w-0 rounded-panel bg-paper p-6 sm:p-8 lg:col-span-4"
         >
           <p className="text-small font-bold text-accent">참여 문의</p>
           <h2 id="volunteer-contact-heading" className="mt-2 text-heading font-bold">

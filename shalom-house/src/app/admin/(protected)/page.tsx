@@ -83,21 +83,15 @@ export default async function AdminDashboardPage({
             공개 홈페이지 확인 <span aria-hidden="true">↗</span>
           </Link>
         </div>
-        <ul className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {contentTasks.map((task, index) => (
+        <ul className="admin-task-list">
+          {contentTasks.map((task) => (
             <li key={task.href}>
-              <Link
-                href={task.href}
-                className="group flex h-full min-h-48 flex-col border border-border bg-surface px-5 py-5 hover:border-accent hover:bg-accent-soft/40 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring"
-              >
-                <span className="text-xs font-extrabold tabular-nums text-accent">
-                  {String(index + 1).padStart(2, "0")}
+              <Link href={task.href}>
+                <span>
+                  <strong>{task.title}</strong>
+                  <small>{task.description}</small>
                 </span>
-                <span className="mt-6 text-xl font-extrabold text-primary">{task.title}</span>
-                <span className="mt-3 text-small leading-7 text-muted-foreground">{task.description}</span>
-                <span className="mt-auto pt-5 font-bold text-primary group-hover:underline" aria-hidden="true">
-                  관리 열기 →
-                </span>
+                <span aria-hidden="true">↗</span>
               </Link>
             </li>
           ))}
@@ -117,7 +111,7 @@ export default async function AdminDashboardPage({
                 <li key={task.href}>
                   <Link
                     href={task.href}
-                    className="group flex min-h-28 items-start justify-between gap-5 border-l-4 border-primary bg-primary-soft px-5 py-5 hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring"
+                    className="group flex min-h-28 items-start justify-between gap-5 rounded-control bg-primary-soft px-5 py-5 hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus-ring"
                   >
                     <span>
                       <span className="block text-lg font-extrabold text-primary">{task.title}</span>
@@ -147,7 +141,7 @@ export default async function AdminDashboardPage({
             ["02", "검토·승인", "공개 범위와 개인정보 포함 여부를 다시 확인합니다."],
             ["03", "게시", "승인된 최종 내용을 홈페이지에 공개합니다."],
           ].map(([number, title, description]) => (
-            <li key={number} className="border-t-3 border-accent bg-paper px-5 py-5">
+            <li key={number} className="border-t border-border px-5 py-5">
               <span className="text-small font-extrabold tabular-nums text-accent">{number}</span>
               <h3 className="mt-3 text-lg font-extrabold">{title}</h3>
               <p className="mt-2 text-small leading-7 text-muted-foreground">{description}</p>

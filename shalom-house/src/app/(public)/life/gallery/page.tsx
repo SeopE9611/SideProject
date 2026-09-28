@@ -32,7 +32,7 @@ export default async function GalleryPage() {
         aria-labelledby="gallery-list-heading"
         className="mx-auto max-w-site px-page py-7 sm:px-page-wide sm:py-9"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-foreground pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
           <h2 id="gallery-list-heading" className="text-heading font-bold">
             활동 기록{" "}
             {items !== null ? (
@@ -53,19 +53,25 @@ export default async function GalleryPage() {
             </a>
           </div>
         ) : items.length > 0 ? (
-          <ul className="mt-6 grid gap-x-7 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="gallery-collection">
             {items.map((item, index) => (
               <li key={item.slug} className="min-w-0">
-                <Image
-                  src={"/api/gallery/" + item.slug + "/media"}
-                  alt={item.altText}
-                  width={item.width}
-                  height={item.height}
-                  loading={index < 3 ? "eager" : "lazy"}
-                  fetchPriority={index === 0 ? "high" : "auto"}
-                  className="aspect-[4/3] w-full rounded-control bg-surface-subtle object-cover"
-                  unoptimized
-                />
+                <Link
+                  className="photo-link block"
+                  href={"/life/gallery/" + item.slug}
+                  aria-label={item.title + " 사진 보기"}
+                >
+                  <Image
+                    src={"/api/gallery/" + item.slug + "/media"}
+                    alt={item.altText}
+                    width={item.width}
+                    height={item.height}
+                    loading={index < 3 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    className="aspect-[4/3] w-full bg-surface-subtle object-cover"
+                    unoptimized
+                  />
+                </Link>
                 <p className="text-safe-wrap mt-3 text-small text-muted-foreground">
                   {item.category} · <time dateTime={item.activityDate}>{formatPublicDate(item.activityDate)}</time>
                 </p>

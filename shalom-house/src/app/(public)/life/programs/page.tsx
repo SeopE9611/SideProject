@@ -30,7 +30,7 @@ export default async function ProgramsPage() {
         aria-labelledby="program-list-heading"
         className="mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-10"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-primary pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <h2 id="program-list-heading" className="text-heading font-bold">
             프로그램 안내
           </h2>
@@ -50,7 +50,7 @@ export default async function ProgramsPage() {
         ) : programs.length > 0 ? (
           <ul className="divide-y divide-border border-b border-border">
             {programs.map((program) => (
-              <li key={program.id} className="min-w-0 py-7 sm:py-9">
+              <li key={program.id} className="program-index-row min-w-0 py-7 sm:py-9">
                 <article
                   className={`grid items-start gap-6 md:gap-10 ${program.coverImage ? "md:grid-cols-[minmax(0,1fr)_16rem] lg:grid-cols-[minmax(0,1fr)_20rem]" : ""}`}
                 >
@@ -65,7 +65,7 @@ export default async function ProgramsPage() {
                       </Link>
                     </h3>
                     <p className="text-safe-wrap mt-3 text-body text-muted-foreground">{program.summary}</p>
-                    <dl className="mt-5 space-y-3 border-l-2 border-border pl-4 text-small leading-7">
+                    <dl className="mt-5 space-y-3 text-small leading-7">
                       <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-3">
                         <dt className="font-semibold">목적</dt>
                         <dd className="text-safe-wrap">{program.purpose}</dd>
@@ -85,7 +85,7 @@ export default async function ProgramsPage() {
                       alt={program.coverImage.altText}
                       width={program.coverImage.width}
                       height={program.coverImage.height}
-                      className="aspect-[4/3] w-full max-w-sm bg-surface-subtle object-cover"
+                      className="aspect-[4/3] w-full rounded-panel max-w-sm bg-surface-subtle object-cover"
                       unoptimized
                     />
                   ) : null}

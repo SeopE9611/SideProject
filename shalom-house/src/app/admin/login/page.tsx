@@ -27,8 +27,8 @@ export default async function AdminLoginPage({
       tabIndex={-1}
       className="flex min-h-screen items-center bg-surface-subtle px-page py-8 text-foreground sm:px-page-wide"
     >
-      <div className="mx-auto grid w-full max-w-5xl overflow-hidden border border-border bg-surface shadow-elevated lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="border-t-4 border-accent bg-primary px-7 py-9 text-primary-foreground sm:px-10 sm:py-12 lg:flex lg:flex-col lg:justify-between lg:px-12">
+      <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-panel border border-border bg-surface lg:grid-cols-[0.9fr_1.1fr]">
+        <section className="bg-primary px-7 py-9 text-primary-foreground sm:px-10 sm:py-12 lg:flex lg:flex-col lg:justify-between lg:px-12">
           <div>
             <p className="text-xs font-bold tracking-[0.12em] text-sun-soft">SHALOM HOUSE</p>
             <h1 className="mt-4 text-[2.25rem] font-extrabold tracking-[-0.035em] sm:text-[2.75rem]">운영 관리</h1>

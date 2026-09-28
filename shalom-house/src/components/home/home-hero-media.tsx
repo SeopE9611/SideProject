@@ -2,24 +2,71 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 
-type HomeHeroMediaProps = { image: { src: string; alt: string; width: number; height: number; caption: string; href?: string } };
+export type HeroImage = { src: string; alt: string; width: number; height: number; caption: string; href?: string };
 
-export function HomeHeroMedia({ image }: HomeHeroMediaProps) {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return <p className="border-l-2 border-accent py-2 pl-4 text-small text-muted-foreground">활동사진을 표시하지 못했습니다. <Link className="institution-link" href="/life/gallery">활동사진 목록 보기</Link></p>;
-  }
-
+export function HomeHeroMedia({ images }: { images: HeroImage[] }) {
+  const [index, setIndex] = useState(0);
+  const [failed, setFailed] = useState<Record<string, boolean>>({});
+  const id = useId();
+  const image = images[index];
+  if (!image) return null;
   return (
-    <figure className="min-w-0 lg:pt-8">
-      <div className="relative aspect-[4/3] overflow-hidden bg-primary-soft sm:aspect-[16/10]">
-        <Image alt={image.alt} className="object-cover" fill onError={() => setFailed(true)} preload sizes="(max-width: 1023px) 100vw, 58vw" src={image.src} unoptimized />
-      </div>
-      <figcaption className="text-safe-wrap mt-3 border-l border-border pl-4 text-small leading-6 text-muted-foreground">
-        {image.href ? <Link href={image.href} className="underline underline-offset-4 hover:text-primary focus-visible:outline-2 focus-visible:outline-focus-ring">{image.caption}</Link> : image.caption}
-      </figcaption>
-    </figure>
+    <div className="home-photo" role="region" aria-roledescription="캐러셀" aria-label="샬롬의 집 활동사진">
+      <figure id={id}>
+        <div className="home-photo-frame">
+          {failed[image.src] ? (
+            <p className="flex h-full items-center justify-center p-6 text-primary">
+              사진을 표시하지 못했습니다.{" "}
+              <Link className="institution-link ml-2" href="/life/gallery">
+                목록 보기
+              </Link>
+            </p>
+          ) : (
+            <Image
+              key={image.src}
+              alt={image.alt}
+              className="home-photo-image"
+              fill
+              onError={() => setFailed((current) => ({ ...current, [image.src]: true }))}
+              loading="eager"
+              fetchPriority={index === 0 ? "high" : "auto"}
+              sizes="(max-width: 1023px) 100vw, 60vw"
+              src={image.src}
+              unoptimized
+            />
+          )}
+        </div>
+        <figcaption className="home-photo-caption" aria-live="polite" aria-atomic="true">
+          <span className="text-safe-wrap">
+            {image.href ? <Link href={image.href}>{image.caption}</Link> : image.caption}
+          </span>
+          <span className="shrink-0 tabular-nums text-muted-foreground">
+            {String(index + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
+          </span>
+        </figcaption>
+      </figure>
+      {images.length > 1 ? (
+        <div className="home-photo-controls">
+          <button
+            type="button"
+            aria-label="이전 활동사진"
+            aria-controls={id}
+            onClick={() => setIndex((current) => (current - 1 + images.length) % images.length)}
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            aria-label="다음 활동사진"
+            aria-controls={id}
+            onClick={() => setIndex((current) => (current + 1) % images.length)}
+          >
+            →
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }

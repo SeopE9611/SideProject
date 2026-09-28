@@ -29,7 +29,7 @@ export default async function SpacesPage() {
         <p className="text-small font-bold text-accent">공간과 쓰임</p>
         <h2
           id="spaces-heading"
-          className="mt-2 border-b-2 border-foreground pb-5 text-[1.75rem] font-bold tracking-[-0.025em]"
+          className="mt-2 border-b border-border pb-5 text-[1.75rem] font-bold tracking-[-0.025em]"
         >
           공간 안내
         </h2>
@@ -45,10 +45,13 @@ export default async function SpacesPage() {
           <ul className="divide-y divide-border border-b border-border">
             {spaces.map((space, index) => (
               <li
-                className={`grid min-w-0 grid-cols-[3rem_minmax(0,1fr)] gap-x-4 gap-y-3 py-6 md:gap-x-8 ${space.media ? "lg:grid-cols-[3rem_minmax(0,0.8fr)_minmax(0,1.2fr)_minmax(18rem,1fr)]" : "md:grid-cols-[3rem_minmax(0,0.9fr)_minmax(0,1.6fr)]"}`}
+                className={`grid min-w-0 grid-cols-[3rem_minmax(0,1fr)] gap-x-4 gap-y-3 py-9 md:gap-x-8 ${space.media ? "lg:grid-cols-[3rem_minmax(0,0.8fr)_minmax(0,1.2fr)_minmax(18rem,1fr)]" : "md:grid-cols-[3rem_minmax(0,0.9fr)_minmax(0,1.6fr)]"}`}
                 key={space.id}
               >
-                <span className="text-lg font-bold text-accent" aria-hidden="true">
+                <span
+                  className="flex size-11 items-center justify-center rounded-full bg-paper text-sm font-semibold text-accent"
+                  aria-hidden="true"
+                >
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <h3 className="text-safe-wrap text-[1.2rem] font-semibold">{space.title}</h3>

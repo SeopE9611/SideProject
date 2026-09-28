@@ -35,13 +35,16 @@ export default async function DonationPage() {
           <p className="text-safe-wrap mt-5 border-l-4 border-accent bg-surface-subtle px-5 py-4 text-small leading-7">
             {guidance.notice}
           </p>
-          <ol className="mt-6 border-t-2 border-foreground">
+          <ol className="mt-6 border-t border-border">
             {guidance.steps.map((step, index) => (
               <li
                 className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 border-b border-border py-6 sm:grid-cols-[4.5rem_minmax(0,1fr)]"
                 key={index}
               >
-                <span className="text-title font-bold text-accent" aria-hidden="true">
+                <span
+                  className="inline-flex size-11 items-center justify-center rounded-full bg-primary-soft text-base font-semibold text-accent"
+                  aria-hidden="true"
+                >
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <p className="text-safe-wrap text-body leading-8">{step}</p>
@@ -54,7 +57,7 @@ export default async function DonationPage() {
         </section>
         <aside
           aria-labelledby="donation-contact-heading"
-          className="min-w-0 border-t-4 border-accent bg-accent-soft p-6 sm:p-8 lg:col-span-4"
+          className="min-w-0 rounded-panel bg-paper p-6 sm:p-8 lg:col-span-4"
         >
           <p className="text-small font-bold text-accent">후원 문의</p>
           <h2 id="donation-contact-heading" className="text-safe-wrap mt-2 text-heading font-bold">

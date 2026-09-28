@@ -71,7 +71,9 @@ export default async function AdminNewsDetailPage({
   const canDirectPublish = Boolean(admin && hasAdminPermission(admin, "content.direct_publish"));
   const auditHistory = await listAdminNewsAuditHistory({ contentId: post.id });
   const coverOptions = await listAdminPublicGalleryCoverOptions();
-  const publicCover = post.coverGalleryItemId ? await findPublicGalleryCoverById(new ObjectId(post.coverGalleryItemId)) : null;
+  const publicCover = post.coverGalleryItemId
+    ? await findPublicGalleryCoverById(new ObjectId(post.coverGalleryItemId))
+    : null;
   const wasUpdated = typeof query.updated === "string" && query.updated === "1";
   const wasReviewRequested = typeof query.reviewRequested === "string" && query.reviewRequested === "1";
   const isPendingReview = post.publicationStatus === "review" && post.approvalStatus === "pending";
@@ -120,7 +122,11 @@ export default async function AdminNewsDetailPage({
           게시물 내용을 수정했습니다.
         </p>
       ) : null}
-      {wasMediaUpdated ? <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">대표 이미지 또는 첨부파일을 저장했습니다.</p> : null}
+      {wasMediaUpdated ? (
+        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
+          대표 이미지 또는 첨부파일을 저장했습니다.
+        </p>
+      ) : null}
 
       {wasReviewRequested ? (
         <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
@@ -181,7 +187,7 @@ export default async function AdminNewsDetailPage({
       />
 
       {!post.isEditable ? (
-        <aside className="rounded-card border border-border-strong bg-surface p-5">
+        <aside className="admin-notice">
           {isPendingReview ? (
             <>
               <p className="font-semibold">검토 요청된 게시물입니다.</p>
@@ -218,13 +224,13 @@ export default async function AdminNewsDetailPage({
       ) : null}
 
       {isRejectedDraft ? (
-        <aside className="rounded-card border border-border-strong bg-surface p-5">
+        <aside className="admin-notice">
           <p className="font-semibold">검토 결과 반려된 게시물입니다.</p>
           <p className="mt-2 text-small text-muted-foreground">내용을 수정한 뒤 다시 검토를 요청할 수 있습니다.</p>
         </aside>
       ) : null}
 
-      <section aria-labelledby="admin-news-management-heading" className="rounded-card border border-border bg-surface p-5">
+      <section aria-labelledby="admin-news-management-heading" className="admin-section">
         <h2 id="admin-news-management-heading" className="text-heading font-bold">
           관리 정보
         </h2>
@@ -268,21 +274,47 @@ export default async function AdminNewsDetailPage({
         </div>
       </section>
 
-      <AdminNewsMediaForm newsId={post.id} expectedUpdatedAt={post.updatedAt} editable={post.isEditable && canUpdate}
-        currentCover={post.coverGalleryItemId ? { id: post.coverGalleryItemId, title: publicCover?.title ?? "공개 불가 활동사진",
-          altText: publicCover?.altText ?? "", mediaUrl: publicCover?.mediaUrl ?? "", publiclyAvailable: Boolean(publicCover) } : null}
-        coverOptions={coverOptions} currentAttachment={post.attachment ? { label: post.attachment.label,
-          originalFileName: post.attachment.originalFileName, byteSize: post.attachment.byteSize,
-          downloadUrl: `/api/admin/news/${post.id}/attachment` } : null} />
+      <AdminNewsMediaForm
+        newsId={post.id}
+        expectedUpdatedAt={post.updatedAt}
+        editable={post.isEditable && canUpdate}
+        currentCover={
+          post.coverGalleryItemId
+            ? {
+                id: post.coverGalleryItemId,
+                title: publicCover?.title ?? "공개 불가 활동사진",
+                altText: publicCover?.altText ?? "",
+                mediaUrl: publicCover?.mediaUrl ?? "",
+                publiclyAvailable: Boolean(publicCover),
+              }
+            : null
+        }
+        coverOptions={coverOptions}
+        currentAttachment={
+          post.attachment
+            ? {
+                label: post.attachment.label,
+                originalFileName: post.attachment.originalFileName,
+                byteSize: post.attachment.byteSize,
+                downloadUrl: `/api/admin/news/${post.id}/attachment`,
+              }
+            : null
+        }
+      />
 
       {post.canDirectPublish && canDirectPublish ? (
-        <AdminWorkflowPanel title="바로 게시" description={<>
-          <p>
-            시스템 관리자는 별도의 검토·승인 단계를 거치지 않고 현재 게시물을 즉시 공개할 수 있습니다.
-            <br />
-            역할을 나눠 검토하려면 아래의 검토 요청 절차를 사용해 주세요.
-          </p>
-        </>}>
+        <AdminWorkflowPanel
+          title="바로 게시"
+          description={
+            <>
+              <p>
+                시스템 관리자는 별도의 검토·승인 단계를 거치지 않고 현재 게시물을 즉시 공개할 수 있습니다.
+                <br />
+                역할을 나눠 검토하려면 아래의 검토 요청 절차를 사용해 주세요.
+              </p>
+            </>
+          }
+        >
           <AdminDirectPublishForm
             id={post.id}
             endpoint={`/api/admin/news/${post.id}/direct-publish`}
@@ -293,56 +325,76 @@ export default async function AdminNewsDetailPage({
       ) : null}
 
       {post.canRequestReview && canRequestReview ? (
-        <AdminWorkflowPanel title={isRejectedDraft ? "재검토 요청" : "검토 요청"} description={<>
-          {isRejectedDraft ? (
-            <p>
-              반려 사항을 반영한 뒤 다시 검토 중 상태로 전환합니다.
-              <br />
-              재검토 요청 시 승인 상태는 다시 승인 대기로 변경됩니다.
-            </p>
-          ) : (
-            <p>
-              검토 요청 후 게시 상태가 검토 중으로 변경되며 내용 수정이 잠깁니다.
-              <br />이 작업만으로 게시물이 승인되거나 공개되지는 않습니다.
-            </p>
-          )}
-        </>}>
+        <AdminWorkflowPanel
+          title={isRejectedDraft ? "재검토 요청" : "검토 요청"}
+          description={
+            <>
+              {isRejectedDraft ? (
+                <p>
+                  반려 사항을 반영한 뒤 다시 검토 중 상태로 전환합니다.
+                  <br />
+                  재검토 요청 시 승인 상태는 다시 승인 대기로 변경됩니다.
+                </p>
+              ) : (
+                <p>
+                  검토 요청 후 게시 상태가 검토 중으로 변경되며 내용 수정이 잠깁니다.
+                  <br />이 작업만으로 게시물이 승인되거나 공개되지는 않습니다.
+                </p>
+              )}
+            </>
+          }
+        >
           <AdminNewsReviewRequestForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </AdminWorkflowPanel>
       ) : null}
 
       {post.canDecideReview && canDecideReview ? (
-        <AdminWorkflowPanel title="검토 결과 처리" description={<>
-          <p>
-            승인은 검토 완료 상태만 기록하며 게시물을 공개하지 않습니다.
-            <br />
-            반려하면 수정 가능한 초안으로 돌아가며 다시 검토를 요청할 수 있습니다.
-          </p>
-        </>}>
+        <AdminWorkflowPanel
+          title="검토 결과 처리"
+          description={
+            <>
+              <p>
+                승인은 검토 완료 상태만 기록하며 게시물을 공개하지 않습니다.
+                <br />
+                반려하면 수정 가능한 초안으로 돌아가며 다시 검토를 요청할 수 있습니다.
+              </p>
+            </>
+          }
+        >
           <AdminNewsReviewDecisionForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </AdminWorkflowPanel>
       ) : null}
 
       {post.canPublish && canPublish ? (
-        <AdminWorkflowPanel title="게시" description={<>
-          <p>
-            게시하면 현재 승인된 내용이 즉시 공개 뉴스 목록과 상세 페이지에 표시됩니다.
-            <br />
-            게시 후 내용 수정과 게시 중단은 별도 상태 전환이 필요합니다.
-          </p>
-        </>}>
+        <AdminWorkflowPanel
+          title="게시"
+          description={
+            <>
+              <p>
+                게시하면 현재 승인된 내용이 즉시 공개 뉴스 목록과 상세 페이지에 표시됩니다.
+                <br />
+                게시 후 내용 수정과 게시 중단은 별도 상태 전환이 필요합니다.
+              </p>
+            </>
+          }
+        >
           <AdminNewsPublishForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </AdminWorkflowPanel>
       ) : null}
 
       {post.canManagePublicationState && canPublish ? (
-        <AdminWorkflowPanel title="게시 상태 변경" description={<>
-          <p>
-            게시 중단은 공개를 종료한 뒤 다시 게시할 수 있는 승인 완료 상태로 되돌립니다.
-            <br />
-            보관은 공개를 종료하고 현재 작업 범위에서 복구할 수 없는 보관 상태로 전환합니다.
-          </p>
-        </>}>
+        <AdminWorkflowPanel
+          title="게시 상태 변경"
+          description={
+            <>
+              <p>
+                게시 중단은 공개를 종료한 뒤 다시 게시할 수 있는 승인 완료 상태로 되돌립니다.
+                <br />
+                보관은 공개를 종료하고 현재 작업 범위에서 복구할 수 없는 보관 상태로 전환합니다.
+              </p>
+            </>
+          }
+        >
           <AdminNewsPublicationStateForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </AdminWorkflowPanel>
       ) : null}

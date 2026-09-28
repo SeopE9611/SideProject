@@ -20,14 +20,14 @@ export function ContentDetailHeader({
   isDemo,
 }: ContentDetailHeaderProps) {
   return (
-    <header className="border-t-4 border-accent border-b border-b-border pt-6 pb-6">
+    <header className="detail-heading">
       <nav aria-label="목록 탐색">
         <Link className="institution-link text-small" href={backHref}>
           <span aria-hidden="true">←</span> {backLabel}
         </Link>
       </nav>
       <p className="text-safe-wrap mt-4 text-small font-bold text-accent">{category}</p>
-      <h1 className="text-safe-wrap mt-2 text-heading font-bold leading-snug sm:text-title">{title}</h1>
+      <h1 className="text-safe-wrap mt-4">{title}</h1>
       {summary?.trim() && summary.trim() !== title.trim() ? (
         <p className="text-safe-wrap mt-3 max-w-content text-body leading-7 text-muted-foreground">{summary}</p>
       ) : null}

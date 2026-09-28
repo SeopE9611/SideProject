@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useId } from "react";
 
 type AdminNavigationItem = {
   label: string;
@@ -23,6 +24,7 @@ export function AdminNavigation({
   canManageAdminUsers?: boolean;
 }) {
   const pathname = usePathname();
+  const navigationId = useId();
   const sections: { label: string; items: AdminNavigationItem[] }[] = [
     {
       label: "개요",
@@ -55,9 +57,9 @@ export function AdminNavigation({
     <nav aria-label="관리자 메뉴">
       <div className="grid gap-5 sm:grid-cols-3 lg:grid-cols-1">
         {sections.map((section) => (
-          <section key={section.label} aria-labelledby={`admin-nav-${section.label}`}>
+          <section key={section.label} aria-labelledby={`${navigationId}-${section.label}`}>
             <h2
-              id={`admin-nav-${section.label}`}
+              id={`${navigationId}-${section.label}`}
               className="mb-2 px-2 text-xs font-bold tracking-[0.08em] text-muted-foreground"
             >
               {section.label}
@@ -72,22 +74,9 @@ export function AdminNavigation({
                       );
                 return (
                   <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      aria-current={current ? "page" : undefined}
-                      className={`group flex min-h-11 items-center justify-between gap-3 border-l-3 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
-                        current
-                          ? "border-accent bg-accent-soft font-bold text-primary"
-                          : "border-transparent font-semibold text-foreground hover:border-border-strong hover:bg-surface-subtle"
-                      }`}
-                    >
+                    <Link href={item.href} aria-current={current ? "page" : undefined} className="admin-nav-link">
                       {item.label}
-                      <span
-                        aria-hidden="true"
-                        className={`text-base ${current ? "text-accent" : "text-muted-foreground/45 group-hover:text-primary"}`}
-                      >
-                        →
-                      </span>
+                      {current ? <span aria-hidden="true">•</span> : null}
                     </Link>
                   </li>
                 );

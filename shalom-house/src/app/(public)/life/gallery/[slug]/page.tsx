@@ -81,7 +81,7 @@ export default async function GalleryDetail({ params }: Props) {
           })),
         }}
       />
-      <article className="mx-auto max-w-5xl px-page py-6 sm:px-page-wide sm:py-8">
+      <article className="mx-auto max-w-5xl px-page py-8 sm:px-page-wide sm:py-14">
         <ContentDetailHeader
           title={item.title}
           category={item.category}
@@ -97,7 +97,7 @@ export default async function GalleryDetail({ params }: Props) {
             height={item.height}
             loading="eager"
             fetchPriority="high"
-            className="h-auto max-h-[75vh] w-full rounded-control bg-surface-subtle object-contain"
+            className="h-auto max-h-[75vh] w-full rounded-panel bg-surface-subtle object-contain"
             unoptimized
           />
           <figcaption className="text-safe-wrap mt-5 max-w-content whitespace-pre-wrap text-body leading-8">
