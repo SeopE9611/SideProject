@@ -9,11 +9,6 @@ export async function SiteHeader() {
     <header className="site-header">
       <div className="site-header-inner">
         <Link aria-label={siteConfig.name + " 홈"} className="site-wordmark" href="/">
-          <span className="brand-symbol" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </span>
           <span>
             {siteConfig.name}
             <small>장애인거주시설</small>
