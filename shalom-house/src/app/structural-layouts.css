@@ -155,6 +155,9 @@
   min-width: 0;
   scroll-snap-align: start;
 }
+.life-filmstrip:focus-within {
+  scroll-snap-type: none;
+}
 .life-filmstrip > li:nth-child(even) {
   padding-top: 3.5rem;
 }
@@ -432,6 +435,11 @@
 }
 .section-layout .directions-grid {
   grid-template-columns: 1fr;
+}
+@media (min-width: 1200px) {
+  .section-layout .directions-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
 }
 .reading-layout {
   max-width: 90rem;
@@ -1217,5 +1225,11 @@
   }
   .life-filmstrip {
     scroll-behavior: auto;
+  }
+}
+
+@media (min-width: 768px) {
+  .design-review-bar:has(+ .workbench) {
+    margin-left: 6.5rem;
   }
 }

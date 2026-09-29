@@ -28,10 +28,10 @@ export default async function DirectionsPage() {
       />
       <PublicAdminEditLink href="/admin/site-content/contact-information" />
       <div className="mx-auto max-w-site px-page py-10 sm:px-page-wide sm:py-14">
-        <div className="grid items-stretch gap-5 lg:grid-cols-12 lg:gap-8">
+        <div className="directions-grid grid items-stretch gap-6">
           <section
             aria-labelledby="directions-address-heading"
-            className="direction-address min-w-0 bg-primary px-7 py-8 text-primary-foreground sm:p-10 lg:col-span-7 lg:p-12"
+            className="direction-address min-w-0 bg-primary px-7 py-8 text-primary-foreground sm:p-8"
           >
             <h2 id="directions-address-heading" className="flex items-center gap-3 text-small font-bold text-sun-soft">
               <LineIcon name="map-pin" size={22} />
@@ -65,7 +65,7 @@ export default async function DirectionsPage() {
           </section>
           <aside
             aria-labelledby="directions-contact-heading"
-            className="direction-contact min-w-0 bg-paper px-7 py-8 sm:p-10 lg:col-span-5 lg:p-12"
+            className="direction-contact min-w-0 bg-paper px-7 py-8 sm:p-8"
           >
             <p className="flex items-center gap-3 text-small font-bold text-accent">
               <LineIcon name="phone" size={22} />
@@ -79,14 +79,14 @@ export default async function DirectionsPage() {
             </h2>
             <dl className="mt-8">
               <dt className="text-small text-muted-foreground">대표 전화</dt>
-              <dd className="text-safe-wrap mt-2 text-2xl font-extrabold tracking-[-0.025em] text-primary sm:text-[2.5rem] lg:text-[1.75rem] xl:text-[2.5rem]">
+              <dd className="text-safe-wrap mt-2 text-2xl font-extrabold tracking-[-0.025em] text-primary sm:text-[2rem]">
                 {contact.phone}
               </dd>
             </dl>
             <p className="text-safe-wrap mt-5 max-w-md text-small leading-8 text-muted-foreground">
               {contact.visitInquiryDescription}
             </p>
-            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <div className="mt-8 grid gap-3">
               <a
                 className="rounded-full inline-flex min-h-13 items-center justify-center gap-2 bg-primary px-5 py-3 font-bold text-primary-foreground transition-colors duration-[var(--motion-duration-fast)] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus-ring"
                 href={createTelephoneHref(contact.phone)}

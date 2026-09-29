@@ -83,25 +83,25 @@ export default async function DesignPreview({
     </aside>
   );
   if (screen[0] === "admin") {
-    const module = screen[1];
-    if ((module && !modules[module]) || screen.length > 4 || (screen[3] && screen[3] !== "edit")) notFound();
+    const contentArea = screen[1];
+    if ((contentArea && !modules[contentArea]) || screen.length > 4 || (screen[3] && screen[3] !== "edit")) notFound();
     const record = records.find((row) => row.id === screen[2]);
     if (screen[2] && screen[2] !== "new" && !record) notFound();
-    const base = `/design-preview/admin/${module}`;
+    const base = `/design-preview/admin/${contentArea}`;
     const isEditor = screen[2] === "new" || screen[3] === "edit";
     return (
       <>
         {reviewBar}
         <AdminWorkbench operator="홍길동 · 테스트 담당자" permissions={permissions} preview>
-          {!module ? (
+          {!contentArea ? (
             <AdminDashboard contentTasks={contentTasks} operationTasks={operationTasks} canCreate preview />
           ) : isEditor ? (
             <div className="admin-editor-layout">
               <AdminFormPageHeader
                 backHref={record ? `${base}/${record.id}` : base}
                 backLabel="목록·상세로 돌아가기"
-                eyebrow={`${modules[module]} · 테스트`}
-                title={`${modules[module]} ${record ? "수정" : "작성"}`}
+                eyebrow={`${modules[contentArea]} · 테스트`}
+                title={`${modules[contentArea]} ${record ? "수정" : "작성"}`}
                 description="화면 구성 확인용입니다. 입력 내용은 저장되지 않습니다."
               />
               <section>
@@ -129,7 +129,7 @@ export default async function DesignPreview({
                     <textarea
                       rows={8}
                       className="rounded-control border border-border-strong p-3"
-                      defaultValue="테스트1입니다.\n테스트2입니다."
+                      defaultValue={"테스트1입니다.\n테스트2입니다."}
                     />
                   </label>
                   <div className="flex gap-4 items-center">
@@ -151,8 +151,8 @@ export default async function DesignPreview({
             <div className="admin-detail-layout">
               <AdminDetailHeader
                 backHref={base}
-                backLabel={`${modules[module]} 목록`}
-                eyebrow={`${modules[module]} · 테스트`}
+                backLabel={`${modules[contentArea]} 목록`}
+                eyebrow={`${modules[contentArea]} · 테스트`}
                 title={record.title}
                 actions={
                   <Link className="action-link" href={`${base}/${record.id}/edit`}>
@@ -192,7 +192,7 @@ export default async function DesignPreview({
           ) : (
             <div className="admin-list-layout">
               <AdminPageHeader
-                title={`${modules[module]} 관리`}
+                title={`${modules[contentArea]} 관리`}
                 description="테스트 데이터로 목록과 상세 화면을 확인합니다."
                 actions={
                   <Link className="action-link" href={`${base}/new`}>
@@ -232,7 +232,7 @@ export default async function DesignPreview({
                 </form>
               </AdminFilterPanel>
               <section>
-                <h2 className="text-lg font-bold mb-4">{modules[module]} 목록</h2>
+                <h2 className="text-lg font-bold mb-4">{modules[contentArea]} 목록</h2>
                 <div className="overflow-x-auto">
                   <table className="demo-data-table">
                     <thead>
