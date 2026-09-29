@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 type HomeLifeStory = {
@@ -15,7 +17,14 @@ export function HomeLifeStories({ items }: { items: readonly HomeLifeStory[] }) 
     <ul className="life-filmstrip">
       {items.map((item) => (
         <li key={item.slug}>
-          <Link href={item.href ?? `/life/gallery/${item.slug}`}>
+          <Link
+            href={item.href ?? `/life/gallery/${item.slug}`}
+            onFocus={(event) => {
+              if (event.currentTarget.matches(":focus-visible")) {
+                event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+              }
+            }}
+          >
             <figure>
               <div className="life-filmstrip-photo">
                 <Image
