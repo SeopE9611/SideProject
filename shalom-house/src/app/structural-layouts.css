@@ -2,7 +2,7 @@
 .home-cover {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.42fr);
-  gap: 0;
+  column-gap: 1.5rem;
   background: var(--color-paper);
   padding: 2.5rem 3.5rem 0;
 }
@@ -24,12 +24,12 @@
 }
 .home-cover .home-photo {
   grid-column: 1;
-  grid-row: 2/4;
+  grid-row: 1/3;
   padding: 0;
   min-width: 0;
 }
 .home-cover .home-photo-frame {
-  aspect-ratio: 1.65;
+  aspect-ratio: 1.8;
   border-radius: 0;
 }
 .home-cover .home-photo-caption {
@@ -79,6 +79,9 @@
   gap: 1rem;
   padding: 0.85rem 0;
   border-bottom: 1px solid var(--color-border-strong);
+  transition:
+    background-color var(--motion-duration-fast) var(--ease-standard),
+    color var(--motion-duration-fast) var(--ease-standard);
 }
 .home-cover:not(.home-cover-with-photo) {
   grid-template-columns: 1fr 1fr;
@@ -149,6 +152,50 @@
   gap: 2rem;
   padding: 5px 5px 1.5rem;
   margin-inline: -5px;
+  scrollbar-width: none;
+  cursor: grab;
+}
+.life-filmstrip::-webkit-scrollbar {
+  display: none;
+}
+.life-filmstrip:active {
+  cursor: grabbing;
+}
+.life-filmstrip-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.life-filmstrip-help {
+  color: var(--color-muted-foreground);
+  font-size: 0.85rem;
+}
+.life-filmstrip-help-coarse {
+  display: none;
+}
+.life-filmstrip-controls {
+  display: flex;
+  flex: none;
+  gap: 0.5rem;
+}
+.life-filmstrip-controls button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  background: var(--color-surface);
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-duration-fast) var(--ease-standard),
+    color var(--motion-duration-fast) var(--ease-standard),
+    opacity var(--motion-duration-fast) var(--ease-standard);
+}
+.life-filmstrip-controls button:disabled {
+  cursor: default;
+  opacity: 0.35;
 }
 .life-filmstrip > li {
   flex: 0 0 39%;
@@ -220,6 +267,7 @@
   padding: 1.5rem 0;
   cursor: pointer;
   list-style: none;
+  transition: background-color var(--motion-duration-fast) var(--ease-standard);
 }
 .program-disclosure summary::-webkit-details-marker {
   display: none;
@@ -339,6 +387,7 @@
   gap: 1rem;
   padding: 1rem 0;
   border-bottom: 1px solid var(--color-border);
+  transition: background-color var(--motion-duration-fast) var(--ease-standard);
 }
 .journal-directory li span {
   font-size: 0.8rem;
@@ -418,6 +467,59 @@
   font-size: 0.85rem;
   border-left: 2px solid var(--color-accent);
   padding-left: 1rem;
+}
+.rail-admin-action {
+  margin-top: 1.5rem;
+}
+
+.home-cover-note .cover-link span,
+.home-cover-index a span,
+.journal-directory li a > span:last-child {
+  transition: transform var(--motion-duration-fast) var(--ease-standard);
+}
+
+.home-cover-note .cover-link:focus-visible,
+.home-cover-index a:focus-visible,
+.program-disclosure summary:focus-visible,
+.journal-directory li a:focus-visible {
+  background: var(--color-primary-soft);
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+.home-cover-note .cover-link:focus-visible {
+  background: #ffffff1a;
+}
+
+@media (hover: hover) {
+  .home-cover-note .cover-link:hover {
+    background: #ffffff1a;
+  }
+  .home-cover-index a:hover,
+  .program-disclosure summary:hover,
+  .journal-directory li a:hover {
+    background: var(--color-primary-soft);
+  }
+  .home-cover-note .cover-link:hover span,
+  .home-cover-index a:hover span,
+  .journal-directory li a:hover > span:last-child {
+    transform: translateX(3px);
+  }
+  .life-filmstrip-controls button:not(:disabled):hover {
+    color: var(--color-primary-foreground);
+    background: var(--color-primary);
+  }
+}
+
+@media (pointer: coarse) {
+  .life-filmstrip-help-fine {
+    display: none;
+  }
+  .life-filmstrip-help-coarse {
+    display: block;
+  }
+  .life-filmstrip {
+    cursor: auto;
+  }
 }
 .section-layout > :not(.section-rail) {
   width: 100%;

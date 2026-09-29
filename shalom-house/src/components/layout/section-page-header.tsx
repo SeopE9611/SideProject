@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { SectionLocalNavigation, type SectionHref } from "@/components/layout/section-local-navigation";
 
 type SectionPageHeaderProps = {
@@ -9,9 +10,10 @@ type SectionPageHeaderProps = {
   breadcrumbs: readonly { label: string; href?: string }[];
   notice?: string;
   compact?: boolean;
+  adminAction?: ReactNode;
 };
 
-export function SectionPageHeader({ sectionHref, title, description, breadcrumbs, notice }: SectionPageHeaderProps) {
+export function SectionPageHeader({ sectionHref, title, description, breadcrumbs, notice, adminAction }: SectionPageHeaderProps) {
   return (
     <header className="section-rail">
       <nav aria-label="breadcrumb" className="rail-breadcrumb">
@@ -27,6 +29,7 @@ export function SectionPageHeader({ sectionHref, title, description, breadcrumbs
       <p className="rail-description text-safe-wrap">{description}</p>
       <SectionLocalNavigation sectionHref={sectionHref} />
       {notice ? <p className="rail-notice text-safe-wrap">{notice}</p> : null}
+      {adminAction ? <div className="rail-admin-action">{adminAction}</div> : null}
     </header>
   );
 }

@@ -5,8 +5,13 @@ type HomeHeroProps = { siteName: string; description: string; images: HeroImage[
 export function HomeHero({ siteName, description, images }: HomeHeroProps) {
   return (
     <section aria-labelledby="home-heading" className={`home-cover ${images.length ? "home-cover-with-photo" : ""}`}>
-      <div className="home-cover-title">
-      </div>
+      {images.length ? (
+        <h1 id="home-heading" className="sr-only">{siteName}</h1>
+      ) : (
+        <div className="home-cover-title">
+          <h1 id="home-heading">{siteName}</h1>
+        </div>
+      )}
       {images.length ? <HomeHeroMedia images={images} /> : null}
       <div className="home-cover-note">
         <p className="text-safe-wrap">{description}</p>
@@ -15,14 +20,14 @@ export function HomeHero({ siteName, description, images }: HomeHeroProps) {
         </Link>
       </div>
       <nav aria-label="빠른 안내" className="home-cover-index">
-        <a href="#life-home-heading">
-          생활 기록 <span aria-hidden="true">↓</span>
-        </a>
         <Link href="/about/directions">
           방문 안내 <span aria-hidden="true">↗</span>
         </Link>
+        <Link href="/support/contact">
+          온라인 문의 <span aria-hidden="true">↗</span>
+        </Link>
         <Link href="/support">
-          후원·참여 <span aria-hidden="true">↗</span>
+          후원·자원봉사 <span aria-hidden="true">↗</span>
         </Link>
       </nav>
     </section>

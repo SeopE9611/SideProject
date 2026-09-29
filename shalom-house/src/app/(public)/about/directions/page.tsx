@@ -25,8 +25,8 @@ export default async function DirectionsPage() {
         title="찾아오시는 길"
         description={contact.directionsPageDescription}
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "시설소개", href: "/about" }, { label: "찾아오시는 길" }]}
+        adminAction={<PublicAdminEditLink href="/admin/site-content/contact-information" />}
       />
-      <PublicAdminEditLink href="/admin/site-content/contact-information" />
       <div className="mx-auto max-w-site px-page py-10 sm:px-page-wide sm:py-14">
         <div className="directions-grid grid items-stretch gap-6">
           <section

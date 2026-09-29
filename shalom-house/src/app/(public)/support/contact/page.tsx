@@ -26,8 +26,8 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
         title="문의하기"
         description={contact.contactPageDescription}
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "함께하기", href: "/support" }, { label: "문의하기" }]}
+        adminAction={<PublicAdminEditLink href="/admin/site-content/contact-information" />}
       />
-      <PublicAdminEditLink href="/admin/site-content/contact-information" />
       <div className="mx-auto grid max-w-site items-start gap-9 px-page py-9 sm:px-page-wide sm:py-12 lg:grid-cols-12 lg:gap-12">
         <section id="inquiry-form" aria-labelledby="inquiry-heading" className="min-w-0 lg:col-span-8">
           <p className="text-small font-bold text-accent">온라인 접수</p>
