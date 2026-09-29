@@ -433,6 +433,11 @@
 .section-layout .directions-grid {
   grid-template-columns: 1fr;
 }
+@media (min-width: 1200px) {
+  .section-layout .directions-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+}
 .reading-layout {
   max-width: 90rem;
   padding: 4rem 3.5rem 6rem;
