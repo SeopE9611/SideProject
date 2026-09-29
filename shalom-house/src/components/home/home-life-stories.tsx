@@ -91,24 +91,27 @@ export function HomeLifeStories({ items }: { items: readonly HomeLifeStory[] }) 
             startX: event.clientX,
             scrollLeft: event.currentTarget.scrollLeft,
           };
-          event.currentTarget.setPointerCapture(event.pointerId);
         }}
         onPointerMove={(event) => {
           const drag = dragRef.current;
           if (!drag.active || event.pointerType !== "mouse") return;
           const distance = event.clientX - drag.startX;
           if (!drag.dragged && Math.abs(distance) < 6) return;
-          drag.dragged = true;
+          if (!drag.dragged) {
+            drag.dragged = true;
+            event.currentTarget.setPointerCapture(event.pointerId);
+          }
           event.currentTarget.scrollLeft = drag.scrollLeft - distance;
         }}
         onPointerUp={(event) => {
-          if (dragRef.current.active && event.currentTarget.hasPointerCapture(event.pointerId)) {
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
             event.currentTarget.releasePointerCapture(event.pointerId);
           }
           dragRef.current.active = false;
         }}
         onPointerCancel={() => {
           dragRef.current.active = false;
+          dragRef.current.dragged = false;
         }}
         onDragStart={(event) => event.preventDefault()}
         onClickCapture={(event) => {
