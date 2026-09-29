@@ -1,0 +1,191 @@
+"use client";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
+import { isOrderRefundedStatus } from "@/lib/status/flow-status";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import useSWR, { mutate } from "swr";
+import useSWRInfinite from "swr/infinite";
+
+const LIMIT = 5; // 한 페이지에 보여줄 이력 개수
+
+const SHIPPING_GUARD_MESSAGES = new Set([
+  "배송 정보가 등록되지 않았습니다.",
+  "방문 수령 정보가 등록되지 않았습니다.",
+]);
+
+// fetcher 함수: API 호출 후 JSON 파싱
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((res) => res.json());
+
+// 이력 API 키 생성기: 이전 페이지가 비었으면 더 이상 요청하지 않음
+const getHistoryKey =
+  (orderId: string) => (pageIndex: number, previousPageData: { history: any[] } | null) => {
+    if (previousPageData && previousPageData.history.length === 0) return null;
+    return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+  };
+
+// 서버로부터 받는 상태 정보 타입
+interface StatusRes {
+  status: string;
+}
+interface Props {
+  orderId: string; // 대상 주문 ID
+  currentStatus: string; // 서버에서 내려준 현재 상태(초깃값)
+  paymentStatus: string;
+  shippingInfo?: {
+    shippingMethod?: string;
+    deliveryMethod?: string;
+    estimatedDate?: string;
+    invoice?: {
+      courier?: string;
+      trackingNumber?: string;
+    };
+  };
+  readOnly?: boolean;
+}
+
+const ORDER_PROGRESS_STATUSES = ["대기중", "결제완료", "상품준비중", "배송중", "배송완료"] as const;
+
+export default function OrderStatusSelect({
+  orderId,
+  currentStatus,
+  paymentStatus,
+  shippingInfo,
+  readOnly = false,
+}: Props) {
+  // 상태 전용 SWR: fallbackData로 초기 상태 주입 -> 첫 렌더 안정화
+  const { data: statusData, mutate: mutateStatus } = useSWR<StatusRes>(
+    `/api/orders/${orderId}/status`,
+    fetcher,
+    { fallbackData: { status: currentStatus } },
+  );
+
+  // 주문 상세/이력/목록 revalidate를 위한 SWR 핸들들
+  const { mutate: mutateOrderDetail } = useSWR(`/api/orders/${orderId}`, fetcher);
+  const { mutate: mutateHistory } = useSWRInfinite(getHistoryKey(orderId), fetcher);
+
+  // 현재 상태(취소여부 판정에 사용)
+  const current = statusData?.status ?? currentStatus;
+  const isCancelled = current === "취소";
+  const isConfirmed = current === "구매확정";
+  const isFulfillmentComplete = current === "배송완료";
+  const isRefunded = isOrderRefundedStatus(current) || isOrderRefundedStatus(paymentStatus);
+  const isLocked = isCancelled || isConfirmed || isFulfillmentComplete || isRefunded;
+
+  const currentProgressIndex = ORDER_PROGRESS_STATUSES.indexOf(
+    current as (typeof ORDER_PROGRESS_STATUSES)[number],
+  );
+  const paymentStatusToken = String(paymentStatus ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+  const isPaymentComplete = ["결제완료", "paid", "paymentcompleted", "approved"].includes(
+    paymentStatusToken,
+  );
+  const forwardStatuses =
+    currentProgressIndex >= 0 ? ORDER_PROGRESS_STATUSES.slice(currentProgressIndex) : [current];
+  const selectableStatuses = forwardStatuses.filter(
+    (status) =>
+      status === current || isPaymentComplete || status === "대기중" || status === "결제완료",
+  );
+
+  // 셀렉트 변경 핸들러
+  const handleChange = async (nextStatus: string) => {
+    const prevStatus = current;
+    try {
+      // 동일 값이면 네트워크 호출 불필요 -> 바로 리턴
+      if (nextStatus === prevStatus) return;
+
+      // 안전장치: 혹시라도 ‘취소’가 들어오면 무시하고 모달 버튼을 쓰게 유도
+      if (nextStatus === "취소") return;
+
+      if (nextStatus === "배송중" || nextStatus === "배송완료") {
+        const guard = canEnterShippingPhase(shippingInfo);
+        if (!guard.ok) {
+          await mutateStatus({ status: prevStatus }, false);
+          showErrorToast(guard.message ?? "배송 정보가 등록되지 않았습니다.");
+          return;
+        }
+      }
+
+      // PATCH 호출(쿠키 인증 포함)
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // access/refresh 쿠키를 서버가 읽을 수 있게
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      if (!res.ok) {
+        const errorMessage = await res.text().catch(() => "서버 오류");
+        throw new Error(errorMessage || "서버 오류");
+      }
+
+      // 성공 후, 연관 캐시 순서대로 재검증
+      await mutateStatus();
+      await mutateOrderDetail();
+      await mutateHistory();
+      await mutate((key) => typeof key === "string" && key.startsWith("/api/orders"));
+
+      const displayStatus = getOrderStatusLabelForDisplay(nextStatus, shippingInfo);
+      showSuccessToast(`주문 상태가 '${displayStatus}'(으)로 변경되었습니다.`);
+    } catch (err: unknown) {
+      console.error(err);
+      await mutateStatus({ status: prevStatus }, false);
+
+      const errorMessage = err instanceof Error ? err.message.trim() : "서버 오류";
+
+      if (SHIPPING_GUARD_MESSAGES.has(errorMessage)) {
+        showErrorToast(errorMessage);
+        return;
+      }
+
+      showErrorToast(`상태 변경 실패: ${errorMessage || "서버 오류"}`);
+    }
+  };
+
+  return (
+    <div className="w-[200px]">
+      {/*
+        취소 / 구매확정 / 환불 상태는 최종 상태로 보고 셀렉트 변경을 막습니다.
+        - 취소: 이미 종료된 주문
+        - 구매확정: 사용자가 주문 완료를 확정한 상태
+        - 환불: 주문 또는 결제가 환불/결제취소된 상태
+      */}
+      {readOnly ? (
+        <div className="rounded-md border border-border bg-muted px-3 py-2 text-ui-body-sm text-muted-foreground">
+          {getOrderStatusLabelForDisplay(current, shippingInfo)} · 조회 전용
+        </div>
+      ) : isLocked ? (
+        <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-ui-body-sm italic">
+          {isRefunded
+            ? "결제취소/환불 상태 · 일반 상태 변경 불가"
+            : isConfirmed
+              ? "구매확정됨 (변경 불가)"
+              : isFulfillmentComplete
+                ? `${getOrderStatusLabelForDisplay(current, shippingInfo)} · 일반 상태 변경 불가`
+                : "취소됨 (변경 불가)"}
+        </div>
+      ) : (
+        <Select value={current} onValueChange={handleChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="주문 상태 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            {/*  ‘취소’는 제외. 모달 버튼으로만 처리 */}
+            {selectableStatuses.map((s) => (
+              <SelectItem key={s} value={s}>
+                {getOrderStatusLabelForDisplay(s, shippingInfo)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}

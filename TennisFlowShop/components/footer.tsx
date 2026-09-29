@@ -1,0 +1,346 @@
+import SiteContainer from "@/components/layout/SiteContainer";
+import {
+  ArrowUpRight,
+  Clock,
+  CreditCard,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Train,
+  Truck,
+} from "lucide-react";
+import Link from "next/link";
+
+const Footer = () => {
+  /**
+   * 비회원 주문(게스트) 기능 노출 정책
+   * - public env: NEXT_PUBLIC_GUEST_ORDER_MODE = 'off' | 'legacy' | 'on'
+   * - off/legacy: 비회원 주문/조회 진입점을 UI에서 숨김
+   * - on: 비회원 주문을 운영할 때만 '주문 조회(/order-lookup)' 링크 노출
+   */
+  const rawMode = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim();
+  const guestOrderMode =
+    rawMode === "off" || rawMode === "legacy" || rawMode === "on" ? rawMode : "legacy";
+
+  // const quickLinks = [
+  //   { name: "스트링 쇼핑", href: "/products" },
+  //   { name: "장착 서비스", href: "/services" },
+  //   { name: "패키지", href: "/services/packages" },
+  //   ...(guestOrderMode === "on" ? [{ name: "주문 조회", href: "/order-lookup" }] : []),
+  //   { name: "오프라인 매장 찾기", href: "/services/locations" },
+  // ];
+
+  const customerService = [
+    { name: "공지사항", href: "/board/notice" },
+    { name: "이벤트", href: "/board/event" },
+    { name: "문의", href: "/board/qna" },
+    { name: "이용약관", href: "/terms" },
+    { name: "개인정보처리방침", href: "/privacy" },
+  ];
+
+  const customerServiceLinks = customerService.filter(
+    (link) => link.name === "공지사항" || link.name === "이벤트" || link.name === "문의",
+  );
+  const policyLinks = customerService.filter(
+    (link) => link.name === "이용약관" || link.name === "개인정보처리방침",
+  );
+
+  const snsLinks = [
+    {
+      name: "인스타그램",
+      href: "https://www.instagram.com/",
+      Icon: Instagram,
+    },
+    {
+      name: "밴드",
+      href: "https://band.us/",
+      Icon: null,
+    },
+  ];
+
+  return (
+    <footer className="relative mt-8 w-full overflow-hidden border-t border-surface-inverse-foreground/15 bg-surface-inverse text-surface-inverse-foreground bp-sm:mt-12">
+      {/* 모바일/좁은 화면용 compact footer */}
+      <div className="block bp-md:hidden">
+        <div className="py-5">
+          <SiteContainer variant="wide">
+            <div className="space-y-3 text-ui-body-sm text-surface-inverse-muted">
+              <div className="space-y-1">
+                <p className="font-ui-medium text-surface-inverse-foreground">도깨비테니스</p>
+                <p className="break-keep">고객센터 010-5218-5248 · 평일 10:00 - 22:00</p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <Link
+                  href="/terms"
+                  className="inline-flex min-h-11 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  이용약관
+                </Link>
+                <Link
+                  href="/privacy"
+                  className="inline-flex min-h-11 items-center py-1.5 font-medium text-surface-inverse-foreground transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  개인정보처리방침
+                </Link>
+                <Link
+                  href="/board/qna"
+                  className="inline-flex min-h-11 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  Q&amp;A 문의
+                </Link>
+                {guestOrderMode === "on" ? (
+                  <Link
+                    href="/order-lookup"
+                    className="inline-flex min-h-11 items-center py-1.5 transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    주문조회
+                  </Link>
+                ) : null}
+              </div>
+
+              <p className="text-ui-label text-surface-inverse-muted">
+                &copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.
+              </p>
+            </div>
+          </SiteContainer>
+        </div>
+      </div>
+
+      {/* 태블릿/데스크탑용 기존 full footer */}
+      <div className="hidden bp-md:block">
+        <div className="py-6 bp-sm:py-8">
+          <SiteContainer variant="wide">
+            <div className="space-y-6 bp-sm:space-y-8">
+              <div className="grid w-full grid-cols-1 gap-y-6 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-sm:pb-6 bp-lg:grid-cols-[1.15fr_1fr_1fr_1fr] bp-lg:gap-x-8 bp-xl:grid-cols-[1.15fr_1fr_1fr_1fr_0.85fr]">
+                <section className="flex min-w-0 w-full flex-col items-start gap-3">
+                  <h3 className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
+                    고객센터
+                  </h3>
+                  <div className="w-full space-y-3">
+                    <div className="flex items-start gap-2.5">
+                      <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight" />
+                      <div>
+                        <span className="block text-ui-body-lg font-ui-medium leading-none text-surface-inverse-foreground">
+                          010-5218-5248
+                        </span>
+                        <p className="mt-1 text-ui-label text-surface-inverse-muted">
+                          영업 시간 내 상담 가능
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 text-ui-body-sm text-surface-inverse-foreground">
+                      <Mail className="h-4 w-4 shrink-0 text-brand-highlight" />
+                      <span className="break-all text-surface-inverse-foreground">
+                        korgis5813@naver.com
+                      </span>
+                    </div>
+
+                    <div className="flex items-start gap-2.5 text-ui-body-sm text-surface-inverse-foreground">
+                      <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand-highlight" />
+                      <div className="space-y-1">
+                        <div>평일 10:00 - 22:00</div>
+                        <div>토요일 09:00 - 18:00</div>
+                        <div>일요일/공휴일 휴무</div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="flex min-w-0 w-full flex-col items-start gap-3">
+                  <h3 className="flex items-center gap-2 text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
+                    <Truck className="h-4 w-4 text-brand-highlight" />
+                    배송안내
+                  </h3>
+                  <ul className="w-full space-y-2.5 text-ui-body-sm leading-5 text-surface-inverse-muted">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-highlight" />
+                      <p>
+                        <span className="font-medium text-surface-inverse-foreground">
+                          작업 완료 시
+                        </span>{" "}
+                        당일 발송됩니다.
+                      </p>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-highlight" />
+                      <p>
+                        <span className="font-medium text-surface-inverse-foreground">
+                          영업일 기준
+                        </span>{" "}
+                        순차 처리됩니다.
+                      </p>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand-highlight" />
+                      <p>
+                        <span className="font-medium text-surface-inverse-foreground">
+                          작업량에 따라
+                        </span>{" "}
+                        일정이 변동될 수 있습니다.
+                      </p>
+                    </li>
+                  </ul>
+                </section>
+
+                <section className="flex min-w-0 w-full flex-col items-start gap-3">
+                  <h3 className="flex items-center gap-2 text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
+                    <MapPin className="h-4 w-4 text-brand-highlight" />
+                    매장 위치
+                  </h3>
+                  <div className="w-full space-y-3">
+                    <div className="space-y-1.5 border-l border-brand-highlight/35 pl-3">
+                      <p className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground">
+                        도깨비테니스
+                      </p>
+                      <p className="text-ui-body-sm text-surface-inverse-foreground">
+                        서울 동작구 노량진로 22 B1
+                      </p>
+                      <div className="mt-2 flex items-start gap-2 text-ui-label text-surface-inverse-muted">
+                        <Train className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-highlight" />
+                        <span>대방역 2번 출구 도보 이동</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2">
+                      <Link
+                        href="/services/locations"
+                        className="inline-flex items-center text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        위치 안내 보기
+                      </Link>
+                      <Link
+                        href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md border border-surface-inverse-foreground/20 px-2.5 py-1.5 text-ui-body-sm text-surface-inverse-foreground transition-colors hover:border-brand-highlight hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        네이버 지도
+                        <ArrowUpRight className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="flex min-w-0 w-full flex-col items-start gap-3">
+                  <h3 className="flex items-center gap-2 text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
+                    <CreditCard className="h-4 w-4 text-brand-highlight" />
+                    결제안내
+                  </h3>
+                  <div className="w-full space-y-2 text-ui-label leading-5 text-surface-inverse-muted">
+                    <p>무통장 입금 계좌</p>
+                    <p className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground">
+                      카카오뱅크 3333-2110-92155
+                    </p>
+                    <p>예금주 김재민</p>
+                    <p>입금 확인은 영업시간 내 순차 처리됩니다.</p>
+                  </div>
+                </section>
+
+                <section className="flex min-w-0 w-full flex-col items-start gap-3">
+                  <h3 className="text-ui-body-sm font-ui-medium text-surface-inverse-foreground bp-sm:text-ui-body">
+                    SNS
+                  </h3>
+                  <div className="flex flex-col items-start gap-2.5">
+                    {snsLinks.map(({ name, href, Icon }) => (
+                      <Link
+                        key={name}
+                        href={href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 text-ui-label font-medium text-surface-inverse-muted transition-colors hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {Icon ? (
+                          <Icon className="h-4 w-4 shrink-0 text-brand-highlight" />
+                        ) : (
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-4 w-4 shrink-0 text-brand-highlight"
+                          >
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+
+                            <path d="M9 7v10" />
+                            <path d="M9 11h3a3 3 0 0 1 3 3v0a3 3 0 0 1-3 3H9" />
+                          </svg>
+                        )}
+                        <span>{name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            </div>
+          </SiteContainer>
+        </div>
+
+        <div className="border-t border-surface-inverse-foreground/15 bg-surface-inverse">
+          <div className="py-4 bp-sm:py-5">
+            <SiteContainer variant="wide">
+              <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
+                <div className="min-w-0 space-y-2.5 text-ui-label leading-5 text-surface-inverse-muted">
+                  <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
+                    {policyLinks.map((link) => (
+                      <Link
+                        key={`policy-${link.name}`}
+                        href={link.href}
+                        className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        {link.name}
+                      </Link>
+                    ))}
+                    <Link
+                      href="/board/notice"
+                      className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      공지사항
+                    </Link>
+                    <Link
+                      href="/board/event"
+                      className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      이벤트
+                    </Link>
+                    <Link
+                      href="/board/qna"
+                      className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Q&amp;A 문의
+                    </Link>
+                    {guestOrderMode === "on" ? (
+                      <Link
+                        href="/order-lookup"
+                        className="text-ui-body-sm font-medium text-surface-inverse-foreground transition-colors duration-300 hover:text-brand-highlight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        주문조회
+                      </Link>
+                    ) : null}
+                  </div>
+
+                  <p className="text-surface-inverse-muted">
+                    상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 |
+                    통신판매업신고: 제 2026 - 서울동작 - 0548 호
+                  </p>
+                  <p className="text-surface-inverse-muted">
+                    사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)
+                  </p>
+                  <p className="text-ui-label text-surface-inverse-muted">
+                    &copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.
+                  </p>
+                </div>
+              </div>
+            </SiteContainer>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

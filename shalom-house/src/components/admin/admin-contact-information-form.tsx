@@ -1,0 +1,134 @@
+"use client";
+import Link from "next/link";
+import { useState, type FormEvent } from "react";
+import type { ContactInformationContent } from "@/features/site-content/site-content.types";
+
+type AdminContactInformationFormProps = { initialContent: ContactInformationContent; expectedUpdatedAt: string | null };
+type TextKey = Exclude<keyof ContactInformationContent, "showInstagram">;
+type ResponseBody = { error?: string; fieldErrors?: Record<string, string>; redirectTo?: string };
+const instagramDisclosureId = "contact-showInstagram";
+const instagramDisclosureErrorId = "contact-showInstagram-error";
+const fields: { key: TextKey; label: string; multiline?: boolean }[] = [
+  { key: "directionsPageDescription", label: "찾아오시는 길 페이지 설명", multiline: true },
+  { key: "address", label: "주소" },
+  { key: "phone", label: "대표 전화" },
+  { key: "visitInquiryTitle", label: "방문 전 문의 제목" },
+  { key: "visitInquiryDescription", label: "방문 전 문의 설명", multiline: true },
+  { key: "contactPageDescription", label: "문의하기 페이지 설명", multiline: true },
+  { key: "contactIntroduction", label: "문의 경로 소개", multiline: true },
+  { key: "instagramUrl", label: "인스타그램 URL" },
+];
+export function AdminContactInformationForm({ initialContent, expectedUpdatedAt }: AdminContactInformationFormProps) {
+  const [content, setContent] = useState(initialContent),
+    [confirmed, setConfirmed] = useState(false);
+  const [busy, setBusy] = useState(false),
+    [errors, setErrors] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState("");
+  function updateTextField(key: TextKey, value: string) {
+    setContent((current) => ({ ...current, [key]: value }));
+    setConfirmed(false);
+  }
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!confirmed || busy) return;
+    setBusy(true);
+    setErrors({});
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/site-content/contact-information", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expectedUpdatedAt, saveConfirmed: confirmed, content }),
+      });
+      let data: ResponseBody;
+      try {
+        data = await response.json();
+      } catch {
+        setMessage("연락처 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      if (!response.ok) {
+        setErrors(data.fieldErrors ?? {});
+        setMessage(
+          data.error === "edit_conflict"
+            ? "다른 관리자가 연락처 정보를 먼저 수정했습니다. 새로고침 후 다시 확인해 주세요."
+            : data.error === "validation"
+              ? "입력 내용을 확인해 주세요."
+              : "연락처 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+        );
+        return;
+      }
+      if (
+        typeof data.redirectTo !== "string" ||
+        !data.redirectTo ||
+        !data.redirectTo.startsWith("/admin/site-content/contact-information")
+      ) {
+        setMessage("연락처 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      window.location.assign(data.redirectTo);
+    } catch {
+      setMessage("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
+      {fields.map(({ key, label, multiline }) => {
+        const id = `contact-${key}`,
+          error = errors[key],
+          described = error ? `${id}-error` : undefined;
+        const props = {
+          id,
+          value: content[key],
+          onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+            updateTextField(key, e.target.value),
+          "aria-describedby": described,
+          "aria-invalid": error ? (true as const) : undefined,
+          className: "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
+        };
+        return (
+          <div key={key} className="grid gap-2 border-b border-border pb-6">
+            <label className="block font-semibold" htmlFor={id}>
+              {label}
+            </label>
+            {multiline ? (
+              <textarea {...props} className={`${props.className} min-h-24`} />
+            ) : (
+              <input {...props} disabled={key === "instagramUrl" && !content.showInstagram} />
+            )}
+            {error ? (
+              <p id={`${id}-error`} role="alert" className="text-small font-semibold text-danger">
+                {error}
+              </p>
+            ) : null}
+          </div>
+        );
+      })}
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label className="flex items-start gap-3">
+          <input id={instagramDisclosureId} type="checkbox" checked={content.showInstagram} onChange={(e) => { setContent((v) => ({ ...v, showInstagram: e.target.checked })); setConfirmed(false); }} aria-invalid={errors.showInstagram ? true : undefined} aria-describedby={errors.showInstagram ? instagramDisclosureErrorId : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <span>인스타그램 공개</span>
+        </label>
+        {errors.showInstagram ? <p id={instagramDisclosureErrorId} role="alert" className="text-small font-semibold text-danger">{errors.showInstagram}</p> : null}
+      </div>
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex items-start gap-3">
+          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} aria-invalid={errors.saveConfirmed ? true : undefined} aria-describedby={errors.saveConfirmed ? "contact-confirm-error" : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <span>입력한 주소와 연락처가 공개 홈페이지 전체에 반영되는 것을 확인했습니다.</span>
+        </label>
+        {errors.saveConfirmed ? <p id="contact-confirm-error" role="alert" className="mt-3 text-small font-semibold text-danger">{errors.saveConfirmed}</p> : null}
+      </div>
+      {message ? (
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
+          {message}
+        </p>
+      ) : null}
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button type="submit" disabled={busy} className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">{busy ? "저장 중…" : "연락처 정보 저장"}</button>
+        <Link href="/admin/site-content" className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">취소</Link>
+      </div>
+    </form>
+  );
+}

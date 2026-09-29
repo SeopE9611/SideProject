@@ -1,0 +1,289 @@
+"use client";
+import { PublicSurface } from "@/components/public";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Heart, ShoppingCart, Trash2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useWishlist } from "@/app/features/wishlist/useWishlist";
+import { useCartStore } from "@/app/store/cartStore";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import clsx from "clsx";
+import { useState } from "react";
+
+type Props = {
+  className?: string;
+  variant?: "sidebar" | "inline"; // inline: 장바구니 목록 아래에 붙는 모드
+};
+
+export default function WishlistSidebar({ className, variant = "sidebar" }: Props) {
+  const { items, clear, remove, isLoading, hasDataError, hasResolvedData } = useWishlist();
+  const router = useRouter();
+  const add = useCartStore((s) => s.addItem);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
+
+  async function handleClear() {
+    try {
+      await clear();
+      showSuccessToast("위시리스트를 비웠어요.");
+    } catch {
+      showErrorToast("위시리스트 비우기에 실패했습니다.");
+    } finally {
+      setClearDialogOpen(false);
+    }
+  }
+
+  async function handleRemove(id: string) {
+    try {
+      setRemovingId(id);
+      await remove(id); // 서버 삭제 + SWR 갱신
+    } catch {
+      showErrorToast("위시리스트 삭제에 실패했습니다.");
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
+  const resolvedItems = items ?? [];
+  // 사이드바 숨김은 실제 빈 데이터가 확정된 경우에만 허용한다.
+  if (!isLoading && !hasDataError && hasResolvedData && resolvedItems.length === 0) return null;
+
+  if (hasDataError) {
+    return (
+      <PublicSurface
+        variant="muted"
+        padding="none"
+        className={clsx("mt-6 overflow-hidden", className)}
+      >
+        <header className="border-b border-border p-4">
+          <h2 className="flex items-center gap-2 break-keep whitespace-nowrap text-ui-card-title font-ui-medium">
+            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />내 위시리스트
+          </h2>
+        </header>
+        <div className="p-4 text-ui-body-sm text-muted-foreground">
+          위시리스트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+        </div>
+      </PublicSurface>
+    );
+  }
+
+  if (isLoading && !hasResolvedData) {
+    return (
+      <PublicSurface
+        variant="muted"
+        padding="none"
+        className={clsx("mt-6 overflow-hidden", className)}
+      >
+        <header className="border-b border-border p-4">
+          <h2 className="flex items-center gap-2 break-keep whitespace-nowrap text-ui-card-title font-ui-medium">
+            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />내 위시리스트
+          </h2>
+        </header>
+        <div className="space-y-3 p-4" role="status" aria-live="polite">
+          <span className="sr-only">위시리스트를 불러오는 중입니다.</span>
+          <div className="space-y-3" aria-hidden="true">
+            {["wishlist-loading-primary", "wishlist-loading-secondary"].map((key) => (
+              <div key={key} className="flex min-w-0 items-center gap-4">
+                <Skeleton className="h-14 w-14 shrink-0 rounded-control" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-4/5 rounded-md" />
+                  <Skeleton className="h-4 w-24 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </PublicSurface>
+    );
+  }
+
+  const title = `내 위시리스트${variant === "inline" ? ` (${resolvedItems.length}개)` : ""}`;
+  const list = variant === "inline" ? resolvedItems : resolvedItems.slice(0, 5);
+
+  function handleAddToCart(it: (typeof resolvedItems)[number]) {
+    if (it.requiresOption && !it.hasSelectedOption) {
+      showErrorToast(
+        "색상과 게이지(굵기)를 선택해주세요. 상세페이지에서 옵션을 다시 선택해주세요.",
+      );
+      router.push(`/products/${it.id}`);
+      return;
+    }
+    if (it.requiresOption && !it.optionAvailable) {
+      showErrorToast("찜한 옵션이 현재 품절되었습니다. 다른 옵션을 선택해주세요.");
+      return;
+    }
+
+    const result = add({
+      id: it.id,
+      name: it.name,
+      price: it.price,
+      quantity: 1,
+      image: it.selectedColorImage || it.image,
+      stock: it.requiresOption ? it.optionStock : it.stock,
+      selectedGauge: it.selectedGauge,
+      selectedColor: it.selectedColor,
+      selectedColorLabel: it.selectedColorLabel,
+      selectedColorHex: it.selectedColorHex,
+      selectedColorImage: it.selectedColorImage,
+    });
+
+    if (!result.success) {
+      showErrorToast(result.message ?? "장바구니에 담을 수 없습니다.");
+      return;
+    }
+    showSuccessToast("장바구니에 담았습니다.");
+  }
+
+  return (
+    <>
+    <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>위시리스트를 비울까요?</AlertDialogTitle>
+          <AlertDialogDescription>
+            저장한 모든 상품이 위시리스트에서 삭제되며 이 작업은 되돌릴 수 없습니다.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="min-h-11 bp-sm:min-h-10">취소</AlertDialogCancel>
+          <AlertDialogAction
+            className={buttonVariants({ variant: "destructive", className: "min-h-11 bp-sm:min-h-10" })}
+            onClick={handleClear}
+          >
+            모두 삭제
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    <PublicSurface
+      variant="muted"
+      padding="none"
+      className={clsx("mt-6 overflow-hidden", className)}
+    >
+      <header className={clsx("p-4", variant === "inline" && "border-b border-border bg-muted/50 dark:bg-card/40")}>
+        <div className="flex flex-col items-start gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+          <h2 className="flex items-center gap-2 break-keep whitespace-nowrap text-ui-card-title font-ui-medium">
+            <Heart className="h-5 w-5 text-foreground" aria-hidden="true" />
+            {title}
+          </h2>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setClearDialogOpen(true)}
+            wrap="responsive"
+            className="min-h-11 w-full justify-center border-border bg-transparent hover:bg-primary/10 bp-sm:min-h-9 bp-sm:w-auto dark:hover:bg-primary/20"
+          >
+            <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
+            위시리스트 비우기
+          </Button>
+        </div>
+      </header>
+
+      <div className={variant === "inline" ? "p-0" : ""}>
+        <div className={clsx(variant === "inline" ? "grid gap-0 bp-xl:grid-cols-2" : "space-y-3")}>
+          {list.map((it, index) => (
+            <div
+              key={it.id}
+              className={clsx(
+                "flex min-w-0 items-center gap-4",
+                variant === "inline"
+                  ? clsx(
+                      "border-b border-border p-4 last:border-b-0",
+                      index >= list.length - (list.length % 2 === 0 ? 2 : 1) && "bp-xl:border-b-0",
+                      index % 2 === 0 && "bp-xl:border-r bp-xl:border-border",
+                      list.length % 2 === 1 && index === list.length - 1 && "bp-xl:border-r-0",
+                    )
+                  : "p-3",
+                "min-w-0", // 말줄임을 위해 필요
+              )}
+            >
+              <Image
+                src={it.image || "/placeholder.svg"}
+                alt={it.name}
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-control border object-cover flex-shrink-0 shadow-sm"
+              />
+              {/* 이름/가격 영역 - 긴 이름은 말줄임 */}
+              <div className="flex-1 min-w-0">
+                <Link
+                  href={`/products/${it.id}`}
+                  className="block line-clamp-2 break-keep text-ui-body-sm font-ui-medium transition-colors hover:text-primary hover:underline"
+                >
+                  {it.name}
+                </Link>
+                <div className="text-ui-body-sm text-muted-foreground">
+                  {it.price.toLocaleString()}원
+                </div>
+                <div className="mt-1 space-y-0.5 text-ui-label text-muted-foreground">
+                  {it.hasSelectedOption ? (
+                    <>
+                      {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}
+                      {it.selectedGauge && <div>게이지(굵기): {it.selectedGauge}</div>}
+                      {typeof it.optionStock === "number" && (
+                        <div>현재 재고: {it.optionStock}개</div>
+                      )}
+                    </>
+                  ) : it.requiresOption ? (
+                    <>
+                      <div className="font-ui-medium text-warning">옵션 미선택</div>
+                      <div>상세페이지에서 색상/게이지(굵기)를 선택해주세요.</div>
+                    </>
+                  ) : null}
+                  {it.hasSelectedOption && it.optionAvailable === false && (
+                    <div className="font-ui-medium text-destructive">품절</div>
+                  )}
+                </div>
+              </div>
+
+              {/* 액션 버튼: 크기/간격 통일 */}
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-11 min-h-11 w-11 min-w-11 border-border bg-transparent p-0 hover:bg-primary/10 bp-sm:h-9 bp-sm:min-h-9 bp-sm:w-9 bp-sm:min-w-9 dark:hover:bg-primary/20"
+                  onClick={() => handleAddToCart(it)}
+                  disabled={it.requiresOption && it.hasSelectedOption && !it.optionAvailable}
+                  aria-label={
+                    it.requiresOption && !it.hasSelectedOption ? "옵션 선택" : "장바구니에 담기"
+                  }
+                  title={
+                    it.requiresOption && !it.hasSelectedOption ? "옵션 선택" : "장바구니에 담기"
+                  }
+                  // remove(it.id); -> 자동삭제 전용 (지워서 활성화 시켜도됨)
+                >
+                  <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-11 min-h-11 w-11 min-w-11 p-0 text-muted-foreground hover:bg-destructive/10 dark:hover:bg-destructive/15 hover:text-destructive bp-sm:h-9 bp-sm:min-h-9 bp-sm:w-9 bp-sm:min-w-9"
+                  onClick={() => handleRemove(it.id)}
+                  disabled={removingId === it.id}
+                  aria-label="위시리스트에서 삭제"
+                  title="위시리스트에서 삭제"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </PublicSurface>
+    </>
+  );
+}

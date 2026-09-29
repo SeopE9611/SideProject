@@ -1,0 +1,2181 @@
+"use client";
+
+import {
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  ImageIcon,
+  MessageSquare,
+  PackageSearch,
+  Paperclip,
+  Plus,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+  ThumbsUp,
+  X,
+} from "lucide-react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
+
+import type { BoardTypeConfig } from "@/app/board/_components/board-config";
+import { getCategoryBadgeText } from "@/app/board/_components/board-config";
+import ErrorBox from "@/app/board/_components/ErrorBox";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import PinnedNoticeStrip from "@/app/board/_components/PinnedNoticeStrip";
+import AsyncState from "@/components/system/AsyncState";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { badgeSizeSm, getBoardCategoryTone } from "@/lib/badge-style";
+import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
+import {
+  MARKET_CONDITION_GRADE_OPTIONS,
+  MARKET_RACKET_GRIP_SIZE_OPTIONS,
+  MARKET_RACKET_PATTERN_OPTIONS,
+  MARKET_SALE_STATUS_OPTIONS,
+  MARKET_STRING_COLOR_OPTIONS,
+  MARKET_STRING_GAUGE_OPTIONS,
+  MARKET_STRING_LENGTH_OPTIONS,
+  MARKET_STRING_MATERIAL_OPTIONS,
+  getMarketBrandLabel,
+  getMarketSaleStatusLabel,
+  getMarketStringColorLabel,
+  getMarketStringLengthLabel,
+  getMarketStringMaterialLabel,
+} from "@/lib/market";
+import { showErrorToast } from "@/lib/toast";
+import type { CommunityPost } from "@/lib/types/community";
+import { useRouter, useSearchParams } from "next/navigation";
+
+const MessageComposeDialog = dynamic(
+  () => import("@/app/messages/_components/MessageComposeDialog"),
+  {
+    loading: () => null,
+  },
+);
+
+// API 응답 타입
+type ListResponse = {
+  ok: boolean;
+  version?: string;
+  items: CommunityPost[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+type NoticePinnedResponse = {
+  items?: Array<{
+    _id: string;
+    title: string;
+    createdAt: string | Date;
+    isPinned?: boolean;
+  }>;
+};
+
+const MARKET_FILTER_KEYS = [
+  "saleStatus",
+  "conditionGrade",
+  "minPrice",
+  "maxPrice",
+  "modelKeyword",
+  "gripSize",
+  "pattern",
+  "material",
+  "gauge",
+  "color",
+  "length",
+  "minWeight",
+  "maxWeight",
+  "minBalance",
+  "maxBalance",
+  "minHeadSize",
+  "maxHeadSize",
+  "minSwingWeight",
+  "maxSwingWeight",
+  "minStiffnessRa",
+  "maxStiffnessRa",
+] as const;
+
+type MarketFilterKey = (typeof MARKET_FILTER_KEYS)[number];
+type MarketFilterDraft = Record<MarketFilterKey, string>;
+
+const EMPTY_MARKET_FILTER_DRAFT: MarketFilterDraft = MARKET_FILTER_KEYS.reduce(
+  (acc, key) => ({ ...acc, [key]: "" }),
+  {} as MarketFilterDraft,
+);
+
+const PRICE_FILTER_KEYS = new Set<MarketFilterKey>(["minPrice", "maxPrice"]);
+
+const stripNonDigits = (value: string) => value.replace(/[^\d]/g, "");
+
+const formatPriceInput = (value: string) => {
+  const digitsOnly = stripNonDigits(value);
+  if (!digitsOnly) return "";
+  return Number(digitsOnly).toLocaleString("ko-KR");
+};
+
+const normalizePriceQueryValue = (value: string) => stripNonDigits(value);
+
+const fmtDateTime = (v: string | Date) =>
+  new Date(v)
+    .toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+    .replace(/\.\s/g, ".")
+    .replace(/\.$/, "");
+
+const boardListMobileTitleClampClass =
+  "line-clamp-2 break-keep font-medium leading-snug text-foreground";
+const boardListMobileMetaWrapClass =
+  "mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 text-ui-label leading-relaxed text-foreground/75 [&_span]:shrink-0 [&_span]:whitespace-nowrap";
+
+// 판매상태 배지 variant 매핑
+function saleStatusBadgeVariant(status?: string | null): "success" | "warning" | "neutral" {
+  if (status === "selling") return "success";
+  if (status === "reserved") return "warning";
+  return "neutral";
+}
+
+// 등급 배지 variant 매핑
+function conditionGradeBadgeVariant(
+  grade?: string | null,
+): "brand" | "info" | "neutral" | "warning" {
+  if (grade === "S") return "brand";
+  if (grade === "A") return "info";
+  if (grade === "B") return "neutral";
+  return "warning";
+}
+
+// 공통 폼 컨트롤 스타일
+const selectClass =
+  "h-11 w-full rounded-control border border-border bg-card px-2.5 text-ui-label text-foreground focus:outline-none focus:ring-2 focus:ring-ring bp-md:h-8";
+const inputClass =
+  "h-11 w-full rounded-control border border-border bg-card px-2.5 text-ui-label text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring bp-md:h-8";
+
+// 범위형 필터 그룹 컴포넌트
+function RangeFilterGroup({
+  label,
+  unit,
+  minValue,
+  maxValue,
+  minPlaceholder = "최소",
+  maxPlaceholder = "최대",
+  onMinChange,
+  onMaxChange,
+  formatValue,
+}: {
+  label: string;
+  unit?: string;
+  minValue: string;
+  maxValue: string;
+  minPlaceholder?: string;
+  maxPlaceholder?: string;
+  onMinChange: (v: string) => void;
+  onMaxChange: (v: string) => void;
+  formatValue?: (v: string) => string;
+}) {
+  const handleMin = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onMinChange(formatValue ? formatValue(e.target.value) : e.target.value);
+  };
+  const handleMax = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onMaxChange(formatValue ? formatValue(e.target.value) : e.target.value);
+  };
+  return (
+    <div className="space-y-1">
+      <label className="flex items-center gap-1 text-ui-caption font-medium text-muted-foreground">
+        {label}
+        {unit && <span className="font-normal text-muted-foreground/70">({unit})</span>}
+      </label>
+      <div className="flex items-center gap-1">
+        <input
+          placeholder={minPlaceholder}
+          className="h-11 w-full min-w-0 rounded-control border border-border bg-card px-2 text-ui-label tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring bp-md:h-8"
+          value={minValue}
+          onChange={handleMin}
+        />
+        <span className="shrink-0 text-ui-label text-foreground/75">~</span>
+        <input
+          placeholder={maxPlaceholder}
+          className="h-11 w-full min-w-0 rounded-control border border-border bg-card px-2 text-ui-label tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring bp-md:h-8"
+          value={maxValue}
+          onChange={handleMax}
+        />
+      </div>
+    </div>
+  );
+}
+
+// 개별 필터 선택 그룹 (라벨 + select)
+function FilterSelectGroup({
+  label,
+  value,
+  onChange,
+  placeholder,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  options: readonly { value: string; label: string }[] | readonly string[];
+}) {
+  return (
+    <div className="space-y-1">
+      <label className="text-ui-caption font-medium text-muted-foreground">{label}</label>
+      <select className={selectClass} value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">{placeholder}</option>
+        {options.map((o) => {
+          const val = typeof o === "string" ? o : o.value;
+          const lab = typeof o === "string" ? o : o.label;
+          return (
+            <option key={val} value={val}>
+              {lab}
+            </option>
+          );
+        })}
+      </select>
+    </div>
+  );
+}
+
+// 개별 필터 입력 그룹 (라벨 + input)
+function FilterInputGroup({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <label className="text-ui-caption font-medium text-muted-foreground">{label}</label>
+      <input
+        className={inputClass}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+      />
+    </div>
+  );
+}
+
+// 적용된 필터 칩 데이터 생성
+type ActiveFilterChipKey = MarketFilterKey | "price" | "weight" | "balance" | "headSize";
+
+function getActiveFilterChips(
+  searchParams: URLSearchParams,
+): { key: ActiveFilterChipKey; label: string }[] {
+  const chips: { key: ActiveFilterChipKey; label: string }[] = [];
+  const saleStatus = searchParams.get("saleStatus");
+  if (saleStatus)
+    chips.push({
+      key: "saleStatus",
+      label: `${getMarketSaleStatusLabel(saleStatus)}`,
+    });
+  const conditionGrade = searchParams.get("conditionGrade");
+  if (conditionGrade) chips.push({ key: "conditionGrade", label: `등급 ${conditionGrade}` });
+  const minPrice = searchParams.get("minPrice");
+  const maxPrice = searchParams.get("maxPrice");
+  if (minPrice && maxPrice)
+    chips.push({
+      key: "price",
+      label: `${Number(minPrice).toLocaleString()}~${Number(maxPrice).toLocaleString()}원`,
+    });
+  else if (minPrice)
+    chips.push({
+      key: "minPrice",
+      label: `${Number(minPrice).toLocaleString()}원 이상`,
+    });
+  else if (maxPrice)
+    chips.push({
+      key: "maxPrice",
+      label: `${Number(maxPrice).toLocaleString()}원 이하`,
+    });
+  const modelKeyword = searchParams.get("modelKeyword");
+  if (modelKeyword) chips.push({ key: "modelKeyword", label: `"${modelKeyword}"` });
+  const gripSize = searchParams.get("gripSize");
+  if (gripSize) chips.push({ key: "gripSize", label: `그립 ${gripSize}` });
+  const pattern = searchParams.get("pattern");
+  if (pattern) chips.push({ key: "pattern", label: `패턴 ${pattern}` });
+  const material = searchParams.get("material");
+  if (material)
+    chips.push({
+      key: "material",
+      label: getMarketStringMaterialLabel(material),
+    });
+  const gauge = searchParams.get("gauge");
+  if (gauge) chips.push({ key: "gauge", label: `게이지 ${gauge}` });
+  const color = searchParams.get("color");
+  if (color) chips.push({ key: "color", label: getMarketStringColorLabel(color) });
+  const length = searchParams.get("length");
+  if (length) chips.push({ key: "length", label: getMarketStringLengthLabel(length) });
+  const minWeight = searchParams.get("minWeight");
+  const maxWeight = searchParams.get("maxWeight");
+  if (minWeight || maxWeight)
+    chips.push({
+      key: "weight",
+      label: `무게 ${minWeight || ""}~${maxWeight || ""}g`,
+    });
+  const minBalance = searchParams.get("minBalance");
+  const maxBalance = searchParams.get("maxBalance");
+  if (minBalance || maxBalance)
+    chips.push({
+      key: "balance",
+      label: `밸런스 ${minBalance || ""}~${maxBalance || ""}mm`,
+    });
+  const minHeadSize = searchParams.get("minHeadSize");
+  const maxHeadSize = searchParams.get("maxHeadSize");
+  if (minHeadSize || maxHeadSize)
+    chips.push({
+      key: "headSize",
+      label: `헤드 ${minHeadSize || ""}~${maxHeadSize || ""}sq in`,
+    });
+  return chips;
+}
+
+// 목록 스켈레톤 UI
+function ListSkeleton() {
+  return (
+    <div className="-mx-4 divide-y divide-border border-y border-border sm:-mx-6 lg:mx-0 lg:space-y-3 lg:divide-y-0 lg:border-y-0">
+      {Array.from({ length: 5 }).map((_, idx) => (
+        <div key={idx} className="px-4 py-4 sm:px-6 lg:rounded-panel lg:border lg:border-border lg:bg-card lg:p-4 lg:shadow-soft">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <div className="flex flex-wrap items-center gap-2">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 w-10" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function BoardListClient({ config }: { config: BoardTypeConfig }) {
+  // 페이지 상태
+  const [page, setPage] = useState(1);
+  const [pageJump, setPageJump] = useState("");
+
+  // 정렬 상태
+  const [sort, setSort] = useState<"latest" | "views" | "likes">("latest");
+
+  const { user, loading } = useCurrentUser();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pageParam = useMemo(() => {
+    const rawPage = searchParams.get("page");
+    const parsedPage = rawPage ? Number.parseInt(rawPage, 10) : 1;
+    return Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  }, [searchParams]);
+  const currentListQuery = searchParams.toString();
+  const buildDetailHref = (postId: string | number) => {
+    const base = `${config.routePrefix}/${postId}`;
+    return currentListQuery ? `${base}?${currentListQuery}` : base;
+  };
+
+  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>(
+    "/api/boards?type=notice&excludeCategory=event&page=1&limit=5",
+    boardFetcher,
+    {
+      revalidateOnFocus: false,
+      keepPreviousData: true,
+    },
+  );
+
+  const pinnedNotices = useMemo(
+    () =>
+      (pinnedNoticeData?.items ?? [])
+        .filter((notice) => notice.isPinned)
+        .slice(0, 3)
+        .map((notice) => ({
+          _id: notice._id,
+          title: notice.title,
+          createdAt: notice.createdAt,
+        })),
+    [pinnedNoticeData?.items],
+  );
+
+  // 모달 핸들러
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeTo, setComposeTo] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  const openCompose = (toUserId: string, toName?: string | null) => {
+    if (!user) {
+      showErrorToast("로그인 후 이용할 수 있습니다.");
+      const redirectTo =
+        typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : config.routePrefix;
+      router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+      return;
+    }
+
+    const safeName = (toName ?? "").trim() || "회원";
+
+    setComposeTo({ id: toUserId, name: safeName });
+    setComposeOpen(true);
+  };
+
+  const rawBrandParam = searchParams.get("brand");
+  const brandParam = typeof rawBrandParam === "string" ? rawBrandParam : null;
+
+  const [brand, setBrand] = useState<string>(brandParam ?? "");
+
+  useEffect(() => {
+    setBrand(brandParam ?? "");
+  }, [brandParam]);
+
+  // 사용자의 게시물 검색
+  const authorId = searchParams.get("authorId");
+  const authorName = searchParams.get("authorName");
+
+  // 검색어 & 검색 타입 (URL 기준)
+  const qParam = searchParams.get("q") ?? "";
+  const rawSearchType = searchParams.get("searchType");
+  const searchTypeParam: "title" | "author" | "title_content" =
+    rawSearchType === "title" || rawSearchType === "author" || rawSearchType === "title_content"
+      ? rawSearchType
+      : "title_content"; // 기본값: 제목+내용
+
+  // 검색 입력 상태 (폼에서 사용하는 값)
+  const [searchText, setSearchText] = useState(qParam);
+  const [searchType, setSearchType] = useState<"title" | "author" | "title_content">(
+    searchTypeParam,
+  );
+
+  // 카테고리 (URL 기준)
+  const rawCategoryParam = searchParams.get("category");
+  const categoryParam =
+    rawCategoryParam && config.categoryMap[rawCategoryParam] ? rawCategoryParam : null;
+
+  // UI에서 사용할 카테고리 상태 (전체 포함)
+  const categoryOptions = useMemo(
+    () => [{ value: "all", label: "전체" }, ...config.categories],
+    [config.categories],
+  );
+  const [category, setCategory] = useState<string>(categoryParam ?? "all");
+
+  // URL의 category가 바뀌면 상태도 동기화
+  useEffect(() => {
+    if (categoryParam) {
+      setCategory(categoryParam);
+    } else {
+      setCategory("all");
+    }
+  }, [categoryParam]);
+
+  // page는 URL query를 기준으로 동기화합니다.
+  useEffect(() => {
+    setPage(pageParam);
+  }, [pageParam]);
+
+  // URL 쿼리가 바뀌면 검색 입력값도 동기화
+  useEffect(() => {
+    setSearchText(qParam);
+    setSearchType(searchTypeParam);
+  }, [qParam, searchTypeParam]);
+
+  const [isMarketFilterOpen, setIsMarketFilterOpen] = useState(false);
+  const [marketFilterDraft, setMarketFilterDraft] =
+    useState<MarketFilterDraft>(EMPTY_MARKET_FILTER_DRAFT);
+
+  // market 필터는 controlled state로 동기화합니다.
+  // URL -> draft 동기화를 유지해 reset/apply 직후 입력값이 즉시 일치하도록 보장합니다.
+  useEffect(() => {
+    if (config.boardType !== "market") return;
+    const nextDraft: MarketFilterDraft = { ...EMPTY_MARKET_FILTER_DRAFT };
+    MARKET_FILTER_KEYS.forEach((key) => {
+      const rawValue = searchParams.get(key) ?? "";
+      nextDraft[key] = PRICE_FILTER_KEYS.has(key) ? formatPriceInput(rawValue) : rawValue;
+    });
+    setMarketFilterDraft(nextDraft);
+  }, [config.boardType, searchParams]);
+
+  // 카테고리 선택 시 URL 바꾸는 핸들러
+  const handleCategoryChange = (next: string) => {
+    setPage(1);
+    setCategory(next);
+
+    const sp = new URLSearchParams(searchParams.toString());
+    if (next === "all") sp.delete("category");
+    else sp.set("category", next);
+    sp.delete("page");
+
+    // 라켓/스트링이 아니면 brand 제거
+    if (!config.brandOptionsByCategory || !config.brandOptionsByCategory[next]) sp.delete("brand");
+
+    router.push(`${config.routePrefix}?${sp.toString()}`);
+  };
+
+  // market 필터 적용 시 URL/page/local state를 동시에 맞춥니다.
+  // page=1 고정은 필터 변화 후 첫 페이지부터 결과를 보는 UX를 위한 계약입니다.
+  const pushMarketFilters = (sp: URLSearchParams, nextDraft?: MarketFilterDraft) => {
+    sp.set("page", "1");
+    setPage(1);
+    if (nextDraft) setMarketFilterDraft(nextDraft);
+    router.push(`${config.routePrefix}?${sp.toString()}`);
+  };
+
+  const applyMarketFilters = () => {
+    const sp = new URLSearchParams(searchParams.toString());
+    const minPrice = Number(normalizePriceQueryValue(marketFilterDraft.minPrice));
+    const maxPrice = Number(normalizePriceQueryValue(marketFilterDraft.maxPrice));
+    const hasMinPrice = Number.isFinite(minPrice) && minPrice > 0;
+    const hasMaxPrice = Number.isFinite(maxPrice) && maxPrice > 0;
+
+    if (hasMinPrice && hasMaxPrice && minPrice > maxPrice) {
+      showErrorToast("최소가격은 최대가격보다 클 수 없습니다.");
+      return;
+    }
+
+    MARKET_FILTER_KEYS.forEach((key) => {
+      const rawValue = marketFilterDraft[key].trim();
+      const value = PRICE_FILTER_KEYS.has(key) ? normalizePriceQueryValue(rawValue) : rawValue;
+      if (value) sp.set(key, value);
+      else sp.delete(key);
+    });
+    pushMarketFilters(sp, marketFilterDraft);
+  };
+
+  const resetMarketFilters = () => {
+    const sp = new URLSearchParams(searchParams.toString());
+    MARKET_FILTER_KEYS.forEach((key) => sp.delete(key));
+    pushMarketFilters(sp, { ...EMPTY_MARKET_FILTER_DRAFT });
+  };
+
+  const removeMarketFilterChip = (chipKey: ActiveFilterChipKey) => {
+    const sp = new URLSearchParams(searchParams.toString());
+    const nextDraft: MarketFilterDraft = { ...marketFilterDraft };
+
+    if (chipKey === "price") {
+      sp.delete("minPrice");
+      sp.delete("maxPrice");
+      nextDraft.minPrice = "";
+      nextDraft.maxPrice = "";
+    } else if (chipKey === "minPrice") {
+      sp.delete("minPrice");
+      nextDraft.minPrice = "";
+    } else if (chipKey === "maxPrice") {
+      sp.delete("maxPrice");
+      nextDraft.maxPrice = "";
+    } else if (chipKey === "weight") {
+      sp.delete("minWeight");
+      sp.delete("maxWeight");
+      nextDraft.minWeight = "";
+      nextDraft.maxWeight = "";
+    } else if (chipKey === "balance") {
+      sp.delete("minBalance");
+      sp.delete("maxBalance");
+      nextDraft.minBalance = "";
+      nextDraft.maxBalance = "";
+    } else if (chipKey === "headSize") {
+      sp.delete("minHeadSize");
+      sp.delete("maxHeadSize");
+      nextDraft.minHeadSize = "";
+      nextDraft.maxHeadSize = "";
+    } else {
+      sp.delete(chipKey);
+      nextDraft[chipKey] = "";
+    }
+
+    pushMarketFilters(sp, nextDraft);
+  };
+
+  // // 브랜드 변경 핸들러
+  const handleBrandChange = (nextBrand: string) => {
+    setPage(1);
+    setBrand(nextBrand);
+
+    const sp = new URLSearchParams(searchParams.toString());
+
+    if (!nextBrand) sp.delete("brand");
+    else sp.set("brand", nextBrand);
+    sp.delete("page");
+
+    router.push(`${config.routePrefix}?${sp.toString()}`);
+  };
+
+  // 한 페이지당 개수
+  const PAGE_LIMIT = 10;
+
+  const qs = new URLSearchParams({
+    kind: config.boardType,
+    type: config.boardType,
+    page: String(page),
+    limit: String(PAGE_LIMIT),
+    sort,
+  });
+
+  if (brandParam && categoryParam && config.brandOptionsByCategory?.[categoryParam]) {
+    qs.set("brand", brandParam);
+  }
+
+  if (authorId) {
+    qs.set("authorId", authorId);
+  }
+
+  // 카테고리 필터
+  if (categoryParam) {
+    qs.set("category", categoryParam);
+  }
+
+  // 검색 쿼리 반영
+  if (qParam) {
+    qs.set("q", qParam);
+    qs.set("searchType", searchTypeParam);
+  }
+
+  // market 전용 필터는 URLSearchParams를 그대로 API 쿼리에 전달
+  if (config.boardType === "market") {
+    MARKET_FILTER_KEYS.forEach((k) => {
+      const v = searchParams.get(k);
+      if (v) qs.set(k, v);
+    });
+  }
+  const handleSearchSubmit = (e: any) => {
+    e.preventDefault();
+
+    // 현재 URL 쿼리 기준으로 새 파라미터 구성
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (searchText.trim()) {
+      params.set("q", searchText.trim());
+      params.set("searchType", searchType);
+    } else {
+      // 빈 검색어면 검색 관련 파라미터 제거
+      params.delete("q");
+      params.delete("searchType");
+    }
+
+    // 검색/해제 시 목록 시작 지점을 예측 가능하게 1페이지로 고정
+    params.delete("page");
+
+    router.push(`${config.routePrefix}?${params.toString()}`);
+    setPage(1); // 검색하면 1페이지부터 다시
+  };
+
+  const handleSearchReset = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("q");
+    params.delete("searchType");
+    params.delete("page");
+
+    router.push(`${config.routePrefix}?${params.toString()}`);
+    setSearchText("");
+    setSearchType("title_content");
+    setPage(1);
+  };
+
+  const { data, error, isLoading, mutate } = useSWR<ListResponse>(
+    `/api/boards?${qs.toString()}`,
+    (url: string) => boardFetcher<ListResponse>(url),
+  );
+  const listError = parseApiError(error, config.errorMessage);
+
+  // 로딩/에러/성공을 분리해서 헤더 수치가 0건처럼 먼저 보이지 않게 처리
+  const hasDataError = Boolean(error);
+  const hasResolvedData = !isLoading && !hasDataError && Boolean(data);
+  const hasResolvedTotal = hasResolvedData && typeof data?.total === "number";
+
+  const items = hasResolvedData ? (data?.items ?? []) : [];
+  const total = hasResolvedTotal ? data!.total : null;
+  const shouldShowEmptyState = hasResolvedData && items.length === 0;
+  const shouldShowRows = hasResolvedData && items.length > 0;
+  const activeMarketFilterCount = useMemo(
+    () => MARKET_FILTER_KEYS.filter((key) => (searchParams.get(key) ?? "").trim() !== "").length,
+    [searchParams],
+  );
+  const hasRacketDetailApplied = useMemo(
+    () =>
+      [
+        "modelKeyword",
+        "gripSize",
+        "pattern",
+        "minWeight",
+        "maxWeight",
+        "minBalance",
+        "maxBalance",
+        "minHeadSize",
+        "maxHeadSize",
+      ].some((key) => (searchParams.get(key) ?? "").trim() !== ""),
+    [searchParams],
+  );
+  const hasStringDetailApplied = useMemo(
+    () =>
+      ["modelKeyword", "material", "gauge", "color", "length"].some(
+        (key) => (searchParams.get(key) ?? "").trim() !== "",
+      ),
+    [searchParams],
+  );
+  const [isRacketDetailOpen, setIsRacketDetailOpen] = useState(hasRacketDetailApplied);
+  const [isStringDetailOpen, setIsStringDetailOpen] = useState(hasStringDetailApplied);
+
+  useEffect(() => {
+    if (hasRacketDetailApplied) setIsRacketDetailOpen(true);
+  }, [hasRacketDetailApplied]);
+
+  useEffect(() => {
+    if (hasStringDetailApplied) setIsStringDetailOpen(true);
+  }, [hasStringDetailApplied]);
+
+  // total이 확정된 경우에만 실제 페이지 수를 계산하고, 미확정 상태에서는 내부 보수값(1)만 사용
+  const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil((total ?? 0) / PAGE_LIMIT)) : 1;
+  const pageStart = Math.max(1, Math.min(page - 1, totalPages - 2));
+  const pageEnd = Math.min(totalPages, pageStart + 2);
+  const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
+
+  const movePage = (nextPage: number) => {
+    const clampedPage = Math.max(1, Math.min(totalPages, nextPage));
+    setPage(clampedPage);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (clampedPage <= 1) params.delete("page");
+    else params.set("page", String(clampedPage));
+
+    const queryString = params.toString();
+    const nextUrl = queryString ? `${config.routePrefix}?${queryString}` : config.routePrefix;
+    const currentUrl = currentListQuery
+      ? `${config.routePrefix}?${currentListQuery}`
+      : config.routePrefix;
+    if (nextUrl !== currentUrl) {
+      router.replace(nextUrl);
+    }
+  };
+
+  const handlePageJump = (e: any) => {
+    e.preventDefault();
+    const parsed = Number.parseInt(pageJump, 10);
+    if (Number.isNaN(parsed)) return;
+    movePage(parsed);
+    setPageJump("");
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      {composeOpen && composeTo ? (
+        <MessageComposeDialog
+          open={composeOpen}
+          onOpenChange={(v) => {
+            setComposeOpen(v);
+            if (!v) setComposeTo(null);
+          }}
+          toUserId={composeTo.id}
+          toName={composeTo.name}
+        />
+      ) : null}
+      <PublicPageHero
+        variant="feature"
+        eyebrow={<span>게시판 › {config.boardTitle}</span>}
+        title={config.boardTitle}
+        description={config.boardDescription}
+        actions={
+          <Button
+            type="button"
+            size="lg"
+            variant="highlight"
+            className="w-full gap-1 sm:w-auto"
+            disabled={loading}
+            onClick={() => {
+              if (!user) {
+                const redirectTo =
+                  typeof window !== "undefined"
+                    ? window.location.pathname + window.location.search
+                    : config.routePrefix;
+                router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+                return;
+              }
+
+              router.push(`${config.routePrefix}/write`);
+            }}
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            <span>글쓰기</span>
+          </Button>
+        }
+      />
+
+      <SiteContainer className="space-y-8 pb-12">
+        {config.boardType === "market" ? (
+          <Card variant="feature" className="border-warning/35 bg-warning/10">
+            <CardContent className="px-4 py-4 sm:px-5">
+              <div className="flex flex-col gap-2 text-ui-body-sm text-muted-foreground sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-ui-medium text-foreground">중고거래 이용 안내</p>
+                  <p className="mt-1">
+                    도깨비테니스는 개인 간 거래의 당사자가 아니며 거래를 보증하지 않습니다. 상품
+                    상태, 가격, 배송 방식, 환불 가능 여부를 거래 전에 확인해 주세요.
+                  </p>
+                </div>
+                <div className="rounded-control border border-warning/35 bg-card px-3 py-2 text-ui-label sm:max-w-xs">
+                  <span className="font-ui-medium text-foreground">거래 금지 품목: </span>
+                  도난품, 위조품/가품, 불법 복제품, 개인정보 포함 물품, 법령상 제한 물품,
+                  위험물·무기류·의약품·주류·담배
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {/* 리스트 카드 */}
+        <Card variant="feature" className="overflow-hidden rounded-none border-x-0 shadow-none bp-md:rounded-panel bp-md:border-x bp-md:shadow-soft">
+          <CardHeader className="hidden flex-col gap-3 border-b border-border bg-brand-highlight-muted/45 px-4 py-4 bp-md:flex bp-md:flex-row bp-md:items-center bp-md:justify-between sm:px-6">
+            <div className="flex items-center gap-3">
+              <div>
+                <CardTitle className="text-ui-section-title font-ui-bold tracking-normal md:text-ui-section-title-lg">
+                  {config.boardTitle}
+                </CardTitle>
+                <p className="mt-0.5 text-ui-label text-foreground/75">{config.cardDescription}</p>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-4 p-4 sm:p-6">
+            {/* 상단: 총 글 수 + 정렬 옵션 + 카테고리 필터 */}
+            {!error && (
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2 bp-md:flex-row bp-md:items-center bp-md:justify-between">
+                  <div className="text-ui-label text-foreground/75">
+                    총{" "}
+                    <span className="font-ui-medium">
+                      {hasResolvedTotal ? (total ?? 0).toLocaleString() : "-"}
+                    </span>
+                    개의 글이 있습니다.
+                  </div>
+                  <div className="flex items-center gap-2 text-ui-label">
+                    <span className="hidden text-muted-foreground bp-md:inline">정렬:</span>
+                    <div className="grid w-full grid-cols-3 overflow-hidden rounded-control border border-border bg-card bp-md:inline-flex bp-md:w-auto">
+                      {[
+                        { value: "latest", label: "최신순" },
+                        { value: "views", label: "조회순" },
+                        { value: "likes", label: "추천순" },
+                      ].map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            setSort(opt.value as "latest" | "views" | "likes");
+                            setPage(1);
+                          }}
+                          className={[
+                            "min-h-11 px-3 py-1.5 text-ui-label bp-md:min-h-0",
+                            "transition-colors",
+                            "border-r border-border last:border-r-0",
+                            sort === opt.value
+                              ? "bg-secondary text-foreground"
+                              : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+                          ].join(" ")}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 카테고리 필터 */}
+                <div className="space-y-1.5 bp-md:hidden">
+                  <label
+                    className="text-ui-label font-medium text-foreground"
+                    htmlFor="board-category-mobile"
+                  >
+                    분류
+                  </label>
+                  <Select value={category} onValueChange={handleCategoryChange}>
+                    <SelectTrigger
+                      id="board-category-mobile"
+                      className="min-h-11 w-full min-w-0 rounded-lg text-left text-ui-body-sm [&>span]:min-w-0 [&>span]:truncate"
+                    >
+                      <SelectValue placeholder="전체" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categoryOptions.map((cat) => (
+                        <SelectItem
+                          key={cat.value}
+                          value={cat.value}
+                          className="break-keep whitespace-nowrap"
+                        >
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="hidden rounded-xl border border-border bg-card/80 px-3 py-2 bp-md:block">
+                  <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-hide">
+                    {categoryOptions.map((cat, index) => {
+                      const active = category === cat.value;
+                      return (
+                        <div key={cat.value} className="flex shrink-0 items-center gap-1">
+                          {index > 0 && (
+                            <span className="h-4 w-px bg-border/80" aria-hidden="true" />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleCategoryChange(cat.value)}
+                            aria-pressed={active}
+                            className={[
+                              "shrink-0 rounded-lg border px-3 py-1.5 text-ui-label font-medium break-keep whitespace-nowrap",
+                              "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                              active
+                                ? "border-brand-highlight/45 bg-brand-highlight-muted text-brand-highlight-foreground shadow-sm dark:text-brand-highlight"
+                                : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
+                            ].join(" ")}
+                          >
+                            {cat.label}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                {config.brandOptionsByCategory?.[category] && (
+                  <div className="bp-md:hidden">
+                    <label className="mb-1.5 block text-ui-label font-medium text-foreground" htmlFor="market-brand-mobile">
+                      브랜드
+                    </label>
+                    <Select value={brand || "all"} onValueChange={(value) => handleBrandChange(value === "all" ? "" : value)}>
+                      <SelectTrigger id="market-brand-mobile" className="min-h-11 w-full min-w-0 text-left" aria-label="브랜드 선택">
+                        <SelectValue placeholder="전체 브랜드" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체 브랜드</SelectItem>
+                        {config.brandOptionsByCategory[category].map((option) => (
+                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {config.brandOptionsByCategory?.[category] && (
+                  <div className="hidden flex-wrap items-center gap-2 text-ui-label bp-md:flex">
+                    <span className="text-foreground">브랜드:</span>
+                    {[{ value: "", label: "전체" }, ...config.brandOptionsByCategory[category]].map(
+                      (o) => {
+                        const active = brand === o.value;
+                        return (
+                          <button
+                            key={o.value}
+                            type="button"
+                            onClick={() => handleBrandChange(o.value)}
+                            className={[
+                              "rounded-full border px-3 py-1 transition-colors",
+                              active
+                                ? "border-border bg-secondary text-foreground"
+                                : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                            ].join(" ")}
+                          >
+                            {o.label}
+                          </button>
+                        );
+                      },
+                    )}
+                  </div>
+                )}
+
+                {config.boardType === "market" && (
+                  <div className="-mx-4 rounded-none border-y border-border bg-card shadow-none sm:-mx-6 bp-md:mx-0 bp-md:rounded-panel bp-md:border bp-md:shadow-soft">
+                    {/* 필터 헤더 */}
+                    <div className="flex items-center justify-between px-4 py-2.5">
+                      <button
+                        type="button"
+                        className="flex min-h-11 w-full items-center justify-between bp-md:hidden"
+                        onClick={() => setIsMarketFilterOpen((prev) => !prev)}
+                        aria-expanded={isMarketFilterOpen}
+                        aria-controls="market-detail-filters"
+                      >
+                        <span className="flex items-center gap-2">
+                          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-ui-body-sm font-medium text-foreground">상세 필터</span>
+                          {activeMarketFilterCount > 0 && (
+                            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-highlight px-1.5 text-ui-caption font-ui-medium tabular-nums text-brand-highlight-foreground">
+                              {activeMarketFilterCount}
+                            </span>
+                          )}
+                        </span>
+                        {isMarketFilterOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                      </button>
+                      <div className="hidden items-center gap-2 bp-md:flex">
+                        <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-ui-body-sm font-medium text-foreground">
+                          상세 필터
+                        </span>
+                        {activeMarketFilterCount > 0 && (
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-highlight px-1.5 text-ui-caption font-ui-medium tabular-nums text-brand-highlight-foreground">
+                            {activeMarketFilterCount}
+                          </span>
+                        )}
+                      </div>
+                      {activeMarketFilterCount > 0 && (
+                        <button type="button" className="hidden text-ui-label text-foreground/75 underline-offset-2 hover:text-foreground hover:underline bp-md:inline" onClick={resetMarketFilters}>
+                          전체 초기화
+                        </button>
+                      )}
+                    </div>
+
+                    {/* 적용된 필터 칩 (헤더 바로 아래) */}
+                    {activeMarketFilterCount > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 border-t border-border/50 px-4 py-2">
+                        {getActiveFilterChips(searchParams).map((chip) => (
+                          <span
+                            key={chip.key}
+                            className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2 py-0.5 text-ui-caption text-foreground"
+                          >
+                            {chip.label}
+                            <button
+                              type="button"
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-foreground/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              aria-label={`${chip.label} 필터 해제`}
+                              onClick={() => removeMarketFilterChip(chip.key)}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-ui-label text-foreground/75 hover:text-foreground"
+                          onClick={resetMarketFilters}
+                        >
+                          <X className="h-3 w-3" />
+                          모두 해제
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 필터 본문 */}
+                    <div
+                      id="market-detail-filters"
+                      className={[
+                        isMarketFilterOpen ? "block" : "hidden",
+                        "border-t border-border bp-md:block",
+                      ].join(" ")}
+                    >
+                      {/* ── 기본 필터 섹션 ── */}
+                      <div className="px-4 py-3">
+                        <div className="mb-3 flex items-center gap-2">
+                          <div className="h-1 w-1 rounded-full bg-primary" />
+                          <span className="text-ui-label font-ui-medium text-foreground">
+                            기본 필터
+                          </span>
+                          <span className="text-ui-label text-foreground/75">
+                            판매상태, 등급, 가격
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-x-3 gap-y-2.5 bp-sm:grid-cols-2 bp-md:grid-cols-3">
+                          <FilterSelectGroup
+                            label="판매상태"
+                            value={marketFilterDraft.saleStatus}
+                            onChange={(v) =>
+                              setMarketFilterDraft((prev) => ({
+                                ...prev,
+                                saleStatus: v,
+                              }))
+                            }
+                            placeholder="전체"
+                            options={MARKET_SALE_STATUS_OPTIONS}
+                          />
+                          <FilterSelectGroup
+                            label="상품등급"
+                            value={marketFilterDraft.conditionGrade}
+                            onChange={(v) =>
+                              setMarketFilterDraft((prev) => ({
+                                ...prev,
+                                conditionGrade: v,
+                              }))
+                            }
+                            placeholder="전체"
+                            options={MARKET_CONDITION_GRADE_OPTIONS}
+                          />
+                          <div className="bp-sm:col-span-2 bp-md:col-span-1">
+                            <RangeFilterGroup
+                              label="가격"
+                              unit="원"
+                              minValue={marketFilterDraft.minPrice}
+                              maxValue={marketFilterDraft.maxPrice}
+                              onMinChange={(v) =>
+                                setMarketFilterDraft((prev) => ({
+                                  ...prev,
+                                  minPrice: v,
+                                }))
+                              }
+                              onMaxChange={(v) =>
+                                setMarketFilterDraft((prev) => ({
+                                  ...prev,
+                                  maxPrice: v,
+                                }))
+                              }
+                              formatValue={formatPriceInput}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ── 라켓 카테고리 필터 ── */}
+                      {category === "racket" && (
+                        <div className="border-t border-border bg-muted/20 px-4 py-3">
+                          <details
+                            className="group"
+                            open={isRacketDetailOpen}
+                            onToggle={(e) => setIsRacketDetailOpen(e.currentTarget.open)}
+                          >
+                            <summary className="mb-3 flex cursor-pointer list-none flex-wrap items-center gap-2">
+                              <div className="h-1 w-1 rounded-full bg-info" />
+                              <span className="text-ui-label font-ui-medium text-foreground">
+                                라켓 상세 조건
+                              </span>
+                              <span className="text-ui-label text-foreground/75">
+                                모델, 스펙, 사이즈
+                              </span>
+                              {hasRacketDetailApplied && (
+                                <span className="shrink-0 rounded bg-info/15 px-1.5 py-0.5 text-ui-micro font-medium text-info">
+                                  적용됨
+                                </span>
+                              )}
+                            </summary>
+                            <div className="grid grid-cols-1 gap-x-3 gap-y-2.5 bp-sm:grid-cols-2 bp-md:grid-cols-3">
+                              <FilterInputGroup
+                                label="모델명"
+                                value={marketFilterDraft.modelKeyword}
+                                onChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    modelKeyword: v,
+                                  }))
+                                }
+                                placeholder="모델명 키워드"
+                              />
+                              <FilterSelectGroup
+                                label="그립 사이즈"
+                                value={marketFilterDraft.gripSize}
+                                onChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    gripSize: v,
+                                  }))
+                                }
+                                placeholder="전체"
+                                options={MARKET_RACKET_GRIP_SIZE_OPTIONS.map((g) => ({
+                                  value: g,
+                                  label: g,
+                                }))}
+                              />
+                              <FilterSelectGroup
+                                label="스트링 패턴"
+                                value={marketFilterDraft.pattern}
+                                onChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    pattern: v,
+                                  }))
+                                }
+                                placeholder="전체"
+                                options={MARKET_RACKET_PATTERN_OPTIONS.map((p) => ({
+                                  value: p,
+                                  label: p,
+                                }))}
+                              />
+                            </div>
+                            <div className="mt-3 grid grid-cols-1 gap-x-3 gap-y-2.5 bp-sm:grid-cols-2 bp-md:grid-cols-3">
+                              <RangeFilterGroup
+                                label="무게"
+                                unit="g"
+                                minValue={marketFilterDraft.minWeight}
+                                maxValue={marketFilterDraft.maxWeight}
+                                onMinChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    minWeight: v,
+                                  }))
+                                }
+                                onMaxChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    maxWeight: v,
+                                  }))
+                                }
+                              />
+                              <RangeFilterGroup
+                                label="밸런스"
+                                unit="mm"
+                                minValue={marketFilterDraft.minBalance}
+                                maxValue={marketFilterDraft.maxBalance}
+                                onMinChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    minBalance: v,
+                                  }))
+                                }
+                                onMaxChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    maxBalance: v,
+                                  }))
+                                }
+                              />
+                              <RangeFilterGroup
+                                label="헤드 사이즈"
+                                unit="sq in"
+                                minValue={marketFilterDraft.minHeadSize}
+                                maxValue={marketFilterDraft.maxHeadSize}
+                                onMinChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    minHeadSize: v,
+                                  }))
+                                }
+                                onMaxChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    maxHeadSize: v,
+                                  }))
+                                }
+                              />
+                            </div>
+                          </details>
+                        </div>
+                      )}
+
+                      {/* ── 스트링 카테고리 필터 ── */}
+                      {category === "string" && (
+                        <div className="border-t border-border bg-muted/20 px-4 py-3">
+                          <details
+                            className="group"
+                            open={isStringDetailOpen}
+                            onToggle={(e) => setIsStringDetailOpen(e.currentTarget.open)}
+                          >
+                            <summary className="mb-3 flex cursor-pointer list-none flex-wrap items-center gap-2">
+                              <div className="h-1 w-1 rounded-full bg-info" />
+                              <span className="text-ui-label font-ui-medium text-foreground">
+                                스트링 상세 조건
+                              </span>
+                              <span className="text-ui-label text-foreground/75">
+                                모델, 재질, 게이지, 색상
+                              </span>
+                              {hasStringDetailApplied && (
+                                <span className="shrink-0 rounded bg-info/15 px-1.5 py-0.5 text-ui-micro font-medium text-info">
+                                  적용됨
+                                </span>
+                              )}
+                            </summary>
+                            <div className="grid grid-cols-1 gap-x-3 gap-y-2.5 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
+                              <FilterInputGroup
+                                label="모델명"
+                                value={marketFilterDraft.modelKeyword}
+                                onChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    modelKeyword: v,
+                                  }))
+                                }
+                                placeholder="모델명 키워드"
+                              />
+                              <FilterSelectGroup
+                                label="재질"
+                                value={marketFilterDraft.material}
+                                onChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    material: v,
+                                  }))
+                                }
+                                placeholder="전체"
+                                options={MARKET_STRING_MATERIAL_OPTIONS.map((m) => ({
+                                  value: m,
+                                  label: getMarketStringMaterialLabel(m),
+                                }))}
+                              />
+                              <FilterSelectGroup
+                                label="게이지"
+                                value={marketFilterDraft.gauge}
+                                onChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    gauge: v,
+                                  }))
+                                }
+                                placeholder="전체"
+                                options={MARKET_STRING_GAUGE_OPTIONS.map((g) => ({
+                                  value: g,
+                                  label: g,
+                                }))}
+                              />
+                              <FilterSelectGroup
+                                label="색상"
+                                value={marketFilterDraft.color}
+                                onChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    color: v,
+                                  }))
+                                }
+                                placeholder="전체"
+                                options={MARKET_STRING_COLOR_OPTIONS.map((c) => ({
+                                  value: c,
+                                  label: getMarketStringColorLabel(c),
+                                }))}
+                              />
+                              <FilterSelectGroup
+                                label="길이"
+                                value={marketFilterDraft.length}
+                                onChange={(v) =>
+                                  setMarketFilterDraft((prev) => ({
+                                    ...prev,
+                                    length: v,
+                                  }))
+                                }
+                                placeholder="전체"
+                                options={MARKET_STRING_LENGTH_OPTIONS.map((l) => ({
+                                  value: l,
+                                  label: getMarketStringLengthLabel(l),
+                                }))}
+                              />
+                            </div>
+                          </details>
+                        </div>
+                      )}
+
+                      {/* ── 필터 액션 바 ── */}
+                      <div className="flex flex-col gap-3 border-t border-border bg-muted/30 px-4 py-3 bp-md:flex-row bp-md:items-center bp-md:justify-between bp-md:py-2">
+                        <span className="text-ui-label text-foreground/75">
+                          {activeMarketFilterCount > 0
+                            ? `${activeMarketFilterCount}개 조건 적용됨`
+                            : "조건을 선택하고 적용하세요"}
+                        </span>
+                        <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:flex bp-md:items-center">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="min-h-11 w-full gap-1 px-2 text-ui-label text-foreground/75 bp-md:h-7 bp-md:min-h-0 bp-md:w-auto"
+                            onClick={resetMarketFilters}
+                          >
+                            <RotateCcw className="h-3 w-3" />
+                            초기화
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="highlight"
+                            className="min-h-11 w-full gap-1 px-3 text-ui-label bp-md:h-7 bp-md:min-h-0 bp-md:w-auto"
+                            onClick={applyMarketFilters}
+                          >
+                            <Search className="h-3 w-3" />
+                            필터 적용
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {authorId && (
+              <div className="flex items-center gap-2 text-ui-body-sm">
+                <span>현재: {authorName ? `${authorName}님의 글` : "특정 작성자 글"} 보는 중</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(config.routePrefix)} // 쿼리 제거(해제)
+                >
+                  해제
+                </Button>
+              </div>
+            )}
+
+            <PinnedNoticeStrip items={pinnedNotices} />
+
+            {/* 로딩/에러/빈 상태 처리 */}
+            {isLoading && (
+              <div aria-busy="true" aria-live="polite">
+                <span className="sr-only">게시글 목록을 불러오는 중입니다.</span>
+                <ListSkeleton />
+              </div>
+            )}
+            {error && !isLoading && (
+              <ErrorBox
+                message={listError.message}
+                status={listError.status}
+                fallbackMessage={config.errorMessage}
+                onRetry={() => mutate()}
+              />
+            )}
+
+            {shouldShowEmptyState && (
+              <div className="space-y-2">
+                <AsyncState
+                  kind="empty"
+                  variant="card"
+                  icon={<PackageSearch className="h-4 w-4" />}
+                  title={
+                    qParam
+                      ? "검색 결과가 없습니다"
+                      : activeMarketFilterCount > 0
+                        ? "조건에 맞는 매물이 없습니다"
+                        : "아직 등록된 글이 없습니다"
+                  }
+                  description={
+                    qParam
+                      ? "검색어를 바꾸거나 전체 글 보기로 돌아가 다시 확인해 보세요"
+                      : activeMarketFilterCount > 0
+                        ? "필터 조건을 변경하거나 초기화해 보세요"
+                        : config.emptyDescription
+                  }
+                />
+                <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-start">
+                  {qParam && (
+                    <Button type="button" variant="outline" size="sm" onClick={handleSearchReset}>
+                      검색 해제
+                    </Button>
+                  )}
+                  {activeMarketFilterCount > 0 && (
+                    <Button type="button" variant="outline" size="sm" onClick={resetMarketFilters}>
+                      <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                      필터 초기화
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {shouldShowRows && (
+              <>
+                {/* 데스크탑: 테이블형 리스트 */}
+                <div className="hidden text-ui-body-sm lg:block">
+                  {/* 헤더 행 */}
+                  {config.boardType === "market" ? (
+                    <div className="grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-ui-caption font-ui-medium uppercase tracking-wide text-muted-foreground">
+                      <div className="text-center">No.</div>
+                      <div className="text-center">분류</div>
+                      <div>상품 정보</div>
+                      <div className="text-right pr-1">가격</div>
+                      <div className="text-center">상태</div>
+                      <div className="text-center">판매자</div>
+                      <div className="text-center">등록일</div>
+                      <div className="flex items-center justify-center gap-0.5">
+                        <Eye className="h-3 w-3" />
+                        <span className="text-border">/</span>
+                        <ThumbsUp className="h-3 w-3" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-[64px_88px_minmax(0,1fr)_128px_140px_72px_72px_72px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-ui-label font-ui-medium text-muted-foreground">
+                      <div className="text-center">번호</div>
+                      <div className="text-center">분류</div>
+                      <div>제목</div>
+                      <div className="text-center">글쓴이</div>
+                      <div className="text-center">작성일</div>
+                      <div className="text-center">댓글</div>
+                      <div className="text-center">조회</div>
+                      <div className="text-center">추천</div>
+                    </div>
+                  )}
+
+                  {/* 데이터 행들 */}
+                  <div className="divide-y divide-border/60 rounded-b-xl border-x border-b border-border bg-card">
+                    {items.map((post) => {
+                      const isMarket = config.boardType === "market";
+                      const isSold = post.marketMeta?.saleStatus === "sold";
+
+                      return isMarket ? (
+                        <Link
+                          key={post.id}
+                          href={buildDetailHref(post.postNo ?? post.id)}
+                          className={[
+                            "group grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center px-4 py-3 text-ui-body-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            isSold ? "opacity-45 hover:opacity-65" : "hover:bg-muted/40",
+                          ].join(" ")}
+                        >
+                          {/* 번호 */}
+                          <div className="text-center text-ui-caption tabular-nums text-muted-foreground">
+                            {typeof post.postNo === "number" ? post.postNo : "-"}
+                          </div>
+
+                          {/* 분류 뱃지 */}
+                          <div className="flex items-center justify-center">
+                            <Badge
+                              variant={getBoardCategoryTone(config.boardType, post.category)}
+                              className="shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro leading-4"
+                            >
+                              {config.categoryMap[post.category ?? ""]
+                                ? getCategoryBadgeText(config.categoryMap[post.category ?? ""])
+                                : "분류"}
+                            </Badge>
+                          </div>
+
+                          {/* 상품 정보: 제목 + 브랜드/모델/등급 */}
+                          <div className="min-w-0 pr-3">
+                            <div className="flex items-center gap-1">
+                              <span className="line-clamp-2 min-w-0 break-keep text-ui-body-sm font-ui-medium leading-snug text-foreground transition-colors group-hover:text-primary">
+                                {post.title}
+                              </span>
+                              {post.commentsCount ? (
+                                <span className="shrink-0 text-ui-caption font-medium text-primary">
+                                  [{post.commentsCount}]
+                                </span>
+                              ) : null}
+                              {post.images && post.images.length > 0 && (
+                                <ImageIcon
+                                  className="h-3 w-3 shrink-0 text-primary/60"
+                                  aria-label="이미지 첨부 있음"
+                                />
+                              )}
+                              {post.attachments && post.attachments.length > 0 && (
+                                <Paperclip
+                                  className="h-3 w-3 shrink-0 text-muted-foreground/60"
+                                  aria-label="파일 첨부 있음"
+                                />
+                              )}
+                            </div>
+                            {post.marketMeta && (
+                              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-ui-label text-foreground/75">
+                                {post.brand && (
+                                  <span className="shrink-0 whitespace-nowrap font-medium text-muted-foreground">
+                                    {getMarketBrandLabel(post.brand)}
+                                  </span>
+                                )}
+                                {(post.marketMeta.racketSpec?.modelName ||
+                                  post.marketMeta.stringSpec?.modelName) && (
+                                  <span className="line-clamp-1 text-muted-foreground/70">
+                                    {post.marketMeta.racketSpec?.modelName ??
+                                      post.marketMeta.stringSpec?.modelName}
+                                  </span>
+                                )}
+                                {post.marketMeta.conditionGrade && (
+                                  <Badge
+                                    variant={conditionGradeBadgeVariant(
+                                      post.marketMeta.conditionGrade,
+                                    )}
+                                    className="shrink-0 whitespace-nowrap px-1 py-0 text-ui-micro leading-3.5"
+                                  >
+                                    {post.marketMeta.conditionGrade}급
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 가격 - 가장 눈에 띄게 */}
+                          <div className="pr-1 text-right">
+                            {post.marketMeta?.price != null ? (
+                              <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-ui-medium tabular-nums text-foreground">
+                                {post.marketMeta.price.toLocaleString()}
+                                <span className="ml-0.5 text-ui-micro font-normal text-muted-foreground">
+                                  원
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-ui-label text-foreground/75">-</span>
+                            )}
+                          </div>
+
+                          {/* 판매상태 */}
+                          <div className="flex items-center justify-center">
+                            {post.marketMeta?.saleStatus && (
+                              <Badge
+                                variant={saleStatusBadgeVariant(post.marketMeta.saleStatus)}
+                                className="shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro leading-4"
+                              >
+                                {getMarketSaleStatusLabel(post.marketMeta.saleStatus)}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* 판매자 */}
+                          <div className="truncate text-center text-ui-caption">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="truncate text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                >
+                                  {post.nickname || "회원"}
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" className="w-44">
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!post.userId) return;
+                                    router.push(
+                                      `${config.routePrefix}?authorId=${post.userId}&authorName=${encodeURIComponent(post.nickname ?? "")}`,
+                                    );
+                                  }}
+                                >
+                                  이 작성자의 글 보기
+                                </DropdownMenuItem>
+                                {post.userId && post.userId !== user?.id && (
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (!user) {
+                                        const redirectTo =
+                                          typeof window !== "undefined"
+                                            ? window.location.pathname + window.location.search
+                                            : config.routePrefix;
+                                        router.push(
+                                          `/login?next=${encodeURIComponent(redirectTo)}`,
+                                        );
+                                        return;
+                                      }
+                                      if (!post.userId) return;
+                                      openCompose(post.userId, post.nickname);
+                                    }}
+                                  >
+                                    쪽지 보내기
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!post.userId) return;
+                                    router.push(
+                                      `${config.routePrefix}/${post.postNo ?? post.id}?openProfile=1`,
+                                    );
+                                  }}
+                                >
+                                  작성자 테니스 프로필
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+
+                          {/* 등록일 */}
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
+                            {fmtDateTime(post.createdAt)}
+                          </div>
+
+                          {/* 조회/추천 */}
+                          <div className="text-center text-ui-caption tabular-nums text-muted-foreground">
+                            {post.views ?? 0}
+                            <span className="text-border/60">/</span>
+                            {post.likes ?? 0}
+                          </div>
+                        </Link>
+                      ) : (
+                        <Link
+                          key={post.id}
+                          href={buildDetailHref(post.postNo ?? post.id)}
+                          className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-ui-body-sm transition-colors hover:bg-muted/50"
+                        >
+                          {/* 번호 */}
+                          <div className="text-center text-ui-label tabular-nums text-muted-foreground">
+                            {typeof post.postNo === "number" ? post.postNo : "-"}
+                          </div>
+
+                          {/* 분류 뱃지 */}
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <Badge
+                              variant={getBoardCategoryTone(config.boardType, post.category)}
+                              className={`${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                            >
+                              {config.categoryMap[post.category ?? ""]
+                                ? getCategoryBadgeText(config.categoryMap[post.category ?? ""])
+                                : "분류 없음"}
+                            </Badge>
+                            {config.brandOptionsByCategory?.[post.category ?? ""] && post.brand ? (
+                              <span className="text-ui-label text-foreground/75">
+                                {getMarketBrandLabel(post.brand)}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          {/* 제목 */}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1">
+                              <span className="line-clamp-1 break-keep text-foreground">
+                                {post.title}
+                              </span>
+                              {post.commentsCount ? (
+                                <span className="text-ui-label text-primary">
+                                  [{post.commentsCount}]
+                                </span>
+                              ) : null}
+                              {post.images && post.images.length > 0 && (
+                                <ImageIcon
+                                  className="h-4 w-4 shrink-0 ml-1 text-primary"
+                                  aria-label="이미지 첨부 있음"
+                                />
+                              )}
+                              {post.attachments && post.attachments.length > 0 && (
+                                <Paperclip
+                                  className="h-4 w-4 shrink-0 ml-0.5 text-foreground"
+                                  aria-label="파일 첨부 있음"
+                                />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 글쓴이 */}
+                          <div className="truncate text-center text-ui-label">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="truncate text-foreground underline-offset-4 hover:underline"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                >
+                                  {post.nickname || "회원"}
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" className="w-44">
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!post.userId) return;
+                                    const authorName = post.nickname ?? "";
+                                    router.push(
+                                      `${config.routePrefix}?authorId=${post.userId}&authorName=${encodeURIComponent(authorName)}`,
+                                    );
+                                  }}
+                                >
+                                  이 작성자의 글 보기
+                                </DropdownMenuItem>
+                                {post.userId && post.userId !== user?.id && (
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (!user) {
+                                        const redirectTo =
+                                          typeof window !== "undefined"
+                                            ? window.location.pathname + window.location.search
+                                            : config.routePrefix;
+                                        router.push(
+                                          `/login?next=${encodeURIComponent(redirectTo)}`,
+                                        );
+                                        return;
+                                      }
+                                      const toUserId = post.userId;
+                                      if (!toUserId) return;
+                                      openCompose(toUserId, post.nickname);
+                                    }}
+                                  >
+                                    쪽지 보내기
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!post.userId) return;
+                                    router.push(
+                                      `${config.routePrefix}/${post.postNo ?? post.id}?openProfile=1`,
+                                    );
+                                  }}
+                                >
+                                  작성자 테니스 프로필
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+
+                          {/* 작성일 */}
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
+                            {fmtDateTime(post.createdAt)}
+                          </div>
+
+                          {/* 댓글 수 */}
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
+                            {post.commentsCount ?? 0}
+                          </div>
+
+                          {/* 조회 수 */}
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
+                            {post.views ?? 0}
+                          </div>
+
+                          {/* 추천 수 */}
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
+                            {post.likes ?? 0}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 모바일: 카드형 리스트 */}
+                <div className="-mx-4 divide-y divide-border border-y border-border sm:-mx-6 lg:hidden">
+                  {items.map((post) => {
+                    const isMarket = config.boardType === "market";
+                    const isSold = post.marketMeta?.saleStatus === "sold";
+
+                    return isMarket ? (
+                      <Link
+                        key={post.id}
+                        href={buildDetailHref(post.postNo ?? post.id)}
+                        className={[
+                          "block px-4 py-4 transition-colors hover:bg-muted/30 active:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-6",
+                          isSold ? "opacity-45" : "",
+                        ].join(" ")}
+                      >
+                        {/* 상단: 가격 + 상태/등급 뱃지 */}
+                        <div className="flex min-w-0 items-start justify-between gap-2">
+                          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-1 pr-1">
+                            {post.marketMeta?.saleStatus && (
+                              <Badge
+                                variant={saleStatusBadgeVariant(post.marketMeta.saleStatus)}
+                                className="shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro leading-4"
+                              >
+                                {getMarketSaleStatusLabel(post.marketMeta.saleStatus)}
+                              </Badge>
+                            )}
+                            <Badge
+                              variant={getBoardCategoryTone(config.boardType, post.category)}
+                              className="shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro leading-4"
+                            >
+                              {config.categoryMap[post.category ?? ""]
+                                ? getCategoryBadgeText(config.categoryMap[post.category ?? ""])
+                                : "분류"}
+                            </Badge>
+                            {post.marketMeta?.conditionGrade && (
+                              <Badge
+                                variant={conditionGradeBadgeVariant(post.marketMeta.conditionGrade)}
+                                className="shrink-0 whitespace-nowrap px-1 py-0 text-ui-micro leading-3.5"
+                              >
+                                {post.marketMeta.conditionGrade}급
+                              </Badge>
+                            )}
+                          </div>
+                          {/* 가격 - 모바일에서도 가장 눈에 띄게 */}
+                          {post.marketMeta?.price != null && (
+                            <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-ui-medium tabular-nums text-foreground">
+                              {post.marketMeta.price.toLocaleString()}
+                              <span className="ml-0.5 text-ui-micro font-normal text-muted-foreground">
+                                원
+                              </span>
+                            </span>
+                          )}
+                        </div>
+
+                        {/* 제목 */}
+                        <div className="mt-1.5 flex items-start gap-1.5">
+                          <span className={`${boardListMobileTitleClampClass} text-ui-label`}>
+                            {post.title}
+                          </span>
+                          {post.commentsCount ? (
+                            <span className="mt-px shrink-0 text-ui-caption font-medium text-primary">
+                              [{post.commentsCount}]
+                            </span>
+                          ) : null}
+                          {post.images && post.images.length > 0 && (
+                            <ImageIcon
+                              className="mt-0.5 h-3 w-3 shrink-0 text-primary/60"
+                              aria-label="이미지 첨부 있음"
+                            />
+                          )}
+                        </div>
+
+                        {/* 브랜드 / 모델 */}
+                        {post.marketMeta &&
+                          (post.brand ||
+                            post.marketMeta.racketSpec?.modelName ||
+                            post.marketMeta.stringSpec?.modelName) && (
+                            <div className="mt-1 text-ui-label text-foreground/75">
+                              {post.brand && (
+                                <span className="font-medium">
+                                  {getMarketBrandLabel(post.brand)}
+                                </span>
+                              )}
+                              {post.brand &&
+                                (post.marketMeta.racketSpec?.modelName ||
+                                  post.marketMeta.stringSpec?.modelName) &&
+                                " "}
+                              <span
+                                className="line-clamp-2 break-keep text-muted-foreground/70"
+                                title={
+                                  post.marketMeta.racketSpec?.modelName ??
+                                  post.marketMeta.stringSpec?.modelName ??
+                                  ""
+                                }
+                              >
+                                {post.marketMeta.racketSpec?.modelName ??
+                                  post.marketMeta.stringSpec?.modelName ??
+                                  ""}
+                              </span>
+                            </div>
+                          )}
+
+                        {/* 하단 메타 */}
+                        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t border-border/40 pt-2 text-ui-label leading-relaxed text-muted-foreground">
+                          <span>
+                            {post.nickname || "회원"} &middot; {fmtDateTime(post.createdAt)}
+                          </span>
+                          <div className="flex items-center gap-2 tabular-nums">
+                            <span className="flex items-center gap-0.5">
+                              <Eye className="h-2.5 w-2.5" />
+                              {post.views ?? 0}
+                            </span>
+                            <span className="flex items-center gap-0.5">
+                              <ThumbsUp className="h-2.5 w-2.5" />
+                              {post.likes ?? 0}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ) : (
+                      <Link
+                        key={post.id}
+                        href={buildDetailHref(post.postNo ?? post.id)}
+                        className="block px-4 py-4 transition-colors hover:bg-muted/30 active:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-6"
+                      >
+                        {/* 1줄: 번호 + 분류 뱃지 */}
+                        <div className="flex items-center gap-2 text-ui-label text-foreground/75">
+                          <span className="text-ui-caption tabular-nums">
+                            {typeof post.postNo === "number" ? post.postNo : "-"}
+                          </span>
+                          <Badge
+                            variant={getBoardCategoryTone(config.boardType, post.category)}
+                            className={`${badgeSizeSm} shrink-0 whitespace-nowrap`}
+                          >
+                            {config.categoryMap[post.category ?? ""]
+                              ? getCategoryBadgeText(config.categoryMap[post.category ?? ""])
+                              : "분류 없음"}
+                          </Badge>
+                        </div>
+
+                        {/* 2줄: 제목 */}
+                        <div className="mt-1.5 flex items-start gap-1.5">
+                          <span className={`${boardListMobileTitleClampClass} text-ui-body-sm`}>
+                            {post.title}
+                          </span>
+                          {post.images && post.images.length > 0 && (
+                            <ImageIcon
+                              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/70"
+                              aria-label="이미지 첨부 있음"
+                            />
+                          )}
+                          {post.attachments && post.attachments.length > 0 && (
+                            <Paperclip
+                              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                              aria-label="파일 첨부 있음"
+                            />
+                          )}
+                        </div>
+
+                        {/* 3줄: 작성자/날짜 + 카운트들 */}
+                        <div className={boardListMobileMetaWrapClass}>
+                          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                            <span>{post.nickname || "회원"}</span>
+                            <span className="text-border">{"|"}</span>
+                            <span>{fmtDateTime(post.createdAt)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 tabular-nums leading-none">
+                            <span className="inline-flex items-center gap-1">
+                              <MessageSquare className="h-3.5 w-3.5" />
+                              {post.commentsCount ?? 0}
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <Eye className="h-3.5 w-3.5" />
+                              {post.views ?? 0}
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <ThumbsUp className="h-3.5 w-3.5" />
+                              {post.likes ?? 0}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+                {/* 하단: 검색 + 페이지네이션 */}
+                {hasResolvedTotal && (total ?? 0) > 0 && (
+                  <div className="mt-8 space-y-4">
+                    {/* 검색 폼 */}
+                    <form
+                      onSubmit={handleSearchSubmit}
+                      className="-mx-4 flex flex-col gap-2 border-y border-border bg-muted/30 px-4 py-4 sm:-mx-6 bp-md:mx-0 bp-md:flex-row bp-md:items-center bp-md:rounded-panel bp-md:border bp-md:bg-brand-highlight-muted/35 bp-md:px-3 bp-md:py-3 bp-md:shadow-soft"
+                    >
+                      <select
+                        value={searchType}
+                        onChange={(e) =>
+                          setSearchType(e.target.value as "title" | "author" | "title_content")
+                        }
+                        className="h-11 w-full rounded-control border border-border bg-card px-2 text-ui-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring bp-md:h-9 bp-md:w-32"
+                      >
+                        <option value="title_content">제목+내용</option>
+                        <option value="title">제목</option>
+                        <option value="author">글쓴이</option>
+                      </select>
+                      <input
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        className="h-11 w-full flex-1 rounded-control border border-border bg-card px-3 text-ui-body-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring bp-md:h-9"
+                        placeholder="검색어를 입력하세요"
+                      />
+                      <div className={`grid shrink-0 grid-cols-1 gap-2 ${qParam ? "bp-sm:grid-cols-2" : ""} bp-md:flex bp-md:items-center`}>
+                        <Button type="submit" size="sm" variant="highlight" className="min-h-11 w-full gap-1 px-3 bp-md:min-h-0 bp-md:w-auto">
+                          <Search className="h-3.5 w-3.5" />
+                          검색
+                        </Button>
+                        {qParam && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="min-h-11 w-full px-3 bp-md:min-h-0 bp-md:w-auto"
+                            onClick={handleSearchReset}
+                          >
+                            초기화
+                          </Button>
+                        )}
+                      </div>
+                    </form>
+
+                    <div className="flex items-center justify-center">
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="hidden bp-md:inline-flex"
+                          onClick={() => movePage(1)}
+                          disabled={page <= 1}
+                          type="button"
+                        >
+                          <span className="sr-only">첫 페이지</span>«
+                        </Button>
+                        {/* 이전 페이지 */}
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => movePage(page - 1)}
+                          disabled={page <= 1}
+                          type="button"
+                        >
+                          <span className="sr-only">이전 페이지</span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-4 w-4"
+                          >
+                            <polyline points="15 18 9 12 15 6" />
+                          </svg>
+                        </Button>
+
+                        {/* 페이지 번호들: 현재 페이지 중심 3개 노출 */}
+                        {visiblePages.map((pageNumber) => (
+                          <Button
+                            key={pageNumber}
+                            variant={pageNumber === page ? "highlight" : "outline"}
+                            size="sm"
+                            className="h-10 w-10"
+                            onClick={() => movePage(pageNumber)}
+                            type="button"
+                          >
+                            {pageNumber}
+                          </Button>
+                        ))}
+
+                        {/* 다음 페이지 */}
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => movePage(page + 1)}
+                          disabled={page >= totalPages}
+                          type="button"
+                        >
+                          <span className="sr-only">다음 페이지</span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="h-4 w-4"
+                          >
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="hidden bp-md:inline-flex"
+                          onClick={() => movePage(totalPages)}
+                          disabled={page >= totalPages}
+                          type="button"
+                        >
+                          <span className="sr-only">마지막 페이지</span>»
+                        </Button>
+
+                        <form onSubmit={handlePageJump} className="ml-1 hidden items-center gap-1 bp-md:flex">
+                          <input
+                            type="number"
+                            min={1}
+                            max={totalPages}
+                            value={pageJump}
+                            onChange={(e) => setPageJump(e.target.value)}
+                            placeholder="페이지"
+                            className="h-10 w-20 rounded-control border border-border bg-card px-2 text-ui-label focus:ring-2 focus:ring-ring focus:border-border"
+                          />
+                          <Button type="submit" variant="outline" size="sm" className="h-10 px-2">
+                            이동
+                          </Button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </SiteContainer>
+    </div>
+  );
+}

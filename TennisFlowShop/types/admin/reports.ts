@@ -1,0 +1,103 @@
+import type { OfflinePaymentMethod } from "@/types/admin/offline";
+
+export type RevenueReportGroupBy = "day" | "month";
+
+export type RevenueReportOnlineBucket = {
+  paidAmount: number;
+  refundedAmount: number;
+  netAmount: number;
+  count: number;
+  bySource: {
+    orders: number;
+    stringingApplications: number;
+    packageOrders: number;
+    rentals: number;
+    privatePayments?: number;
+  };
+  privatePayments?: {
+    label: "개인결제";
+    paidAmount: number;
+    refundAmount: number;
+    netAmount: number;
+    paidCount: number;
+    refundCount: number;
+  };
+};
+
+export type RevenueReportOfflineBucket = {
+  paidAmount: number;
+  refundedAmount: number;
+  pendingAmount: number;
+  netAmount: number;
+  recordsPaidAmount: number;
+  packageSalesPaidAmount: number;
+  byMethod: Record<OfflinePaymentMethod, number>;
+  issueFailedCount?: number;
+  issueFailedAmount?: number;
+};
+
+export type RevenueReportCombinedPreview = {
+  paidAmount: number;
+  refundedAmount: number;
+  netAmount: number;
+  note: "온라인 + 오프라인 단순 참고 합계이며 정산 지급액 계산에는 사용되지 않습니다.";
+};
+
+export type RevenueReportSeriesPoint = {
+  date: string;
+  onlinePaidAmount: number;
+  /** 개인결제 취소 이벤트를 canceledAt 기준 bucket에 반영한 온라인 환불액입니다. */
+  onlineRefundAmount?: number;
+  /** onlinePaidAmount - onlineRefundAmount 기준 온라인 순매출입니다. */
+  onlineNetAmount?: number;
+  offlinePaidAmount: number;
+  combinedPaidAmount: number;
+};
+
+export type RevenueReportResponse = {
+  range: {
+    from: string;
+    to: string;
+    groupBy: RevenueReportGroupBy;
+  };
+  online: RevenueReportOnlineBucket;
+  offline: RevenueReportOfflineBucket;
+  combinedPreview: RevenueReportCombinedPreview;
+  series: RevenueReportSeriesPoint[];
+};
+
+export type RevenueReportSnapshotStatus = "draft" | "finalized";
+
+export type RevenueReportSnapshotSource = "manual" | "auto";
+
+export type RevenueReportSnapshotMeta = {
+  source?: string | null;
+  generatedAt?: string | null;
+  generatedBy?: string | null;
+  trigger?: string | null;
+  cron?: boolean | null;
+};
+
+export type RevenueReportSnapshot = {
+  id: string;
+  yyyymm: string;
+  range: RevenueReportResponse["range"];
+  report: RevenueReportResponse;
+  status: RevenueReportSnapshotStatus;
+  memo?: string | null;
+  source?: RevenueReportSnapshotSource | null;
+  meta?: RevenueReportSnapshotMeta | null;
+  createdAt?: string | null;
+  createdBy?: string | null;
+  updatedAt?: string | null;
+  updatedBy?: string | null;
+};
+
+export type RevenueReportSnapshotResponse = {
+  item?: RevenueReportSnapshot | null;
+  items?: RevenueReportSnapshot[];
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
+};

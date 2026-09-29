@@ -1,0 +1,253 @@
+"use client";
+
+import Link from "next/link";
+import { useState, type FormEvent } from "react";
+import type { FacilityOverviewContent } from "@/features/site-content/site-content.types";
+
+type Props = { content: FacilityOverviewContent; updatedAt: string | null };
+type Errors = Record<string, string>;
+
+export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props) {
+  const confirmationErrorId = "facility-overview-save-error";
+  const [content, setContent] = useState(() => structuredClone(initial));
+  const [confirmed, setConfirmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [errors, setErrors] = useState<Errors>({});
+  const [message, setMessage] = useState("");
+  const field = (label: string, path: string, value: string, update: (value: string) => void, area = false) => {
+    const id = `field-${path.replaceAll(".", "-")}`;
+    const error = errors[path];
+    const Element = area ? "textarea" : "input";
+    return (
+      <div className="grid gap-2 border-b border-border pb-6">
+        <label className="block font-semibold" htmlFor={id}>
+          {label}
+        </label>
+        <Element
+          id={id}
+          value={value}
+          onChange={(event) => update(event.target.value)}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className="min-w-0 w-full rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          rows={area ? 4 : undefined}
+        />
+        {error ? (
+          <p id={`${id}-error`} className="text-small font-semibold text-danger">
+            {error}
+          </p>
+        ) : null}
+      </div>
+    );
+  };
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!confirmed) return;
+    setBusy(true);
+    setErrors({});
+    setMessage("");
+    try {
+      const result = await fetch("/api/admin/site-content/facility-overview", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expectedUpdatedAt: updatedAt,
+          saveConfirmed: confirmed,
+          content,
+        }),
+      });
+      const body: unknown = await result.json().catch(() => null);
+      if (!body || typeof body !== "object") {
+        setMessage("공식 콘텐츠를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+      const data = body as {
+        error?: string;
+        fieldErrors?: Errors;
+        redirectTo?: string;
+      };
+      if (!result.ok) {
+        setErrors(data.fieldErrors ?? {});
+        setMessage(
+          data.error === "edit_conflict"
+            ? "다른 관리자가 이 콘텐츠를 먼저 수정했습니다. 새로고침 후 다시 확인해 주세요."
+            : data.error === "validation"
+              ? "입력 내용을 확인해 주세요."
+              : "공식 콘텐츠를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+        );
+        return;
+      }
+      if (data.redirectTo) window.location.assign(data.redirectTo);
+      else setMessage("공식 콘텐츠를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    } catch {
+      setMessage("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  const set = (key: keyof FacilityOverviewContent, value: string) =>
+    setContent((current) => ({ ...current, [key]: value }));
+  return (
+    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-8">
+      {field("페이지 설명", "pageDescription", content.pageDescription, (v) => set("pageDescription", v), true)}
+      <fieldset className="space-y-5">
+        <legend className="text-heading font-bold">시설 기본 정보 3개</legend>
+        {content.facts.map((item, index) => (
+          <div key={index} className="grid gap-4 rounded-card border border-border bg-surface p-4 sm:grid-cols-2">
+            {field(`기본 정보 ${index + 1} 라벨`, `facts.${index}.label`, item.label, (v) =>
+              setContent((c) => ({
+                ...c,
+                facts: c.facts.map((x, i) =>
+                  i === index ? { ...x, label: v } : x,
+                ) as unknown as FacilityOverviewContent["facts"],
+              })),
+            )}
+            {field(`기본 정보 ${index + 1} 값`, `facts.${index}.value`, item.value, (v) =>
+              setContent((c) => ({
+                ...c,
+                facts: c.facts.map((x, i) =>
+                  i === index ? { ...x, value: v } : x,
+                ) as unknown as FacilityOverviewContent["facts"],
+              })),
+            )}
+          </div>
+        ))}
+      </fieldset>
+      <section className="space-y-4">
+        <h2 className="text-heading font-bold">함께 사는 기준</h2>
+        {field("눈썹 문구", "principlesEyebrow", content.principlesEyebrow, (v) => set("principlesEyebrow", v))}
+        {field("제목", "principlesTitle", content.principlesTitle, (v) => set("principlesTitle", v))}
+        {field(
+          "설명",
+          "principlesDescription",
+          content.principlesDescription,
+          (v) => set("principlesDescription", v),
+          true,
+        )}
+        {content.principles.map((item, index) => (
+          <div key={index} className="space-y-4 rounded-card border border-border bg-surface p-4">
+            {field(`생활 원칙 ${index + 1} 제목`, `principles.${index}.title`, item.title, (v) =>
+              setContent((c) => ({
+                ...c,
+                principles: c.principles.map((x, i) =>
+                  i === index ? { ...x, title: v } : x,
+                ) as unknown as FacilityOverviewContent["principles"],
+              })),
+            )}
+            {field(
+              `생활 원칙 ${index + 1} 설명`,
+              `principles.${index}.description`,
+              item.description,
+              (v) =>
+                setContent((c) => ({
+                  ...c,
+                  principles: c.principles.map((x, i) =>
+                    i === index ? { ...x, description: v } : x,
+                  ) as unknown as FacilityOverviewContent["principles"],
+                })),
+              true,
+            )}
+          </div>
+        ))}
+      </section>
+      <section className="space-y-4">
+        <h2 className="text-heading font-bold">생활의 모습</h2>
+        {field("눈썹 문구", "scenesEyebrow", content.scenesEyebrow, (v) => set("scenesEyebrow", v))}
+        {field("제목", "scenesTitle", content.scenesTitle, (v) => set("scenesTitle", v))}
+        {field("설명", "scenesDescription", content.scenesDescription, (v) => set("scenesDescription", v), true)}
+        {content.scenes.map((item, index) => (
+          <div key={index} className="grid gap-4 rounded-card border border-border bg-surface p-4">
+            {field(`생활 장면 ${index + 1} 라벨`, `scenes.${index}.label`, item.label, (v) =>
+              setContent((c) => ({
+                ...c,
+                scenes: c.scenes.map((x, i) =>
+                  i === index ? { ...x, label: v } : x,
+                ) as unknown as FacilityOverviewContent["scenes"],
+              })),
+            )}
+            {field(`생활 장면 ${index + 1} 제목`, `scenes.${index}.title`, item.title, (v) =>
+              setContent((c) => ({
+                ...c,
+                scenes: c.scenes.map((x, i) =>
+                  i === index ? { ...x, title: v } : x,
+                ) as unknown as FacilityOverviewContent["scenes"],
+              })),
+            )}
+            {field(
+              `생활 장면 ${index + 1} 설명`,
+              `scenes.${index}.description`,
+              item.description,
+              (v) =>
+                setContent((c) => ({
+                  ...c,
+                  scenes: c.scenes.map((x, i) =>
+                    i === index ? { ...x, description: v } : x,
+                  ) as unknown as FacilityOverviewContent["scenes"],
+                })),
+              true,
+            )}
+          </div>
+        ))}
+      </section>
+      <section className="space-y-4">
+        <h2 className="text-heading font-bold">공개 원칙</h2>
+        {field("눈썹 문구", "policyEyebrow", content.policyEyebrow, (v) => set("policyEyebrow", v))}
+        {field("제목", "policyTitle", content.policyTitle, (v) => set("policyTitle", v))}
+        {content.policyItems.map((item, index) => (
+          <div key={index} className="space-y-4 rounded-card border border-border bg-surface p-4">
+            {field(`공개 원칙 ${index + 1} 제목`, `policyItems.${index}.title`, item.title, (v) =>
+              setContent((c) => ({
+                ...c,
+                policyItems: c.policyItems.map((x, i) =>
+                  i === index ? { ...x, title: v } : x,
+                ) as unknown as FacilityOverviewContent["policyItems"],
+              })),
+            )}
+            {field(
+              `공개 원칙 ${index + 1} 설명`,
+              `policyItems.${index}.description`,
+              item.description,
+              (v) =>
+                setContent((c) => ({
+                  ...c,
+                  policyItems: c.policyItems.map((x, i) =>
+                    i === index ? { ...x, description: v } : x,
+                  ) as unknown as FacilityOverviewContent["policyItems"],
+                })),
+              true,
+            )}
+          </div>
+        ))}
+      </section>
+      <div className="border-l-4 border-warning bg-warning-soft p-4">
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={confirmed}
+            onChange={(e) => setConfirmed(e.target.checked)}
+            aria-describedby={errors.saveConfirmed ? confirmationErrorId : undefined}
+            aria-invalid={errors.saveConfirmed ? true : undefined}
+            className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <span>입력한 내용이 공개 홈페이지에 즉시 반영되는 것을 확인했습니다.</span>
+        </label>
+        {errors.saveConfirmed ? (
+          <p id={confirmationErrorId} role="alert" className="mt-3 text-small font-semibold text-danger">
+            {errors.saveConfirmed}
+          </p>
+        ) : null}
+      </div>
+      {message ? (
+        <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
+          {message}
+        </p>
+      ) : null}
+      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+        <button type="submit" disabled={busy} className="min-h-12 rounded-control bg-primary px-6 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60">
+          {busy ? "저장 중…" : "공식 콘텐츠 저장"}
+        </button>
+        <Link href="/admin/site-content" className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">취소</Link>
+      </div>
+    </form>
+  );
+}

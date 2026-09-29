@@ -1,0 +1,912 @@
+"use client";
+
+import {
+  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  CheckCircle,
+  CheckCircle2,
+  Package,
+  PackageSearch,
+  Plus,
+  Search,
+  TriangleAlert,
+  X,
+  XCircle,
+} from "lucide-react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import Link from "next/link";
+import type React from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
+
+import BrandFilter from "@/app/admin/products/product-filters/BrandFilter";
+import MaterialFilter from "@/app/admin/products/product-filters/MaterialFilter";
+import StockStatusFilter from "@/app/admin/products/product-filters/StockStatusFilter";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import {
+  AdminListBody,
+  AdminListCell,
+  AdminListColumnHeader,
+  AdminListPrimary,
+  AdminListRow,
+  AdminListTable,
+  AdminMoneyBlock,
+  AdminRowActions,
+  AdminStatusGroup,
+} from "@/components/admin/AdminListTable";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminRowActionMenu from "@/components/admin/AdminRowActionMenu";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
+import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
+import {
+  STRING_BRANDS,
+  STRING_MATERIALS,
+  stringBrandLabel,
+  stringMaterialLabel,
+} from "@/lib/constants";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { showErrorToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+
+type Product = {
+  _id: string;
+  name: string;
+  sku: string;
+  brand: string;
+  gauge: string;
+  material: string;
+  price: number;
+  images?: string[];
+  isVisible?: boolean;
+  inventory?: {
+    stock: number;
+    lowStock?: number;
+    isFeatured?: boolean;
+    isNew?: boolean;
+    isSale?: boolean;
+    salePrice?: number;
+  };
+  computedStatus?: StatusKey;
+};
+
+const STATUS_KEYS = ["active", "low_stock", "out_of_stock"] as const;
+type StatusKey = (typeof STATUS_KEYS)[number];
+
+// 상태 매핑(아이콘+색)
+const STATUS_UI: Record<
+  StatusKey,
+  { label: string; tone: BadgeSemanticTone; Icon: React.ElementType }
+> = {
+  active: {
+    label: "판매중",
+    tone: "success",
+    Icon: CheckCircle2,
+  },
+
+  low_stock: {
+    label: "재고 부족",
+    tone: "warning",
+    Icon: TriangleAlert,
+  },
+
+  out_of_stock: {
+    label: "품절",
+    tone: "danger",
+    Icon: XCircle,
+  },
+};
+
+// 브랜드, 재질 매핑
+const BRAND_OPTIONS = STRING_BRANDS.map(({ value, label }) => ({
+  id: value,
+  label,
+}));
+
+const MATERIAL_OPTIONS = STRING_MATERIALS.map(({ value, label }) => ({
+  id: value,
+  label,
+}));
+const brandLabel = stringBrandLabel;
+const materialLabel = stringMaterialLabel;
+
+const PRODUCT_LIST_COLUMNS =
+  "grid-cols-[minmax(280px,1.35fr)_minmax(210px,1fr)_130px_minmax(180px,0.85fr)_116px]";
+
+// 입력 디바운스
+function useDebounce<T>(value: T, delay = 250): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
+
+export default function ProductsClient() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedTerm = useDebounce(searchTerm, 250);
+
+  const [brandFilter, setBrandFilter] = useState<string>("all");
+  const [materialFilter, setMaterialFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [exposureFilter, setExposureFilter] = useState<string>("all");
+
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
+  const [pendingDeleteProductId, setPendingDeleteProductId] = useState<string | null>(null);
+
+  // 허용되는 정렬 필드(서버 allowMap과 일치시켜야 함)
+  type SortField = "name" | "brand" | "gauge" | "material" | "price" | "stock" | "createdAt";
+
+  const [sort, setSort] = useState<{
+    field: SortField;
+    dir: "asc" | "desc";
+  } | null>(null);
+
+  // 헤더 클릭 시 토글
+  const handleSort = (field: SortField) => {
+    setSort((prev) => {
+      if (!prev || prev.field !== field) return { field, dir: "asc" }; // 1클릭: asc
+      if (prev.dir === "asc") return { field, dir: "desc" }; // 2클릭: desc
+      return null; // 3클릭: 기본(등록순)
+    });
+    setPage(1);
+  };
+  // 서버 페이지네이션 쿼리 / 쿼리스트링: sort가 있을 때만 세팅
+  const sp = new URLSearchParams({
+    page: String(page),
+    pageSize: String(PAGE_SIZE),
+    q: debouncedTerm,
+    brand: brandFilter,
+    material: materialFilter,
+    status: statusFilter,
+    exposure: exposureFilter,
+  });
+  if (sort) sp.set("sort", `${sort.field}:${sort.dir}`);
+  const qs = sp.toString();
+
+  type ApiRes = {
+    items: Product[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalsByStatus: Record<"active" | "low_stock" | "out_of_stock", number>; // 전역 통계(필터 무시)
+  };
+
+  const { data, error, isLoading, isValidating, mutate } = useSWR<ApiRes>(
+    `/api/admin/products?${qs}`,
+    authenticatedSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      keepPreviousData: true, // SWR v2 전환 중 깜빡임 줄어듬
+    },
+  );
+
+  // 3차 보완: data 미확정(undefined)과 실제 빈 목록([])을 명확히 분리한다.
+  const items = data?.items ?? [];
+  const hasResolvedData = !!data;
+  const hasDataError = !!error;
+  const isListLoadingState = (isLoading || isValidating) && !hasResolvedData;
+  const isActualEmptyState = hasResolvedData && !hasDataError && items.length === 0;
+  const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
+  const total = data?.total ?? 0;
+  const totalPages = hasResolvedData ? Math.max(1, Math.ceil(total / PAGE_SIZE)) : null;
+  const currentPage = totalPages ? Math.min(page, totalPages) : null;
+
+  const hasActiveTableFilter =
+    debouncedTerm.trim().length > 0 ||
+    brandFilter !== "all" ||
+    materialFilter !== "all" ||
+    statusFilter !== "all" ||
+    exposureFilter !== "all";
+
+  // 전역 카운트(필터 무시)
+  const totalsByStatus = data?.totalsByStatus ?? {
+    active: 0,
+    low_stock: 0,
+    out_of_stock: 0,
+  };
+  const totalAll = totalsByStatus.active + totalsByStatus.low_stock + totalsByStatus.out_of_stock;
+  const activeAll = totalsByStatus.active;
+  const lowStockAll = totalsByStatus.low_stock;
+  const outOfStockAll = totalsByStatus.out_of_stock;
+
+  // 삭제 핸들러
+  const handleDelete = async (id: string) => {
+    const result = await runAdminActionWithToast({
+      action: () => adminMutator(`/api/admin/products/${id}`, { method: "DELETE" }),
+      successMessage: "상품이 삭제되었습니다.",
+      fallbackErrorMessage: "삭제 중 오류가 발생했습니다.",
+    });
+    if (result) await mutate();
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  };
+
+  const handleBrandFilterChange = (value: string) => {
+    setBrandFilter(value);
+    setPage(1);
+  };
+
+  const handleMaterialFilterChange = (value: string) => {
+    setMaterialFilter(value);
+    setPage(1);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setPage(1);
+  };
+
+  const handleExposureFilterChange = (value: string) => {
+    setExposureFilter(value);
+    setPage(1);
+  };
+
+  useEffect(() => {
+    if (commonErrorMessage) showErrorToast(commonErrorMessage);
+  }, [commonErrorMessage]);
+
+  const resetFilters = () => {
+    setBrandFilter("all");
+    setMaterialFilter("all");
+    setStatusFilter("all");
+    setExposureFilter("all");
+    setSearchTerm("");
+    setPage(1);
+  };
+
+  // 상품 목록 빠른 보기입니다.
+  // 서버가 이미 받는 필터 값만 사용하고, 새 API query는 만들지 않습니다.
+  const applyQuickView = ({
+    status = "all",
+    exposure = "all",
+  }: {
+    status?: string;
+    exposure?: string;
+  }) => {
+    setSearchTerm("");
+    setBrandFilter("all");
+    setMaterialFilter("all");
+    setStatusFilter(status);
+    setExposureFilter(exposure);
+    setPage(1);
+  };
+
+  // 현재 화면에 적용된 필터를 운영자가 읽기 쉬운 라벨로 변환합니다.
+  const activeFilterLabels = [
+    debouncedTerm.trim() ? `검색어: ${debouncedTerm.trim()}` : null,
+    brandFilter !== "all" ? `브랜드: ${brandLabel(brandFilter)}` : null,
+    materialFilter !== "all" ? `재질: ${materialLabel(materialFilter)}` : null,
+    statusFilter !== "all"
+      ? `재고 상태: ${STATUS_UI[statusFilter as StatusKey]?.label ?? statusFilter}`
+      : null,
+    exposureFilter !== "all"
+      ? `노출: ${exposureFilter === "featured" ? "추천 상품" : exposureFilter === "new" ? "신상품" : exposureFilter === "sale" ? "할인 상품" : exposureFilter}`
+      : null,
+  ].filter((label): label is string => Boolean(label));
+
+  // 빠른 보기 라벨은 정확히 해당 조건만 적용된 경우에만 표시합니다.
+  const currentViewLabel = !hasActiveTableFilter
+    ? "전체 상품"
+    : statusFilter === "active" &&
+        !debouncedTerm.trim() &&
+        brandFilter === "all" &&
+        materialFilter === "all" &&
+        exposureFilter === "all"
+      ? "판매 중"
+      : statusFilter === "low_stock" &&
+          !debouncedTerm.trim() &&
+          brandFilter === "all" &&
+          materialFilter === "all" &&
+          exposureFilter === "all"
+        ? "재고 부족"
+        : statusFilter === "out_of_stock" &&
+            !debouncedTerm.trim() &&
+            brandFilter === "all" &&
+            materialFilter === "all" &&
+            exposureFilter === "all"
+          ? "품절"
+          : exposureFilter === "featured" &&
+              !debouncedTerm.trim() &&
+              brandFilter === "all" &&
+              materialFilter === "all" &&
+              statusFilter === "all"
+            ? "추천 상품"
+            : exposureFilter === "new" &&
+                !debouncedTerm.trim() &&
+                brandFilter === "all" &&
+                materialFilter === "all" &&
+                statusFilter === "all"
+              ? "신상품"
+              : exposureFilter === "sale" &&
+                  !debouncedTerm.trim() &&
+                  brandFilter === "all" &&
+                  materialFilter === "all" &&
+                  statusFilter === "all"
+                ? "할인 상품"
+                : "사용자 지정 조건";
+
+  return (
+    <AdminPageShell variant="wide" className="space-y-4">
+      <AdminPageHeader
+        variant="compact"
+        title="상품 관리"
+        description="판매 상품의 노출 상태, 가격, 재고, 색상 옵션, 배송비를 한 곳에서 관리합니다."
+        icon={PackageSearch}
+        scope="범위: 스트링 상품"
+        helperText="신규 등록 전 가격·배송비·재고 정보를 확인하고, 판매 중 상품은 품절/옵션 상태를 우선 점검하세요."
+        actions={
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/operations">오늘 처리할 일 보기</Link>
+          </Button>
+        }
+      />
+
+      <section aria-label="상품 운영 현황">
+        <Card className={cn(adminSurface.card, "overflow-hidden")}>
+          <CardContent className="grid gap-px bg-border/60 p-0 grid-cols-4">
+            {[
+              {
+                label: "전체 상품",
+                icon: <Package className="h-4 w-4 text-foreground" />,
+                value: totalAll,
+                bgColor: "bg-muted",
+              },
+              {
+                label: "판매 중",
+                icon: <CheckCircle className="h-4 w-4 text-success" />,
+                value: activeAll,
+                bgColor: "bg-success/10 dark:bg-success/15",
+              },
+              {
+                label: "재고 부족",
+                icon: <AlertTriangle className="h-4 w-4 text-warning" />,
+                value: lowStockAll,
+                bgColor: "bg-warning/10 dark:bg-warning/15",
+              },
+              {
+                label: "품절",
+                icon: <XCircle className="h-4 w-4 text-destructive" />,
+                value: outOfStockAll,
+                bgColor: "bg-destructive/10 dark:bg-destructive/15",
+              },
+            ].map((c) => (
+              <div
+                key={c.label}
+                className="flex min-w-0 items-center justify-between gap-3 bg-card px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className={adminTypography.metaMuted}>{c.label}</p>
+                  <p className={adminTypography.kpiValueCompact}>
+                    {hasResolvedData ? c.value : "-"}
+                  </p>
+                </div>
+                <div
+                  className={cn(
+                    c.bgColor,
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border",
+                  )}
+                >
+                  {c.icon}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      <AdminFilterBar
+        quickFilters={
+          <>
+            <span className={cn("mr-1 font-semibold", adminTypography.metaMuted)}>빠른 보기</span>
+            <Button
+              type="button"
+              size="sm"
+              variant={!hasActiveTableFilter ? "default" : "outline"}
+              onClick={resetFilters}
+            >
+              전체
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "판매 중" ? "default" : "outline"}
+              onClick={() => applyQuickView({ status: "active" })}
+            >
+              판매 중
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "재고 부족" ? "default" : "outline"}
+              onClick={() => applyQuickView({ status: "low_stock" })}
+            >
+              재고 부족
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "품절" ? "default" : "outline"}
+              onClick={() => applyQuickView({ status: "out_of_stock" })}
+            >
+              품절
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "추천 상품" ? "default" : "outline"}
+              onClick={() => applyQuickView({ exposure: "featured" })}
+            >
+              추천 상품
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "신상품" ? "default" : "outline"}
+              onClick={() => applyQuickView({ exposure: "new" })}
+            >
+              신상품
+            </Button>
+
+            <Button
+              type="button"
+              size="sm"
+              variant={currentViewLabel === "할인 상품" ? "default" : "outline"}
+              onClick={() => applyQuickView({ exposure: "sale" })}
+            >
+              할인 상품
+            </Button>
+          </>
+        }
+        actions={
+          <>
+            <Button variant="outline" size="sm" onClick={resetFilters} className="h-9">
+              초기화
+            </Button>
+            <Button asChild size="sm" className="h-9">
+              <Link href="/admin/products/new">
+                <Plus className="mr-2 h-4 w-4" />
+                신규 스트링 등록
+              </Link>
+            </Button>
+          </>
+        }
+        activeFilters={
+          activeFilterLabels.length > 0 ? (
+            <>
+              <span className="font-medium text-foreground/80">적용 중</span>
+              {activeFilterLabels.map((label) => (
+                <span
+                  key={label}
+                  className="rounded-full border border-border/70 bg-muted/40 px-2.5 py-1"
+                >
+                  {label}
+                </span>
+              ))}
+            </>
+          ) : null
+        }
+      >
+        <div className="space-y-3">
+          <div className="grid grid-cols-[minmax(240px,2fr)_repeat(4,minmax(120px,1fr))] items-center gap-2">
+            <div className="relative min-w-0">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="스트링명, 브랜드, SKU로 검색"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className={cn("h-9 pl-8", adminTypography.body)}
+              />
+              {searchTerm && (
+                <Button
+                  type="button"
+                  aria-label="검색어 지우기"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-9 w-9 px-3"
+                  onClick={() => handleSearchChange("")}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <BrandFilter
+              value={brandFilter}
+              onChange={handleBrandFilterChange}
+              options={BRAND_OPTIONS.map((o) => o.id)}
+            />
+            <MaterialFilter
+              value={materialFilter}
+              onChange={handleMaterialFilterChange}
+              options={MATERIAL_OPTIONS.map((o) => o.id)}
+            />
+            <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
+            <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
+              <SelectTrigger className={cn("h-9 w-full min-w-0", adminTypography.body)}>
+                <SelectValue placeholder="노출 유형 전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">노출 유형 전체</SelectItem>
+                <SelectItem value="featured">추천 상품</SelectItem>
+                <SelectItem value="new">신상품</SelectItem>
+                <SelectItem value="sale">할인 상품</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <p className={adminTypography.metaMuted}>
+            현재 {currentViewLabel} · {hasResolvedData ? total.toLocaleString("ko-KR") : "-"}개
+          </p>
+        </div>
+      </AdminFilterBar>
+
+      <AdminListTable
+        title="스트링 상품 목록"
+        viewLabel={currentViewLabel}
+        resultLabel={
+          hasDataError
+            ? "불러오기 실패"
+            : hasResolvedData
+              ? `총 ${total.toLocaleString("ko-KR")}개`
+              : "불러오는 중…"
+        }
+        description="상품 기본 정보, 분류와 노출 속성, 가격, 판매·재고 상태와 관리 작업을 한 행에서 확인합니다."
+        columnsClassName={PRODUCT_LIST_COLUMNS}
+        ariaLabel="스트링 상품 관리 목록"
+        headerActions={
+          sort ? (
+            <Button type="button" variant="ghost" size="sm" onClick={() => setSort(null)}>
+              정렬 해제
+            </Button>
+          ) : null
+        }
+      >
+        <AdminListColumnHeader columnsClassName={PRODUCT_LIST_COLUMNS}>
+          <div
+            role="columnheader"
+            aria-sort={
+              sort?.field === "name" ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5"
+          >
+            <button
+              type="button"
+              aria-label="상품명 정렬"
+              onClick={() => handleSort("name")}
+              className={cn(
+                "inline-flex min-h-8 items-center gap-1 rounded-sm text-left transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sort?.field === "name" && "text-primary",
+              )}
+            >
+              상품
+              {sort?.field === "name" ? (
+                sort.dir === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
+              ) : (
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+
+          <div role="columnheader" className="min-w-0 px-4 py-2.5">
+            분류 / 옵션
+          </div>
+
+          <div
+            role="columnheader"
+            aria-sort={
+              sort?.field === "price" ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5 text-right"
+          >
+            <button
+              type="button"
+              aria-label="가격 정렬"
+              onClick={() => handleSort("price")}
+              className={cn(
+                "ml-auto inline-flex min-h-8 items-center justify-end gap-1 rounded-sm text-right transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sort?.field === "price" && "text-primary",
+              )}
+            >
+              가격
+              {sort?.field === "price" ? (
+                sort.dir === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
+              ) : (
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+
+          <div
+            role="columnheader"
+            aria-sort={
+              sort?.field === "stock" ? (sort.dir === "asc" ? "ascending" : "descending") : "none"
+            }
+            className="min-w-0 px-4 py-2.5"
+          >
+            <button
+              type="button"
+              aria-label="재고 정렬"
+              onClick={() => handleSort("stock")}
+              className={cn(
+                "inline-flex min-h-8 items-center gap-1 rounded-sm text-left transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                sort?.field === "stock" && "text-primary",
+              )}
+            >
+              판매 / 재고
+              {sort?.field === "stock" ? (
+                sort.dir === "asc" ? (
+                  <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )
+              ) : (
+                <ArrowUpDown
+                  className="h-3.5 w-3.5 text-muted-foreground opacity-50"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          </div>
+
+          <div role="columnheader" className="min-w-0 px-2 py-2.5 text-right">
+            작업
+          </div>
+        </AdminListColumnHeader>
+
+        <AdminListBody>
+          {hasDataError ? (
+            <AdminListRow columnsClassName={PRODUCT_LIST_COLUMNS} ariaLabel="상품 목록 오류">
+              <AdminListCell className="col-span-5 py-10 text-center text-destructive">
+                {commonErrorMessage ?? "상품 목록을 불러오지 못했습니다."}
+              </AdminListCell>
+            </AdminListRow>
+          ) : isListLoadingState ? (
+            Array.from({ length: 6 }).map((_, rowIdx) => (
+              <AdminListRow
+                key={`admin-products-loading-row-${rowIdx}`}
+                columnsClassName={PRODUCT_LIST_COLUMNS}
+                ariaLabel="상품 목록 불러오는 중"
+              >
+                <AdminListCell>
+                  <Skeleton className="h-14 w-full" />
+                </AdminListCell>
+                <AdminListCell>
+                  <Skeleton className="h-14 w-full" />
+                </AdminListCell>
+                <AdminListCell align="end">
+                  <Skeleton className="h-7 w-24" />
+                </AdminListCell>
+                <AdminListCell>
+                  <Skeleton className="h-14 w-full" />
+                </AdminListCell>
+                <AdminListCell align="end" className="px-2">
+                  <Skeleton className="h-7 w-24" />
+                </AdminListCell>
+              </AdminListRow>
+            ))
+          ) : isActualEmptyState ? (
+            <AdminListRow columnsClassName={PRODUCT_LIST_COLUMNS} ariaLabel="상품 목록 없음">
+              <AdminListCell className="col-span-5 py-16 text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <Search className="h-8 w-8 text-muted-foreground/50" />
+                  <p className={adminTypography.body}>등록된 상품이 없습니다.</p>
+                </div>
+              </AdminListCell>
+            </AdminListRow>
+          ) : (
+            items.map((s) => {
+              const statusKey: StatusKey = (s.computedStatus ?? "active") as StatusKey;
+              const S = STATUS_UI[statusKey];
+              const isHidden = s.isVisible === false;
+              const thumbnail = s.images?.find(
+                (image) => typeof image === "string" && image.trim().length > 0,
+              );
+              const stock = Math.max(0, Number(s.inventory?.stock ?? 0));
+              const regularPrice = Math.max(0, Number(s.price ?? 0));
+              const salePrice = Math.max(0, Number(s.inventory?.salePrice ?? 0));
+              const isFeatured = s.inventory?.isFeatured === true;
+              const isNew = s.inventory?.isNew === true;
+              const hasValidSale =
+                s.inventory?.isSale === true && salePrice > 0 && salePrice < regularPrice;
+              const hasExposureLabel = isFeatured || isNew || hasValidSale;
+
+              return (
+                <AdminListRow
+                  key={s._id}
+                  columnsClassName={PRODUCT_LIST_COLUMNS}
+                  ariaLabel={`${s.name} 상품`}
+                >
+                  <AdminListCell>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md border border-border bg-muted/30">
+                        <Image
+                          src={thumbnail ?? "/placeholder.svg"}
+                          alt={thumbnail ? `${s.name} 상품 이미지` : "상품 이미지 없음"}
+                          fill
+                          sizes="44px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <AdminListPrimary
+                        title={s.name}
+                        meta={<span className="font-mono">SKU {s.sku || "-"}</span>}
+                      />
+                    </div>
+                  </AdminListCell>
+
+                  <AdminListCell>
+                    <div className="min-w-0 space-y-1.5">
+                      <p className={adminTypography.tablePrimary}>
+                        {brandLabel(s.brand)} · {materialLabel(s.material)}
+                      </p>
+                      <p className={adminTypography.tableSecondary}>게이지 {s.gauge || "-"}</p>
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        {isFeatured ? <Badge tone="brand">추천</Badge> : null}
+                        {isNew ? <Badge tone="info">신상품</Badge> : null}
+                        {hasValidSale ? <Badge tone="danger">할인</Badge> : null}
+                        {!hasExposureLabel ? (
+                          <span className={adminTypography.caption}>기본 노출</span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </AdminListCell>
+
+                  <AdminListCell align="end">
+                    <AdminMoneyBlock
+                      amount={`${(hasValidSale ? salePrice : regularPrice).toLocaleString("ko-KR")}원`}
+                      meta={
+                        hasValidSale ? `정가 ${regularPrice.toLocaleString("ko-KR")}원` : undefined
+                      }
+                    />
+                  </AdminListCell>
+
+                  <AdminListCell>
+                    <AdminStatusGroup
+                      primary={
+                        <Badge
+                          variant={badgeToneVariant(S.tone)}
+                          className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap"
+                        >
+                          <S.Icon className="h-3.5 w-3.5" />
+                          {S.label}
+                        </Badge>
+                      }
+                      secondary={`재고 ${stock.toLocaleString("ko-KR")}개`}
+                      alert={isHidden ? "스토어 숨김" : undefined}
+                    />
+                  </AdminListCell>
+
+                  <AdminListCell align="end" className="px-2">
+                    <AdminRowActions>
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
+                      </Button>
+                      <AdminRowActionMenu
+                        ariaLabel={`${s.name} 상품 작업 메뉴 열기`}
+                        destructiveActions={
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => setPendingDeleteProductId(s._id)}
+                          >
+                            삭제
+                          </DropdownMenuItem>
+                        }
+                      >
+                        <DropdownMenuItem asChild>
+                          <Link href={`/products/${s._id}`}>
+                            {isHidden ? "관리자 미리보기" : "상세 보기"}
+                          </Link>
+                        </DropdownMenuItem>
+                      </AdminRowActionMenu>
+                    </AdminRowActions>
+                  </AdminListCell>
+                </AdminListRow>
+              );
+            })
+          )}
+        </AdminListBody>
+
+        <div role="rowgroup" className="border-t border-border">
+          <div role="row">
+            <div
+              role="cell"
+              aria-colspan={5}
+              className="flex flex-wrap items-center justify-end gap-3 px-4 py-3"
+            >
+              <span className={adminTypography.metaMuted}>
+                {currentPage ?? "-"} / {totalPages ?? "-"}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, Math.min(p, totalPages ?? 1) - 1))}
+                disabled={!currentPage || currentPage <= 1}
+                className="border-border hover:bg-muted dark:hover:bg-muted"
+              >
+                이전
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setPage((p) => Math.min(totalPages ?? 1, Math.min(p, totalPages ?? 1) + 1))
+                }
+                disabled={!currentPage || !totalPages || currentPage >= totalPages}
+                className="border-border hover:bg-muted dark:hover:bg-muted"
+              >
+                다음
+              </Button>
+            </div>
+          </div>
+        </div>
+      </AdminListTable>
+      <AdminConfirmDialog
+        open={pendingDeleteProductId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteProductId(null);
+        }}
+        onCancel={() => setPendingDeleteProductId(null)}
+        onConfirm={async () => {
+          const productId = pendingDeleteProductId;
+          if (!productId) return;
+          setPendingDeleteProductId(null);
+          await handleDelete(productId);
+        }}
+        severity="danger"
+        title="상품을 삭제할까요?"
+        description="삭제 후에는 되돌릴 수 없습니다. 관련 운영 데이터 영향을 확인한 뒤 진행해 주세요."
+        confirmText="삭제"
+        cancelText="취소"
+        eventKey="admin-products-delete-confirm"
+        eventMeta={{ productId: pendingDeleteProductId }}
+      />
+    </AdminPageShell>
+  );
+}

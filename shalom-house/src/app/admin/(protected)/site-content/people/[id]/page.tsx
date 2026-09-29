@@ -1,0 +1,81 @@
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
+import { AdminDetailHeader } from "@/components/admin/admin-detail-header";
+import { AdminStatusSummary } from "@/components/admin/admin-status-summary";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
+import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
+import { getAdminStaffProfile } from "@/features/staff/staff.admin-repository";
+import { getStaffPublicationStatusLabel } from "@/features/staff/staff.types";
+import { formatAdminDate } from "@/lib/format-admin-date";
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string }>;
+}) {
+  const admin = await getCurrentAdmin();
+  if (!admin || !hasAdminPermission(admin, "site_content.manage")) redirect("/admin?forbidden=1");
+  const { id } = await params;
+  const d = await getAdminStaffProfile(id);
+  if (!d) notFound();
+  const rows = [
+    { label: "담당 업무", value: d.responsibility },
+    { label: "직원 이름", value: d.name || "입력 없음" },
+    { label: "이름 공개 확인 여부", value: d.nameDisclosureConfirmed ? "확인" : "미확인" },
+    { label: "이름 공개 확인 근거", value: d.nameDisclosureReference || "없음" },
+    { label: "생성일", value: <time dateTime={d.createdAt}>{formatAdminDate(d.createdAt)}</time> },
+    {
+      label: "게시일",
+      value: d.publishedAt ? <time dateTime={d.publishedAt}>{formatAdminDate(d.publishedAt)}</time> : "없음",
+    },
+    {
+      label: "보관일",
+      value: d.archivedAt ? <time dateTime={d.archivedAt}>{formatAdminDate(d.archivedAt)}</time> : "없음",
+    },
+  ];
+  return (
+    <div className="admin-detail-layout">
+      <AdminDetailHeader
+        backHref="/admin/site-content/people"
+        backLabel="함께하는 사람들 관리"
+        eyebrow="함께하는 사람들 · 상세"
+        title={d.role}
+        actions={
+          <Link
+            className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            href={`/admin/site-content/people/${id}/edit`}
+          >
+            편집
+          </Link>
+        }
+      />
+      {(await searchParams).saved === "1" ? (
+        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
+          저장했습니다.
+        </p>
+      ) : null}
+      <AdminStatusSummary
+        items={[
+          { label: "공개 상태", value: getStaffPublicationStatusLabel(d.publicationStatus) },
+          { label: "표시 순서", value: String(d.displayOrder) },
+          { label: "이름 공개 여부", value: d.showName ? "공개" : "비공개" },
+          { label: "최근 수정", value: <time dateTime={d.updatedAt}>{formatAdminDate(d.updatedAt)}</time> },
+        ]}
+      />
+      <section className="admin-section">
+        <h2 className="text-heading font-bold">직원 정보</h2>
+        <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+          {rows.map(({ label, value }) => (
+            <div key={label} className="min-w-0">
+              <dt className="font-bold text-muted-foreground">{label}</dt>
+              <dd className="whitespace-pre-wrap break-words">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+      <AdminAuditHistory items={d.auditHistory} />
+    </div>
+  );
+}

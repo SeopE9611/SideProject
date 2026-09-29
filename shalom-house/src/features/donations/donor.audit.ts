@@ -1,0 +1,4 @@
+import type { ObjectId } from "mongodb"; import type { AdminRole } from "@/features/admin-auth/admin-auth.types";
+export const donorAuditActions=["created","updated","archived","restored"] as const; export type DonorAuditAction=(typeof donorAuditActions)[number]; export const donorAuditFields=["type","displayName","phone","email","status","internalNote"] as const; export type DonorAuditChangedField=(typeof donorAuditFields)[number];
+export type DonorAuditDocument={_id:ObjectId;donorId:ObjectId;action:DonorAuditAction;actor:{adminId:ObjectId;displayName:string;role:AdminRole};occurredAt:Date;fromVersionAt:Date|null;toVersionAt:Date;changedFields:DonorAuditChangedField[]};
+export const donorAuditActionLabels:Record<DonorAuditAction,string>={created:"등록",updated:"수정",archived:"보관",restored:"복구"}; export const donorAuditFieldLabels:Record<DonorAuditChangedField,string>={type:"유형",displayName:"표시 이름",phone:"전화번호",email:"이메일",status:"상태",internalNote:"내부 메모"};

@@ -1,0 +1,521 @@
+import { loadPackageSettings } from "@/app/features/packages/api/db";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import "server-only";
+
+import { unstable_cache } from "next/cache";
+import { ObjectId, type Filter, type Sort } from "mongodb";
+
+import { getBoardList } from "@/lib/boards.queries";
+import { buildCommunityListMongoFilter, getCommunitySortOption } from "@/lib/community-list-query";
+import { getDb } from "@/lib/mongodb";
+
+export type HomePreviewProductFeatures = {
+  power?: number;
+  control?: number;
+  spin?: number;
+  durability?: number;
+  comfort?: number;
+};
+
+export type HomePreviewProduct = {
+  _id: string;
+  name: string;
+  price: number;
+  images?: string[];
+  brand?: string;
+  isNew?: boolean | string | number;
+  material?: "polyester" | "hybrid" | string;
+  features?: HomePreviewProductFeatures;
+  inventory?: {
+    isFeatured?: boolean | string | number;
+    isNew?: boolean | string | number;
+    isSale?: boolean | string | number;
+    salePrice?: number | string | null;
+    status?: "instock" | "outofstock" | "backorder" | string;
+    stock?: number | string | null;
+    lowStock?: number | string | null;
+    manageStock?: boolean | string | number;
+    allowBackorder?: boolean | string | number;
+  };
+  gaugeOptions?: string[];
+  gaugeInventories?: unknown[];
+  color?: string;
+  colorOptions?: string[];
+  colorInventories?: unknown[];
+  variantInventories?: unknown[];
+};
+
+export type HomeProductGroupKey =
+  | "curated"
+  | "new"
+  | "comfort"
+  | "spin"
+  | "control"
+  | "durability"
+  | "beginner";
+
+export type HomePreviewProductGroups = Record<HomeProductGroupKey, HomePreviewProduct[]>;
+
+export type HomePreviewRacket = {
+  id: string;
+  brand: string;
+  model: string;
+  price: number;
+  images?: string[];
+  condition?: "A" | "B" | "C" | "D";
+  rental?: {
+    enabled: boolean;
+    deposit?: number;
+    fee?: { d7?: number; d15?: number; d30?: number };
+  };
+  status?: string;
+  marketing?: {
+    isFeatured?: boolean;
+    isNew?: boolean;
+    isSale?: boolean;
+    salePrice?: number;
+  };
+};
+
+export type HomePreviewPackage = {
+  id: string;
+  name: string;
+  sessions: number;
+  price: number;
+  originalPrice: number;
+  isPopular: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  validityDays: number;
+  description: string;
+};
+
+export type HomePreviewNotice = {
+  _id: string;
+  title: string;
+  createdAt: string;
+};
+
+export type HomePreviewMarketPost = {
+  id: string;
+  title: string;
+  createdAt: string;
+};
+
+export type HomePreviewData = {
+  products?: {
+    items: HomePreviewProduct[];
+    total: number;
+    groups: HomePreviewProductGroups;
+  };
+  rackets?: { items: HomePreviewRacket[]; total: number };
+  notices?: HomePreviewNotice[];
+  marketPosts?: HomePreviewMarketPost[];
+  packages?: HomePreviewPackage[];
+};
+
+export type HomePreviewSection = "products" | "rackets" | "packages" | "notices";
+export type HomePreviewServerStatus = "success" | "error";
+export type HomePreviewStatus = Record<HomePreviewSection, HomePreviewServerStatus>;
+export type HomePreviewResult = {
+  data: HomePreviewData;
+  status: HomePreviewStatus;
+};
+
+type ProductDoc = {
+  _id: ObjectId;
+  name?: string;
+  price?: number;
+  images?: string[];
+  brand?: string;
+  isNew?: boolean | string | number;
+  material?: "polyester" | "hybrid" | string;
+  features?: HomePreviewProductFeatures;
+  inventory?: HomePreviewProduct["inventory"];
+  gaugeOptions?: string[];
+  gaugeInventories?: unknown[];
+  color?: string;
+  colorOptions?: string[];
+  colorInventories?: unknown[];
+  variantInventories?: unknown[];
+  isDeleted?: boolean;
+};
+
+export const HOME_PRODUCTS_CACHE_TAG = "home-preview-products";
+export const HOME_RACKETS_CACHE_TAG = "home-preview-rackets";
+export const HOME_PACKAGES_CACHE_TAG = "home-preview-packages";
+export const HOME_NOTICES_CACHE_TAG = "home-preview-notices";
+const HOME_PREVIEW_REVALIDATE_SECONDS = 60;
+
+type RacketDoc = {
+  _id: ObjectId;
+  brand?: string;
+  model?: string;
+  price?: number;
+  images?: string[];
+  condition?: "A" | "B" | "C" | "D";
+  rental?: HomePreviewRacket["rental"];
+  marketing?: HomePreviewRacket["marketing"];
+  status?: string;
+};
+
+const normalizeRacketMarketing = (value: unknown) => {
+  const marketing =
+    value && typeof value === "object" ? (value as HomePreviewRacket["marketing"]) : undefined;
+
+  return {
+    isFeatured: marketing?.isFeatured === true,
+    isNew: marketing?.isNew === true,
+    isSale: marketing?.isSale === true,
+    salePrice: Math.max(0, Number(marketing?.salePrice ?? 0) || 0),
+  };
+};
+
+const toIsoString = (value: unknown) => {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") return value;
+  return new Date().toISOString();
+};
+
+export async function loadHomeProductsFresh() {
+  const db = await getDb();
+  const filter: Filter<ProductDoc> = productVisibilityFilterFor();
+  const collection = db.collection<ProductDoc>("products");
+  const projection = {
+    name: 1,
+    price: 1,
+    images: 1,
+    brand: 1,
+    isNew: 1,
+    material: 1,
+    features: 1,
+    "inventory.isFeatured": 1,
+    "inventory.isNew": 1,
+    "inventory.isSale": 1,
+    "inventory.salePrice": 1,
+    "inventory.status": 1,
+    "inventory.stock": 1,
+    "inventory.lowStock": 1,
+    "inventory.manageStock": 1,
+    "inventory.allowBackorder": 1,
+    gaugeOptions: 1,
+    gaugeInventories: 1,
+    color: 1,
+    colorOptions: 1,
+    colorInventories: 1,
+    variantInventories: 1,
+  };
+  const truthyValues = [true, "true", 1];
+  const withVisibility = (condition: Filter<ProductDoc>): Filter<ProductDoc> => ({
+    $and: [filter, condition],
+  });
+  const featureQueries = (["comfort", "spin", "control", "durability"] as const).map(
+    (feature) =>
+      collection
+        .find(withVisibility({ [`features.${feature}`]: { $gt: 0 } } as Filter<ProductDoc>), {
+          projection,
+        })
+        .sort({ [`features.${feature}`]: -1, _id: -1 })
+        .limit(4)
+        .toArray(),
+  );
+  const [total, curated, newest, comfort, spin, control, durability, beginner] =
+    await Promise.all([
+    collection.countDocuments(filter),
+    collection
+      .aggregate<ProductDoc>([
+        { $match: filter },
+        {
+          $addFields: {
+            _homeScore: {
+              $add: [
+                { $cond: [{ $in: ["$inventory.isFeatured", truthyValues] }, 200, 0] },
+                { $cond: [{ $in: ["$inventory.isSale", truthyValues] }, 50, 0] },
+                { $convert: { input: "$features.control", to: "double", onError: 0, onNull: 0 } },
+              ],
+            },
+          },
+        },
+        { $sort: { _homeScore: -1, _id: -1 } },
+        { $limit: 4 },
+        { $project: projection },
+      ])
+      .toArray(),
+    collection
+      .find(
+        withVisibility({
+          $or: [
+            { "inventory.isNew": { $in: truthyValues } },
+            { isNew: { $in: truthyValues } },
+          ],
+        }),
+        { projection },
+      )
+      .sort({ _id: -1 })
+      .limit(4)
+      .toArray(),
+    ...featureQueries,
+    collection
+      .aggregate<ProductDoc>([
+        {
+          $match: withVisibility({
+            "features.comfort": { $gt: 0 },
+            "features.control": { $gt: 0 },
+          }),
+        },
+        {
+          $addFields: {
+            _homeScore: {
+              $add: [
+                { $multiply: [{ $toDouble: "$features.comfort" }, 0.6] },
+                { $multiply: [{ $toDouble: "$features.control" }, 0.4] },
+              ],
+            },
+          },
+        },
+        { $sort: { _homeScore: -1, _id: -1 } },
+        { $limit: 4 },
+        { $project: projection },
+      ])
+      .toArray(),
+  ]);
+
+  const toProduct = (product: ProductDoc): HomePreviewProduct => ({
+    _id: product._id.toString(),
+    name: product.name ?? "",
+    price: product.price ?? 0,
+    images: product.images,
+    brand: product.brand,
+    isNew: product.isNew,
+    material: product.material,
+    features: product.features,
+    inventory: product.inventory,
+    gaugeOptions: product.gaugeOptions,
+    gaugeInventories: product.gaugeInventories,
+    color: product.color,
+    colorOptions: product.colorOptions,
+    colorInventories: product.colorInventories,
+    variantInventories: product.variantInventories,
+  });
+  const groups: HomePreviewProductGroups = {
+    curated: curated.map(toProduct),
+    new: newest.map(toProduct),
+    comfort: comfort.map(toProduct),
+    spin: spin.map(toProduct),
+    control: control.map(toProduct),
+    durability: durability.map(toProduct),
+    beginner: beginner.map(toProduct),
+  };
+
+  return {
+    items: groups.curated,
+    total,
+    groups,
+  };
+}
+
+export async function loadHomeRacketsFresh(options?: { brand?: string }) {
+  const db = await getDb();
+  const visibilityFilter: Filter<RacketDoc> = { ...racketVisibilityFilterFor() };
+  const filter: Filter<RacketDoc> = options?.brand
+    ? {
+        $and: [
+          visibilityFilter,
+          { brand: { $regex: `^${options.brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } },
+        ],
+      }
+    : visibilityFilter;
+  const sort: Sort = { createdAt: -1, _id: -1 };
+  const collection = db.collection<RacketDoc>("used_rackets");
+  const projection = {
+    brand: 1,
+    model: 1,
+    price: 1,
+    condition: 1,
+    images: 1,
+    status: 1,
+    rental: 1,
+    marketing: 1,
+  };
+  const [docs, total] = await Promise.all([
+    collection.find(filter, { projection }).sort(sort).limit(10).toArray(),
+    collection.countDocuments(filter),
+  ]);
+
+  return {
+    items: docs.map((racket) => {
+      const { _id, ...rest } = racket;
+      return {
+        ...rest,
+        brand: rest.brand ?? "",
+        model: rest.model ?? "",
+        price: rest.price ?? 0,
+        marketing: normalizeRacketMarketing(rest.marketing),
+        id: _id.toString(),
+      };
+    }),
+    total,
+  };
+}
+
+export async function loadHomePackagesFresh() {
+  const { packageConfigs } = await loadPackageSettings();
+
+  return packageConfigs
+    .filter((pkg) => pkg.isActive)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((pkg) => ({
+      id: pkg.id,
+      name: pkg.name,
+      sessions: pkg.sessions,
+      price: pkg.price,
+      originalPrice: pkg.originalPrice ?? pkg.price,
+      isPopular: pkg.isPopular,
+      isActive: pkg.isActive,
+      sortOrder: pkg.sortOrder,
+      validityDays: pkg.validityDays,
+      description: pkg.description,
+    }));
+}
+
+export async function loadHomeNoticesFresh() {
+  const { items } = await getBoardList({
+    type: "notice",
+    page: 1,
+    limit: 5,
+    excludeCategory: "이벤트",
+  });
+
+  return items.map((notice) => ({
+    _id: notice._id,
+    title: notice.title,
+    createdAt: toIsoString(notice.createdAt),
+  }));
+}
+
+async function loadMarketPosts() {
+  const db = await getDb();
+  const filter = buildCommunityListMongoFilter({
+    typeParam: "market",
+    brand: null,
+    q: "",
+    escapedQ: "",
+    authorObjectId: null,
+    searchType: "title_content",
+    category: null,
+    marketFilters: {
+      saleStatus: null,
+      conditionGrade: null,
+      minPrice: null,
+      maxPrice: null,
+      modelKeyword: null,
+      gripSize: null,
+      pattern: null,
+      material: null,
+      gauge: null,
+      color: null,
+      length: null,
+      minWeight: null,
+      maxWeight: null,
+      minBalance: null,
+      maxBalance: null,
+      minHeadSize: null,
+      maxHeadSize: null,
+      minSwingWeight: null,
+      maxSwingWeight: null,
+      minStiffnessRa: null,
+      maxStiffnessRa: null,
+    },
+  });
+  const docs = await db
+    .collection("community_posts")
+    .find(filter, { projection: { title: 1, createdAt: 1 } })
+    .sort(getCommunitySortOption("latest"))
+    .limit(5)
+    .toArray();
+
+  return docs.map((post) => ({
+    id: String(post._id),
+    title: typeof post.title === "string" ? post.title : "",
+    createdAt: toIsoString(post.createdAt),
+  }));
+}
+
+export const getCachedHomeProducts = unstable_cache(loadHomeProductsFresh, ["home-preview-products-v2"], {
+  revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
+  tags: [HOME_PRODUCTS_CACHE_TAG],
+});
+
+export const getCachedHomeRackets = unstable_cache(loadHomeRacketsFresh, ["home-preview-rackets-v2"], {
+  revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
+  tags: [HOME_RACKETS_CACHE_TAG],
+});
+
+export const getCachedHomePackages = unstable_cache(loadHomePackagesFresh, ["home-preview-packages-v2"], {
+  revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
+  tags: [HOME_PACKAGES_CACHE_TAG],
+});
+
+export const getCachedHomeNotices = unstable_cache(loadHomeNoticesFresh, ["home-preview-notices-v2"], {
+  revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
+  tags: [HOME_NOTICES_CACHE_TAG],
+});
+
+const sectionLoaders = {
+  products: getCachedHomeProducts,
+  rackets: getCachedHomeRackets,
+  packages: getCachedHomePackages,
+  notices: getCachedHomeNotices,
+} satisfies Record<HomePreviewSection, () => Promise<unknown>>;
+
+const freshSectionLoaders = {
+  products: loadHomeProductsFresh,
+  rackets: loadHomeRacketsFresh,
+  packages: loadHomePackagesFresh,
+  notices: loadHomeNoticesFresh,
+} satisfies Record<HomePreviewSection, () => Promise<unknown>>;
+
+function logSectionError(section: HomePreviewSection, source: "initial" | "revalidate-api", error: unknown) {
+  const errorName = error instanceof Error ? error.name : "UnknownError";
+  const message = error instanceof Error ? error.message : "Unknown section load failure";
+  console.error("[home-preview] section load failed", { section, source, errorName, message });
+}
+
+export async function loadHomePreviewSections(
+  sections: readonly HomePreviewSection[],
+  source: "initial" | "revalidate-api",
+  options?: { fresh?: boolean; racketBrand?: string },
+): Promise<{ data: HomePreviewData; status: Partial<HomePreviewStatus> }> {
+  const loaders = options?.fresh ? freshSectionLoaders : sectionLoaders;
+  const settled = await Promise.allSettled(
+    sections.map((section) =>
+      section === "rackets" && options?.fresh
+        ? loadHomeRacketsFresh({ brand: options.racketBrand })
+        : loaders[section](),
+    ),
+  );
+  const data: HomePreviewData = {};
+  const status: Partial<HomePreviewStatus> = {};
+
+  settled.forEach((result, index) => {
+    const section = sections[index];
+    if (result.status === "fulfilled") {
+      status[section] = "success";
+      if (section === "products") data.products = result.value as HomePreviewData["products"];
+      if (section === "rackets") data.rackets = result.value as HomePreviewData["rackets"];
+      if (section === "packages") data.packages = result.value as HomePreviewData["packages"];
+      if (section === "notices") data.notices = result.value as HomePreviewData["notices"];
+    } else {
+      status[section] = "error";
+      logSectionError(section, source, result.reason);
+    }
+  });
+
+  return { data, status };
+}
+
+export async function getHomePreviewData(): Promise<HomePreviewResult> {
+  const sections: readonly HomePreviewSection[] = ["products", "rackets", "packages", "notices"];
+  const result = await loadHomePreviewSections(sections, "initial");
+  return { data: result.data, status: result.status as HomePreviewStatus };
+}

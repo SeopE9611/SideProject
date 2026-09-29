@@ -1,0 +1,119 @@
+# 고객 화면 뱃지 표면 전수 조사
+
+## 표시 원칙
+
+- 현재가와 정상가를 함께 보여 주는 상품·라켓 상세 화면은 가격 영역의 `CatalogPrice` 또는
+  인라인 `CommerceBadge`가 `N% 할인`을 한 번 표시한다. 같은 카드의 이미지 뱃지에서는
+  `sale`을 제외한다.
+- 메인 상품은 이미지 commerce 뱃지가 할인율을 담당한다. 메인 라켓도 가격 옆 중복 할인율을
+  제거하고 이미지 commerce 뱃지만 할인율을 담당한다.
+- 표시 위치와 크기는 다를 수 있지만 `sale`의 색상·채움·문구·모양은 동일하다. `surface`는
+  commerce 핵심 상태의 시각적 정체성을 바꾸지 않는다.
+- `NEW`, 추천, 품절은 할인과 다른 의미다. 이미지 최대 두 개 제한과 품절 우선순위를 유지하고,
+  신상품 필터에서는 `ensureNew`로 `NEW` 노출을 보장한다.
+- 옵션 품절, CTA 구매 불가, 대여 상태는 각각 제어 상태·행동 결과를 설명하므로 상품 상태 뱃지와
+  문구가 같더라도 목적이 다르면 유지한다.
+
+## 고객 화면 조합 추적
+
+| 경로/컴포넌트                                                                      | 화면 영역                          | 의미                            | 데이터 원천                       | 렌더러                                            | 중복 여부                               | 이번 결정                                                                               |
+| ---------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------- | --------------------------------- | ------------------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------- |
+| `app/HomePageRedesign.tsx`                                                         | 메인 상품·라켓 이미지              | 할인, NEW, 추천, 품절           | inventory, marketing, 재고        | `commerceBadgeSpecs` + `SemanticBadge`            | 라켓 가격 옆 할인율과 이미지 뱃지 중복  | 라켓 가격 옆 중복 할인율 제거, 상품·라켓 모두 이미지 할인 유지                          |
+| `app/products/components/ProductCard.tsx`                                          | 상품 목록 그리드·리스트            | NEW, 추천, 품절                 | inventory, 상품, 옵션 재고        | 이미지 `SemanticBadge`, 가격 `CatalogPrice`       | 이미지와 가격의 할인 중복 가능          | 이미지 sale 제외, 가격에만 할인 표시; `ensureNew` 유지                                  |
+| `app/products/[id]/ProductDetailImageGallery.tsx` / `ProductDetailClient.utils.ts` | 상품 상세 이미지 갤러리            | NEW, 추천, 품절                 | inventory, 상품, 계산된 전체 품절 | `SemanticBadge`                                   | 구매 패널 가격과 할인 중복              | 이미지 sale 제외                                                                        |
+| `app/products/[id]/ProductDetailClient.tsx`                                        | 상품 상세 구매 패널·가격           | 판매가, 정상가, 할인            | price, inventory.salePrice        | `CatalogPrice`                                    | 이미지 할인과 중복 가능                 | `N% 할인`의 단일 소유 위치로 지정                                                       |
+| `app/products/[id]/ProductDetailClient.tsx`                                        | 색상·게이지 옵션, 재고 안내, CTA   | 옵션 품절, 재고 부족, 구매 불가 | 옵션별 재고, 전체 재고            | 옵션 제어 문구, 안내, 버튼                        | 목적이 달라 단순 중복 아님              | 기존 판정과 문구 유지                                                                   |
+| `app/products/[id]/ProductDetailClient.tsx`                                        | 추천·상세 스펙                     | 추천 근거, 상품 속성            | 상품 상세 데이터                  | 설명·스펙 UI                                      | 할인 중복 없음                          | 유지                                                                                    |
+| `app/products/[id]/ProductReviewCard.tsx`                                          | 상품 상세 후기                     | 후기 문맥, 비공개               | reviewContext, status, 소유권     | `ReviewContextBadge`, `ReviewVisibilityBadge`     | 작성자 `(비공개)`와 상태 뱃지 중복 가능 | 관리 가능한 후기에는 이름과 별도 뱃지로 한 번만 표시; 마스킹 후기는 이름에서 한 번 표시 |
+| `app/products/[id]/ProductDetailQnaTab.tsx`                                        | 상품 상세 문의                     | 카테고리, 비밀글, 답변 상태     | Q&A category, isSecret, answer    | `SemanticBadge`                                   | 서로 다른 의미                          | 기존 tone 보존, 비밀글 neutral outline 유지                                             |
+| `components/HorizontalProducts.tsx` / `ProductDetailRelatedProductsSection.tsx`    | 상세 관련 상품                     | NEW, 추천, 품절, 할인           | inventory 또는 racket marketing   | 이미지 `SemanticBadge`, 가격 아래 `CommerceBadge` | 할인 두 번 표시                         | 이미지 sale 제외, 정상가 다음 인라인 할인 유지                                          |
+| `components/recent-viewed/RecentViewedItems.tsx`                                   | 최근 본 상품                       | 상품·라켓 구분 및 가격 정보     | 로컬 최근 본 항목                 | 최근 본 카드 UI                                   | 이미지/가격 할인 중복 없음              | 유지                                                                                    |
+| `app/components/select-string/StringCard.tsx`                                      | 스트링 선택 카드                   | 가격·할인                       | 상품 가격, salePrice              | `CatalogPrice`                                    | 별도 이미지 할인 없음                   | 가격의 `N% 할인` 유지                                                                   |
+| `app/components/select-string/SelectStringLayout.tsx`                              | 라켓 스트링 선택 요약              | 선택 상품 가격·할인             | 선택 상품 가격                    | `CatalogPrice`                                    | 별도 이미지 할인 없음                   | 가격의 `N% 할인` 유지                                                                   |
+| `app/products/recommend/_components/StringRecommendResultCard.tsx`                 | 스트링 추천 결과                   | 추천 결과·상품 가격·할인        | 추천 응답, 상품                   | 결과 카드 UI, `CommerceBadge`                     | 가격 할인 이미지 중복 없음              | 기존 `% OFF`를 공용 `N% 할인`으로 통일                                                  |
+| `app/rackets/_components/RacketCard.tsx`                                           | 중고 라켓 목록 그리드·리스트       | NEW, 추천, 할인                 | marketing, 가격 계산              | 이미지 `SemanticBadge`, 가격 `CatalogPrice`       | 이미지와 가격 할인 중복 가능            | 이미지 sale 제외, 가격에만 할인 표시                                                    |
+| `app/rackets/[id]/_components/RacketDetailClient.tsx`                              | 라켓 상세 이미지 갤러리            | NEW, 추천                       | marketing                         | `SemanticBadge`                                   | 가격 할인과 중복 가능                   | 이미지 sale 제외                                                                        |
+| `app/rackets/[id]/_components/RacketDetailClient.tsx`                              | 브랜드·등급·재고/대여              | 분류, condition, availability   | brand, condition, stock/rental    | `SemanticBadge`, `RacketBadge`                    | 서로 다른 의미                          | 브랜드 neutral outline, condition·availability 유지                                     |
+| `app/rackets/[id]/_components/RacketDetailClient.tsx`                              | 가격, 배송·대여 요약, CTA          | 할인, 배송, 구매·대여 가능 여부 | 가격, 배송비, 재고·대여           | `CatalogPrice`, 요약, 버튼                        | 목적이 달라 단순 중복 아님              | 할인은 가격에 한 번; 구매·대여 판정 유지                                                |
+| `app/rackets/[id]/_components/RacketDetailClient.tsx`                              | 상세 설명·스펙                     | 라켓 속성                       | racket detail                     | 설명·스펙 UI                                      | 할인 중복 없음                          | 유지                                                                                    |
+| `app/rackets/[id]/_components/RacketDetailClient.tsx`                              | 후기·문의                          | 후기 문맥/비공개, Q&A 상태      | review, Q&A                       | 공용 후기 뱃지, `ProductDetailQnaTab`             | 비공개 이름과 뱃지 중복 가능            | 상품 상세와 같은 단일 표현 적용                                                         |
+| `app/rackets/[id]/_components/RacketDetailClient.tsx`                              | 스트링 선택 진입                   | 다음 행동                       | 구매 흐름                         | CTA                                               | 상태 뱃지 중복 없음                     | 유지                                                                                    |
+| `app/rackets/finder/_components/FinderRacketCard.tsx`                              | 라켓 찾기                          | 가격, 대여 가능                 | racket price, rental.enabled      | `CatalogPrice`, 상태 Badge                        | 할인 가격 미사용                        | 기존 표시 유지                                                                          |
+| `app/rackets/compare/_components/*`                                                | 라켓 비교 데스크톱·모바일·미리보기 | 선택·스펙 차이                  | 비교 store, racket spec           | 비교 상태 Badge                                   | commerce 할인 중복 없음                 | 비교 semantic 계열 유지                                                                 |
+| 상품·라켓 관련 미리보기 카드                                                       | 검색·선택 미리보기                 | 분류, 가격, 선택 상태           | 각 결과 데이터                    | 해당 카드 Badge/가격 UI                           | 동일 할인 이중 표출 없음                | 기존 구조 유지                                                                          |
+
+## 상세 페이지 점검 결론
+
+- 상품 상세는 갤러리와 구매 패널의 실제 조합을 기준으로 할인 소유 위치를 구매 패널 가격으로
+  정했다. 옵션 일부 품절과 전체 품절, 재고 부족 안내 및 CTA는 역할이 달라 유지했다.
+- 라켓 상세는 갤러리 마케팅 뱃지, 브랜드·등급·대여 가능 상태, 가격, 배송·대여 요약, CTA,
+  설명·스펙, 후기·문의, 스트링 선택 진입을 함께 확인했다. condition·availability 판정은
+  `RacketBadge`에 그대로 두었다.
+- 후기의 문맥과 공개 여부는 서로 다른 의미다. 문맥은 neutral outline `ReviewContextBadge`,
+  본인 또는 `adminView`로 식별할 수 있는 비공개 상태는 같은 계열의 `ReviewVisibilityBadge`로
+  통일했다.
+- Q&A 카테고리·답변 상태는 기존 spec의 tone을 사용하고, 비밀글은 neutral outline으로 유지했다.
+
+## 이번 보완에서 확인한 공용 판정
+
+| 영역 | 확인 결과 |
+| --- | --- |
+| 스트링 상품 | 명시적 품절을 최우선으로 하고, 옵션이 없는 상품만 상품 수준 백오더를 허용한다. 옵션 상품은 상세 옵션·장바구니와 동일하게 구매 가능한 실제 조합이 필요하다. |
+| 중고 라켓 | 관리자 목록도 사용자 목록·상세와 같은 `getRacketAvailabilityState`를 사용하며 판매·대여·비노출 상태를 대여 활성화보다 먼저 판정한다. |
+| HTML 루트 | 저수준 `Badge`를 `span`으로 바꾸고 block child, ref 및 interactive 속성 의존 사용처를 정적 검색했다. 해당 예외는 발견되지 않았다. |
+| 아카데미 | 아이콘이 있는 신청 상태 뱃지에만 `gap-1.5`를 복구했다. |
+
+## 활성 화면 최종 감사
+
+`app`, `components`의 import와 각 route의 `page.tsx` 연결을 기준으로 조사했다. V2 import가
+있는 활성 파일은 161개다. 아래 수치는 영역별 파일 수이며, 공용 컴포넌트를 소비하는 화면은
+화면 영역과 공용 컴포넌트 양쪽에 중복 집계하지 않았다.
+
+| 영역 | 활성 파일/화면 | V2 컴포넌트 | raw 허용 | 비활성 | 실제 미이관 |
+| -- | --: | --: | --: | --: | --: |
+| 메인 | 2 | 2 | 0 | 0 | 0 |
+| 상품 목록·상세·관련 상품 | 7 | 7 | 0 | 0 | 0 |
+| 중고 라켓 목록·상세·관리자 | 10 | 10 | 0 | 0 | 0 |
+| 장바구니·체크아웃 | 5 | 5 | 0 | 0 | 0 |
+| 마이페이지 주문 | 6 | 6 | 0 | 0 | 0 |
+| 마이페이지 대여 | 6 | 6 | 0 | 0 | 0 |
+| 마이페이지 신청 | 3 | 3 | 0 | 0 | 0 |
+| 마이페이지 패키지·활동 | 4 | 4 | 0 | 0 | 0 |
+| 라켓 케어 | 6 | 6 | 0 | 0 | 0 |
+| 교체서비스 | 8 | 8 | 0 | 0 | 0 |
+| 아카데미 | 7 | 7 | 0 | 0 | 0 |
+| 커뮤니티·게시판 | 24 | 24 | 0 | 0 | 0 |
+| 관리자 주문·운영 | 1 | 1 | 0 | 0 | 0 |
+| 관리자 상품·라켓 | 6 | 6 | 0 | 0 | 0 |
+| 관리자 대여 | 2 | 2 | 0 | 0 | 0 |
+| 관리자 아카데미 | 4 | 4 | 0 | 0 | 0 |
+| 관리자 사용자·게시판·신고 | 9 | 9 | 0 | 0 | 0 |
+| 공용 컴포넌트 | 19 | 19 | 4 | 0 | 0 |
+
+### raw Badge 허용 목록
+
+| 파일 | 표시 내용 | 허용 이유 |
+| -- | -- | -- |
+| `components/badges/SemanticBadge.tsx` | 모든 semantic 뱃지 | V2 의미 컴포넌트의 저수준 구현 내부 |
+| `components/badges/StatusBadge.tsx` | 공용 상태 렌더러 | `badgeVariants` 타입을 조합하는 저수준 구현 내부 |
+| `components/admin/AdminBadgeRow.tsx` | 관리자 숫자·요약 행 | 의미 없는 count와 저수준 관리자 조합 컴포넌트 |
+| `components/ui/identity-badge.tsx` | 제공자·역할 정체성 | IdentityBadge의 저수준 구현 내부 |
+
+활성 화면의 `Badge` 식별자 108개 파일은 raw import가 아니라
+`SemanticBadge as Badge` 호환 import다. 따라서 실제 렌더링은 모두 V2 의미 컴포넌트를
+통과한다. raw import 네 파일은 위 저수준 구현에만 남는다.
+
+### 수동 pill 및 span 루트 감사
+
+- 의미 문구와 `rounded-full`/`rounded-md`, 임의 색상 조합을 함께 검색한 결과 의미 있는 수동
+  pill 잔여는 0개다. 검색된 원형 요소는 상태점, 아바타, 버튼, 입력 컨트롤이었다.
+- `ref`, `onClick`, `role`, `tabIndex`, `w-full`, grid, flex-column, 직접 block child를 가진 Badge는
+  0개다. 버튼·링크가 Badge 안에 들어가는 반대 중첩도 0개다.
+- 버튼과 링크 내부의 Badge는 인라인 `span`이므로 유효하며, `span` 루트 변경을 유지한다.
+
+### 관리자 라켓 재고 판정
+
+관리자 라켓 행은 `/api/admin/rentals/active-count/{id}` SWR 결과를 한 번만 읽고 재고 chip과
+availability에 함께 사용한다. 총수량, 실제 가용 수량, `총수량 - 가용 수량`, 대여 활성화,
+상태, 공개 여부를 공용 `getRacketAvailabilityState`에 전달하므로 상태 열과 availability 열이
+같은 우선순위를 따른다. 별도 N+1 요청은 추가하지 않았다.

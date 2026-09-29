@@ -1,0 +1,1300 @@
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { normalizeOrderStatus } from "@/lib/admin-ops-normalize";
+import {
+  LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES,
+  LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES,
+  isApplicationEligibleForLinkedStage,
+} from "@/lib/admin/linked-flow-stage";
+import { hasGuestOrderAccess, verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import clientPromise from "@/lib/mongodb";
+import { createUserNotification } from "@/lib/notifications/user-notification.service";
+import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
+import {
+  isMountableStringItem,
+  resolveOrderItemIsMountableString,
+} from "@/lib/orders/string-mounting-policy";
+import { issuePassesForPaidOrder } from "@/lib/passes.service";
+import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
+import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
+import { normalizeEmailForSearch } from "@/lib/search-email";
+import {
+  isOrderCanceledStatus,
+  isOrderConfirmedStatus,
+  isOrderRefundedStatus,
+} from "@/lib/status/flow-status";
+import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { classifyPortfolioDemoData } from "@/lib/portfolio-demo/data-kind.server";
+import { getVerifiedPortfolioDemoTourContext } from "@/lib/portfolio-demo/tour.server";
+import { z } from "zod";
+import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
+
+// 고객정보 서버 검증(관리자 PATCH)
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
+const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
+
+const customerSchema = z.object({
+  name: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length > 0, { message: "이름은 필수입니다." })
+    .refine((s) => s.length <= 50, {
+      message: "이름은 50자 이내로 입력해주세요.",
+    }),
+  email: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length > 0, { message: "이메일은 필수입니다." })
+    .refine((s) => EMAIL_RE.test(s), {
+      message: "유효한 이메일 주소를 입력해주세요.",
+    })
+    .refine((s) => s.length <= 254, { message: "이메일이 너무 깁니다." }),
+  phone: z
+    .string()
+    .transform((v) => onlyDigits(v))
+    .refine((d) => isValidKoreanPhoneDigits(d), {
+      message: "전화번호는 숫자 10~11자리만 입력해주세요.",
+    }),
+  postalCode: z
+    .string()
+    .transform((v) => onlyDigits(v))
+    .refine((d) => d.length === 5, {
+      message: "우편번호는 숫자 5자리만 입력해주세요.",
+    }),
+  address: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length > 0, { message: "주소는 필수입니다." })
+    .refine((s) => s.length <= 200, {
+      message: "주소는 200자 이내로 입력해주세요.",
+    }),
+  addressDetail: z
+    .string()
+    .transform((s) => s.trim())
+    .refine((s) => s.length <= 100, {
+      message: "상세주소는 100자 이내로 입력해주세요.",
+    }),
+});
+
+// 공통 판별
+function resolveOrderPaymentStatus(order: any): string {
+  const topLevelStatus = String(order?.paymentStatus ?? "").trim();
+
+  if (topLevelStatus) {
+    return topLevelStatus;
+  }
+
+  const paymentInfoStatus = String(order?.paymentInfo?.status ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (paymentInfoStatus === "pending") return "결제대기";
+  if (paymentInfoStatus === "paid") return "결제완료";
+  if (paymentInfoStatus === "failed") return "결제실패";
+
+  if (paymentInfoStatus === "canceled" || paymentInfoStatus === "cancelled") {
+    return "결제취소";
+  }
+
+  if (paymentInfoStatus === "refunded") return "환불완료";
+
+  return "결제대기";
+}
+
+function getApplicationLines(stringDetails: any): any[] {
+  // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
+function nullableTrim(value: unknown): string | null {
+  const trimmed = String(value ?? "").trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function getReceptionLabel(collectionMethod?: string | null): string {
+  if (collectionMethod === "visit") return "방문 접수";
+  if (collectionMethod === "courier_pickup") return "자가 발송(택배)";
+  return "발송 접수";
+}
+
+function getTensionSummary(lines: any[]): string | null {
+  const set = Array.from(
+    new Set(
+      lines
+        .map((line: any) => {
+          const main = String(line?.tensionMain ?? "").trim();
+          const cross = String(line?.tensionCross ?? "").trim();
+          if (!main && !cross) return "";
+          return cross && cross !== main ? `${main}/${cross}` : main || cross;
+        })
+        .filter(Boolean),
+    ),
+  );
+  return set.length ? set.join(", ") : null;
+}
+
+function toNullableIsoString(value: unknown): string | null {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  const date = new Date(String(value));
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function toFiniteNonNegativeNumber(value: unknown): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function buildOrderLinePriceDisplay(item: any, product: any) {
+  const snapshotPrice = toFiniteNonNegativeNumber(item?.price);
+  const snapshotSalePrice = toFiniteNonNegativeNumber(item?.salePrice);
+  const snapshotRegularPrice = toFiniteNonNegativeNumber(item?.regularPrice);
+  const snapshotDiscountRate = toFiniteNonNegativeNumber(item?.discountRate);
+
+  const effectiveProductPrice = toFiniteNonNegativeNumber(getEffectiveProductPrice(product)) ?? 0;
+  const productPriceMeta = getProductPriceDisplayMeta(product);
+
+  const productRegularPrice = toFiniteNonNegativeNumber(productPriceMeta.regularPrice);
+  const productSalePrice = toFiniteNonNegativeNumber(productPriceMeta.salePrice);
+
+  /**
+   * 과거 주문/교체서비스 연결 주문에서 item.price가 0으로 저장된 경우가 있음.
+   * 단, 명시적으로 무료 판매/100% 할인으로 저장된 주문은 0원을 유지해야 함.
+   */
+  const isExplicitFreeSnapshot =
+    snapshotPrice === 0 && (snapshotSalePrice === 0 || snapshotDiscountRate === 100);
+
+  const shouldUseSnapshotPrice =
+    snapshotPrice !== null &&
+    (snapshotPrice > 0 || isExplicitFreeSnapshot || effectiveProductPrice <= 0);
+
+  const displayPrice =
+    shouldUseSnapshotPrice &&
+    snapshotPrice !== null &&
+    productRegularPrice !== null &&
+    productSalePrice !== null &&
+    snapshotPrice === productRegularPrice
+      ? productSalePrice
+      : shouldUseSnapshotPrice && snapshotPrice !== null
+        ? snapshotPrice
+        : effectiveProductPrice;
+
+  const regularPrice =
+    snapshotRegularPrice !== null && snapshotRegularPrice > displayPrice
+      ? snapshotRegularPrice
+      : productRegularPrice !== null && productRegularPrice > displayPrice
+        ? productRegularPrice
+        : null;
+
+  const hasDiscount = regularPrice !== null && regularPrice > displayPrice;
+
+  return {
+    displayPrice,
+    regularPrice: hasDiscount ? regularPrice : null,
+    salePrice: hasDiscount ? displayPrice : null,
+    discountAmount: hasDiscount ? regularPrice - displayPrice : null,
+    discountRate: hasDiscount
+      ? Math.round(((regularPrice - displayPrice) / regularPrice) * 100)
+      : null,
+  };
+}
+
+function getSnapshotString(value: unknown): string | null {
+  const trimmed = String(value ?? "").trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function getOrderItemSnapshotImage(item: any): string | null {
+  return getSnapshotString(item?.selectedColorImage) ?? getSnapshotString(item?.imageUrl);
+}
+
+function getProductVariantImage(item: any, product: any): string | null {
+  const selectedColor = getSnapshotString(item?.selectedColor);
+  const selectedGauge = getSnapshotString(item?.selectedGauge);
+
+  if (Array.isArray(product?.variantInventories)) {
+    const variant = product.variantInventories.find((row: any) => {
+      const colorMatches =
+        !selectedColor || row?.colorValue === selectedColor || row?.color === selectedColor;
+      const gaugeMatches =
+        !selectedGauge || row?.gaugeValue === selectedGauge || row?.gauge === selectedGauge;
+      return colorMatches && gaugeMatches;
+    });
+    const image = getSnapshotString(variant?.colorImage) ?? getSnapshotString(variant?.image);
+    if (image) return image;
+  }
+
+  if (Array.isArray(product?.colorInventories)) {
+    const color = product.colorInventories.find((row: any) => {
+      return !selectedColor || row?.value === selectedColor || row?.color === selectedColor;
+    });
+    const image = getSnapshotString(color?.image) ?? getSnapshotString(color?.colorImage);
+    if (image) return image;
+  }
+
+  return null;
+}
+
+function buildOrderLineSnapshotFallback(
+  item: any,
+  normalizedId: string | null,
+  kind: "product" | "racket",
+) {
+  const snapshotPrice = toFiniteNonNegativeNumber(item?.price);
+
+  return {
+    id: normalizedId ?? String(item?.productId ?? ""),
+    name:
+      getSnapshotString(item?.name) ?? (kind === "racket" ? "알 수 없는 라켓" : "알 수 없는 상품"),
+    price: snapshotPrice ?? 0,
+    regularPrice: toFiniteNonNegativeNumber(item?.regularPrice),
+    salePrice: toFiniteNonNegativeNumber(item?.salePrice),
+    discountAmount: toFiniteNonNegativeNumber(item?.discountAmount),
+    discountRate: toFiniteNonNegativeNumber(item?.discountRate),
+    imageUrl: getOrderItemSnapshotImage(item),
+    selectedColorImage: getSnapshotString(item?.selectedColorImage),
+    mountingFee: toFiniteNonNegativeNumber(item?.mountingFee) ?? 0,
+    isMountableString:
+      kind === "product" ? resolveOrderItemIsMountableString(item, undefined) : false,
+    quantity: item?.quantity ?? 1,
+    kind,
+    selectedStringName: getSnapshotString(item?.selectedStringName),
+    stringPrice: toFiniteNonNegativeNumber(item?.stringPrice),
+    selectedGauge: getSnapshotString(item?.selectedGauge),
+    selectedColor: getSnapshotString(item?.selectedColor),
+    selectedColorLabel: getSnapshotString(item?.selectedColorLabel),
+    selectedColorHex: getSnapshotString(item?.selectedColorHex),
+    stockDeduction: item?.stockDeduction ?? null,
+  };
+}
+
+// 주문-스트링 신청서 동기화 정책:
+// - draft(임시저장)는 제외
+// - 취소는 포함(운영 추적/감사를 위해 이력 동기화 유지)
+const CUSTOMER_SYNC_APPLICATION_FILTER = {
+  status: { $ne: "draft" },
+};
+
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    if (!ObjectId.isValid(id)) {
+      return new NextResponse("유효하지 않은 주문 ID입니다.", { status: 400 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db();
+
+    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) });
+
+    if (!order) {
+      return new NextResponse("주문을 찾을 수 없습니다.", { status: 404 });
+    }
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get("accessToken")?.value;
+    // accessToken이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 취급
+    let payload: any = null;
+    try {
+      payload = token ? verifyAccessToken(token) : null;
+    } catch {
+      payload = null;
+    }
+
+    const isOwner = payload?.sub === order.userId?.toString();
+    const isAdmin = payload?.role === "admin";
+    // console.log('raw cookie header:', _req.headers.get('cookie'));
+    const oax = cookieStore.get("orderAccessToken")?.value ?? null;
+    // orderAccessToken도 깨졌을 수 있으므로 throw 방어
+    let guestClaims: any = null;
+    try {
+      guestClaims = oax ? verifyOrderAccessToken(oax) : null;
+    } catch {
+      guestClaims = null;
+    }
+    const isGuestOrder = !order.userId || (order as any).guest === true;
+    const guestOwnsOrder = !!(
+      isGuestOrder &&
+      guestClaims &&
+      hasGuestOrderAccess(guestClaims, String(order._id))
+    );
+
+    if (!isOwner && !isAdmin && !guestOwnsOrder) {
+      return new NextResponse("권한이 없습니다.", { status: 403 });
+    }
+    const orderItems =
+      (order.items as {
+        productId: any;
+        quantity: number;
+        kind?: "product" | "racket";
+      }[]) ?? [];
+
+    console.info("[orders][detail][start]", {
+      orderId: String(order._id),
+      itemCount: orderItems.length,
+    });
+
+    const uniqueProductIds = Array.from(
+      new Set(
+        orderItems
+          .filter((item) => (item.kind ?? "product") === "product")
+          .map((item) => {
+            const raw = item.productId;
+            const idStr = raw instanceof ObjectId ? raw.toString() : String(raw ?? "");
+            return ObjectId.isValid(idStr) ? idStr : null;
+          })
+          .filter(Boolean),
+      ),
+    ) as string[];
+
+    const uniqueUsedRacketIds = Array.from(
+      new Set(
+        orderItems
+          .filter((item) => (item.kind ?? "product") === "racket")
+          .map((item) => {
+            const raw = item.productId;
+            const idStr = raw instanceof ObjectId ? raw.toString() : String(raw ?? "");
+            return ObjectId.isValid(idStr) ? idStr : null;
+          })
+          .filter(Boolean),
+      ),
+    ) as string[];
+
+    const [productDocs, usedRacketDocs] = await Promise.all([
+      uniqueProductIds.length
+        ? db
+            .collection("products")
+            .find(
+              {
+                _id: { $in: uniqueProductIds.map((pid) => new ObjectId(pid)) },
+              },
+              {
+                projection: {
+                  _id: 1,
+                  name: 1,
+                  price: 1,
+                  inventory: 1,
+                  mountingFee: 1,
+                  images: 1,
+                  colorInventories: 1,
+                  variantInventories: 1,
+                },
+              },
+            )
+            .toArray()
+        : [],
+      uniqueUsedRacketIds.length
+        ? db
+            .collection("used_rackets")
+            .find(
+              {
+                _id: {
+                  $in: uniqueUsedRacketIds.map((rid) => new ObjectId(rid)),
+                },
+              },
+              { projection: { _id: 1, brand: 1, model: 1, price: 1 } },
+            )
+            .toArray()
+        : [],
+    ]);
+
+    console.info("[orders][detail][batch_lookup]", {
+      orderId: String(order._id),
+      itemCount: orderItems.length,
+      productLookupCount: uniqueProductIds.length,
+      usedRacketLookupCount: uniqueUsedRacketIds.length,
+    });
+
+    const productById = new Map(productDocs.map((prod: any) => [String(prod?._id), prod]));
+    const usedRacketById = new Map(
+      usedRacketDocs.map((racket: any) => [String(racket?._id), racket]),
+    );
+
+    const enrichedItems = orderItems.map((item) => {
+      const kind = item.kind ?? "product";
+      const raw = item.productId;
+      const idStr = raw instanceof ObjectId ? raw.toString() : String(raw ?? "");
+      const normalizedId = ObjectId.isValid(idStr) ? idStr : null;
+
+      if (!normalizedId) {
+        return buildOrderLineSnapshotFallback(item, null, kind);
+      }
+
+      if (kind === "product") {
+        const prod = productById.get(normalizedId);
+        if (!prod) {
+          console.warn(`상품을 찾을 수 없음:`, normalizedId);
+          return buildOrderLineSnapshotFallback(item, normalizedId, "product");
+        }
+        const rawMountingFee = prod.mountingFee;
+        const isMountableString = resolveOrderItemIsMountableString(item, rawMountingFee);
+
+        const priceDisplay = buildOrderLinePriceDisplay(item, prod);
+
+        return {
+          id: normalizedId,
+          name: prod.name,
+
+          price: priceDisplay.displayPrice,
+
+          regularPrice: priceDisplay.regularPrice,
+          salePrice: priceDisplay.salePrice,
+          discountAmount: priceDisplay.discountAmount,
+          discountRate: priceDisplay.discountRate,
+
+          imageUrl:
+            getOrderItemSnapshotImage(item) ??
+            getProductVariantImage(item, prod) ??
+            (Array.isArray(prod.images) ? prod.images[0] : null) ??
+            null,
+          selectedColorImage: (item as any)?.selectedColorImage ?? null,
+
+          // 주문 상세에는 현재 상품 설정값이 아니라 주문 당시 청구 스냅샷만 노출한다.
+          // 일반 상품 주문에 현재 장착비가 소급 표시되면 결제 금액과 모순된다.
+          mountingFee: toFiniteNonNegativeNumber((item as any)?.mountingFee) ?? 0,
+
+          isMountableString,
+          quantity: item.quantity,
+          kind: "product" as const,
+          selectedGauge: (item as any)?.selectedGauge ?? null,
+          selectedColor: (item as any)?.selectedColor ?? null,
+          selectedColorLabel: (item as any)?.selectedColorLabel ?? null,
+          selectedColorHex: (item as any)?.selectedColorHex ?? null,
+          stockDeduction: (item as any)?.stockDeduction ?? null,
+        };
+      }
+
+      const racket = usedRacketById.get(normalizedId);
+      if (!racket) {
+        console.warn(`라켓을 찾을 수 없음:`, normalizedId);
+        return buildOrderLineSnapshotFallback(item, normalizedId, "racket");
+      }
+
+      return {
+        id: normalizedId,
+        name: `${racket.brand} ${racket.model}`.trim(),
+        price: racket.price ?? 0,
+        mountingFee: (item as any)?.mountingFee ?? 0,
+        isMountableString: false,
+        quantity: item.quantity,
+        kind: "racket" as const,
+        selectedStringName: (item as any)?.selectedStringName ?? null,
+        selectedGauge: (item as any)?.selectedGauge ?? null,
+        selectedColor: (item as any)?.selectedColor ?? null,
+        selectedColorLabel: (item as any)?.selectedColorLabel ?? null,
+        selectedColorHex: (item as any)?.selectedColorHex ?? null,
+        stringPrice: (item as any)?.stringPrice ?? null,
+        stockDeduction: (item as any)?.stockDeduction ?? null,
+      };
+    });
+
+    //  customer 통합 처리 시작
+    // PATCH에서 $set: { customer: … } 한 값이 있으면 우선 사용
+    let customer = (order as any).customer ?? null;
+
+    // DB에 customer 필드가 없을 때만, 기존 guestInfo/userSnapshot/userId 로 로직 실행
+    if (!customer) {
+      if (order.guestInfo) {
+        customer = {
+          name: order.guestInfo.name,
+          email: order.guestInfo.email,
+          phone: order.guestInfo.phone,
+          address: order.shippingInfo?.address ?? "주소 없음",
+          addressDetail: order.shippingInfo?.addressDetail ?? "",
+          postalCode: order.shippingInfo?.postalCode ?? "-",
+        };
+      } else if (order.userSnapshot) {
+        customer = {
+          name: order.userSnapshot.name,
+          email: order.userSnapshot.email,
+          phone: order.shippingInfo?.phone ?? "-",
+          address: order.shippingInfo?.address ?? "주소 없음",
+          addressDetail: order.shippingInfo?.addressDetail ?? "",
+          postalCode: order.shippingInfo?.postalCode ?? "-",
+        };
+      } else if (order.userId) {
+        const user = await db.collection("users").findOne({ _id: new ObjectId(order.userId) });
+        if (user) {
+          customer = {
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            address: user.address ?? "주소 없음",
+            addressDetail: order.shippingInfo?.addressDetail ?? "",
+            postalCode: user.postalCode ?? "-",
+          };
+        }
+      }
+    }
+
+    // 대표 stage 카드 기준과 동일: draft/취소/cancelRequest 승인 제외 + 최신 1건
+    const [linkedApp] = await db
+      .collection("stringing_applications")
+      .find(
+        {
+          orderId: { $in: [order._id, String(order._id)] },
+          status: {
+            $nin: [...LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES],
+          },
+          $or: [
+            { "cancelRequest.status": { $exists: false } },
+            {
+              "cancelRequest.status": {
+                $nin: [...LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES],
+              },
+            },
+          ],
+        },
+        { projection: { _id: 1, createdAt: 1, updatedAt: 1 } },
+      )
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .limit(1)
+      .toArray();
+
+    const isStringServiceApplied = !!linkedApp;
+    const stringingApplicationId = linkedApp?._id?.toString() ?? null;
+
+    // 주문 전체에서 스트링 장착 상품이 몇 개인지 계산
+    const totalSlots = enrichedItems
+      .filter((item) => isMountableStringItem(item))
+      .reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+
+    // 이 주문으로 생성된 모든 스트링 신청서 조회
+    // - 화면 표시용: 취소 이력도 보여야 하므로 draft만 제외
+    // - 슬롯 계산용: 취소 신청서는 사용 슬롯에서 제외
+    const displayApps = await db
+      .collection("stringing_applications")
+      .find({
+        orderId: { $in: [order._id, String(order._id)] },
+        status: { $ne: "draft" },
+      })
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .toArray();
+    const activeApps = displayApps.filter((app: any) => app?.status !== "취소");
+
+    const displayAppIds = displayApps
+      .map((app: any) => String(app?._id ?? ""))
+      .filter((id) => ObjectId.isValid(id));
+
+    const orderUserId =
+      order.userId && ObjectId.isValid(String(order.userId))
+        ? new ObjectId(String(order.userId))
+        : null;
+
+    const reviewedServiceApplicationIds = new Set<string>();
+
+    if (orderUserId && displayAppIds.length > 0) {
+      const serviceReviews = await db
+        .collection("reviews")
+        .find(
+          {
+            userId: orderUserId,
+            service: "stringing",
+            serviceApplicationId: {
+              $in: displayAppIds.flatMap((id) => [new ObjectId(id), id]),
+            },
+            isDeleted: { $ne: true },
+          },
+          { projection: { serviceApplicationId: 1 } },
+        )
+        .toArray();
+
+      for (const review of serviceReviews as any[]) {
+        reviewedServiceApplicationIds.add(String(review.serviceApplicationId));
+      }
+    }
+
+    const isServiceReviewPending = (app: any) => {
+      const appId = String(app?._id ?? "");
+
+      return Boolean(
+        appId &&
+        ObjectId.isValid(appId) &&
+        toNullableIsoString(app?.userConfirmedAt) &&
+        !isStringingReviewBlockedStatus(app?.status) &&
+        !reviewedServiceApplicationIds.has(appId),
+      );
+    };
+
+    // 각 활성 신청서에서 사용된 슬롯(= 라켓 개수) 합산
+    const usedSlots = activeApps.reduce(
+      (sum, app) => sum + getApplicationLines(app?.stringDetails).length,
+      0,
+    );
+
+    // 남은 슬롯 계산 (음수 방지)
+    const remainingSlots = Math.max(totalSlots - usedSlots, 0);
+
+    const packagePassIds = Array.from(
+      new Set(
+        displayApps
+          .map((app: any) => {
+            const raw = app?.packagePassId;
+            if (!raw) return null;
+            const value = String(raw);
+            return ObjectId.isValid(value) ? value : null;
+          })
+          .filter(Boolean),
+      ),
+    ) as string[];
+
+    const passDocs = packagePassIds.length
+      ? await db
+          .collection("service_passes")
+          .find(
+            { _id: { $in: packagePassIds.map((id) => new ObjectId(id)) } },
+            {
+              projection: {
+                packageSize: 1,
+                usedCount: 1,
+                remainingCount: 1,
+                expiresAt: 1,
+                redeemedAt: 1,
+                meta: 1,
+              },
+            },
+          )
+          .toArray()
+      : [];
+
+    const passDocById = new Map(passDocs.map((pass: any) => [String(pass?._id), pass]));
+
+    // 이 주문과 연결된 신청서 요약 정보 배열
+    const stringingApplications = displayApps.map((app: any) => {
+      const lines = getApplicationLines(app?.stringDetails);
+      const stringNames = Array.from(
+        new Set(lines.map((line: any) => String(line?.stringName ?? "").trim()).filter(Boolean)),
+      );
+      const preferredDate = String(app?.stringDetails?.preferredDate ?? "").trim();
+      const preferredTime = String(app?.stringDetails?.preferredTime ?? "").trim();
+      const selfShip = app?.shippingInfo?.selfShip ?? null;
+      const collectionMethod = normalizeCollection(
+        app?.collectionMethod ?? app?.shippingInfo?.collectionMethod ?? "self_ship",
+      );
+      const normalizedLines = lines.map((line: any, index: number) => ({
+        id: nullableTrim(line?.id) ?? String(index),
+        racketType: nullableTrim(line?.racketType),
+        racketLabel: nullableTrim(line?.racketLabel) ?? nullableTrim(line?.racketType),
+        stringName: nullableTrim(line?.stringName),
+        gauge: nullableTrim(line?.selectedGauge) ?? nullableTrim(line?.gauge),
+        color: nullableTrim(line?.selectedColor) ?? nullableTrim(line?.color),
+        colorLabel:
+          nullableTrim(line?.selectedColorLabel) ??
+          nullableTrim(line?.colorLabel) ??
+          nullableTrim(line?.selectedColor) ??
+          nullableTrim(line?.color),
+        tensionMain: nullableTrim(line?.tensionMain),
+        tensionCross: nullableTrim(line?.tensionCross),
+        note: nullableTrim(line?.note),
+      }));
+      const orderHasRacket =
+        Array.isArray(order?.items) && order.items.some((it: any) => it?.kind === "racket");
+      const inboundRequired = app?.rentalId ? false : app?.orderId ? !orderHasRacket : true;
+      const needsInboundTracking = inboundRequired && collectionMethod === "self_ship";
+      const packagePassId = app?.packagePassId ? String(app.packagePassId) : null;
+      const passDoc = packagePassId ? passDocById.get(packagePassId) : null;
+      const packageInfo = {
+        applied: !!app?.packageApplied,
+        useCount:
+          typeof app?.packageUseCount === "number"
+            ? app.packageUseCount
+            : lines.length > 0
+              ? lines.length
+              : 1,
+        passId: packagePassId,
+        passTitle: String(passDoc?.meta?.planTitle ?? "").trim() || null,
+        packageSize: typeof passDoc?.packageSize === "number" ? passDoc.packageSize : null,
+        usedCount: typeof passDoc?.usedCount === "number" ? passDoc.usedCount : null,
+        remainingCount: typeof passDoc?.remainingCount === "number" ? passDoc.remainingCount : null,
+        expiresAt: toNullableIsoString(passDoc?.expiresAt),
+        redeemedAt:
+          toNullableIsoString(app?.packageRedeemedAt) ?? toNullableIsoString(passDoc?.redeemedAt),
+      };
+      return {
+        id: app._id?.toString(),
+        status: app.status ?? "draft",
+        cancelRequestStatus: app?.cancelRequest?.status ?? null,
+        createdAt: app.createdAt ?? null,
+        updatedAt: app.updatedAt ?? null,
+        userConfirmedAt: toNullableIsoString(app?.userConfirmedAt),
+        serviceReviewPending: isServiceReviewPending(app),
+        collectionMethod,
+        preferredDate: preferredDate || null,
+        preferredTime: preferredTime || null,
+        requirements: nullableTrim(app?.stringDetails?.requirements),
+        lines: normalizedLines,
+        inboundRequired,
+        needsInboundTracking,
+        racketCount: lines.length,
+        receptionLabel: getReceptionLabel(collectionMethod),
+        tensionSummary: getTensionSummary(lines),
+        stringNames,
+        totalPrice: typeof app?.totalPrice === "number" ? app.totalPrice : null,
+        packageInfo,
+        reservationLabel:
+          preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+        shippingInfo: {
+          collectionMethod,
+          deliveryRequest: nullableTrim(app?.shippingInfo?.deliveryRequest),
+          selfShip: selfShip
+            ? {
+                courier: nullableTrim(selfShip.courier),
+                trackingNo: nullableTrim(selfShip.trackingNo),
+                shippedAt: toNullableIsoString(selfShip.shippedAt),
+                note: nullableTrim(selfShip.note),
+              }
+            : null,
+        },
+      };
+    });
+
+    const latestActiveLinkedApplication =
+      stringingApplications.find((app: any) =>
+        isApplicationEligibleForLinkedStage({
+          status: app?.status,
+          cancelRequestStatus: app?.cancelRequestStatus,
+        }),
+      ) ?? null;
+
+    console.info("[orders][detail][response_ready]", {
+      orderId: String(order._id),
+      itemCount: enrichedItems.length,
+      productLookupCount: uniqueProductIds.length,
+      usedRacketLookupCount: uniqueUsedRacketIds.length,
+    });
+
+    const { demoSeedKey: _demoSeedKey, demoSeedVersion: _demoSeedVersion, demoSessionId: _demoSessionId, demoExpiresAt: _demoExpiresAt, isDemoData: _isDemoData, isDemoInteraction: _isDemoInteraction, ...safeOrder } = order;
+    const portfolioDemoDataKind = isAdmin
+      ? classifyPortfolioDemoData({ marker: order, tourContext: await getVerifiedPortfolioDemoTourContext(), ownerId: order.userId })
+      : null;
+    return NextResponse.json({
+      ...safeOrder,
+      portfolioDemoDataKind,
+      customer,
+      items: enrichedItems,
+      shippingInfo: {
+        ...order.shippingInfo,
+        deliveryMethod: order.shippingInfo?.deliveryMethod ?? "택배수령",
+        withStringService: Boolean(order.shippingInfo?.withStringService), // 의사표시(체크박스)
+
+        invoice: {
+          courier: order.shippingInfo?.invoice?.courier ?? null,
+          trackingNumber: order.shippingInfo?.invoice?.trackingNumber ?? null,
+        },
+      },
+      paymentStatus: resolveOrderPaymentStatus(order),
+      paymentMethod: order.paymentInfo?.method ?? "결제방법 없음",
+      paymentProvider: order.paymentInfo?.provider ?? null,
+      paymentApprovedAt: toNullableIsoString(order.paymentInfo?.approvedAt),
+      paymentEasyPayProvider: order.paymentInfo?.rawSummary?.easyPay?.provider ?? null,
+      paymentCardDisplayName: order.paymentInfo?.cardDisplayName ?? null,
+      paymentCardCompany:
+        order.paymentInfo?.cardCompany ??
+        order.paymentInfo?.niceCard?.issuerName ??
+        order.paymentInfo?.rawSummary?.card?.issuerName ??
+        null,
+      paymentCardLabel:
+        order.paymentInfo?.cardLabel ??
+        order.paymentInfo?.niceCard?.cardName ??
+        order.paymentInfo?.rawSummary?.card?.cardName ??
+        null,
+      paymentBank: order.paymentInfo?.bank ?? null,
+      paymentTid: order.paymentInfo?.tid ?? null,
+      paymentNiceSync: order.paymentInfo?.niceSync ?? null,
+      total: order.totalPrice,
+      date: order.createdAt,
+      history: order.history ?? [],
+      status: normalizeOrderStatus(order.status),
+      reason: order.cancelReason ?? null,
+      // 의사표시와 '실제 신청 존재'를 분리해 내려줌(여기가 핵심)
+      isStringServiceApplied,
+      stringingApplicationId,
+      stringService: {
+        totalSlots,
+        usedSlots,
+        remainingSlots,
+      },
+      // 대표 stage 카드용 신청서(서버 변경 대상과 동일 기준)
+      latestActiveLinkedApplication,
+      // 주문 1건에 연결된 모든 신청서 요약 리스트
+      stringingApplications,
+    });
+  } catch (error) {
+    console.error(" 주문 상세 조회 실패:", error);
+    return new NextResponse("서버 오류가 발생했습니다.", { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    // 파라미터/바디 파싱
+    const { id } = await params; // 동적 세그먼트
+    // 깨진 JSON이면 throw → 500 방지 (400으로 정리)
+    let body: any = null;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ ok: false, message: "INVALID_JSON" }, { status: 400 });
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ ok: false, message: "INVALID_BODY" }, { status: 400 });
+    }
+    const { status, payment, deliveryRequest, customer } = body;
+
+    if (!ObjectId.isValid(id)) {
+      return new NextResponse("유효하지 않은 주문 ID입니다.", { status: 400 });
+    }
+
+    // DB/기존 주문 조회
+    const client = await clientPromise;
+    const db = client.db();
+    const orders = db.collection("orders");
+
+    const _id = new ObjectId(id); // ObjectId 한 번만 생성해서 재사용
+    const existing = await orders.findOne({ _id });
+
+    if (!existing) {
+      return new NextResponse("해당 주문을 찾을 수 없습니다.", { status: 404 });
+    }
+
+    // 인증/인가 가드
+    const jar = await cookies();
+    const at = jar.get("accessToken")?.value;
+    const rt = jar.get("refreshToken")?.value;
+
+    // access 우선
+    // accessToken이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 인증 실패로 정리
+    let user: any = null;
+    try {
+      user = at ? verifyAccessToken(at) : null;
+    } catch {
+      user = null;
+    }
+
+    // access 만료 시 refresh 보조 (쿠키 기반 JWT)
+    if (!user && rt) {
+      try {
+        user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);
+      } catch {
+        /* refresh도 실패시 아래에서 401 */
+      }
+    }
+
+    if (!user?.sub) {
+      return new NextResponse("인증이 필요합니다.", { status: 401 });
+    }
+
+    // 관리자 화이트리스트 ADMIN_EMAIL_WHITELIST="a@x.com,b@y.com"
+    const adminList = (process.env.ADMIN_EMAIL_WHITELIST || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const isOwner = user?.sub === existing.userId?.toString();
+    const isAdmin = user?.role === "admin" || (user?.email && adminList.includes(user.email));
+
+    // 주문에 userId가 있을 때만 소유자 체크, 없으면(비회원 주문 등) 관리자만 허용
+    if (existing.userId ? !(isOwner || isAdmin) : !isAdmin) {
+      return new NextResponse("권한이 없습니다.", { status: 403 });
+    }
+
+    if (isAdmin) {
+      const demoMutationBlock = getPortfolioDemoAdminMutationBlock(request);
+      if (demoMutationBlock) return demoMutationBlock;
+    }
+
+    const requestedFields = Object.keys(body);
+    const ownerAllowedFields = new Set(["customer", "deliveryRequest"]);
+    const adminAllowedFields = new Set(["customer", "deliveryRequest", "status", "payment"]);
+    const allowedFields = isAdmin ? adminAllowedFields : ownerAllowedFields;
+
+    if (requestedFields.length === 0 || requestedFields.some((field) => !allowedFields.has(field))) {
+      return new NextResponse("요청한 필드를 변경할 권한이 없습니다.", { status: 403 });
+    }
+
+    const requestedOperations = [
+      Object.prototype.hasOwnProperty.call(body, "customer"),
+      Object.prototype.hasOwnProperty.call(body, "deliveryRequest"),
+      Object.prototype.hasOwnProperty.call(body, "status"),
+      Object.prototype.hasOwnProperty.call(body, "payment"),
+    ].filter(Boolean).length;
+    if (requestedOperations !== 1) {
+      return new NextResponse("한 번에 하나의 변경만 요청할 수 있습니다.", { status: 400 });
+    }
+
+    const attemptsOrderStatusPatch = Object.prototype.hasOwnProperty.call(body, "status");
+    const attemptsPaymentStatusChange =
+      Object.prototype.hasOwnProperty.call(body, "paymentStatus") ||
+      (body?.paymentInfo &&
+        (Object.prototype.hasOwnProperty.call(body.paymentInfo, "status") ||
+          Object.prototype.hasOwnProperty.call(body.paymentInfo, "method"))) ||
+      (body?.payment &&
+        (Object.prototype.hasOwnProperty.call(body.payment, "status") ||
+          Object.prototype.hasOwnProperty.call(body.payment, "method")));
+
+    if (attemptsOrderStatusPatch || attemptsPaymentStatusChange) {
+      const linkedApplication = await db.collection("stringing_applications").findOne({
+        orderId: { $in: [_id, String(_id)] },
+        status: { $ne: "draft" },
+      });
+      const isLinkedStringingOrder = Boolean(
+        existing.isStringServiceApplied || existing.stringingApplicationId || linkedApplication,
+      );
+
+      if (isLinkedStringingOrder) {
+        return new NextResponse(
+          "교체서비스 신청서와 연결된 주문은 주문 상태를 단독으로 변경할 수 없습니다. 결제/작업/배송 단계는 통합 진행 단계에서, 취소/환불은 주문 상세의 취소/환불 액션에서 처리해주세요.",
+          { status: 409 },
+        );
+      }
+    }
+
+    // 취소된 주문은 추가 변경 금지
+    if (isOrderCanceledStatus(existing.status)) {
+      return new NextResponse("취소된 주문입니다.", { status: 400 });
+    }
+
+    // 구매확정된 주문은 추가 변경 금지
+    if (isOrderConfirmedStatus(existing.status)) {
+      return new NextResponse("구매확정된 주문은 상태를 변경할 수 없습니다.", {
+        status: 400,
+      });
+    }
+
+    // 주문 또는 실제 결제가 환불 종단 상태이면 일반 PATCH로 다시 변경하지 못하게 함
+    if (
+      isOrderRefundedStatus(existing.status) ||
+      isOrderRefundedStatus(resolveOrderPaymentStatus(existing))
+    ) {
+      return new NextResponse("환불 또는 결제취소된 주문은 일반 변경을 할 수 없습니다.", {
+        status: 409,
+      });
+    }
+
+    if (
+      !isAdmin &&
+      ["배송중", "배송완료", "환불"].includes(String(existing.status ?? "").trim())
+    ) {
+      return new NextResponse("현재 주문 상태에서는 고객 정보를 수정할 수 없습니다.", {
+        status: 409,
+      });
+    }
+
+    // 고객정보 수정 분기
+    // - 패스 발급은 여기서 하지 않도록 수정(아래 상태변경 분기로 이동)
+    if (customer) {
+      const parsed = customerSchema.safeParse(customer);
+      if (!parsed.success) {
+        const flat = parsed.error.flatten();
+        return NextResponse.json(
+          {
+            ok: false,
+            message: "INVALID_CUSTOMER",
+            error: flat.formErrors?.[0] ?? "고객 정보가 올바르지 않습니다.",
+            fieldErrors: flat.fieldErrors,
+          },
+          { status: 400 },
+        );
+      }
+
+      const c = parsed.data;
+
+      const updateFields = {
+        customer: {
+          name: c.name,
+          email: c.email,
+          phone: c.phone,
+          address: c.address,
+          addressDetail: c.addressDetail,
+          postalCode: c.postalCode,
+        },
+        searchEmailLower: normalizeEmailForSearch(c.email),
+      };
+
+      const historyEntry = {
+        status: "고객정보수정",
+        date: new Date(),
+        description: "고객 정보가 업데이트되었습니다.",
+      };
+
+      await orders.updateOne({ _id }, {
+        $set: updateFields,
+        $push: { history: historyEntry },
+      } as any);
+
+      // 연결된 스트링 신청서 동기화
+      // 정책: draft 제외, 취소 포함
+      const stringingColl = db.collection("stringing_applications");
+      const syncedAt = new Date();
+      const syncHistoryEntry = {
+        status: "고객정보수정(동기화)",
+        date: syncedAt,
+        description: "연결된 주문서에서 고객 정보를 동기화했습니다.",
+      };
+
+      const syncResult = await stringingColl.updateMany(
+        {
+          orderId: _id,
+          ...CUSTOMER_SYNC_APPLICATION_FILTER,
+        },
+        {
+          $set: {
+            customer: {
+              name: c.name,
+              email: c.email,
+              phone: c.phone,
+              address: c.address,
+              addressDetail: c.addressDetail || "",
+              postalCode: c.postalCode,
+            },
+            searchEmailLower: normalizeEmailForSearch(c.email),
+          },
+          $push: {
+            history: syncHistoryEntry,
+          },
+        } as any,
+      );
+
+      return NextResponse.json({
+        ok: true,
+        syncedApplicationCount: syncResult.modifiedCount,
+      });
+    }
+
+    // 결제 금액 수정
+    if (payment) {
+      if (!isAdmin) {
+        return new NextResponse("결제 정보는 관리자만 변경할 수 있습니다.", { status: 403 });
+      }
+      const currentPaymentStatus = resolveOrderPaymentStatus(existing);
+      const terminalPaymentStatuses = new Set([
+        "결제완료",
+        "결제취소",
+        "환불",
+        "환불완료",
+        "취소",
+        "canceled",
+        "cancelled",
+        "refunded",
+        "paid",
+      ]);
+      const paymentTid = String(existing.paymentInfo?.tid ?? "").trim();
+      if (terminalPaymentStatuses.has(currentPaymentStatus) || paymentTid) {
+        return new NextResponse("확정되거나 종료된 결제의 금액은 수정할 수 없습니다.", {
+          status: 409,
+        });
+      }
+      if (Object.keys(payment).some((field) => field !== "total")) {
+        return new NextResponse("결제 금액 외의 결제 정보는 이 경로에서 변경할 수 없습니다.", {
+          status: 400,
+        });
+      }
+      const { total } = payment;
+      const totalNum = Number(total);
+      if (!Number.isFinite(totalNum) || totalNum < 0) {
+        return NextResponse.json({ ok: false, message: "INVALID_PAYMENT_TOTAL" }, { status: 400 });
+      }
+      const historyEntry = {
+        status: "결제금액수정",
+        date: new Date(),
+        description: `결제 금액이 ${totalNum.toLocaleString()}원(으)로 수정되었습니다.`,
+      };
+
+      await orders.updateOne({ _id }, {
+        $set: { totalPrice: totalNum },
+        $push: { history: historyEntry },
+      } as any);
+
+      return NextResponse.json({ ok: true });
+    }
+
+    // 배송 요청사항 수정
+    if (deliveryRequest !== undefined) {
+      const historyEntry = {
+        status: "배송요청사항수정",
+        date: new Date(),
+        description: "배송 요청사항이 수정되었습니다.",
+      };
+
+      await orders.updateOne({ _id }, {
+        $set: { "shippingInfo.deliveryRequest": deliveryRequest },
+        $push: { history: historyEntry },
+      } as any);
+
+      return NextResponse.json({ ok: true });
+    }
+
+    // 역행 여부 판정: 배송완료→배송중 같은 되돌림은 허용하되, 나중에 히스토리에 표시
+    const __phaseIndex: Record<string, number> = {
+      대기중: 0,
+      결제완료: 1,
+      상품준비중: 2,
+      배송중: 3,
+      배송완료: 4,
+      // '환불', '취소'는 종단 상태라 인덱스 필요 없음 (이미 서버에서 락)
+    };
+
+    const __prevStatus = String(existing.status); // 기존 문서의 상태
+    // status 유효성(현재 프로젝트에서 사용하는 상태만 허용)
+    if (typeof status !== "string" || status.trim().length === 0) {
+      return new NextResponse("상태 값이 필요합니다.", { status: 400 });
+    }
+    const nextStatus = status.trim();
+    if (nextStatus === "취소") {
+      return new NextResponse("주문 취소는 전용 취소 처리 API를 사용해주세요.", {
+        status: 409,
+      });
+    }
+    if (nextStatus === "환불") {
+      return new NextResponse("환불은 실제 결제 취소가 확인되는 전용 절차로 처리해주세요.", {
+        status: 409,
+      });
+    }
+    const ALLOWED_STATUS = new Set([
+      "대기중",
+      "결제완료",
+      "상품준비중",
+      "배송중",
+      "배송완료",
+    ]);
+    if (!ALLOWED_STATUS.has(nextStatus)) {
+      return new NextResponse("허용되지 않은 상태 값입니다.", { status: 400 });
+    }
+    if (["상품준비중", "배송중", "배송완료"].includes(nextStatus)) {
+      if (resolveOrderPaymentStatus(existing) !== "결제완료") {
+        return new NextResponse("결제가 완료된 주문만 상품 준비·배송 단계로 변경할 수 있습니다.", {
+          status: 409,
+        });
+      }
+    }
+    if (nextStatus === "배송중" || nextStatus === "배송완료") {
+      const guard = canEnterShippingPhase((existing as any)?.shippingInfo);
+      if (!guard.ok) {
+        return new NextResponse(guard.message ?? "배송 정보가 등록되지 않았습니다.", {
+          status: 400,
+        });
+      }
+    }
+
+    const __nextStatus = nextStatus; // 이번에 바꾸려는 상태
+    const __isBackward = (__phaseIndex[__nextStatus] ?? 0) < (__phaseIndex[__prevStatus] ?? 0);
+
+    // 주문 운영 상태와 결제 상태는 분리한다.
+    // 무통장입금의 관리자 입금 확인만 이 경로에서 결제완료 전환을 허용한다.
+    const updateFields: Record<string, any> = { status: nextStatus };
+
+    let newPaymentStatus: string | undefined = undefined;
+    const currentPaymentStatus = resolveOrderPaymentStatus(existing);
+    if (nextStatus === "결제완료" && currentPaymentStatus !== "결제완료") {
+      const paymentProvider = String(existing.paymentInfo?.provider ?? "")
+        .trim()
+        .toLowerCase();
+      const normalizedPaymentMethod = String(existing.paymentInfo?.method ?? "").replace(/\s+/g, "");
+      const isBankTransfer = normalizedPaymentMethod === "무통장입금";
+      if (
+        !isBankTransfer ||
+        paymentProvider === "nicepay"
+      ) {
+        return new NextResponse(
+          "온라인 결제는 관리자 주문 상태 변경으로 결제완료 처리할 수 없습니다.",
+          { status: 409 },
+        );
+      }
+      newPaymentStatus = "결제완료";
+    }
+    if (newPaymentStatus) {
+      updateFields.paymentStatus = newPaymentStatus;
+    }
+
+    // 히스토리 메시지(방문수령은 화면/기록 문구만 수령 맥락으로 치환)
+    const prevDisplayStatus = getOrderStatusLabelForDisplay(
+      __prevStatus,
+      (existing as any)?.shippingInfo,
+    );
+    const nextDisplayStatus = getOrderStatusLabelForDisplay(
+      __nextStatus,
+      (existing as any)?.shippingInfo,
+    );
+
+    const description =
+      __isBackward
+        ? `주문 상태가 '${prevDisplayStatus}' → '${nextDisplayStatus}'(으)로 되돌려졌습니다.`
+        : `주문 상태가 '${nextDisplayStatus}'(으)로 변경되었습니다.`;
+
+    const historyEntry = {
+      status: nextStatus,
+      date: new Date(),
+      description,
+    };
+
+    // 상태 업데이트
+    const result = await orders.updateOne({ _id }, {
+      $set: updateFields,
+      $push: { history: historyEntry },
+    } as any);
+
+    if (result.modifiedCount === 0) {
+      return new NextResponse("주문 상태 업데이트에 실패했습니다.", {
+        status: 500,
+      });
+    }
+
+    if (
+      __prevStatus !== nextStatus &&
+      existing.userId &&
+      ObjectId.isValid(String(existing.userId))
+    ) {
+      try {
+        const titleByStatus: Record<string, string> = {
+          결제완료: "주문 결제가 확인되었습니다.",
+          상품준비중: "주문 상품을 준비하고 있습니다.",
+          배송중: "주문이 배송중으로 변경되었습니다.",
+          배송완료: "주문 배송이 완료되었습니다.",
+          취소: "주문이 취소되었습니다.",
+          환불: "주문이 환불 처리되었습니다.",
+        };
+        const displayOrderId = String(
+          (existing as any).orderId ?? (existing as any).orderNumber ?? _id.toString(),
+        );
+        await createUserNotification(db, {
+          userId: existing.userId,
+          type: "order_status",
+          title: titleByStatus[nextStatus] ?? "주문 상태가 변경되었습니다.",
+          body: `주문 ${displayOrderId}의 상태가 ${nextStatus}(으)로 변경되었습니다.`,
+          href: "/mypage?tab=orders",
+          source: { collection: "orders", id: _id, kind: "status" },
+          dedupeKey: `order:${_id.toString()}:status:${nextStatus}`,
+        });
+      } catch (error) {
+        console.error("[orders] create status notification failed", error);
+      }
+    }
+
+    // 패스 발급 멱등 트리거
+    const becamePaid =
+      (existing.paymentStatus ?? null) !== "결제완료" && newPaymentStatus === "결제완료";
+
+    if (becamePaid) {
+      try {
+        const updatedOrder = await orders.findOne({ _id }); // 최신 문서 읽어서 전달
+        if (updatedOrder) {
+          await issuePassesForPaidOrder(db, updatedOrder);
+          // - 포인트는 "구매확정" 시점(/api/orders/[id]/confirm)에서만 지급
+          // - 중복 지급 방지는 points_transactions.refKey로 멱등 보장
+        }
+      } catch (e) {
+        console.error("issuePassesForPaidOrder error:", e);
+      }
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("PATCH /api/orders/[id] 오류:", error);
+    return new NextResponse("서버 오류가 발생했습니다.", { status: 500 });
+  }
+}

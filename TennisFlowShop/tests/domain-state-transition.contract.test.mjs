@@ -1,0 +1,49 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+function read(path) {
+  return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+}
+
+function normalized(source) {
+  return source.replace(/"/g, "'").replace(/\s+/g, " ");
+}
+
+test("주문/대여/정산/포인트 주요 상태전이 성공·실패 시나리오 계약을 유지한다", () => {
+  const orderConfirm = read("app/api/orders/[id]/confirm/route.ts");
+  const rentalPay = normalized(read("app/api/rentals/[id]/pay/route.ts"));
+  const rentalCreate = normalized(read("app/api/rentals/route.ts"));
+  const rentalCreateCore = normalized(read("app/features/rentals/api/create-rental-order-core.ts"));
+  const settlementBulkDelete = read("app/api/settlements/bulk-delete/route.ts");
+  const pointsAdjust = normalized(read("app/api/admin/points/adjust/route.ts"));
+
+  // 주문 구매확정: 배송완료에서만 성공, 이미 확정이면 멱등 허용
+  assert.ok(
+    orderConfirm.includes("const allowedPrev = canConfirmOrderByStatus(prevStatus, shippingInfo);"),
+  );
+  assert.ok(orderConfirm.includes("if (!alreadyConfirmed && !allowedPrev)"));
+  assert.ok(orderConfirm.includes("status: 400"));
+
+  // 대여 결제: pending -> paid 전이만 허용, 이미 paid는 멱등 성공
+  assert.ok(rentalPay.includes("if ((order.status ?? 'pending') === 'paid')"));
+  assert.ok(rentalPay.includes("return NextResponse.json({ ok: true, id: rentalId });"));
+  assert.ok(rentalPay.includes("updateOne( { _id, status: 'pending' }"));
+  assert.ok(rentalPay.includes("code: 'INVALID_STATE'"));
+
+  // 대여 생성: 교체서비스 신청서 누락은 요청 payload 오류(400)로 전파하되, 기존 생성 충돌 기본값은 409 유지
+  assert.ok(rentalCreateCore.includes("STRINGING_APPLICATION_REQUIRED_MESSAGE"));
+  assert.ok(rentalCreateCore.includes("{ status: 400 }"));
+  assert.ok(rentalCreate.includes("if (!Number.isInteger(e?.status))"));
+  assert.ok(rentalCreate.includes("{ status: 409 }"));
+  assert.ok(rentalCreate.includes("{ status: Number(e.status) }"));
+
+  // 정산 일괄 삭제: 동시 실행 락으로 중복 실행 실패(409)
+  assert.ok(settlementBulkDelete.includes("acquireAdminExecutionLock"));
+  assert.ok(settlementBulkDelete.includes("status: 409"));
+
+  // 포인트 조정: 지급/차감 분기와 실패 코드 계약 유지
+  assert.ok(pointsAdjust.includes("if (amount > 0)"));
+  assert.ok(pointsAdjust.includes("await deductPoints("));
+  assert.ok(pointsAdjust.includes("if (code === 'INSUFFICIENT_POINTS')"));
+});

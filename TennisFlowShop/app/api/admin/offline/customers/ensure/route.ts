@@ -1,0 +1,152 @@
+import { NextResponse } from "next/server";
+import { MongoServerError, ObjectId } from "mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { normalizePhone } from "@/lib/offline/normalizers";
+import { sanitizeCustomer } from "@/lib/offline/offline.repository";
+
+function isLinkedUserDuplicate(error: unknown) {
+  if (!(error instanceof MongoServerError) || error.code !== 11000) return false;
+  return (
+    error.keyPattern?.linkedUserId === 1 ||
+    Object.prototype.hasOwnProperty.call(error.keyValue ?? {}, "linkedUserId")
+  );
+}
+
+export async function POST(req: Request) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
+  const body = await req.json().catch(() => null);
+  const userId = body?.userId;
+  if (!userId || !ObjectId.isValid(userId))
+    return NextResponse.json({ message: "invalid userId" }, { status: 400 });
+
+  const user = await guard.db
+    .collection("users")
+    .findOne({ _id: new ObjectId(userId) }, { projection: { name: 1, email: 1, phone: 1 } });
+  if (!user) return NextResponse.json({ message: "user not found" }, { status: 404 });
+  const phone = String(user.phone || "").trim();
+  if (!phone)
+    return NextResponse.json(
+      {
+        message: "온라인 회원에 휴대폰 번호가 없어 오프라인 명부 연결이 필요합니다.",
+      },
+      { status: 400 },
+    );
+
+  const linkedId = new ObjectId(userId);
+  let customer = await guard.db.collection("offline_customers").findOne({ linkedUserId: linkedId });
+  if (!customer) {
+    const phoneNormalized = normalizePhone(phone);
+    customer = await guard.db
+      .collection("offline_customers")
+      .findOne({ name: user.name || "", phoneNormalized });
+    if (customer?.linkedUserId && String(customer.linkedUserId) !== String(linkedId)) {
+      return NextResponse.json(
+        { message: "customer already linked to another user" },
+        { status: 409 },
+      );
+    }
+    if (customer && !customer.linkedUserId) {
+      const previousLinkedUserId = customer.linkedUserId ?? null;
+      let updateResult;
+      try {
+        updateResult = await guard.db.collection("offline_customers").updateOne(
+          {
+            _id: customer._id,
+            $or: [{ linkedUserId: { $exists: false } }, { linkedUserId: null }],
+          },
+          {
+            $set: {
+              linkedUserId: linkedId,
+              updatedAt: new Date(),
+              updatedBy: guard.admin._id,
+            },
+          },
+        );
+      } catch (error) {
+        if (!isLinkedUserDuplicate(error)) throw error;
+        const canonicalCustomer = await guard.db
+          .collection("offline_customers")
+          .findOne({ linkedUserId: linkedId });
+        if (!canonicalCustomer) throw error;
+        return NextResponse.json({ item: sanitizeCustomer(canonicalCustomer as any) });
+      }
+      customer = await guard.db.collection("offline_customers").findOne({ _id: customer._id });
+      if (!customer)
+        return NextResponse.json({ message: "customer not found" }, { status: 404 });
+      if (String(customer.linkedUserId) !== String(linkedId)) {
+        return NextResponse.json(
+          { message: "customer already linked to another user" },
+          { status: 409 },
+        );
+      }
+      if (updateResult.modifiedCount > 0) {
+        await appendAdminAudit(
+          guard.db,
+          {
+            type: "offline_customer_link_user",
+            actorId: guard.admin._id,
+            targetId: customer._id,
+            message: "오프라인 고객 온라인 회원 연결",
+            diff: {
+              offlineCustomerId: String(customer._id),
+              userId: String(linkedId),
+              previousLinkedUserId: previousLinkedUserId
+                ? String(previousLinkedUserId)
+                : null,
+              nextLinkedUserId: String(linkedId),
+            },
+          },
+          req,
+        );
+      }
+    }
+  }
+
+  if (!customer) {
+    const now = new Date();
+    const doc = {
+      linkedUserId: linkedId,
+      name: user.name || "",
+      phone,
+      phoneNormalized: normalizePhone(phone),
+      email: user.email || null,
+      emailLower: user.email ? String(user.email).trim().toLowerCase() : null,
+      memo: "",
+      tags: [],
+      source: "offline_admin",
+      stats: { visitCount: 0, totalPaid: 0, totalServiceCount: 0 },
+      createdAt: now,
+      updatedAt: now,
+      createdBy: guard.admin._id,
+    };
+    let res;
+    try {
+      res = await guard.db.collection("offline_customers").insertOne(doc);
+    } catch (error) {
+      if (!isLinkedUserDuplicate(error)) throw error;
+      const canonicalCustomer = await guard.db
+        .collection("offline_customers")
+        .findOne({ linkedUserId: linkedId });
+      if (!canonicalCustomer) throw error;
+      return NextResponse.json({ item: sanitizeCustomer(canonicalCustomer as any) });
+    }
+    customer = { ...doc, _id: res.insertedId };
+    await appendAdminAudit(
+      guard.db,
+      {
+        type: "offline_customer_ensure_create",
+        actorId: guard.admin._id,
+        targetId: res.insertedId,
+        message: "온라인 회원 오프라인 고객 연결 생성",
+      },
+      req,
+    );
+  }
+
+  return NextResponse.json({ item: sanitizeCustomer(customer as any) });
+}

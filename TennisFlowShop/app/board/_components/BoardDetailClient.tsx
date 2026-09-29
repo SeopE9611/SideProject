@@ -1,0 +1,2799 @@
+"use client";
+
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  FileText,
+  Flag,
+  MessageSquare,
+  MoreVertical,
+  Pencil,
+  ThumbsUp,
+  Trash2,
+} from "lucide-react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import useSWR from "swr";
+
+import type { BoardTypeConfig } from "@/app/board/_components/board-config";
+import { getCategoryBadgeText } from "@/app/board/_components/board-config";
+import ErrorBox from "@/app/board/_components/ErrorBox";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { RichTextContent } from "@/components/editor/RichTextContent";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { adminMutator } from "@/lib/admin/adminFetcher";
+import { badgeSizeSm, getBoardCategoryTone } from "@/lib/badge-style";
+import { communityFetch } from "@/lib/community/communityFetch.client";
+import { isCommunityRichTextType } from "@/lib/community/community-rich-text-policy";
+import { boardFetcher, parseApiError } from "@/lib/fetchers/boardFetcher";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  getMarketBrandLabel,
+  getMarketConditionGradeLabel,
+  getMarketRacketFieldLabel,
+  getMarketSaleStatusLabel,
+  getMarketStringColorLabel,
+  getMarketStringLengthLabel,
+  getMarketStringMaterialLabel,
+} from "@/lib/market";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import type { CommunityComment, CommunityPost } from "@/lib/types/community";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+const MessageComposeDialog = dynamic(
+  () => import("@/app/messages/_components/MessageComposeDialog"),
+  { loading: () => null },
+);
+
+const LEVEL_LABEL: Record<string, string> = {
+  "1.0": "1.0",
+  "1.5": "1.5",
+  "2.0": "2.0",
+  "2.5": "2.5",
+  "3.0": "3.0",
+  "3.5": "3.5",
+  "4.0": "4.0",
+  "4.5": "4.5",
+  "5.0": "5.0",
+  pro: "프로",
+};
+const HAND_LABEL: Record<string, string> = {
+  right: "오른손",
+  left: "왼손",
+  both: "양손",
+};
+const STYLE_LABEL: Record<string, string> = {
+  baseline: "베이스라이너",
+  all_court: "올코트",
+  serve_and_volley: "서브&발리",
+  counter_puncher: "공격적",
+  other: "기타",
+};
+// 작성하지 않은 프로필 정보 - 처리
+const v = (x: any) => (x === null || x === undefined || String(x).trim() === "" ? "-" : String(x));
+const label = (map: Record<string, string>, v?: string) => (v ? (map[v] ?? v) : "-");
+const marketText = (value?: string | null) =>
+  typeof value === "string" && value.trim() ? value : "-";
+const marketNumberText = (value?: number | null, unit?: string) => {
+  if (value === null || value === undefined) return "-";
+  return unit ? `${value}${unit}` : String(value);
+};
+
+type Props = {
+  id: string;
+};
+
+type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: string };
+type CommunityNavListResponse = {
+  ok: true;
+  items: Array<{ id: string; title: string }>;
+};
+
+// 작성자 프로필 모달 상태
+type AuthorOverview = {
+  firstActivityAt: string | null;
+  stats: { posts: number; comments: number };
+  recentPosts: {
+    id: string;
+    title: string;
+    createdAt: string;
+    views: number;
+    likes: number;
+    commentsCount: number;
+  }[];
+  tennisProfile: null | {
+    level: string;
+    hand: string;
+    playStyle: string;
+    mainRacket: Record<string, any>;
+    mainString: Record<string, any>;
+    note: string;
+    updatedAt: string | null;
+  };
+};
+
+// 댓글 목록 응답 타입
+type CommentsResponse =
+  | {
+      ok: true;
+      items: CommunityComment[];
+      total: number; // 전체 댓글 수(루트 + 대댓글)
+      rootTotal?: number; // 루트 댓글 수(서버에서 내려줌, 없으면 total로 fallback)
+      page: number;
+      limit: number;
+    }
+  | { ok: false; error: string };
+
+const COMMENT_LIMIT = 10; // 댓글 1페이지당 10개
+
+type CommentItemProps = {
+  comment: CommunityComment;
+  isReply?: boolean;
+  userId?: string;
+  editingCommentId: string | null;
+  editingReplyId: string | null;
+  replyingToId: string | null;
+  isCommentSubmitting: boolean;
+  isReplySubmitting: boolean;
+  replyDraft: string;
+  replyError: string | null;
+  onNavigateAuthorPosts: (comment: CommunityComment) => void;
+  onSendMessage: (comment: CommunityComment) => void;
+  onOpenAuthorProfile: (comment: CommunityComment) => void;
+  onStartEditComment: (commentId: string) => void;
+  onStartEditReply: (reply: CommunityComment) => void;
+  onDeleteComment: (commentId: string) => void;
+  onOpenCommentReport: (comment: CommunityComment) => void;
+  onReplyDraftChange: (commentId: string, value: string) => void;
+  onReplyCancel: (commentId: string) => void;
+  onSubmitReply: (commentId: string, content: string) => void;
+  onStartReply: (commentId: string) => void;
+  onCommentEditDraftChange: (commentId: string, value: string) => void;
+  onReplyEditDraftChange: (commentId: string, value: string) => void;
+  onCancelEditComment: () => void;
+  onCancelEditReply: (commentId: string) => void;
+  onSaveEdit: (commentId: string, content: string, isReply: boolean) => void;
+};
+
+function CommentItem({
+  comment,
+  isReply = false,
+  userId,
+  editingCommentId,
+  editingReplyId,
+  replyingToId,
+  isCommentSubmitting,
+  isReplySubmitting,
+  replyDraft,
+  replyError,
+  onNavigateAuthorPosts,
+  onSendMessage,
+  onOpenAuthorProfile,
+  onStartEditComment,
+  onStartEditReply,
+  onDeleteComment,
+  onOpenCommentReport,
+  onReplyDraftChange,
+  onReplyCancel,
+  onSubmitReply,
+  onStartReply,
+  onCommentEditDraftChange,
+  onReplyEditDraftChange,
+  onCancelEditComment,
+  onCancelEditReply,
+  onSaveEdit,
+}: CommentItemProps) {
+  const isCommentAuthor = !!userId && !!comment.userId && userId === comment.userId;
+  const isEditingComment = !isReply && editingCommentId === comment.id;
+  const isEditingReply = isReply && editingReplyId === comment.id;
+  const isEditing = isEditingComment || isEditingReply;
+  const isDeleted = comment.status === "deleted";
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
+  const commentEditInputRef = useRef<HTMLTextAreaElement>(null);
+  const replyEditInputRef = useRef<HTMLTextAreaElement>(null);
+
+  return (
+    <div
+      className={`group relative min-w-0 rounded-panel transition-[background-color,border-color,box-shadow,color,opacity] ${isReply ? "ml-3 border-l-2 border-brand-highlight bg-brand-highlight-muted/30 py-3 pl-4 sm:ml-8 dark:border-brand-highlight" : "border border-border bg-card p-4 shadow-soft hover:border-brand-highlight/50 hover:bg-brand-highlight-muted/20 sm:p-5 dark:hover:border-brand-highlight/50"}`}
+    >
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-0.5">
+            {comment.status === "deleted" ? (
+              <span className="text-ui-body-sm font-ui-medium text-muted-foreground">
+                {comment.nickname ?? "회원"}
+              </span>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="text-left text-ui-body-sm font-ui-medium text-foreground underline-offset-4 hover:underline dark:text-foreground"
+                  >
+                    {comment.nickname ?? "회원"}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-44">
+                  <DropdownMenuItem onClick={() => onNavigateAuthorPosts(comment)}>
+                    이 작성자의 글 보기
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={!comment.userId || comment.userId === userId}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onSendMessage(comment);
+                    }}
+                  >
+                    쪽지 보내기
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onOpenAuthorProfile(comment)}>
+                    작성자 테니스 프로필
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <span className="text-ui-label text-foreground/75">
+              {new Date(comment.createdAt).toLocaleString("ko-KR", {
+                year: "2-digit",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+        </div>
+        {!isDeleted && (
+          <div className="flex flex-wrap items-center gap-1 opacity-100">
+            {isCommentAuthor && !isEditing && (
+              <>
+                <button
+                  type="button"
+                  className="min-h-11 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground bp-md:min-h-0 dark:hover:bg-muted dark:hover:text-foreground"
+                  onClick={() =>
+                    isReply ? onStartEditReply(comment) : onStartEditComment(comment.id)
+                  }
+                >
+                  수정
+                </button>
+                <button
+                  type="button"
+                  className="min-h-11 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive bp-md:min-h-0 dark:text-muted-foreground dark:hover:bg-destructive/20 dark:hover:text-destructive"
+                  onClick={() => onDeleteComment(comment.id)}
+                >
+                  삭제
+                </button>
+              </>
+            )}
+            {!isCommentAuthor && (
+              <button
+                type="button"
+                className="min-h-11 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground bp-sm:min-h-0"
+                onClick={() => onOpenCommentReport(comment)}
+              >
+                신고
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      {isDeleted ? (
+        <p className="text-ui-body-sm italic text-muted-foreground">삭제된 댓글입니다.</p>
+      ) : isEditing ? (
+        <div className="space-y-2.5">
+          <Textarea
+            ref={isReply ? replyEditInputRef : commentEditInputRef}
+            data-comment-edit-id={!isReply ? comment.id : undefined}
+            data-reply-edit-id={isReply ? comment.id : undefined}
+            className="min-h-[80px] resize-none border-border text-ui-body-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
+            defaultValue={comment.content}
+            onChange={(e) =>
+              isReply
+                ? onReplyEditDraftChange(comment.id, e.currentTarget.value)
+                : onCommentEditDraftChange(comment.id, e.currentTarget.value)
+            }
+            disabled={isCommentSubmitting}
+          />
+          <div className="flex flex-col justify-end gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => (isReply ? onCancelEditReply(comment.id) : onCancelEditComment())}
+              disabled={isCommentSubmitting}
+              className="min-h-11 w-full bg-transparent px-4 text-ui-label bp-md:min-h-9 bp-md:w-auto"
+            >
+              취소
+            </Button>
+            <Button
+              type="button"
+              variant="highlight"
+              size="sm"
+              disabled={isCommentSubmitting}
+              className="min-h-11 w-full px-4 text-ui-label bp-md:min-h-9 bp-md:w-auto"
+              onClick={() =>
+                onSaveEdit(
+                  comment.id,
+                  isReply
+                    ? (replyEditInputRef.current?.value ?? "")
+                    : (commentEditInputRef.current?.value ?? ""),
+                  isReply,
+                )
+              }
+            >
+              저장
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <p className="whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-foreground/85">
+          {comment.content}
+        </p>
+      )}
+      {!isEditing && !isReply && !isDeleted && (
+        <div className="mt-3">
+          <button
+            type="button"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground bp-md:min-h-0 dark:hover:bg-muted dark:hover:text-foreground"
+            onClick={() => onStartReply(comment.id)}
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            답글
+          </button>
+        </div>
+      )}
+      {replyingToId === comment.id && (
+        <form
+          className="mt-3 space-y-2.5 rounded-lg border border-border bg-muted/50 p-4 dark:border-border"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmitReply(comment.id, replyInputRef.current?.value || "");
+          }}
+        >
+          <Textarea
+            ref={replyInputRef}
+            data-reply-composer-id={comment.id}
+            className="min-h-[70px] resize-none border-border bg-card text-ui-body-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
+            defaultValue={replyDraft}
+            onChange={(e) => onReplyDraftChange(comment.id, e.currentTarget.value)}
+            disabled={isReplySubmitting}
+            placeholder={`@${comment.nickname ?? "회원"} 님께 답글을 남겨 보세요.`}
+          />
+          {replyError && <p className="text-ui-label text-destructive">{replyError}</p>}
+          <div className="flex flex-col justify-end gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onReplyCancel(comment.id)}
+              disabled={isReplySubmitting}
+              className="min-h-11 w-full px-4 text-ui-label bp-md:min-h-8 bp-md:w-auto"
+            >
+              취소
+            </Button>
+            <Button
+              type="submit"
+              variant="highlight"
+              size="sm"
+              disabled={isReplySubmitting}
+              className="min-h-11 w-full px-4 text-ui-label bp-md:min-h-9 bp-md:w-auto"
+            >
+              {isReplySubmitting ? "작성 중..." : "등록"}
+            </Button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+const fmtDateTime = (v: string | Date) =>
+  new Date(v).toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+const getTimeValue = (value: unknown) => {
+  const time = new Date(String(value ?? "")).getTime();
+  return Number.isFinite(time) ? time : 0;
+};
+
+function DetailSkeleton() {
+  return (
+    <Card className="border border-border bg-card shadow-sm">
+      <CardHeader className="space-y-4">
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-3/4" />
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-12" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-11/12" />
+        <Skeleton className="h-4 w-10/12" />
+        <Skeleton className="h-4 w-9/12" />
+      </CardContent>
+    </Card>
+  );
+}
+export default function BoardDetailClient({ id, config }: Props & { config: BoardTypeConfig }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const listQuery = searchParams.toString();
+  const listHref = listQuery ? `${config.routePrefix}?${listQuery}` : config.routePrefix;
+  const navListQuery = useMemo(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("openProfile");
+    if (!params.get("limit")) params.set("limit", "10");
+    if (!params.get("page")) params.set("page", "1");
+    params.set("type", config.boardType);
+    return params.toString();
+  }, [searchParams, config.boardType]);
+  const navSectionRef = useRef<HTMLElement | null>(null);
+  const [shouldLoadNavList, setShouldLoadNavList] = useState(false);
+
+  const { user } = useCurrentUser(); // 현재 로그인 사용자
+  const [isDeleting, setIsDeleting] = useState(false); // 삭제 중 플래그
+  const [isLiking, setIsLiking] = useState(false); // 추천(좋아요) 처리 중 플래그
+
+  // 작성자 프로필
+  const [isAuthorProfileOpen, setIsAuthorProfileOpen] = useState(false);
+  const [authorOverview, setAuthorOverview] = useState<AuthorOverview | null>(null);
+  const [isAuthorLoading, setIsAuthorLoading] = useState(false);
+  const [authorTarget, setAuthorTarget] = useState<{
+    userId: string | null;
+    nickname: string;
+  } | null>(null);
+
+  // 모달 핸들러
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeTo, setComposeTo] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  const openCompose = (toUserId: string, toName?: string | null) => {
+    if (!user) {
+      showErrorToast("로그인 후 이용할 수 있습니다.");
+      // 입력 중인 내용이 있으면 로그인 이동 전에 한 번 더 확인
+      if (!confirmLeaveIfDirty()) return;
+      const redirectTo =
+        typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : `${config.routePrefix}/${id}`;
+      router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+      return;
+    }
+
+    const safeName = (toName ?? "").trim() || "회원";
+
+    setComposeTo({ id: toUserId, name: safeName });
+    setComposeOpen(true);
+  };
+
+  async function handleOpenAuthorProfile(target?: {
+    userId?: string | null;
+    nickname?: string | null;
+  }) {
+    // 게시글 데이터가 없으면 방어
+    if (!item) return;
+
+    const targetUserId = target?.userId ?? item.userId ?? null;
+    const targetNickname = (target?.nickname ?? item.nickname ?? "회원").trim() || "회원";
+
+    // 모달 상단/링크 등에 사용할 '대상 작성자'를 고정
+    setAuthorTarget({ userId: targetUserId, nickname: targetNickname });
+
+    // 비회원/익명 글인 경우: 활동량 집계할 userId가 없음
+    if (!targetUserId) {
+      setAuthorOverview(null);
+      setIsAuthorProfileOpen(true);
+      return;
+    }
+
+    setIsAuthorProfileOpen(true);
+    setIsAuthorLoading(true);
+
+    try {
+      const res = await fetch(`/api/community/authors/${targetUserId}/overview`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        showErrorToast("작성자 정보를 불러오지 못했습니다.");
+        return;
+      }
+
+      const data = await res.json();
+      setAuthorOverview(data);
+    } catch (err) {
+      console.error(err);
+      showErrorToast("작성자 정보를 불러오지 못했습니다.");
+    } finally {
+      setIsAuthorLoading(false);
+    }
+  }
+
+  // 리폿
+  const [openReport, setOpenReport] = useState(false);
+  const [reason, setReason] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
+
+  // 댓글 리폿
+  const [openCommentReport, setOpenCommentReport] = useState(false); // 모달 오픈 여부
+  const [commentReportReason, setCommentReportReason] = useState(""); // 신고 사유
+  const [isCommentReporting, setIsCommentReporting] = useState(false); // 처리 중 플래그
+  const [targetComment, setTargetComment] = useState<CommunityComment | null>(null); // 신고 대상 댓글
+
+  // 댓글 신고 닫기(입력 유실 방지)
+  const closeCommentReport = () => {
+    if (commentReportReason.trim() && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
+    setOpenCommentReport(false);
+    setTargetComment(null);
+    setCommentReportReason("");
+  };
+
+  // 조회수 중복 방지 TTL (24시간)
+  const VIEW_TTL_MS = 1000 * 60 * 60 * 24;
+
+  const { data, error, isLoading, mutate } = useSWR<DetailResponse>(
+    `/api/community/posts/${id}?type=${config.boardType}`,
+    (url: string) => boardFetcher<DetailResponse>(url),
+    {
+      revalidateOnMount: true,
+      revalidateIfStale: true,
+      dedupingInterval: 0,
+    },
+  );
+
+  const item = data && data.ok ? data.item : null;
+  const detailError = parseApiError(
+    error,
+    "글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  );
+  const { data: navListData } = useSWR<CommunityNavListResponse>(
+    item && shouldLoadNavList ? `/api/community/posts?${navListQuery}` : null,
+    (url: string) => boardFetcher<CommunityNavListResponse>(url),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 30_000,
+    },
+  );
+
+  useEffect(() => {
+    if (!item || shouldLoadNavList) return;
+    const target = navSectionRef.current;
+    if (!target) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setShouldLoadNavList(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadNavList(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [item, shouldLoadNavList]);
+
+  const { prevPost, nextPost } = useMemo(() => {
+    if (!item || !navListData?.items?.length) return { prevPost: null, nextPost: null };
+    const idx = navListData.items.findIndex((candidate) => candidate.id === item.id);
+    if (idx < 0) return { prevPost: null, nextPost: null };
+    return {
+      prevPost: idx < navListData.items.length - 1 ? navListData.items[idx + 1] : null,
+      nextPost: idx > 0 ? navListData.items[idx - 1] : null,
+    };
+  }, [item, navListData]);
+
+  // 목록에서 프로필 오픈하면 상세에서 쿼리 감지하여 모달 자동 오픈
+  useEffect(() => {
+    if (!item) return;
+    const openProfile = searchParams.get("openProfile");
+    if (openProfile === "1") {
+      handleOpenAuthorProfile();
+    }
+  }, [item?.id]);
+
+  // 첨부파일 (자유게시판은 현재 파일만 저장되지만, 타입이 배열인지 한 번 더 안전하게 체크)
+  const attachments = Array.isArray(item?.attachments) ? item!.attachments : [];
+
+  // 조회수 처리: 비로그인 = localStorage TTL, 로그인 = 서버(userId 기준)에서 중복 방지
+  useEffect(() => {
+    if (!item) return;
+    if (typeof window === "undefined") return;
+
+    const isLoggedIn = !!user; // useCurrentUser()에서 가져온 user
+
+    const now = Date.now();
+
+    // 1) 비로그인 사용자: 브라우저(localStorage) 기준 24시간 1회
+    if (!isLoggedIn) {
+      const key = `viewed_post_${item.id}`;
+
+      try {
+        const raw = window.localStorage.getItem(key);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw) as { ts: number };
+            if (parsed && typeof parsed.ts === "number") {
+              if (now - parsed.ts < VIEW_TTL_MS) {
+                // TTL 이내면 /view 호출 없이 종료
+                return;
+              }
+            }
+          } catch {
+            // JSON 파싱 실패 시에는 아래에서 새로 기록
+          }
+        }
+        // TTL이 지났거나 기록이 없으면 /view 호출
+        (async () => {
+          try {
+            const res = await communityFetch(`/api/community/posts/${item.id}/view`, {
+              method: "POST",
+            });
+
+            const json = await res.json().catch(() => null);
+
+            if (res.ok && json && typeof json.views === "number") {
+              // 조회수 증가 성공 시, localStorage에 시간 기록
+              window.localStorage.setItem(key, JSON.stringify({ ts: now }));
+
+              // SWR 캐시도 같이 업데이트해서 화면에 즉시 반영
+              mutate((prev) => {
+                if (!prev || !prev.ok || !prev.item) return prev;
+
+                return {
+                  ...prev,
+                  item: {
+                    ...prev.item,
+                    views: json.views,
+                  },
+                };
+              }, false);
+            }
+          } catch (err) {
+            console.error("failed to increase view (guest)", err);
+          }
+        })();
+      } catch (err) {
+        console.error("localStorage error", err);
+      }
+
+      return;
+    }
+    // 2) 로그인 사용자: localStorage는 쓰지 않고,
+    // 항상 /view 호출 → 서버에서 userId 기준으로 중복 방지
+    (async () => {
+      try {
+        const res = await communityFetch(`/api/community/posts/${item.id}/view`, {
+          method: "POST",
+        });
+
+        const json = await res.json().catch(() => null);
+
+        // 서버가 views 를 돌려주면, 화면에도 즉시 반영
+        if (res.ok && json && typeof json.views === "number") {
+          mutate((prev) => {
+            if (!prev || !prev.ok || !prev.item) return prev;
+            return {
+              ...prev,
+              item: {
+                ...prev.item,
+                views: json.views,
+              },
+            };
+          }, false);
+        }
+      } catch (err) {
+        console.error("failed to increase view (member)", err);
+      }
+    })();
+  }, [item?.id, user, mutate, VIEW_TTL_MS]);
+
+  const isNotFound = (error as any)?.error === "not_found";
+
+  const isAuthor = !!user && !!item?.userId && user.id === item.userId;
+  const userLike = user as
+    ({ role?: string; isAdmin?: boolean; roles?: string[] } & typeof user) | null;
+  const isAdmin = !!(
+    userLike &&
+    (userLike.role === "admin" ||
+      userLike.isAdmin === true ||
+      (Array.isArray(userLike.roles) && userLike.roles.includes("admin")))
+  );
+  const canDeletePost = isAuthor || isAdmin;
+
+  // 댓글 입력 폼 상태
+  const [commentContent, setCommentContent] = useState("");
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
+
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+
+  // 댓글/답글 수정 입력값(unsaved changes 감지용)
+  const [commentEditDrafts, setCommentEditDrafts] = useState<Record<string, string>>({});
+  const [replyEditDrafts, setReplyEditDrafts] = useState<Record<string, string>>({});
+
+  // 대댓글 입력 상태
+  // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
+  // - replyDrafts: 각 루트 댓글별로 입력 중인 답글 내용을 보관 (IME 안정성을 위해 commentId별로 분리)
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [isReplySubmitting, setIsReplySubmitting] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
+
+  // 루트 댓글별 전체 답글 펼침 상태
+  const [expandedRootIds, setExpandedRootIds] = useState<Set<string>>(new Set());
+  // 특정 루트 댓글의 답글 접기/펼치기 토글
+  const toggleRootReplies = (commentId: string) => {
+    setExpandedRootIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(commentId)) next.delete(commentId);
+      else next.add(commentId);
+      return next;
+    });
+  };
+
+  // 댓글 페이지 상태
+  const [commentPage, setCommentPage] = useState(1);
+
+  // 댓글 목록 SWR (게시글이 로드된 후에만 요청)
+  const commentsKey = item
+    ? `/api/community/posts/${item.id}/comments?page=${commentPage}&limit=${COMMENT_LIMIT}`
+    : null;
+  const {
+    data: commentsData,
+    isLoading: isCommentsLoading,
+    mutate: mutateComments,
+  } = useSWR<CommentsResponse>(commentsKey, (url: string) => boardFetcher<CommentsResponse>(url));
+  const comments = commentsData && commentsData.ok ? commentsData.items : [];
+
+  // 전체 댓글 수(루트 + 대댓글) → 상단 뱃지 표시용
+  const totalComments =
+    commentsData && commentsData.ok ? commentsData.total : (item?.commentsCount ?? 0);
+
+  // 루트 댓글 수 → 실제 페이지 수 계산용
+  const totalRootComments =
+    commentsData && commentsData.ok
+      ? (commentsData.rootTotal ?? totalComments) // rootTotal 없으면 total로 fallback
+      : totalComments;
+
+  const totalCommentPages = Math.max(1, Math.ceil(totalRootComments / COMMENT_LIMIT));
+
+  // 루트 댓글과 대댓글 분리
+  const rootComments = comments.filter((c) => !c.parentId);
+
+  const repliesByParentId = comments.reduce<Record<string, CommunityComment[]>>((acc, c) => {
+    if (c.parentId) {
+      if (!acc[c.parentId]) acc[c.parentId] = [];
+      acc[c.parentId].push(c);
+    }
+    return acc;
+  }, {});
+
+  const sortRepliesAsc = (replies: CommunityComment[]) =>
+    [...replies].sort((a, b) => {
+      const timeDiff = getTimeValue(a.createdAt) - getTimeValue(b.createdAt);
+      if (timeDiff !== 0) return timeDiff;
+      return String(a.id).localeCompare(String(b.id));
+    });
+
+  const originalEditingContent = useMemo(() => {
+    if (!editingCommentId) return "";
+    return comments.find((c) => c.id === editingCommentId)?.content ?? "";
+  }, [comments, editingCommentId]);
+  const originalEditingReplyContent = useMemo(() => {
+    if (!editingReplyId) return "";
+    return comments.find((c) => c.id === editingReplyId)?.content ?? "";
+  }, [comments, editingReplyId]);
+
+  const isDirtyAny = useMemo(() => {
+    const hasCommentDraft = commentContent.trim().length > 0;
+    const hasReplyDraft = Object.values(replyDrafts).some((v) => v.trim().length > 0);
+
+    const hasEditDraft = (() => {
+      if (!editingCommentId) return false;
+      const cur = (commentEditDrafts[editingCommentId] ?? originalEditingContent).trim();
+      return cur !== originalEditingContent.trim();
+    })();
+    const hasReplyEditDraft = (() => {
+      if (!editingReplyId) return false;
+      const cur = (replyEditDrafts[editingReplyId] ?? originalEditingReplyContent).trim();
+      return cur !== originalEditingReplyContent.trim();
+    })();
+
+    const hasPostReportDraft = reason.trim().length > 0;
+    const hasCommentReportDraft = commentReportReason.trim().length > 0;
+
+    return (
+      hasCommentDraft ||
+      hasReplyDraft ||
+      hasEditDraft ||
+      hasReplyEditDraft ||
+      hasPostReportDraft ||
+      hasCommentReportDraft
+    );
+  }, [
+    commentContent,
+    replyDrafts,
+    editingCommentId,
+    editingReplyId,
+    commentEditDrafts,
+    replyEditDrafts,
+    originalEditingContent,
+    originalEditingReplyContent,
+    reason,
+    commentReportReason,
+  ]);
+
+  const isBusyAny =
+    isCommentSubmitting ||
+    isReplySubmitting ||
+    isDeleting ||
+    isLiking ||
+    isReporting ||
+    isCommentReporting;
+
+  // 뒤로가기/탭닫기 등 브라우저 이탈 방지
+  useUnsavedChangesGuard(isDirtyAny && !isBusyAny);
+
+  function confirmLeaveIfDirty() {
+    if (!isDirtyAny || isBusyAny) return true;
+    return window.confirm(UNSAVED_CHANGES_MESSAGE);
+  }
+
+  // <Link> 이동 시 입력값 보호
+  const onNavLinkClick = (e: any) => {
+    if (confirmLeaveIfDirty()) return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  useEffect(() => {
+    // 로딩 끝, 2페이지 이상인데, 컨텐츠는 없고, 루트 댓글 수는 0이 아님 → 한 페이지 뒤로 밀기
+    if (!isCommentsLoading && commentPage > 1 && comments.length === 0 && totalRootComments > 0) {
+      setCommentPage((prev) => Math.max(1, prev - 1));
+    }
+  }, [isCommentsLoading, commentPage, comments.length, totalRootComments]);
+
+  // 댓글 작성 핸들러
+  const handleSubmitComment = async () => {
+    if (!item) return;
+
+    if (!user) {
+      alert("로그인 후 댓글을 작성할 수 있습니다.");
+      return;
+    }
+
+    if (!commentContent.trim()) {
+      setCommentError("댓글 내용을 입력해 주세요.");
+      return;
+    }
+
+    try {
+      setIsCommentSubmitting(true);
+      setCommentError(null);
+
+      await boardFetcher(`/api/community/posts/${item.id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: commentContent.trim() }),
+      });
+
+      // 입력창 초기화
+      setCommentContent("");
+
+      // 댓글 목록만 재검증하면 충분
+      await mutateComments();
+    } catch (err) {
+      console.error(err);
+      setCommentError(
+        parseApiError(err, "댓글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.").message,
+      );
+    } finally {
+      setIsCommentSubmitting(false);
+    }
+  };
+
+  // 대댓글 작성 핸들러
+  const handleSubmitReply = async (parentId: string, contentOverride?: string) => {
+    if (!item) return;
+
+    if (!user) {
+      alert("로그인 후 답글을 작성할 수 있습니다.");
+      return;
+    }
+
+    const raw = contentOverride ?? replyDrafts[parentId] ?? "";
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      setReplyError("답글 내용을 입력해 주세요.");
+      return;
+    }
+
+    try {
+      setIsReplySubmitting(true);
+      setReplyError(null);
+
+      await boardFetcher(`/api/community/posts/${item.id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: trimmed, parentId }),
+      });
+
+      // 입력값/상태 초기화 (해당 parentId만 제거)
+      setReplyDrafts((prev) => {
+        const next = { ...prev };
+        delete next[parentId];
+        return next;
+      });
+      setReplyingToId(null);
+
+      // 댓글 목록 재요청
+      await mutateComments();
+    } catch (err) {
+      console.error(err);
+      setReplyError(
+        parseApiError(err, "답글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.").message,
+      );
+    } finally {
+      setIsReplySubmitting(false);
+    }
+  };
+
+  // 어떤 댓글에 답글을 달지 시작할 때 호출
+  const handleStartReply = (commentId: string) => {
+    setEditingCommentId(null);
+    setEditingReplyId(null);
+    setCommentEditDrafts({});
+    setReplyEditDrafts({});
+    // 하나의 댓글에만 폼이 열리도록 replyingToId만 교체
+    setReplyingToId(commentId);
+
+    // 이미 입력 중이던 값이 있다면 유지, 없으면 빈 문자열로 초기화
+    setReplyDrafts((prev) => ({
+      ...prev,
+      [commentId]: prev[commentId] ?? "",
+    }));
+
+    setReplyError(null);
+  };
+
+  // 댓글 수정 모드 진입
+  const startEditComment = (commentId: string) => {
+    setReplyingToId(null);
+    setEditingReplyId(null);
+    setReplyDrafts({});
+    setReplyEditDrafts({});
+    setEditingCommentId(commentId);
+    const original = comments.find((c) => c.id === commentId)?.content ?? "";
+    setCommentEditDrafts((prev) => ({
+      ...prev,
+      [commentId]: prev[commentId] ?? original,
+    }));
+    setCommentError(null);
+  };
+
+  // 댓글 수정 모드 취소
+  const cancelEditComment = () => {
+    setCommentEditDrafts((prev) => {
+      if (!editingCommentId) return prev;
+      const next = { ...prev };
+      delete next[editingCommentId];
+      return next;
+    });
+    setEditingCommentId(null);
+  };
+
+  const startEditReply = (reply: CommunityComment) => {
+    setEditingCommentId(null);
+    setReplyingToId(null);
+    setCommentEditDrafts({});
+    setReplyDrafts({});
+    setEditingReplyId(reply.id);
+    const original = reply.content ?? "";
+    setReplyEditDrafts((prev) => ({
+      ...prev,
+      [reply.id]: prev[reply.id] ?? original,
+    }));
+    setCommentError(null);
+    setReplyError(null);
+  };
+
+  const cancelEditReply = (replyId: string) => {
+    setReplyEditDrafts((prev) => {
+      const next = { ...prev };
+      delete next[replyId];
+      return next;
+    });
+    setEditingReplyId(null);
+  };
+  // 댓글 수정 저장
+  const handleUpdateComment = async (commentId: string, newContent: string) => {
+    const trimmed = newContent.trim();
+    if (!trimmed) {
+      setCommentError("댓글 내용을 입력해 주세요.");
+      return;
+    }
+
+    try {
+      setIsCommentSubmitting(true);
+      setCommentError(null);
+
+      await boardFetcher(`/api/community/comments/${commentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: trimmed }),
+      });
+
+      // 수정 모드 종료 + draft 정리
+      if (editingReplyId === commentId) {
+        setReplyEditDrafts((prev) => {
+          const next = { ...prev };
+          delete next[commentId];
+          return next;
+        });
+        setEditingReplyId(null);
+      } else {
+        setCommentEditDrafts((prev) => {
+          const next = { ...prev };
+          delete next[commentId];
+          return next;
+        });
+        setEditingCommentId(null);
+      }
+
+      // 댓글 목록만 재검증
+      await mutateComments();
+    } catch (err) {
+      console.error(err);
+      setCommentError(
+        parseApiError(err, "댓글 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.").message,
+      );
+    } finally {
+      setIsCommentSubmitting(false);
+    }
+  };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm("이 댓글을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.")) {
+      return;
+    }
+
+    try {
+      setIsCommentSubmitting(true);
+      setCommentError(null);
+
+      await boardFetcher(`/api/community/comments/${commentId}`, {
+        method: "DELETE",
+      });
+
+      // 댓글 목록만 재검증하면 충분
+      await mutateComments();
+    } catch (err) {
+      console.error(err);
+      setCommentError(
+        parseApiError(err, "댓글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.").message,
+      );
+    } finally {
+      setIsCommentSubmitting(false);
+    }
+  };
+
+  // 삭제 핸들러
+  const handleDelete = async () => {
+    if (!item) return;
+    if (isDeleting) return;
+
+    const confirmed = window.confirm(
+      isAdmin && !isAuthor
+        ? "관리자 권한으로 이 게시글을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다."
+        : "정말로 이 게시글을 삭제하시겠습니까? 되돌릴 수 없습니다.",
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsDeleting(true);
+
+      if (isAdmin) {
+        await adminMutator(`/api/admin/community/posts/${item.id}`, {
+          method: "DELETE",
+        });
+      } else {
+        await boardFetcher(`/api/community/posts/${item.id}`, {
+          method: "DELETE",
+        });
+      }
+
+      // 삭제 성공 - 목록으로 이동
+      router.push(listHref);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert(parseApiError(err, "글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // 추천(좋아요) 토글 핸들러
+  const handleToggleLike = async () => {
+    if (!item) return;
+
+    // 비회원이면 알림 후 종료
+    if (!user) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    // 중복 클릭 방지
+    if (isLiking) return;
+
+    try {
+      setIsLiking(true);
+
+      const res = await communityFetch(`/api/community/posts/${item.id}/like`, {
+        method: "POST",
+      });
+
+      const json = (await res.json().catch(() => null)) as
+        { ok: true; liked: boolean; likes: number } | { ok: false; error?: string } | null;
+
+      if (!res.ok || !json || !("ok" in json) || !json.ok) {
+        const msg = (json as any)?.error ?? "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        alert(msg);
+        return;
+      }
+
+      // SWR 캐시 갱신 (likes, likedByMe만 업데이트)
+      await mutate(
+        (prev) => {
+          if (!prev || !prev.ok) return prev;
+          return {
+            ...prev,
+            item: {
+              ...prev.item,
+              likes: json.likes,
+              likedByMe: json.liked,
+            },
+          };
+        },
+        false, // 재요청 없이 로컬 캐시만 갱신
+      );
+    } catch (err) {
+      console.error(err);
+      alert(parseApiError(err, "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
+  async function handleSubmitReport() {
+    if (!item) return;
+
+    if (reason.trim().length < 10) {
+      showErrorToast("신고 사유는 최소 10자 이상 입력해야 합니다.");
+      return;
+    }
+
+    try {
+      setIsReporting(true);
+
+      const res = await communityFetch(`/api/community/posts/${item.id}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+
+        // 비로그인
+        if (res.status === 401 || data?.error === "unauthorized") {
+          showErrorToast("로그인이 필요 합니다.");
+          return;
+        }
+
+        // 자기 글 신고
+        if (res.status === 400 && data?.error === "cannot_report_own_post") {
+          showErrorToast("본인이 작성한 글은 신고할 수 없습니다.");
+          return;
+        }
+
+        // 5분 이내 중복 신고
+        if (res.status === 429 || data?.error === "too_many_requests") {
+          showErrorToast("이미 최근에 신고한 게시글입니다.");
+          return;
+        }
+
+        // 그 외
+        showErrorToast("신고 처리 중 오류가 발생했습니다.");
+        return;
+      }
+
+      showSuccessToast("신고가 접수되었습니다.");
+      setReason("");
+      setOpenReport(false);
+    } catch (error) {
+      console.error(error);
+      showErrorToast("신고 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsReporting(false);
+    }
+  }
+
+  // 댓글 리폿 핸들러
+  const openCommentReportDialog = (comment: CommunityComment) => {
+    if (!user) {
+      showErrorToast("로그인이 필요 합니다.");
+      return;
+    }
+    if (comment.status === "deleted") {
+      showErrorToast("삭제된 댓글은 신고할 수 없습니다.");
+      return;
+    }
+
+    setTargetComment(comment);
+    setCommentReportReason("");
+    setOpenCommentReport(true);
+  };
+
+  async function handleSubmitCommentReport() {
+    if (!targetComment) return;
+
+    if (commentReportReason.trim().length < 10) {
+      showErrorToast("신고 사유는 최소 10자 이상 입력해야 합니다.");
+      return;
+    }
+
+    try {
+      setIsCommentReporting(true);
+
+      const res = await communityFetch(`/api/community/comments/${targetComment.id}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: commentReportReason }),
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          showErrorToast("로그인이 필요 합니다.");
+          return;
+        }
+        if (res.status === 429) {
+          showErrorToast("이미 최근에 신고한 댓글입니다. 잠시 후 다시 시도해 주세요.");
+          return;
+        }
+
+        if (res.status === 404) {
+          showErrorToast("댓글을 찾을 수 없습니다.");
+          return;
+        }
+
+        showErrorToast("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
+
+      showSuccessToast("댓글 신고가 접수되었습니다.");
+      setOpenCommentReport(false);
+      setCommentReportReason("");
+      setTargetComment(null);
+    } catch (error) {
+      console.error(error);
+      showErrorToast("신고 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsCommentReporting(false);
+    }
+  }
+
+  // 첨부파일 강제 다운로드 핸들러
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error("다운로드 요청이 실패했습니다.");
+      }
+
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename || "attachment";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error(err);
+      alert("파일 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+  };
+
+  const handleNavigateAuthorPosts = (comment: CommunityComment) => {
+    if (!confirmLeaveIfDirty()) return;
+    if (!comment.userId) return;
+    router.push(
+      `${config.routePrefix}?authorId=${comment.userId}&authorName=${encodeURIComponent(comment.nickname ?? "회원")}`,
+    );
+  };
+
+  const handleCommentSave = (commentId: string, content: string, _isReplyEdit: boolean) => {
+    if (!content.trim()) {
+      setCommentError("댓글 내용을 입력해 주세요.");
+      return;
+    }
+    void handleUpdateComment(commentId, content);
+  };
+
+  useEffect(() => {
+    if (!editingCommentId) return;
+    const active = document.activeElement as HTMLElement | null;
+    if (active?.dataset?.commentEditId === editingCommentId) return;
+    const el = document.querySelector<HTMLTextAreaElement>(
+      `textarea[data-comment-edit-id="${editingCommentId}"]`,
+    );
+    el?.focus();
+  }, [editingCommentId]);
+
+  useEffect(() => {
+    if (!replyingToId) return;
+    const active = document.activeElement as HTMLElement | null;
+    if (active?.dataset?.replyComposerId === replyingToId) return;
+    const el = document.querySelector<HTMLTextAreaElement>(
+      `textarea[data-reply-composer-id="${replyingToId}"]`,
+    );
+    el?.focus();
+  }, [replyingToId]);
+
+  useEffect(() => {
+    if (!editingReplyId) return;
+    const active = document.activeElement as HTMLElement | null;
+    if (active?.dataset?.replyEditId === editingReplyId) return;
+    const el = document.querySelector<HTMLTextAreaElement>(
+      `textarea[data-reply-edit-id="${editingReplyId}"]`,
+    );
+    el?.focus();
+  }, [editingReplyId]);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      {composeOpen && composeTo ? (
+        <MessageComposeDialog
+          open={composeOpen}
+          onOpenChange={(v) => {
+            setComposeOpen(v);
+            if (!v) setComposeTo(null);
+          }}
+          toUserId={composeTo.id}
+          toName={composeTo.name}
+        />
+      ) : null}
+      <SiteContainer className="space-y-6 py-6 md:space-y-8 md:py-8">
+        <section className="rounded-panel border border-border bg-brand-highlight-muted/45 p-5 shadow-soft md:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-ui-label text-muted-foreground">
+                  {config.boardTitle} › 글 상세
+                </span>
+                {item && (
+                  <Badge variant={getBoardCategoryTone(config.boardType, item.category)}>
+                    {config.categoryMap[item.category ?? ""]
+                      ? getCategoryBadgeText(config.categoryMap[item.category ?? ""])
+                      : "분류 없음"}
+                  </Badge>
+                )}
+              </div>
+              <h1 className="break-keep text-balance text-ui-page-title font-ui-bold tracking-normal text-foreground md:text-ui-page-title-lg">
+                {item ? item.title : `${config.boardTitle} 글 상세`}
+              </h1>
+              <p className="text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
+                {item
+                  ? `${item.nickname || "회원"} · ${fmtDateTime(item.createdAt)}`
+                  : `${config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.`}
+              </p>
+            </div>
+
+            <div className="flex w-full flex-wrap gap-2 bp-sm:w-auto bp-sm:flex-nowrap">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                wrap="responsive"
+                className="w-full gap-1 bg-transparent bp-sm:w-auto"
+                onClick={() => {
+                  if (!confirmLeaveIfDirty()) return;
+                  router.push(listHref);
+                }}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>목록으로</span>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* 본문 카드 */}
+        {isLoading && (
+          <div aria-busy="true" aria-live="polite">
+            <span className="sr-only">게시글 상세를 불러오는 중입니다.</span>
+            <DetailSkeleton />
+          </div>
+        )}
+
+        {!isLoading && error && (
+          <Card className="border border-border bg-card shadow-sm">
+            <CardContent className="p-4 md:p-6 space-y-4">
+              <ErrorBox
+                message={
+                  isNotFound
+                    ? "해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다."
+                    : detailError.message
+                }
+                status={detailError.status}
+                fallbackMessage="글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+              />
+              <div className="flex flex-col justify-end gap-2 bp-sm:flex-row">
+                <Button asChild variant="outline" size="lg" wrap="responsive">
+                  <Link href={listHref}>목록으로</Link>
+                </Button>
+                <Button asChild variant="highlight" size="lg" wrap="responsive">
+                  <Link href={`${config.routePrefix}/write`}>새 글 작성하기</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isLoading && !error && item && (
+          <Card className="overflow-hidden rounded-panel border border-border bg-card shadow-soft">
+            <CardHeader className="space-y-4 border-b bg-brand-highlight-muted/45 p-4 sm:p-6">
+              <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex-1 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {typeof item.postNo === "number" && (
+                      <span className="text-ui-body-sm font-ui-medium tabular-nums text-muted-foreground">
+                        게시글 {item.postNo}
+                      </span>
+                    )}
+                    {config.brandOptionsByCategory?.[item.category ?? ""] && item.brand ? (
+                      <span className="inline-flex max-w-[10rem] items-center truncate whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-ui-caption font-ui-medium text-muted-foreground dark:text-muted">
+                        {config.brandLabelMap?.[item.brand] ?? item.brand}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-ui-label leading-relaxed text-muted-foreground md:text-ui-body-sm [&>span]:shrink-0 [&>span]:whitespace-nowrap">
+                    {/* 작성자 */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="max-w-[10rem] truncate whitespace-nowrap font-medium underline-offset-4 hover:underline"
+                        >
+                          {item.nickname || "회원"}
+                        </button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="start" className="w-44">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            // 비회원/익명 글은 userId가 없을 수 있음
+                            if (!item.userId) return;
+                            if (!confirmLeaveIfDirty()) return;
+                            const authorName = item.nickname ?? "";
+                            router.push(
+                              `${config.routePrefix}?authorId=${item.userId}&authorName=${encodeURIComponent(authorName)}`,
+                            );
+                          }}
+                        >
+                          이 작성자의 글 보기
+                        </DropdownMenuItem>
+
+                        {item.userId && item.userId !== user?.id && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+
+                              if (!user) {
+                                const redirectTo =
+                                  typeof window !== "undefined"
+                                    ? window.location.pathname + window.location.search
+                                    : `${config.routePrefix}/${id}`;
+                                if (!confirmLeaveIfDirty()) return;
+                                router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+                                return;
+                              }
+
+                              const toUserId = item.userId;
+                              if (!toUserId) return;
+
+                              openCompose(toUserId, item.nickname);
+                            }}
+                          >
+                            쪽지 보내기
+                          </DropdownMenuItem>
+                        )}
+
+                        <DropdownMenuItem
+                          onClick={() => {
+                            handleOpenAuthorProfile({
+                              userId: item.userId,
+                              nickname: item.nickname,
+                            });
+                          }}
+                        >
+                          작성자 테니스 프로필
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* 조회수 */}
+                    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
+                      <Eye className="h-3 w-3" />
+                      조회 {item.views ?? 0}
+                    </span>
+                    <span className="hidden text-border sm:inline">·</span>
+
+                    {/* 댓글 수 */}
+                    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
+                      <MessageSquare className="h-3 w-3" />
+                      댓글 {item.commentsCount ?? 0}
+                    </span>
+                    <span className="hidden text-border sm:inline">·</span>
+
+                    {/* 추천 수 */}
+                    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
+                      <ThumbsUp className="h-3 w-3" />
+                      추천 {item.likes ?? 0}
+                    </span>
+                    <span className="hidden text-border sm:inline">·</span>
+                    {/* 작성일시 */}
+                    <span>{fmtDateTime(item.createdAt)}</span>
+                  </div>
+                </div>
+
+                {/* 더보기 메뉴 (신고/수정/삭제) */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-11 w-11 shrink-0 text-muted-foreground hover:text-foreground bp-sm:h-8 bp-sm:w-8"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                      <span className="sr-only">게시글 메뉴</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-36">
+                    {isAuthor && (
+                      <DropdownMenuItem
+                        onClick={() => {
+                          if (!confirmLeaveIfDirty()) return;
+                          router.push(`${config.routePrefix}/${item.id}/edit`);
+                        }}
+                        className="gap-2"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        수정
+                      </DropdownMenuItem>
+                    )}
+                    {canDeletePost && (
+                      <DropdownMenuItem
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="gap-2 text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {isDeleting ? "삭제 중..." : isAdmin && !isAuthor ? "관리자 삭제" : "삭제"}
+                      </DropdownMenuItem>
+                    )}
+                    {canDeletePost && <DropdownMenuSeparator />}
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (!user) {
+                          showErrorToast("로그인이 필요 합니다.");
+                          return;
+                        }
+                        setOpenReport(true);
+                      }}
+                      className="gap-2 text-destructive focus:text-destructive"
+                    >
+                      <Flag className="h-4 w-4" />
+                      신고하기
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-4 md:p-6 lg:p-8">
+              {config.boardType === "market" && item.marketMeta && (
+                <div className="mb-6 space-y-4">
+                  {/* ── 1. 거래 핵심 정보 ── */}
+                  <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
+                    {/* 가격 헤더 영역 */}
+                    <div className="border-b border-border bg-muted/40 px-5 py-4 md:px-6">
+                      <p className="mb-1 text-ui-label font-medium text-muted-foreground">
+                        판매 가격
+                      </p>
+                      <p className="text-ui-page-title-lg font-ui-bold tracking-normal text-foreground">
+                        {item.marketMeta.price?.toLocaleString?.() ?? "-"}
+                        <span className="ml-0.5 text-ui-card-title-lg font-ui-medium">원</span>
+                      </p>
+                      {/* 판매상태 / 상품상태 배지 */}
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {(() => {
+                          const status = item.marketMeta.saleStatus;
+                          const statusLabel = getMarketSaleStatusLabel(status) || "-";
+                          const variant =
+                            status === "selling"
+                              ? "success"
+                              : status === "reserved"
+                                ? "warning"
+                                : status === "sold"
+                                  ? "neutral"
+                                  : "outline";
+                          return (
+                            <Badge variant={variant as any} className={badgeSizeSm}>
+                              {statusLabel}
+                            </Badge>
+                          );
+                        })()}
+                        {(() => {
+                          const grade = item.marketMeta.conditionGrade;
+                          const gradeLabel = getMarketConditionGradeLabel(grade) || "-";
+                          const variant =
+                            grade === "S"
+                              ? "info"
+                              : grade === "A"
+                                ? "success"
+                                : grade === "B"
+                                  ? "warning"
+                                  : "neutral";
+                          return (
+                            <Badge variant={variant as any} className={badgeSizeSm}>
+                              {gradeLabel}
+                            </Badge>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                    {/* 보조 메타 정보 2열 그리드 */}
+                    <div className="grid grid-cols-2 divide-x divide-border text-ui-body-sm md:grid-cols-4">
+                      <div className="px-4 py-3 md:px-5">
+                        <p className="mb-0.5 text-ui-body-sm text-foreground/75">브랜드</p>
+                        <p className="font-ui-medium text-foreground">
+                          {getMarketBrandLabel(item.brand) || "-"}
+                        </p>
+                      </div>
+                      <div className="px-4 py-3 md:px-5">
+                        <p className="mb-0.5 text-ui-body-sm text-foreground/75">모델명</p>
+                        <p className="font-ui-medium text-foreground">
+                          {marketText(
+                            item.marketMeta.racketSpec?.modelName ??
+                              item.marketMeta.stringSpec?.modelName,
+                          )}
+                        </p>
+                      </div>
+                      <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
+                        <p className="mb-0.5 text-ui-body-sm text-foreground/75">카테고리</p>
+                        <p className="font-ui-medium text-foreground">
+                          {config.categoryMap[item.category ?? ""]
+                            ? getCategoryBadgeText(config.categoryMap[item.category ?? ""])
+                            : "-"}
+                        </p>
+                      </div>
+                      <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
+                        <p className="mb-0.5 text-ui-body-sm text-foreground/75">등록일</p>
+                        <p className="font-ui-medium text-foreground">
+                          {fmtDateTime(item.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── 2. 상태 메모 ── */}
+                  {item.marketMeta.conditionNote ? (
+                    <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-ui-body-sm font-ui-medium text-foreground">
+                          상태 설명
+                        </span>
+                        <span className="text-ui-body-sm text-foreground/75">
+                          판매자가 작성한 실물 컨디션 메모입니다.
+                        </span>
+                      </div>
+                      <p className="whitespace-pre-wrap text-ui-body-sm leading-relaxed text-foreground/85">
+                        {item.marketMeta.conditionNote}
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {/* ── 3. 세부 스펙 (타일 그리드) ── */}
+                  {(item.category === "racket" || item.category === "string") && (
+                    <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
+                      <p className="mb-4 text-ui-body-sm font-ui-medium text-foreground">
+                        세부 스펙
+                      </p>
+
+                      {item.category === "racket" ? (
+                        <div className="space-y-4">
+                          {/* 기본 프레임 정보 */}
+                          <div>
+                            <p className="mb-2 text-ui-caption font-medium uppercase tracking-wider text-muted-foreground">
+                              프레임 정보
+                            </p>
+                            <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                              {(
+                                [
+                                  { key: "weight" as const, unit: "g" },
+                                  { key: "balance" as const, unit: "mm" },
+                                  { key: "headSize" as const, unit: "sq.in" },
+                                  { key: "lengthIn" as const, unit: "in" },
+                                ] as const
+                              ).map(({ key, unit }) => (
+                                <div
+                                  key={key}
+                                  className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5"
+                                >
+                                  <p className="text-ui-body-sm text-foreground/75">
+                                    {getMarketRacketFieldLabel(key)}
+                                  </p>
+                                  <p className="mt-0.5 text-ui-body-sm font-ui-medium text-foreground">
+                                    {marketNumberText(item.marketMeta!.racketSpec?.[key], unit)}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          {/* 플레이 성향 정보 */}
+                          <div>
+                            <p className="mb-2 text-ui-caption font-medium uppercase tracking-wider text-muted-foreground">
+                              플레이 성향
+                            </p>
+                            <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                              {(
+                                [
+                                  {
+                                    key: "swingWeight" as const,
+                                    unit: undefined,
+                                  },
+                                  { key: "stiffnessRa" as const, unit: "RA" },
+                                ] as const
+                              ).map(({ key, unit }) => (
+                                <div
+                                  key={key}
+                                  className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5"
+                                >
+                                  <p className="text-ui-body-sm text-foreground/75">
+                                    {getMarketRacketFieldLabel(key)}
+                                  </p>
+                                  <p className="mt-0.5 text-ui-body-sm font-ui-medium text-foreground">
+                                    {marketNumberText(item.marketMeta!.racketSpec?.[key], unit)}
+                                  </p>
+                                </div>
+                              ))}
+                              <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
+                                <p className="text-ui-body-sm text-foreground/75">
+                                  {getMarketRacketFieldLabel("pattern")}
+                                </p>
+                                <p className="mt-0.5 text-ui-body-sm font-ui-medium text-foreground">
+                                  {marketText(item.marketMeta.racketSpec?.pattern)}
+                                </p>
+                              </div>
+                              <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
+                                <p className="text-ui-body-sm text-foreground/75">
+                                  {getMarketRacketFieldLabel("gripSize")}
+                                </p>
+                                <p className="mt-0.5 text-ui-body-sm font-ui-medium text-foreground">
+                                  {marketText(item.marketMeta.racketSpec?.gripSize)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* 스트링 스펙 */
+                        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                          <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
+                            <p className="text-ui-body-sm text-foreground/75">재질</p>
+                            <p className="mt-0.5 text-ui-body-sm font-ui-medium text-foreground">
+                              {getMarketStringMaterialLabel(item.marketMeta.stringSpec?.material) ||
+                                "-"}
+                            </p>
+                          </div>
+                          <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
+                            <p className="text-ui-body-sm text-foreground/75">게이지</p>
+                            <p className="mt-0.5 text-ui-body-sm font-ui-medium text-foreground">
+                              {marketText(item.marketMeta.stringSpec?.gauge)}
+                            </p>
+                          </div>
+                          <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
+                            <p className="text-ui-body-sm text-foreground/75">색상</p>
+                            <p className="mt-0.5 text-ui-body-sm font-ui-medium text-foreground">
+                              {getMarketStringColorLabel(item.marketMeta.stringSpec?.color) || "-"}
+                            </p>
+                          </div>
+                          <div className="rounded-control border border-border bg-brand-highlight-muted/35 px-3 py-2.5">
+                            <p className="text-ui-body-sm text-foreground/75">길이</p>
+                            <p className="mt-0.5 text-ui-body-sm font-ui-medium text-foreground">
+                              {getMarketStringLengthLabel(item.marketMeta.stringSpec?.length) ||
+                                "-"}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* 이미지 영역 - 인라인 표시 + 클릭 시 새창에서 원본 보기 */}
+              {item.images && item.images.length > 0 && (
+                <div className="mb-6 space-y-4">
+                  {item.images.map((url, idx) => (
+                    <div key={url + idx} className="flex justify-center">
+                      <button
+                        type="button"
+                        onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+                        className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-card dark:bg-muted hover:bg-card transition"
+                      >
+                        <Image
+                          src={url || "/placeholder.svg"}
+                          alt={`첨부 이미지 ${idx + 1}`}
+                          width={1200}
+                          height={800}
+                          className="w-full h-auto max-h-[560px] object-contain bg-card dark:bg-muted"
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 본문 */}
+              {isCommunityRichTextType(item.type) ? (
+                // free/market/gear 상세 GET은 읽기 경계에서 정제된 HTML만 반환합니다.
+                <RichTextContent
+                  content={item.content}
+                  className="rounded-xl border border-border bg-card px-4 py-5 shadow-soft sm:px-6"
+                />
+              ) : (
+                // brand는 아직 일반 텍스트 정책이므로 raw fallback을 유지합니다.
+                <div className="rounded-xl border border-border bg-card px-4 py-5 text-ui-body-sm leading-relaxed text-foreground shadow-soft whitespace-pre-wrap sm:px-6">
+                  {item.content}
+                </div>
+              )}
+
+              {/* 첨부파일 */}
+              {attachments.length > 0 && (
+                <div className="mt-8 space-y-3 border-t border-border pt-4">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="text-ui-body-sm font-ui-medium text-foreground">첨부파일</span>
+                    <span className="text-ui-label text-foreground/75">{attachments.length}개</span>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {attachments.map((att, index) => {
+                      const url = typeof att === "string" ? att : att.url;
+                      const name =
+                        typeof att === "string"
+                          ? `attachment-${index + 1}`
+                          : att.name || `attachment-${index + 1}`;
+                      const size =
+                        typeof att === "object" && att.size
+                          ? `${(att.size / 1024 / 1024).toFixed(2)} MB`
+                          : "";
+
+                      if (!url) return null;
+
+                      return (
+                        <div
+                          key={`${url}-${index}`}
+                          className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-ui-label shadow-sm dark:border-border"
+                        >
+                          <div className="flex min-w-0 flex-1 items-center gap-3">
+                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-border bg-secondary">
+                              <FileText className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate font-medium text-foreground" title={name}>
+                                {name}
+                              </div>
+                              {size && (
+                                <div className="text-ui-body-sm text-foreground/75">{size}</div>
+                              )}
+                            </div>
+                          </div>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="ml-3 flex-shrink-0 bg-transparent"
+                            onClick={() => handleDownload(url, name)}
+                          >
+                            다운로드
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <section
+                ref={navSectionRef}
+                className="mt-8 space-y-3 border-t pt-4"
+                aria-label="글 이동"
+              >
+                <div className="grid gap-2 md:grid-cols-2">
+                  {(
+                    [
+                      {
+                        key: "prev",
+                        label: "이전 글",
+                        icon: ChevronLeft,
+                        target: prevPost,
+                      },
+                      {
+                        key: "next",
+                        label: "다음 글",
+                        icon: ChevronRight,
+                        target: nextPost,
+                      },
+                    ] as const
+                  ).map(({ key, label, icon: Icon, target }) => (
+                    <Button
+                      key={key}
+                      asChild={!!target}
+                      variant="outline"
+                      className="h-auto min-h-16 justify-start px-4 py-3 text-left"
+                      disabled={!target}
+                    >
+                      {target ? (
+                        <Link
+                          href={`${config.routePrefix}/${target.id}${listQuery ? `?${listQuery}` : ""}`}
+                        >
+                          <div className="flex w-full items-start gap-3">
+                            <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-ui-label text-foreground/75">{label}</p>
+                              <p className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground">
+                                {target.title}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      ) : (
+                        <span className="flex w-full items-start gap-3 text-muted-foreground">
+                          <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+                          <span className="min-w-0">
+                            <span className="block text-ui-label">{label}</span>
+                            <span className="block line-clamp-1 text-ui-body-sm">
+                              이동할 글이 없습니다.
+                            </span>
+                          </span>
+                        </span>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              </section>
+
+              {/* 안내 문구 */}
+              <p className="mt-6 text-ui-label text-foreground/75">
+                게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김
+                처리될 수 있습니다.
+              </p>
+
+              {/* 게시글 신고 다이얼로그 */}
+              <Dialog
+                open={openReport}
+                onOpenChange={(next) => {
+                  if (next && !user) {
+                    showErrorToast("로그인이 필요 합니다.");
+                    return;
+                  }
+                  setOpenReport(next);
+                }}
+              >
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>이 게시글을 신고하시겠습니까?</DialogTitle>
+                    <p className="text-ui-body-sm text-foreground/80">
+                      허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수 있습니다.
+                    </p>
+                  </DialogHeader>
+
+                  <Textarea
+                    placeholder="신고 사유를 구체적으로 작성해주세요. (최소 10자)"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    className="h-32"
+                    disabled={isReporting}
+                  />
+
+                  <DialogFooter className="gap-2 bp-sm:flex-row bp-sm:justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="min-h-11 w-full bp-sm:w-auto"
+                      onClick={() => setOpenReport(false)}
+                      disabled={isReporting}
+                    >
+                      취소
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      className="min-h-11 w-full bp-sm:w-auto"
+                      onClick={handleSubmitReport}
+                      disabled={isReporting}
+                    >
+                      {isReporting ? "신고 중..." : "신고하기"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* 댓글 신고 다이얼로그 */}
+              <Dialog
+                open={openCommentReport}
+                onOpenChange={(next) => {
+                  if (!next) {
+                    closeCommentReport();
+                    return;
+                  }
+                }}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>댓글 신고하기</DialogTitle>
+                    <DialogDescription>
+                      신고 사유를 자세히 작성해 주세요. 운영자가 검토 후 필요한 조치를 진행합니다.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-2">
+                    {targetComment && (
+                      <div className="rounded-md border bg-muted px-3 py-2 text-ui-label text-foreground/75">
+                        <div className="font-medium mb-1">
+                          신고 대상: {targetComment.nickname ?? "회원"}
+                        </div>
+                        <div className="line-clamp-2 whitespace-pre-wrap">
+                          {targetComment.content}
+                        </div>
+                      </div>
+                    )}
+
+                    <Label htmlFor="comment-report-reason">신고 사유</Label>
+                    <Textarea
+                      id="comment-report-reason"
+                      className="min-h-[100px]"
+                      value={commentReportReason}
+                      onChange={(e) => setCommentReportReason(e.target.value)}
+                      disabled={isCommentReporting}
+                      placeholder="신고 사유를 10자 이상 입력해 주세요."
+                    />
+                  </div>
+
+                  <DialogFooter>
+                    <Button type="button" variant="outline" className="min-h-11 w-full bp-sm:w-auto" onClick={closeCommentReport}>
+                      취소
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      className="min-h-11 w-full bp-sm:w-auto"
+                      onClick={handleSubmitCommentReport}
+                      disabled={isCommentReporting}
+                    >
+                      {isCommentReporting ? "신고 중..." : "신고하기"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* 하단 액션 버튼 영역: 추천(왼쪽) + 목록/새글(오른쪽) */}
+              {item && (
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  {/* 추천 버튼 */}
+                  <Button
+                    type="button"
+                    variant={item.likedByMe ? "highlight" : "outline"}
+                    size="sm"
+                    onClick={handleToggleLike}
+                    disabled={isLiking}
+                    className="min-h-11 w-full gap-2 text-ui-body-sm sm:w-auto sm:min-w-[160px]"
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    {isLiking
+                      ? "처리 중..."
+                      : item.likedByMe
+                        ? `추천 취소 (${item.likes ?? 0})`
+                        : `추천 (${item.likes ?? 0})`}
+                  </Button>
+
+                  {/* 목록/새글 버튼 */}
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="min-h-11 w-full text-ui-body-sm sm:w-auto sm:min-w-[100px]"
+                    >
+                      <Link href={listHref} onClick={onNavLinkClick}>
+                        목록으로
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="highlight"
+                      size="sm"
+                      className="min-h-11 w-full text-ui-body-sm sm:w-auto sm:min-w-[100px]"
+                    >
+                      <Link href={`${config.routePrefix}/write`} onClick={onNavLinkClick}>
+                        새 글 작성
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        {/* ================== 댓글 카드 시작 ================== */}
+        {!isLoading && !error && item && (
+          <Card className="overflow-hidden rounded-panel border border-border bg-card shadow-soft">
+            <CardHeader className="border-b border-border bg-muted/50 px-4 py-4 sm:px-6">
+              <CardTitle className="flex items-center gap-3 text-ui-body-lg font-ui-medium text-foreground">
+                <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                <span>댓글</span>
+                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-brand-highlight px-2.5 text-ui-body-sm font-medium text-brand-highlight-foreground">
+                  {totalComments}
+                </span>
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4 p-4 md:space-y-6 md:p-6">
+              <div className="space-y-3">
+                {user ? (
+                  <>
+                    <Textarea
+                      id="comment"
+                      className="min-h-[100px] resize-none border-border text-ui-body-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
+                      placeholder="댓글을 입력하세요."
+                      value={commentContent}
+                      onChange={(e) => setCommentContent(e.target.value)}
+                      disabled={isCommentSubmitting}
+                    />
+                    {commentError && (
+                      <p className="text-ui-label text-destructive">{commentError}</p>
+                    )}
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="highlight"
+                        size="sm"
+                        className="min-h-11 w-full px-5 text-ui-body-sm bp-md:min-h-9 bp-md:w-auto"
+                        disabled={isCommentSubmitting}
+                        onClick={handleSubmitComment}
+                      >
+                        {isCommentSubmitting && (
+                          <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-border border-t-transparent dark:border-border dark:border-t-transparent" />
+                        )}
+                        <span>등록</span>
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3.5 dark:border-border">
+                    <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                    <p className="text-ui-body-sm text-foreground/80">
+                      로그인 후 댓글을 작성할 수 있습니다.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-muted" />
+
+              {/* 댓글 리스트 영역 */}
+              <div className="space-y-3">
+                {isCommentsLoading && (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="space-y-3 rounded-xl border border-border bg-card p-5"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-9 w-9 rounded-full" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-3 w-20" />
+                            <Skeleton className="h-2.5 w-24" />
+                          </div>
+                        </div>
+                        <Skeleton className="h-4 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!isCommentsLoading && comments.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-10 md:py-16 text-center">
+                    <MessageSquare className="mb-3 h-12 w-12 text-muted-foreground" />
+                    <p className="text-ui-body-sm font-medium text-muted-foreground">
+                      첫 댓글을 남겨보세요
+                    </p>
+                  </div>
+                )}
+
+                {!isCommentsLoading && comments.length > 0 && (
+                  <ul className="space-y-3">
+                    {rootComments.map((c) => {
+                      const replies = sortRepliesAsc(repliesByParentId[c.id] ?? []);
+                      const isExpanded = expandedRootIds.has(c.id);
+
+                      const MAX_COLLAPSED_REPLIES = 3;
+                      const totalReplies = replies.length;
+
+                      const visibleReplies = isExpanded
+                        ? replies
+                        : replies.slice(0, MAX_COLLAPSED_REPLIES);
+
+                      const hiddenCount = isExpanded
+                        ? 0
+                        : Math.max(0, totalReplies - MAX_COLLAPSED_REPLIES);
+
+                      return (
+                        <li key={c.id} className="space-y-2.5">
+                          <CommentItem
+                            comment={c}
+                            userId={user?.id}
+                            editingCommentId={editingCommentId}
+                            editingReplyId={editingReplyId}
+                            replyingToId={replyingToId}
+                            isCommentSubmitting={isCommentSubmitting}
+                            isReplySubmitting={isReplySubmitting}
+                            replyDraft={replyDrafts[c.id] ?? ""}
+                            replyError={replyError}
+                            onNavigateAuthorPosts={handleNavigateAuthorPosts}
+                            onSendMessage={(comment) => {
+                              if (!comment.userId) return;
+                              openCompose(comment.userId, comment.nickname);
+                            }}
+                            onOpenAuthorProfile={(comment) =>
+                              handleOpenAuthorProfile({
+                                userId: comment.userId ?? null,
+                                nickname: comment.nickname ?? "회원",
+                              })
+                            }
+                            onStartEditComment={startEditComment}
+                            onStartEditReply={startEditReply}
+                            onDeleteComment={handleDeleteComment}
+                            onOpenCommentReport={openCommentReportDialog}
+                            onReplyDraftChange={(commentId, value) =>
+                              setReplyDrafts((prev) => ({
+                                ...prev,
+                                [commentId]: value,
+                              }))
+                            }
+                            onReplyCancel={(commentId) => {
+                              setReplyDrafts((prev) => {
+                                const next = { ...prev };
+                                delete next[commentId];
+                                return next;
+                              });
+                              setReplyingToId(null);
+                              setReplyError(null);
+                            }}
+                            onSubmitReply={(commentId, content) => {
+                              if (!content.trim()) {
+                                setReplyError("답글 내용을 입력해 주세요.");
+                                return;
+                              }
+                              void handleSubmitReply(commentId, content);
+                            }}
+                            onStartReply={handleStartReply}
+                            onCommentEditDraftChange={(commentId, value) =>
+                              setCommentEditDrafts((prev) => ({
+                                ...prev,
+                                [commentId]: value,
+                              }))
+                            }
+                            onReplyEditDraftChange={(commentId, value) =>
+                              setReplyEditDrafts((prev) => ({
+                                ...prev,
+                                [commentId]: value,
+                              }))
+                            }
+                            onCancelEditComment={cancelEditComment}
+                            onCancelEditReply={cancelEditReply}
+                            onSaveEdit={handleCommentSave}
+                          />
+
+                          {visibleReplies.length > 0 && (
+                            <ul className="space-y-2.5">
+                              {visibleReplies.map((reply) => (
+                                <li key={reply.id}>
+                                  <CommentItem
+                                    comment={reply}
+                                    isReply
+                                    userId={user?.id}
+                                    editingCommentId={editingCommentId}
+                                    editingReplyId={editingReplyId}
+                                    replyingToId={replyingToId}
+                                    isCommentSubmitting={isCommentSubmitting}
+                                    isReplySubmitting={isReplySubmitting}
+                                    replyDraft={replyDrafts[reply.id] ?? ""}
+                                    replyError={replyError}
+                                    onNavigateAuthorPosts={handleNavigateAuthorPosts}
+                                    onSendMessage={(comment) => {
+                                      if (!comment.userId) return;
+                                      openCompose(comment.userId, comment.nickname);
+                                    }}
+                                    onOpenAuthorProfile={(comment) =>
+                                      handleOpenAuthorProfile({
+                                        userId: comment.userId ?? null,
+                                        nickname: comment.nickname ?? "회원",
+                                      })
+                                    }
+                                    onStartEditComment={startEditComment}
+                                    onStartEditReply={startEditReply}
+                                    onDeleteComment={handleDeleteComment}
+                                    onOpenCommentReport={openCommentReportDialog}
+                                    onReplyDraftChange={(commentId, value) =>
+                                      setReplyDrafts((prev) => ({
+                                        ...prev,
+                                        [commentId]: value,
+                                      }))
+                                    }
+                                    onReplyCancel={(commentId) => {
+                                      setReplyDrafts((prev) => {
+                                        const next = { ...prev };
+                                        delete next[commentId];
+                                        return next;
+                                      });
+                                      setReplyingToId(null);
+                                      setReplyError(null);
+                                    }}
+                                    onSubmitReply={(commentId, content) => {
+                                      if (!content.trim()) {
+                                        setReplyError("답글 내용을 입력해 주세요.");
+                                        return;
+                                      }
+                                      void handleSubmitReply(commentId, content);
+                                    }}
+                                    onStartReply={handleStartReply}
+                                    onCommentEditDraftChange={(commentId, value) =>
+                                      setCommentEditDrafts((prev) => ({
+                                        ...prev,
+                                        [commentId]: value,
+                                      }))
+                                    }
+                                    onReplyEditDraftChange={(commentId, value) =>
+                                      setReplyEditDrafts((prev) => ({
+                                        ...prev,
+                                        [commentId]: value,
+                                      }))
+                                    }
+                                    onCancelEditComment={cancelEditComment}
+                                    onCancelEditReply={cancelEditReply}
+                                    onSaveEdit={handleCommentSave}
+                                  />
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+
+                          {totalReplies > MAX_COLLAPSED_REPLIES && (
+                            <button
+                              type="button"
+                              onClick={() => toggleRootReplies(c.id)}
+                              className="ml-10 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted bp-md:min-h-0 dark:text-muted-foreground dark:hover:bg-muted"
+                            >
+                              {isExpanded ? (
+                                <span>답글 접기</span>
+                              ) : (
+                                <>
+                                  <MessageSquare className="h-3.5 w-3.5" />
+                                  <span>답글 {hiddenCount}개 더보기</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+
+                {!isCommentsLoading && totalCommentPages > 1 && (
+                  <div className="flex items-center justify-between rounded-lg border-t border-border bg-muted/50 px-4 py-3">
+                    <span className="text-ui-label font-medium text-muted-foreground">
+                      {commentPage} / {totalCommentPages}
+                    </span>
+                    <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={commentPage <= 1}
+                        onClick={() => setCommentPage((p) => Math.max(1, p - 1))}
+                        className="min-h-11 px-4 text-ui-label bp-md:min-h-8"
+                      >
+                        이전
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={commentPage >= totalCommentPages}
+                        onClick={() => setCommentPage((p) => Math.min(totalCommentPages, p + 1))}
+                        className="min-h-11 px-4 text-ui-label bp-md:min-h-8"
+                      >
+                        다음
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 작성자 프로필 모달 */}
+        {item && (
+          <Dialog
+            open={isAuthorProfileOpen}
+            onOpenChange={(open) => {
+              setIsAuthorProfileOpen(open);
+              if (!open) setAuthorTarget(null);
+            }}
+          >
+            <DialogContent className="max-w-5xl max-h-screen overflow-y-auto">
+              <DialogHeader className="pb-4 border-b border-border">
+                <DialogTitle className="text-ui-card-title-lg font-ui-medium text-foreground">
+                  작성자 프로필
+                </DialogTitle>
+                {authorTarget?.nickname
+                  ? `${authorTarget.nickname}님의 커뮤니티 활동 정보입니다.`
+                  : "작성자 정보"}
+              </DialogHeader>
+
+              {isAuthorLoading && (
+                <div className="py-5 md:py-6 space-y-4 md:space-y-6">
+                  <div className="space-y-3">
+                    <Skeleton className="h-5 w-32" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-44" />
+                      <Skeleton className="h-4 w-52" />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Skeleton className="h-5 w-36" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Skeleton className="h-20 w-full rounded-lg" />
+                      <Skeleton className="h-20 w-full rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!isAuthorLoading && (
+                <Tabs defaultValue="community" className="w-full mt-2">
+                  <TabsList className="grid w-full grid-cols-2 h-10">
+                    <TabsTrigger value="community" className="text-ui-body-sm">
+                      작성자 프로필
+                    </TabsTrigger>
+                    <TabsTrigger value="tennis" className="text-ui-body-sm">
+                      테니스 프로필
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {/* 작성자(커뮤니티) 탭 */}
+                  <TabsContent value="community" className="mt-5 md:mt-6 space-y-4 md:space-y-6">
+                    {/* 기본 정보 */}
+                    <div className="space-y-3">
+                      <h3 className="text-ui-body-sm font-ui-medium text-foreground pb-2 border-b border-border">
+                        기본 정보
+                      </h3>
+                      <div className="space-y-2 text-ui-body-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground w-20">이름</span>
+                          <span className="text-ui-body-sm font-medium">
+                            {authorTarget?.nickname ?? "회원"}
+                          </span>
+                        </div>
+                        {authorOverview?.firstActivityAt && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground w-20">첫 활동일</span>
+                            <span className="text-foreground">
+                              {new Date(authorOverview.firstActivityAt).toLocaleDateString("ko-KR")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 활동량 */}
+                    {authorOverview && (
+                      <div className="space-y-3">
+                        <h3 className="text-ui-body-sm font-ui-medium text-foreground pb-2 border-b border-border">
+                          커뮤니티 활동
+                        </h3>
+                        <div className="flex gap-4 md:gap-6">
+                          <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
+                            <div className="text-ui-label text-foreground/75 mb-1">작성 글</div>
+                            <div className="text-ui-page-title font-ui-bold text-foreground">
+                              {authorOverview.stats.posts}
+                            </div>
+                          </div>
+                          <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
+                            <div className="text-ui-label text-foreground/75 mb-1">작성댓글</div>
+                            <div className="text-ui-page-title font-ui-bold text-foreground">
+                              {authorOverview.stats.comments}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 최근 작성 글 */}
+                    {authorOverview?.recentPosts?.length ? (
+                      <div className="space-y-3">
+                        <h3 className="text-ui-body-sm font-ui-medium text-foreground pb-2 border-b border-border">
+                          최근 작성 글
+                        </h3>
+                        <ul className="space-y-2">
+                          {authorOverview.recentPosts.map((p) => (
+                            <li
+                              key={p.id}
+                              className="flex items-center justify-between gap-3 text-ui-body-sm hover:bg-muted/50 dark:hover:bg-background/40 rounded-md p-2 -mx-2 transition-colors"
+                            >
+                              <Link
+                                href={`${config.routePrefix}/${p.id}`}
+                                className="truncate text-foreground hover:text-muted-foreground dark:hover:text-muted-foreground flex-1"
+                              >
+                                {p.title || "(제목 없음)"}
+                              </Link>
+                              <span className="shrink-0 text-ui-label text-foreground/75">
+                                {new Date(p.createdAt).toLocaleDateString("ko-KR")}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p className="text-ui-body-sm text-foreground/80 text-center py-4">
+                        아직 활동 기록이 없거나, 공개 게시글이 없습니다.
+                      </p>
+                    )}
+                  </TabsContent>
+
+                  {/* 테니스 탭 */}
+                  <TabsContent value="tennis" className="mt-5 md:mt-6">
+                    {!authorOverview?.tennisProfile ? (
+                      <div className="text-ui-body-sm text-foreground/80 text-center py-8">
+                        작성자가 테니스 프로필을 공개하지 않았습니다.
+                      </div>
+                    ) : (
+                      <div className="space-y-4 md:space-y-6">
+                        {/* 기본 정보 */}
+                        <div className="space-y-3">
+                          <h3 className="text-ui-body-sm font-ui-medium text-foreground pb-2 border-b border-border">
+                            플레이어 정보
+                          </h3>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
+                              <div className="text-ui-label text-foreground/75 mb-1">실력</div>
+                              <div className="text-ui-body-sm font-medium text-foreground">
+                                {label(LEVEL_LABEL, authorOverview.tennisProfile.level)}
+                              </div>
+                            </div>
+                            <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
+                              <div className="text-ui-label text-foreground/75 mb-1">사용 손</div>
+                              <div className="text-ui-body-sm font-medium text-foreground">
+                                {label(HAND_LABEL, authorOverview.tennisProfile.hand)}
+                              </div>
+                            </div>
+                            <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
+                              <div className="text-ui-label text-foreground/75 mb-1">스타일</div>
+                              <div className="text-ui-body-sm font-medium text-foreground">
+                                {label(STYLE_LABEL, authorOverview.tennisProfile.playStyle)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 라켓 */}
+                        <div className="space-y-3">
+                          <h3 className="text-ui-body-sm font-ui-medium text-foreground pb-2 border-b border-border">
+                            메인 라켓
+                          </h3>
+                          <div className="rounded-lg border border-border p-4">
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-ui-body-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-16">브랜드</span>
+                                <span className="text-foreground font-medium">
+                                  {v(authorOverview.tennisProfile.mainRacket?.brand)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-16">모델</span>
+                                <span className="text-foreground font-medium">
+                                  {v(authorOverview.tennisProfile.mainRacket?.model)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-16">무게</span>
+                                <span className="text-foreground">
+                                  {v(authorOverview.tennisProfile.mainRacket?.weight)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-16">밸런스</span>
+                                <span className="text-foreground">
+                                  {v(authorOverview.tennisProfile.mainRacket?.balance)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 스트링 */}
+                        <div className="space-y-3">
+                          <h3 className="text-ui-body-sm font-ui-medium text-foreground pb-2 border-b border-border">
+                            메인 스트링
+                          </h3>
+                          <div className="rounded-lg border border-border p-4">
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-ui-body-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-20">브랜드</span>
+                                <span className="text-foreground font-medium">
+                                  {v(authorOverview.tennisProfile.mainString?.brand)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-20">모델</span>
+                                <span className="text-foreground font-medium">
+                                  {v(authorOverview.tennisProfile.mainString?.model)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-20">게이지</span>
+                                <span className="text-foreground">
+                                  {v(authorOverview.tennisProfile.mainString?.gauge)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-20">재질</span>
+                                <span className="text-foreground">
+                                  {v(authorOverview.tennisProfile.mainString?.material)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-20">메인 텐션</span>
+                                <span className="text-foreground">
+                                  {authorOverview.tennisProfile.mainString?.tensionMain
+                                    ? `${authorOverview.tennisProfile.mainString.tensionMain}LB`
+                                    : "-"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground w-20">크로스 텐션</span>
+                                <span className="text-foreground">
+                                  {authorOverview.tennisProfile.mainString?.tensionCross
+                                    ? `${authorOverview.tennisProfile.mainString.tensionCross}LB`
+                                    : "-"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 소개 */}
+                        <div className="space-y-3">
+                          <h3 className="text-ui-body-sm font-ui-medium text-foreground pb-2 border-b border-border">
+                            소개
+                          </h3>
+                          <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
+                            <p className="text-ui-body-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
+                              {authorOverview.tennisProfile.note?.trim()
+                                ? authorOverview.tennisProfile.note
+                                : "소개를 입력하지 않았습니다."}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <div className="flex flex-col gap-2 pt-4 md:pt-6 mt-4 md:mt-6 border-t border-border bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      disabled={!item}
+                      className="min-h-11 w-full bg-transparent bp-sm:h-9 bp-sm:min-h-0 bp-sm:w-auto"
+                    >
+                      <Link
+                        href={
+                          authorTarget?.userId
+                            ? `${config.routePrefix}?authorId=${authorTarget.userId}&authorName=${encodeURIComponent(authorTarget.nickname ?? "")}`
+                            : "#"
+                        }
+                      >
+                        이 작성자의 글 보기
+                      </Link>
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsAuthorProfileOpen(false)}
+                      className="min-h-11 w-full bp-sm:h-9 bp-sm:min-h-0 bp-sm:w-auto"
+                    >
+                      닫기
+                    </Button>
+                  </div>
+                </Tabs>
+              )}
+            </DialogContent>
+          </Dialog>
+        )}
+      </SiteContainer>
+    </div>
+  );
+}

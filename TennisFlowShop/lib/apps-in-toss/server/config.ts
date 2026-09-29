@@ -1,0 +1,59 @@
+import "server-only";
+
+const REQUIRED_ENV_NAMES = [
+  "APPS_IN_TOSS_MTLS_CERT_BASE64",
+  "APPS_IN_TOSS_MTLS_PRIVATE_KEY_BASE64",
+  "APPS_IN_TOSS_LOGIN_DECRYPTION_KEY",
+  "APPS_IN_TOSS_LOGIN_AAD",
+] as const;
+const TOSS_PAY_ENV_NAME = "APPS_IN_TOSS_TOSS_PAY_ENV" as const;
+const TOSS_PAY_LIVE_PREPARE_ENABLED_NAME = "APPS_IN_TOSS_TOSS_PAY_LIVE_PREPARE_ENABLED" as const;
+const TOSS_PAY_LIVE_EXECUTE_ENABLED_NAME = "APPS_IN_TOSS_TOSS_PAY_LIVE_EXECUTE_ENABLED" as const;
+
+export const APPS_IN_TOSS_APP_NAME = "dokkaebitennis";
+export const APPS_IN_TOSS_API_HOST = "apps-in-toss-api.toss.im";
+export const APPS_IN_TOSS_TOSS_PAY_API_HOST = "pay-apps-in-toss-api.toss.im";
+export const APPS_IN_TOSS_HTTP_TIMEOUT_MS = 8_000;
+export const APPS_IN_TOSS_MAX_RESPONSE_BYTES = 64 * 1024;
+
+export class AppsInTossConfigurationError extends Error {
+  constructor(environmentNames: readonly string[] = REQUIRED_ENV_NAMES) {
+    super(`Apps in Toss 서버 설정이 올바르지 않습니다. 환경변수 이름을 확인하세요: ${environmentNames.join(", ")}`);
+    this.name = "AppsInTossConfigurationError";
+  }
+}
+
+export function getAppsInTossTossPayMode() {
+  const mode = process.env[TOSS_PAY_ENV_NAME];
+  if (mode === "sandbox") return { mode, isTestPayment: true } as const;
+  if (mode === "live") return { mode, isTestPayment: false } as const;
+  throw new AppsInTossConfigurationError([TOSS_PAY_ENV_NAME]);
+}
+
+export function isAppsInTossTossPayLiveExecuteEnabled() {
+  return getAppsInTossTossPayMode().mode === "live" && process.env[TOSS_PAY_LIVE_EXECUTE_ENABLED_NAME] === "true";
+}
+
+export function isAppsInTossTossPayLivePrepareEnabled() {
+  return getAppsInTossTossPayMode().mode === "live" && process.env[TOSS_PAY_LIVE_PREPARE_ENABLED_NAME] === "true";
+}
+
+function requiredEnvironmentValue(name: (typeof REQUIRED_ENV_NAMES)[number]) {
+  const value = process.env[name];
+  if (!value) throw new AppsInTossConfigurationError();
+  return value;
+}
+
+export function getAppsInTossMtlsCredentials() {
+  return {
+    cert: Buffer.from(requiredEnvironmentValue("APPS_IN_TOSS_MTLS_CERT_BASE64"), "base64"),
+    key: Buffer.from(requiredEnvironmentValue("APPS_IN_TOSS_MTLS_PRIVATE_KEY_BASE64"), "base64"),
+  };
+}
+
+export function getAppsInTossLoginDecryptionConfig() {
+  return {
+    keyBase64: requiredEnvironmentValue("APPS_IN_TOSS_LOGIN_DECRYPTION_KEY"),
+    aad: requiredEnvironmentValue("APPS_IN_TOSS_LOGIN_AAD"),
+  };
+}

@@ -1,0 +1,23 @@
+/**
+ * @param {{
+ *  accessSub?: string | null,
+ *  orderId: string,
+ *  stringingApplicationId?: string | null,
+ * }} params
+ */
+export function buildCheckoutSuccessLinks({ accessSub, orderId, stringingApplicationId }) {
+  const isLoggedIn = Boolean(accessSub);
+  const normalizedApplicationId =
+    typeof stringingApplicationId === "string" && stringingApplicationId.trim()
+      ? stringingApplicationId.trim()
+      : null;
+
+  return {
+    isLoggedIn,
+    orderDetailHref: isLoggedIn ? "/mypage?tab=orders" : `/order-lookup/details/${orderId}`,
+    stringingApplicationHref:
+      isLoggedIn && normalizedApplicationId
+        ? `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(normalizedApplicationId)}&from=orders`
+        : null,
+  };
+}

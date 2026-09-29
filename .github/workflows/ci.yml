@@ -1,0 +1,581 @@
+name: CI
+
+# NOTE(운영): 아래와 같은 메시지로 job이 시작조차 되지 않으면
+# "The job was not started because your account is locked due to a billing issue."
+# 워크플로우/관리자 경로 정책 문제가 아니라 GitHub Actions 결제 잠금 상태입니다.
+# 이 경우 저장소 코드 변경만으로는 복구할 수 없으며, 조직/계정 Billing 복구 후 재실행이 필요합니다.
+
+on:
+  pull_request:
+    paths:
+      - "TennisFlowShop/**"
+      - ".github/workflows/ci.yml"
+      - ".github/CI_INCIDENT_RESPONSE.md"
+  workflow_dispatch:
+  push:
+    branches: ["main", "master"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+  NEXT_TELEMETRY_DISABLED: 1
+  WORKDIR: TennisFlowShop
+  # E2E/CI 기본값: 클라이언트 번들에서 createClient() 초기화 오류를 방지하기 위한 안전한 더미 값
+  NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ci_dummy_anon_key
+
+jobs:
+  # PR 변경 파일 중 관리자 경로(app/admin, app/api/admin, lib/admin) 포함 여부를 계산한다.
+  # 이 결과는 마지막 required gate(job: admin-path-required-gate)에서
+  # "관리자 경로 변경 PR에서는 필수 상태체크" 정책을 강제하는 데 사용한다.
+  detect-admin-path-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      admin_changed: ${{ steps.filter.outputs.admin }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect admin path changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            admin:
+              - 'TennisFlowShop/app/admin/**'
+              - 'TennisFlowShop/app/api/admin/**'
+              - 'TennisFlowShop/lib/admin/**'
+
+  # 1) Install -> lint
+  lint:
+    runs-on: ubuntu-latest
+    needs: detect-admin-path-changes
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Check color policy gate
+        run: pnpm check:color-policy
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check token palette consistency
+        run: pnpm check:token-palette-consistency
+
+  # 2) typecheck (타입 규칙 위반 식별용)
+  typecheck:
+    runs-on: ubuntu-latest
+    needs: lint
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+  # 3) build
+  build:
+    runs-on: ubuntu-latest
+    needs: typecheck
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+  # 4) admin any gate (타입 안전성 규칙 위반을 분리된 job으로 식별)
+  check-admin-any-gate:
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install ripgrep
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends -y ripgrep
+          fi
+          rg --version
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Check admin any gate (타입 규칙)
+        run: pnpm check:admin-any-gate
+
+  # 5) admin API boundary gate (경계 규칙 위반을 분리된 job으로 식별)
+  check-admin-api-boundary:
+    runs-on: ubuntu-latest
+    needs: check-admin-any-gate
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Check admin API boundary (경계 규칙)
+        run: pnpm check:admin-api-boundary
+
+  # 6) core contract tests (실제 정책 위반은 병합을 차단한다)
+  test-contract:
+    runs-on: ubuntu-latest
+    needs: check-admin-api-boundary
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Test core contract (권한/CSRF/후기 정책)
+        run: pnpm test:contract
+
+  # 구현 문자열·UI 문구 검사는 관찰 가능하게 실행하되 핵심 gate를 막지 않는다.
+  test-contract-advisory:
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Test advisory contract (구현 형태/UI 문구)
+        id: advisory_contract
+        continue-on-error: true
+        run: pnpm test:contract:advisory
+
+      - name: Report advisory contract result
+        if: ${{ always() }}
+        env:
+          ADVISORY_OUTCOME: ${{ steps.advisory_contract.outcome }}
+        run: |
+          if [ "${ADVISORY_OUTCOME}" = "success" ]; then
+            echo "## Advisory contract tests" >> "$GITHUB_STEP_SUMMARY"
+            echo "통과: 구현 형태/UI 문구 검사가 현재 기준을 만족했습니다." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::Advisory contract tests failed. Core gates are unaffected; review stale source assertions."
+            echo "## Advisory contract tests" >> "$GITHUB_STEP_SUMMARY"
+            echo "경고: 구현 형태/UI 문구 검사가 실패했습니다. 핵심 gate에는 영향을 주지 않으며 stale assertion을 검토하세요." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # 7) admin-critical e2e (권한/CSRF 런타임 위반을 분리된 job으로 식별)
+  test-e2e-admin-critical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: build
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WORKDIR }}/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}-${{ hashFiles('TennisFlowShop/**/*.ts', 'TennisFlowShop/**/*.tsx', 'TennisFlowShop/**/*.js', 'TennisFlowShop/**/*.jsx', 'TennisFlowShop/**/*.mjs', 'TennisFlowShop/**/*.cjs') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-
+
+      - name: Build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: pnpm build
+
+      - name: Start server (prod)
+        run: |
+          pnpm start &
+          echo $! > server.pid
+
+      - name: Wait for server
+        run: |
+          ok=""
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000/ > /dev/null; then
+              ok="1"
+              break
+            fi
+            sleep 1
+          done
+          if [ -z "$ok" ]; then
+            echo "Server did not become ready in time."
+            exit 1
+          fi
+
+      - name: Test e2e admin critical smoke (권한/CSRF 런타임)
+        env:
+          BASE_URL: http://localhost:3000
+        run: pnpm test:e2e:admin-critical:smoke
+
+      - name: Stop server
+        if: always()
+        run: |
+          kill $(cat server.pid) || true
+          pkill -f "next start" || true
+
+  # 8) notice conflict retry e2e (409 충돌 + 재시도 UX 검증)
+  test-e2e-notice-conflict-retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: build
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
+
+      - name: Install dependencies (pnpm i --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Cypress binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}
+          restore-keys: |
+            cypress-${{ runner.os }}-
+
+      - name: Install Cypress binary
+        run: pnpm exec cypress install
+
+      - name: Verify Cypress binary
+        run: pnpm exec cypress verify
+
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WORKDIR }}/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}-${{ hashFiles('TennisFlowShop/**/*.ts', 'TennisFlowShop/**/*.tsx', 'TennisFlowShop/**/*.js', 'TennisFlowShop/**/*.jsx', 'TennisFlowShop/**/*.mjs', 'TennisFlowShop/**/*.cjs') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-
+
+      - name: Build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: pnpm build
+
+      - name: Start server (prod)
+        run: |
+          pnpm start &
+          echo $! > server.pid
+
+      - name: Wait for server
+        run: |
+          ok=""
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000/ > /dev/null; then
+              ok="1"
+              break
+            fi
+            sleep 1
+          done
+          if [ -z "$ok" ]; then
+            echo "Server did not become ready in time."
+            exit 1
+          fi
+
+      - name: Test e2e notice conflict retry (409 + 재시도 UX)
+        run: pnpm test:e2e:notice-conflict-retry
+
+      - name: Stop server
+        if: always()
+        run: |
+          kill $(cat server.pid) || true
+          pkill -f "next start" || true
+
+  # 9) 배포 전 필수 통과 체크리스트(Go/No-Go)
+  # - release 직전 승인 기준을 CI 단계에서 기계적으로 판정한다.
+  # - 이 job을 Required status check로 등록하면 "모든 필수 검증 통과"를 하나의 신호로 받을 수 있다.
+  go-no-go-checklist:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - lint
+      - typecheck
+      - build
+      - check-admin-any-gate
+      - check-admin-api-boundary
+      - test-contract
+      - test-e2e-admin-critical
+      - test-e2e-notice-conflict-retry
+    steps:
+      - name: Evaluate pre-deploy checklist (Go/No-Go)
+        env:
+          LINT_RESULT: ${{ needs.lint.result }}
+          TYPECHECK_RESULT: ${{ needs.typecheck.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          ANY_GATE_RESULT: ${{ needs.check-admin-any-gate.result }}
+          BOUNDARY_RESULT: ${{ needs.check-admin-api-boundary.result }}
+          CONTRACT_RESULT: ${{ needs.test-contract.result }}
+          E2E_ADMIN_RESULT: ${{ needs.test-e2e-admin-critical.result }}
+          E2E_NOTICE_CONFLICT_RESULT: ${{ needs.test-e2e-notice-conflict-retry.result }}
+        run: |
+          failures=""
+          for item in \
+            "lint=${LINT_RESULT}" \
+            "typecheck=${TYPECHECK_RESULT}" \
+            "build=${BUILD_RESULT}" \
+            "check_admin_any_gate=${ANY_GATE_RESULT}" \
+            "check_admin_api_boundary=${BOUNDARY_RESULT}" \
+            "test_contract=${CONTRACT_RESULT}"; do
+            name="${item%%=*}"
+            result="${item#*=}"
+            if [ "${result}" != "success" ]; then
+              failures="${failures}\n- primary: ${name} => ${result}"
+            fi
+          done
+
+          for item in \
+            "test_e2e_admin_critical=${E2E_ADMIN_RESULT}" \
+            "test_e2e_notice_conflict_retry=${E2E_NOTICE_CONFLICT_RESULT}"; do
+            name="${item%%=*}"
+            result="${item#*=}"
+            if [ "${result}" != "success" ]; then
+              failures="${failures}\n- primary: ${name} => ${result}"
+            fi
+          done
+
+          if [ -n "${failures}" ]; then
+            echo "[NO-GO] 배포 전 필수 체크리스트 실패:${failures}"
+            exit 1
+          fi
+
+          echo "[GO] 배포 전 필수 체크리스트를 모두 통과했습니다."
+
+  # branch protection에는 이 job(admin-path-required-gate)을 Required status check로 등록한다.
+  # admin 경로가 변경된 PR이면 선행 핵심 검증이 모두 통과해야 하고,
+  # admin 변경이 없으면 정책상 not-applicable로 성공 처리한다.
+  admin-path-required-gate:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - detect-admin-path-changes
+      - lint
+      - typecheck
+      - build
+      - check-admin-any-gate
+      - check-admin-api-boundary
+      - test-contract
+      - test-e2e-admin-critical
+      - test-e2e-notice-conflict-retry
+    steps:
+      - name: Enforce required checks for admin path PRs
+        env:
+          ADMIN_CHANGED: ${{ needs.detect-admin-path-changes.outputs.admin_changed }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TYPECHECK_RESULT: ${{ needs.typecheck.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          ANY_GATE_RESULT: ${{ needs.check-admin-any-gate.result }}
+          BOUNDARY_RESULT: ${{ needs.check-admin-api-boundary.result }}
+          CONTRACT_RESULT: ${{ needs.test-contract.result }}
+          E2E_RESULT: ${{ needs.test-e2e-admin-critical.result }}
+          NOTICE_CONFLICT_E2E_RESULT: ${{ needs.test-e2e-notice-conflict-retry.result }}
+        run: |
+          echo "admin_changed=${ADMIN_CHANGED}"
+
+          if [ "${ADMIN_CHANGED}" != "true" ]; then
+            echo "관리자 경로 변경이 없어 admin 필수 상태체크는 not-applicable 입니다."
+            exit 0
+          fi
+
+          failures=""
+          for item in \
+            "lint=${LINT_RESULT}" \
+            "typecheck=${TYPECHECK_RESULT}" \
+            "build=${BUILD_RESULT}" \
+            "check_admin_any_gate=${ANY_GATE_RESULT}" \
+            "check_admin_api_boundary=${BOUNDARY_RESULT}" \
+            "test_contract=${CONTRACT_RESULT}" \
+            "test_e2e_admin_critical=${E2E_RESULT}" \
+            "test_e2e_notice_conflict_retry=${NOTICE_CONFLICT_E2E_RESULT}"; do
+            name="${item%%=*}"
+            result="${item#*=}"
+            if [ "${result}" != "success" ]; then
+              failures="${failures}\n- ${name} => ${result}"
+            fi
+          done
+
+          if [ -n "${failures}" ]; then
+            echo "관리자 경로 변경 PR 필수 상태체크 실패:${failures}"
+            exit 1
+          fi
+
+          echo "관리자 경로 변경 PR 필수 상태체크를 모두 통과했습니다."

@@ -1,0 +1,7 @@
+packages:
+  - .
+
+onlyBuiltDependencies:
+  - cypress
+  - sharp
+  - unrs-resolver

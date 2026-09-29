@@ -1,0 +1,160 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
+import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { showErrorToast } from "@/lib/toast";
+export interface CustomerFormValues {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  addressDetail: string;
+  postalCode: string;
+}
+
+interface Props {
+  initialData: CustomerFormValues;
+  resourcePath: string;
+  entityId: string;
+  onSuccess: (updated: CustomerFormValues) => void;
+  onCancel: () => void;
+  tone?: "admin" | "user";
+}
+
+export default function CustomerEditForm({
+  initialData,
+  resourcePath,
+  entityId,
+  onSuccess,
+  onCancel,
+  tone = "admin",
+}: Props) {
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting, isDirty },
+  } = useForm<CustomerFormValues>({ defaultValues: initialData });
+
+  // 입력값이 defaultValues 대비 변경되면 isDirty=true → 이탈(뒤로/탭닫기/링크이동) 경고
+  // 저장 중에는 경고가 뜨지 않게 해서 UX/오동작 방지
+  useUnsavedChangesGuard(isDirty && !isSubmitting);
+
+  const handleOpenPostcode = async () => {
+    try {
+      await loadDaumPostcode();
+    } catch {
+      showErrorToast("주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    if (!(window as any).daum?.Postcode) return;
+    new (window as any).daum.Postcode({
+      oncomplete: (data: any) => {
+        setValue("postalCode", data.zonecode, { shouldDirty: true });
+        setValue("address", data.roadAddress, { shouldDirty: true });
+        setValue("addressDetail", "", { shouldDirty: true }); // 상세주소는 초기화
+      },
+    }).open();
+  };
+
+  async function onSubmit(data: CustomerFormValues) {
+    const res = await fetch(`${resourcePath}/${entityId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        addressDetail: data.addressDetail,
+        postalCode: data.postalCode,
+      }),
+    });
+    if (!res.ok) {
+      // 실패 시 에러 메시지 확인
+      console.error(await res.text());
+      return;
+    }
+    onSuccess(data);
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div>
+        <Label htmlFor="name">이름</Label>
+        <Input id="name" {...register("name", { required: "필수 입력입니다." })} />
+        {errors.name && <p className="text-destructive text-ui-label">{errors.name.message}</p>}
+      </div>
+
+      <div>
+        <Label htmlFor="email">이메일</Label>
+        <Input
+          id="email"
+          {...register("email", {
+            required: "필수 입력입니다.",
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: "유효한 이메일을 입력하세요.",
+            },
+          })}
+        />
+        {errors.email && <p className="text-destructive text-ui-label">{errors.email.message}</p>}
+      </div>
+
+      <div>
+        <Label htmlFor="phone">전화번호</Label>
+        <Input id="phone" {...register("phone", { required: "필수 입력입니다." })} />
+        {errors.phone && <p className="text-destructive text-ui-label">{errors.phone.message}</p>}
+      </div>
+
+      <div>
+        <Label htmlFor="postalCode">우편번호</Label>
+        <div className="flex gap-2">
+          <Input
+            readOnly
+            id="postalCode"
+            {...register("postalCode", { required: "필수 입력입니다." })}
+          />
+          <Button type="button" size="sm" variant={tone === "user" ? "highlight_soft" : "default"} className={tone === "user" ? "min-h-11" : undefined} onClick={handleOpenPostcode}>
+            주소 검색
+          </Button>
+        </div>
+        {errors.postalCode && (
+          <p className="text-destructive text-ui-label">{errors.postalCode.message}</p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="address">기본 주소</Label>
+        <Textarea
+          readOnly
+          id="address"
+          {...register("address", { required: "필수 입력입니다." })}
+          rows={2}
+        />
+        {errors.address && (
+          <p className="text-destructive text-ui-label">{errors.address.message}</p>
+        )}
+      </div>
+      <div>
+        <Label htmlFor="addressDetail">상세주소</Label>
+        <Input id="addressDetail" {...register("addressDetail")} />
+      </div>
+
+      <div className={tone === "user" ? "flex flex-col gap-2 bp-sm:flex-row bp-sm:justify-end" : "flex justify-end space-x-2"}>
+        <Button variant="outline" className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined} type="button" onClick={onCancel} disabled={isSubmitting}>
+          취소
+        </Button>
+        <Button variant={tone === "user" ? "highlight" : "default"} className={tone === "user" ? "min-h-11 w-full bp-sm:w-auto" : undefined} type="submit" disabled={isSubmitting}>
+          저장
+        </Button>
+      </div>
+    </form>
+  );
+}

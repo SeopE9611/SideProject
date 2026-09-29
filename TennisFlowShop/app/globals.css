@@ -1,0 +1,425 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "GmarketSans";
+  src: url("/fonts/GmarketSansTTFLight.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GmarketSans";
+  src: url("/fonts/GmarketSansTTFMedium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GmarketSans";
+  src: url("/fonts/GmarketSansTTFBold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 데스크탑에서 스크롤바 유무와 관계없이 '항상 같은 폭'을 유지 (레이아웃 shift 제거) */
+html {
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* 구형 브라우저/특정 환경 안전장치: 항상 스크롤바 레인을 잡아둠 */
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
+}
+
+/*
+ * 루트 스크롤 정책
+ *
+ * - 실제 문서 스크롤은 html이 담당한다.
+ * - body에 overflow:auto 또는 overflow:hidden이 적용되면
+ *   body가 position:sticky의 기준 조상으로 인식될 수 있다.
+ * - 이 프로젝트에서는 body를 스크롤 컨테이너로 사용하지 않는다.
+ * - 외부 결제 SDK나 Radix가 body의 overflow/position을 변경하더라도
+ *   body는 일반 문서 흐름을 유지한다.
+ */
+html body {
+  overflow: visible !important;
+  position: static !important;
+}
+
+/* 스크롤 잠금은 body가 아니라 html에서만 수행한다. */
+html[data-scroll-locked] {
+  overflow: hidden;
+}
+
+/* Radix가 추가하는 스크롤바 폭 보정만 제거한다. */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+html.admin-desktop-console {
+  min-width: 1280px;
+  overflow-x: auto !important;
+}
+
+html.admin-desktop-console body {
+  min-width: 1280px;
+}
+
+.admin-narrow-viewport-notice {
+  display: none;
+}
+
+@media (max-width: 1279px) {
+  .admin-narrow-viewport-notice {
+    display: block;
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    z-index: 20;
+  }
+}
+
+/* 라이트 모드용 CSS 변수 정의 (Premium Monotone) */
+:root {
+  /* Page base */
+  --background: 40 14% 98%;
+  --foreground: 0 0% 10%;
+
+  /* Surface (card/panel) */
+  --surface: 0 0% 100%;
+  --surface-foreground: 0 0% 10%;
+  --card: 40 10% 99%;
+  --card-foreground: 0 0% 10%;
+
+  --popover: 40 10% 99%;
+  --popover-foreground: 0 0% 10%;
+
+  /* Primary action (CTA / main interaction) */
+  --primary: 220 7% 30%;
+  --primary-foreground: 0 0% 98%;
+
+  /* Secondary emphasis */
+  --accent: 220 6% 26%;
+  --accent-foreground: 0 0% 98%;
+  --accent-hover: 220 7% 24%;
+  --accent-active: 220 8% 20%;
+
+  /* System feedback (toast/badge/banner) */
+  --info: 213 86% 43%;
+  --info-foreground: 210 40% 98%;
+  --success: 146 62% 36%;
+  --success-foreground: 120 100% 99%;
+  --warning: 38 92% 46%;
+  --warning-foreground: 32 100% 15%;
+  --secondary: 40 8% 95%;
+  --secondary-foreground: 0 0% 16%;
+
+  --muted: 40 6% 96%;
+  --muted-foreground: 0 0% 42%;
+  --brand-text: 0 0% 10%;
+
+  /* Dokkaebi Design System V2 brand emphasis */
+  --brand-highlight: 78 72% 47%;
+  --brand-highlight-foreground: 120 10% 8%;
+  --brand-highlight-muted: 78 34% 91%;
+  --brand-highlight-ink: 80 50% 28%;
+  --surface-inverse: 132 12% 7%;
+  --surface-inverse-foreground: 45 35% 96%;
+  --surface-inverse-muted: 42 8% 68%;
+  --identity-admin: 214 65% 48%;
+  --identity-admin-muted: 214 45% 92%;
+  --identity-admin-foreground: 215 55% 30%;
+  --identity-kakao: 45 70% 48%;
+  --identity-kakao-muted: 46 55% 90%;
+  --identity-kakao-foreground: 40 60% 24%;
+  --identity-naver: 145 52% 40%;
+  --identity-naver-muted: 145 34% 90%;
+  --identity-naver-foreground: 145 48% 25%;
+  --outline-text: 120 10% 8%;
+  --shadow-soft: 0 20px 60px hsl(120 10% 8% / 0.1);
+  --shadow-float: 0 16px 40px hsl(120 10% 8% / 0.14);
+
+  --border: 40 6% 88%;
+  --input: 40 6% 88%;
+  --ring: 220 7% 38%;
+  --overlay: 0 0% 6%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+
+  /* 패키지 페이지를 위한 추가 디자인 토큰 */
+  --chart-1: 0 0% 10%;
+  --chart-2: 0 0% 28%;
+  --chart-3: 0 0% 45%;
+  --chart-4: 35 8% 58%;
+  --chart-5: 220 6% 42%;
+  --radius: 0.5rem;
+
+  --sidebar: 40 12% 98%;
+  --sidebar-foreground: 0 0% 10%;
+  --sidebar-primary: 0 0% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 40 8% 95%;
+  --sidebar-accent-foreground: 0 0% 12%;
+  --sidebar-border: 40 6% 88%;
+  --sidebar-ring: 0 0% 18%;
+}
+
+/* 다크 모드용 CSS 변수 정의 (Premium Monotone) */
+.dark {
+  /* Page base */
+  --background: 240 4% 7%;
+  --foreground: 0 0% 96%;
+
+  /* Surface (card/panel) */
+  --surface: 240 3% 10%;
+  --surface-foreground: 0 0% 96%;
+  --card: 240 3% 10%;
+  --card-foreground: 0 0% 96%;
+
+  --popover: 240 3% 10%;
+  --popover-foreground: 0 0% 96%;
+
+  /* Primary action (CTA / main interaction) */
+  --primary: 220 7% 72%;
+  --primary-foreground: 220 10% 12%;
+
+  /* Secondary emphasis */
+  --accent: 220 7% 68%;
+  --accent-foreground: 220 10% 12%;
+  --accent-hover: 220 8% 76%;
+  --accent-active: 220 8% 82%;
+
+  /* System feedback (toast/badge/banner) */
+  --info: 210 90% 66%;
+  --info-foreground: 222 47% 11%;
+  --success: 146 58% 52%;
+  --success-foreground: 120 100% 99%;
+  --warning: 40 94% 54%;
+  --warning-foreground: 30 90% 8%;
+  --secondary: 240 3% 15%;
+  --secondary-foreground: 0 0% 94%;
+
+  --muted: 240 3% 17%;
+  --muted-foreground: 0 0% 70%;
+  --brand-text: 0 0% 96%;
+
+  /* Dokkaebi Design System V2 brand emphasis */
+  --brand-highlight: 78 82% 50%;
+  --brand-highlight-foreground: 120 10% 7%;
+  --brand-highlight-muted: 78 44% 18%;
+  --brand-highlight-ink: 78 82% 56%;
+  --surface-inverse: 132 12% 5%;
+  --surface-inverse-foreground: 45 35% 96%;
+  --surface-inverse-muted: 42 8% 72%;
+  --identity-admin: 214 72% 68%;
+  --identity-admin-muted: 214 30% 22%;
+  --identity-admin-foreground: 214 80% 82%;
+  --identity-kakao: 45 80% 64%;
+  --identity-kakao-muted: 45 30% 20%;
+  --identity-kakao-foreground: 45 85% 78%;
+  --identity-naver: 145 60% 60%;
+  --identity-naver-muted: 145 28% 18%;
+  --identity-naver-foreground: 145 68% 74%;
+  --outline-text: 45 35% 96%;
+  --shadow-soft: 0 20px 60px hsl(0 0% 0% / 0.28);
+  --shadow-float: 0 16px 40px hsl(0 0% 0% / 0.34);
+
+  --border: 240 3% 24%;
+  --input: 240 3% 24%;
+  --ring: 220 7% 70%;
+  --overlay: 0 0% 4%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+
+  --chart-1: 0 0% 96%;
+  --chart-2: 0 0% 78%;
+  --chart-3: 0 0% 62%;
+  --chart-4: 35 8% 70%;
+  --chart-5: 220 6% 64%;
+
+  --sidebar: 240 4% 9%;
+  --sidebar-foreground: 0 0% 94%;
+  --sidebar-primary: 0 0% 96%;
+  --sidebar-primary-foreground: 0 0% 10%;
+  --sidebar-accent: 240 3% 15%;
+  --sidebar-accent-foreground: 0 0% 94%;
+  --sidebar-border: 240 3% 22%;
+  --sidebar-ring: 0 0% 80%;
+}
+
+/* 전역 기본 스타일 */
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  font-family:
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  word-break: keep-all; /* CSS의 word-break: keep-all을 적용 */
+  overflow-wrap: break-word; /* (URL 등 긴 단어 넘침 방지) */
+  @apply bg-background text-foreground transition-colors duration-300;
+}
+
+.font-brand {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+}
+
+.font-brand-light {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 300;
+}
+
+.font-brand-medium {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 500;
+}
+
+.font-brand-display {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-synthesis: none;
+}
+
+.font-brand-heading {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 700;
+  font-synthesis: none;
+}
+
+.text-brand-outline {
+  color: hsl(var(--outline-text));
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke-width: clamp(1px, 0.025em, 2px);
+  -webkit-text-stroke-color: hsl(var(--outline-text));
+  paint-order: stroke fill;
+}
+
+@supports not (-webkit-text-stroke: 1px currentColor) {
+  .text-brand-outline {
+    -webkit-text-fill-color: currentColor;
+    text-shadow: 0 0 0 hsl(var(--outline-text));
+  }
+}
+
+.font-brand-bold {
+  font-family:
+    "GmarketSans",
+    "Spoqa Han Sans Neo",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+  font-weight: 700;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hidden {
+  -ms-overflow-style: none; /* IE, Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* === utilities: scrollbar hidden === */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Shimmer 애니메이션 */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.2s infinite;
+}
+.bg-cross-line-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='hsl(var(--foreground))' fill-opacity='0.1'%3E%3Cpath d='M0 30h60v2H0zM28 0v60h2V0z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 60px 60px;
+}

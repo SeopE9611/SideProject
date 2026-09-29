@@ -1,0 +1,38 @@
+{
+  "items": [
+    {
+      "_id": "r1",
+      "content": "foo",
+      "rating": 5,
+      "status": "visible",
+      "photos": ["/img/1.jpg"],
+      "createdAt": "2025-01-10T09:00:00.000Z",
+      "updatedAt": "2025-01-10T09:10:00.000Z",
+      "product": { "_id": "p1", "name": "라켓 A" },
+      "user": { "_id": "u1", "name": "홍길동", "email": "a@a.com" }
+    },
+    {
+      "_id": "r2",
+      "content": "bar",
+      "rating": 4,
+      "status": "hidden",
+      "photos": [],
+      "createdAt": "2025-01-11T10:00:00.000Z",
+      "updatedAt": "2025-01-11T10:05:00.000Z",
+      "product": { "_id": "p2", "name": "라켓 B" },
+      "user": { "_id": "u2", "name": "김철수", "email": "b@b.com" }
+    },
+    {
+      "_id": "r3",
+      "content": "baz",
+      "rating": 3,
+      "status": "visible",
+      "photos": [],
+      "createdAt": "2025-01-12T11:00:00.000Z",
+      "updatedAt": "2025-01-12T11:20:00.000Z",
+      "product": { "_id": "p3", "name": "라켓 C" },
+      "user": { "_id": "u3", "name": "이영희", "email": "c@c.com" }
+    }
+  ],
+  "pageInfo": { "hasNext": false }
+}

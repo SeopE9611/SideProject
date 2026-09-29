@@ -1,0 +1,206 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+/*
+ * Zustand 기반 전역 장바구니 상태관리 store
+ * - items: 장바구니에 담긴 상품 목록
+ * - addItem: 상품 추가 or 수량 증가
+ * - removeItem: 상품 제거
+ * - updateQuantity: 상품 수량 수정
+ * - clearCart: 전체 초기화
+ */
+
+// 타입 정의
+// 장바구니에 담긴 각각의 상품 정보를 나타내는 타입
+export type CartItem = {
+  id: string;
+  name: string;
+  price: number;
+  regularPrice?: number;
+  salePrice?: number;
+  discountRate?: number;
+  discountAmount?: number;
+  quantity: number;
+  image?: string; // 이미지는 선택적 속성
+  stock?: number; // 재고 정보
+  kind?: "product" | "racket"; // 아이템 종류 (기본: product)
+  selectedGauge?: string;
+  selectedColor?: string;
+  selectedColorLabel?: string;
+  selectedColorHex?: string;
+  selectedColorImage?: string;
+};
+
+// 최신 재고 동기화 타입
+export type CartStockSnapshot = Pick<
+  CartItem,
+  "id" | "kind" | "selectedGauge" | "selectedColor"
+> & {
+  stock: number;
+};
+
+// 타입 정의
+// 주스탄드로 생성할 스토어의 전체 구조를 정의한 타입
+// 배열 상태 items + 4개의 조작 함수 (추가, 제거, 수량수정, 전체삭제)
+interface CartState {
+  items: CartItem[]; // 장바구니에 담긴 상품 목록
+  addItem: (item: CartItem) => { success: boolean; message?: string };
+  removeItem: (id: string, selectedGauge?: string, selectedColor?: string) => void; // 장바구니에서 상품 제거
+  updateQuantity: (
+    id: string,
+    quantity: number,
+    selectedGauge?: string,
+    selectedColor?: string,
+  ) => void; // 장바구니 상품 수량 수정
+  syncStockSnapshots: (snapshots: CartStockSnapshot[]) => void;
+  clearCart: () => void; // 장바구니 전체 삭제
+}
+
+// --- 재고(가용 수량) 해석/클램프 유틸 ---
+const getMaxStock = (stock?: number) =>
+  typeof stock === "number" && Number.isFinite(stock) ? stock : Number.POSITIVE_INFINITY;
+
+const clampQuantity = (qty: number, maxStock: number) => {
+  const next = Math.max(0, qty);
+  if (!Number.isFinite(maxStock)) return Math.max(1, next);
+  if (maxStock <= 0) return 0;
+  return Math.min(Math.max(1, next), maxStock);
+};
+
+const isSameCartLine = (
+  a: Pick<CartItem, "id" | "kind" | "selectedGauge" | "selectedColor">,
+  b: Pick<CartItem, "id" | "kind" | "selectedGauge" | "selectedColor">,
+) =>
+  a.id === b.id &&
+  (a.kind ?? "product") === (b.kind ?? "product") &&
+  (a.selectedGauge ?? "") === (b.selectedGauge ?? "") &&
+  (a.selectedColor ?? "") === (b.selectedColor ?? "");
+
+// 실제 스토어 생성
+// create<CartState>(...)는 주스탄드에서 제공하는 함수로, CartState 타입을 기반으로 상태를 만듬
+// set은 상태를 업데이트 할 수 있게 해주는 내부 함수
+export const useCartStore = create<CartState>()(
+  persist(
+    (set, get) => ({
+      items: [],
+
+      addItem: (item) => {
+        const exists = get().items.find((i) => isSameCartLine(i, item));
+        if (exists) {
+          const maxStock = getMaxStock(exists.stock);
+          const nextQty = clampQuantity(exists.quantity + item.quantity, maxStock);
+          if (nextQty === exists.quantity) {
+            return { success: false, message: "재고 한도까지 담겨 있습니다." };
+          }
+          set((state) => ({
+            items: state.items.map((i) =>
+              isSameCartLine(i, item) ? { ...i, quantity: nextQty } : i,
+            ),
+          }));
+          return { success: true };
+        }
+
+        // 재고(가용 수량) 상한 적용
+        const maxStock = getMaxStock(item.stock);
+        const nextQty = clampQuantity(item.quantity, maxStock);
+
+        if (nextQty === 0) {
+          return {
+            success: false,
+            message: "현재 재고가 없어 장바구니에 담을 수 없습니다.",
+          };
+        }
+
+        const safeItem = { ...item, quantity: nextQty };
+
+        set((state) => ({
+          items: [...state.items, safeItem],
+        }));
+        return { success: true };
+      },
+
+      // 특정 상품을 장바구니에서 제거
+      // id가 일치하지 않는 상품만 남기고 나머지는 제거 (즉 해당 상품 삭제)
+      removeItem: (id: string, selectedGauge?: string, selectedColor?: string) =>
+        set((state) => ({
+          items: state.items.filter(
+            (i) =>
+              !isSameCartLine(i, {
+                id,
+                kind: i.kind,
+                selectedGauge,
+                selectedColor,
+              }),
+          ),
+        })),
+
+      // 수량 변경 (ex: +/- 버튼 클릭시)
+      // 해당 상품의 수량을 새 값으로 바꿔줌
+      updateQuantity: (
+        id: string,
+        quantity: number,
+        selectedGauge?: string,
+        selectedColor?: string,
+      ) =>
+        set((state) => ({
+          // 상태를 업데이트
+          items: state.items
+            .map((i) => {
+              if (
+                !isSameCartLine(i, {
+                  id,
+                  kind: i.kind,
+                  selectedGauge,
+                  selectedColor,
+                })
+              )
+                return i;
+
+              const maxStock = getMaxStock(i.stock);
+              const nextQty = clampQuantity(quantity, maxStock);
+
+              return { ...i, quantity: nextQty };
+            })
+            .filter((i) => i.quantity > 0), // 0이 된 경우(재고 0 등) 방어적으로 제거
+        })),
+
+      syncStockSnapshots: (snapshots) => {
+        const currentItems = get().items;
+        let changed = false;
+
+        const nextItems = currentItems.map((item) => {
+          const snapshot = snapshots.find((candidate) => isSameCartLine(item, candidate));
+
+          if (!snapshot) return item;
+
+          const nextStock =
+            typeof snapshot.stock === "number" && Number.isFinite(snapshot.stock)
+              ? Math.max(0, snapshot.stock)
+              : 0;
+
+          if (item.stock === nextStock) {
+            return item;
+          }
+
+          changed = true;
+
+          return {
+            ...item,
+            stock: nextStock,
+          };
+        });
+
+        if (changed) {
+          set({ items: nextItems });
+        }
+      },
+
+      // 장바구니 비우기 버튼을 누르면 호출
+      // items 배열을 빈 배열로 초기화
+      clearCart: () => set({ items: [] }), // 장바구니 전체 삭제 (빈 배열로 초기화)
+    }),
+    {
+      name: "cart-storage", // localStorage key 이름
+    },
+  ),
+);

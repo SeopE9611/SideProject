@@ -1,0 +1,138 @@
+import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { deductPoints, getPointsBalance, grantPoints } from "@/lib/points.service";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { createUserNotification } from "@/lib/notifications/user-notification.service";
+
+type AdminRef = {
+  adminId: ObjectId;
+};
+
+/**
+ * body: { userId: string, amount: number, reason?: string, refKey?: string }
+ *
+ * amount > 0  => 지급(+)
+ * amount < 0  => 차감(-)  (기본: 잔액 부족이면 실패)
+ */
+export async function POST(req: Request) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
+  const { db } = guard;
+
+  const body = await req.json().catch(() => ({}) as any);
+  // ObjectId 입력에 공백이 섞이면 isValid가 실패할 수 있어 trim으로 정규화
+  const userId = String(body?.userId ?? "").trim();
+  const amountRaw = Number(body?.amount);
+  const reason = typeof body?.reason === "string" ? body.reason.trim() : "";
+  const refKey = typeof body?.refKey === "string" ? body.refKey.trim() : "";
+
+  // 1) 기본 검증
+  if (!ObjectId.isValid(userId)) {
+    return NextResponse.json({ ok: false, error: "INVALID_USER_ID" }, { status: 400 });
+  }
+  // 포인트는 정수 단위만 허용(소수/NaN 방지)
+  if (!Number.isFinite(amountRaw) || amountRaw === 0 || !Number.isInteger(amountRaw)) {
+    return NextResponse.json({ ok: false, error: "INVALID_AMOUNT" }, { status: 400 });
+  }
+
+  const targetUserId = new ObjectId(userId);
+  const amount = Math.trunc(amountRaw);
+
+  // requireAdmin이 보장하는 관리자 식별자(guard.admin._id)를 원장 ref에 고정 기록.
+  // - any 캐스팅 + user 필드 우회 참조를 제거해 런타임 누락 가능성을 차단
+  // - ref.adminId 타입을 ObjectId로 강제해 지급/차감 파라미터의 타입 안정성을 유지
+  const adminRef: AdminRef = { adminId: guard.admin._id };
+
+  try {
+    // 2) 지급/차감 분기 (원장 + users.pointsBalance 캐시 동시 갱신)
+    let transactionId: string | null = null;
+    if (amount > 0) {
+      const pointResult = await grantPoints(db, {
+        userId: targetUserId,
+        amount,
+        type: "admin_adjust",
+        ...(refKey ? { refKey } : {}),
+        ...(reason ? { reason } : {}),
+        ref: adminRef,
+      });
+      transactionId = pointResult.transactionId;
+    } else {
+      const pointResult = await deductPoints(db, {
+        userId: targetUserId,
+        amount: Math.abs(amount),
+        type: "admin_adjust",
+        ...(refKey ? { refKey } : {}),
+        ...(reason ? { reason } : {}),
+        ref: adminRef,
+        // 기본 정책: 마이너스 잔액 금지 (필요하면 true로 열어도 됨)
+        allowNegativeBalance: false,
+      });
+      transactionId = pointResult.transactionId;
+    }
+
+    try {
+      await createUserNotification(db, {
+        userId: targetUserId,
+        type: amount > 0 ? "point_granted" : "point_deducted",
+        title: amount > 0 ? "포인트가 지급되었습니다." : "포인트가 차감되었습니다.",
+        body:
+          amount > 0
+            ? `${amount.toLocaleString()}P가 지급되었습니다.`
+            : `${Math.abs(amount).toLocaleString()}P가 차감되었습니다.`,
+        href: "/mypage?tab=points",
+        source: {
+          collection: "points_transactions",
+          id: transactionId ?? undefined,
+          kind: "admin_adjust",
+        },
+        ...(transactionId ? { dedupeKey: `point:${transactionId}` } : {}),
+      });
+    } catch (error) {
+      console.error("[admin points adjust] create user notification failed", error);
+    }
+
+    // 3) 조정 후 잔액 반환
+    const balance = await getPointsBalance(db, targetUserId);
+
+    // 4) 감사로그 기록(실패 분리: appendAdminAudit 내부에서 실패 시 재시도 큐로 전환)
+    await appendAdminAudit(
+      db,
+      {
+        type: "admin.points.adjust",
+        actorId: guard.admin._id,
+        targetId: targetUserId,
+        message: amount > 0 ? "관리자 포인트 지급" : "관리자 포인트 차감",
+        diff: {
+          delta: amount,
+          balance,
+          reason: reason || null,
+          refKey: refKey || null,
+        },
+      },
+      req,
+    );
+
+    return NextResponse.json(
+      { ok: true, userId, delta: amount, balance },
+      { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } },
+    );
+  } catch (err: any) {
+    // points.service.ts에서 던지는 코드 기반으로 분기
+    const code = err?.code || err?.message;
+
+    if (code === "INSUFFICIENT_POINTS") {
+      return NextResponse.json({ ok: false, error: "INSUFFICIENT_POINTS" }, { status: 400 });
+    }
+    if (code === "USER_NOT_FOUND") {
+      return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
+    }
+
+    // refKey 멱등(중복) 케이스를 “성공(이미 반영됨)”으로 처리하고 싶으면 여기서 E11000 처리 추가 가능
+    console.error("[admin points adjust] failed", err);
+    return NextResponse.json({ ok: false, error: "INTERNAL_ERROR" }, { status: 500 });
+  }
+}

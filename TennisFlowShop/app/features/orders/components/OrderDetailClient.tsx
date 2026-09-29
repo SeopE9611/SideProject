@@ -1,0 +1,2709 @@
+"use client";
+
+import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
+import OrderHistory from "@/app/features/orders/components/OrderHistory";
+import OrderStatusSelect from "@/app/features/orders/components/OrderStatusSelect";
+import PaymentEditForm from "@/app/features/orders/components/PaymentEditForm";
+import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodDetail";
+import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
+import AdminCompactField from "@/components/admin/AdminCompactField";
+import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
+import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
+import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
+import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { PortfolioDemoDataBadge } from "@/components/admin/PortfolioDemoDataBadge";
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import AdminStatusCard from "@/components/admin/AdminStatusCard";
+import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
+import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
+import AsyncState from "@/components/system/AsyncState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { AdminSemanticBadge as Badge } from "@/components/admin/AdminSemanticBadge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  isApplicationClosedForLinkedAutomation,
+  isOrderBlockedForLinkedAutomation,
+} from "@/lib/admin/linked-flow-stage";
+import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
+import { getAdminOrderPaymentState } from "@/lib/admin/order-payment-display";
+import {
+  badgeBase,
+  badgeSizeSm,
+  getOrderStatusBadgeSpec,
+  getPaymentStatusBadgeSpec,
+  getShippingMethodBadge,
+} from "@/lib/badge-style";
+import {
+  buildAdminCancelRequestView,
+  normalizeAdminCancelRequestStatus,
+} from "@/lib/cancel-request/admin-cancel-request-view";
+import { stringColorLabel } from "@/lib/constants";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import {
+  trackingSWRFetcher,
+  type TrackingSWRFetcherError,
+} from "@/lib/fetchers/trackingSWRFetcher";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
+import { formatKoreanPhone } from "@/lib/phone";
+import {
+  canEnterShippingPhase,
+  getOrderDeliveryInfoTitle,
+  getOrderStatusLabelForDisplay,
+  isVisitPickupOrder,
+  orderShippingMethodLabel,
+  shouldShowDeliveryOnlyFields,
+} from "@/lib/order-shipping";
+import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
+import {
+  getAdminCancelPolicyMessage,
+  isAdminCancelableOrderStatus,
+  isAdminForceCancelRequired,
+} from "@/lib/orders/cancel-refund-policy";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
+import { getCourierDisplayName } from "@/lib/shipping/courier-map";
+import { getCommonApplicationStatusLabel } from "@/lib/status-labels/base";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import {
+  ArrowLeft,
+  Calendar,
+  Copy,
+  CreditCard,
+  Edit3,
+  LinkIcon,
+  Package,
+  Pencil,
+  Settings,
+  ShoppingCart,
+  Truck,
+  User,
+} from "lucide-react";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import useSWRInfinite from "swr/infinite";
+
+const AdminCancelOrderDialog = dynamic(
+  () => import("@/app/features/orders/components/AdminCancelOrderDialog"),
+  { loading: () => null },
+);
+
+// useSWRInfinite용 getKey (처리 이력)
+const LIMIT = 5; // 페이지 당 이력 개수
+const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) => {
+  // orderId가 없으면 요청 중단
+  if (!orderId) return null;
+  if (prev && prev.history.length === 0) return null;
+  return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+};
+
+// 타입 정의 (서버에서 내려받는 주문 정보 형태)
+interface OrderDetail {
+  portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
+  _id: string;
+  stringingApplicationId?: string;
+  isStringServiceApplied?: boolean;
+  status: string;
+  date: string;
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    addressDetail: string;
+    postalCode?: string;
+  };
+  shippingInfo: {
+    shippingMethod: string;
+    estimatedDate: string;
+    invoice?: {
+      courier: string;
+      trackingNumber: string;
+    };
+    deliveryRequest?: string;
+    depositor?: string;
+    withStringService?: boolean;
+  };
+  paymentStatus: string;
+  paymentMethod: string;
+  paymentBank?: string;
+  paymentProvider?: string | null;
+  paymentEasyPayProvider?: string | null;
+  paymentApprovedAt?: string | null;
+  paymentTid?: string | null;
+  paymentCardDisplayName?: string | null;
+  paymentCardCompany?: string | null;
+  paymentCardLabel?: string | null;
+  paymentNiceSync?: {
+    lastSyncedAt?: string | null;
+    pgStatus?: string | null;
+    source?: string | null;
+    resultCode?: string | null;
+    resultMsg?: string | null;
+    cancelAmount?: number | null;
+    manualActionRequired?: boolean | null;
+    manualActionReason?: string | null;
+  } | null;
+  paymentInfo?: {
+    status?: string | null;
+    shippingFee?: number | null;
+    serviceFee?: number | null;
+    pointsUsed?: number | null;
+    niceSync?: {
+      pgStatus?: string | null;
+      resultCode?: string | null;
+      resultMsg?: string | null;
+      cancelAmount?: number | null;
+      manualActionRequired?: boolean | null;
+      manualActionReason?: string | null;
+    } | null;
+  } | null;
+  total: number;
+  originalTotalPrice?: number | null;
+  shippingFee?: number | null;
+  serviceFee?: number | null;
+  pointsUsed?: number | null;
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: number;
+    imageUrl?: string | null;
+    mountingFee?: number | null;
+    isMountableString?: boolean;
+    selectedStringName?: string | null;
+    stringPrice?: number | null;
+    selectedGauge?: string;
+    selectedColor?: string;
+    selectedColorLabel?: string;
+    selectedColorHex?: string;
+    stockDeduction?: {
+      mode?: string;
+      colorValue?: string | null;
+      gaugeValue?: string | null;
+    } | null;
+  }>;
+  history: Array<any>; // initialData용 (하지만 useSWRInfinite로 실제 이력 사용)
+  cancelReason?: string;
+  cancelReasonDetail?: string;
+  stringService?: {
+    hasStringService: boolean; // 이 주문에 스트링 서비스(패키지/신청 연결)가 있는지
+    totalSlots?: number | null; // 패키지 전체 횟수
+    usedSlots?: number | null; // 지금까지 사용한 횟수
+    remainingSlots?: number | null; // 남은 횟수
+    passTitle?: string | null; // (있다면) 패키지 이름
+    note?: string | null; // (선택) 설명/메모용
+  } | null;
+  // 이 주문과 연결된 모든 스트링 신청서 요약 리스트
+  latestActiveLinkedApplication?: {
+    id: string;
+    status: string;
+    cancelRequestStatus?: string | null;
+    needsInboundTracking?: boolean;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    receptionLabel?: string | null;
+    tensionSummary?: string | null;
+    stringNames?: string[];
+    totalPrice?: number | null;
+    requirements?: string | null;
+    lines?: Array<{
+      id?: string | null;
+      racketType?: string | null;
+      racketLabel?: string | null;
+      stringName?: string | null;
+      gauge?: string | null;
+      color?: string | null;
+      colorLabel?: string | null;
+      tensionMain?: string | null;
+      tensionCross?: string | null;
+      note?: string | null;
+    }>;
+    packageInfo?: {
+      applied: boolean;
+      useCount: number;
+      passId?: string | null;
+      passTitle?: string | null;
+      packageSize?: number | null;
+      usedCount?: number | null;
+      remainingCount?: number | null;
+      expiresAt?: string | null;
+      redeemedAt?: string | null;
+    } | null;
+    reservationLabel?: string | null;
+    racketCount?: number;
+    shippingInfo?: {
+      selfShip?: {
+        courier?: string | null;
+        trackingNo?: string | null;
+        shippedAt?: string | null;
+      } | null;
+    } | null;
+  } | null;
+  stringingApplications?: {
+    id: string;
+    status: string;
+    cancelRequestStatus?: string | null;
+    needsInboundTracking?: boolean;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    receptionLabel?: string | null;
+    tensionSummary?: string | null;
+    stringNames?: string[];
+    totalPrice?: number | null;
+    requirements?: string | null;
+    lines?: Array<{
+      id?: string | null;
+      racketType?: string | null;
+      racketLabel?: string | null;
+      stringName?: string | null;
+      gauge?: string | null;
+      color?: string | null;
+      colorLabel?: string | null;
+      tensionMain?: string | null;
+      tensionCross?: string | null;
+      note?: string | null;
+    }>;
+    packageInfo?: {
+      applied: boolean;
+      useCount: number;
+      passId?: string | null;
+      passTitle?: string | null;
+      packageSize?: number | null;
+      usedCount?: number | null;
+      remainingCount?: number | null;
+      expiresAt?: string | null;
+      redeemedAt?: string | null;
+    } | null;
+    reservationLabel?: string | null;
+    racketCount?: number;
+    shippingInfo?: {
+      selfShip?: {
+        courier?: string | null;
+        trackingNo?: string | null;
+        shippedAt?: string | null;
+      } | null;
+    } | null;
+  }[];
+  stockDeduction?: {
+    mode?: string;
+    colorValue?: string | null;
+    gaugeValue?: string | null;
+  } | null;
+  stockRestore?: {
+    variantStockRestoredAt?: string | null;
+    variantStockRestoreReason?: string | null;
+  } | null;
+}
+type AdminNextActionTone = "urgent" | "warning" | "info" | "success";
+type AdminNextActionGuide = {
+  tone: AdminNextActionTone;
+  title: string;
+  description: string;
+  actionLabel?: string;
+  actionHref?: string;
+};
+
+type OrderTrackingResponse =
+  | {
+      success: true;
+      supported: true;
+      displayStatus: string;
+      linkUrl: string;
+      lastEvent: {
+        time: string | null;
+        statusText: string | null;
+        locationName: string | null;
+        description: string | null;
+      } | null;
+      progresses: Array<{
+        time: string | null;
+        statusText: string | null;
+        locationName: string | null;
+        description: string | null;
+      }>;
+    }
+  | {
+      success: true;
+      supported: false;
+      reason: "unsupported_courier";
+      message: string;
+    }
+  | {
+      success: false;
+      errorCode?:
+        | "NOT_FOUND"
+        | "BAD_REQUEST"
+        | "UNAUTHENTICATED"
+        | "FORBIDDEN"
+        | "INTERNAL"
+        | "UNKNOWN";
+      message: string;
+    };
+
+const getTrackingFailureMessage = (
+  tracking: Extract<OrderTrackingResponse, { success: false }>,
+) => {
+  if (tracking.errorCode === "UNAUTHENTICATED" || tracking.errorCode === "FORBIDDEN") {
+    return "배송조회 서비스 설정을 확인해주세요.";
+  }
+  if (tracking.errorCode === "BAD_REQUEST") {
+    return "운송장 번호 형식이 올바르지 않습니다.";
+  }
+  return tracking.message || "배송조회 정보를 불러오지 못했습니다.";
+};
+
+const getTrackingErrorMessage = (
+  trackingData: OrderTrackingResponse | undefined,
+  trackingError: unknown,
+) => {
+  if (trackingData && !trackingData.success && trackingData.message) {
+    return trackingData.message;
+  }
+
+  const message = (trackingError as TrackingSWRFetcherError | undefined)?.message;
+  return message || "배송조회 정보를 불러오지 못했습니다.";
+};
+
+// 메인 컴포넌트
+interface Props {
+  orderId: string;
+  readOnly?: boolean;
+}
+
+type CancelRequestConfirmAction = "approveCancel" | "rejectCancel";
+
+async function parseCancelApproveError(res: Response): Promise<string> {
+  const text = await res.text().catch(() => "");
+  if (!text) return "취소 승인 실패";
+
+  try {
+    const json = JSON.parse(text);
+    if (json?.errorCode === "NICE_UNSETTLED_AMOUNT_SHORTAGE") {
+      return "NICE 미정산금액 부족으로 자동 카드취소가 불가합니다. 입금 후 취소 절차를 진행해 주세요.";
+    }
+    return json?.message || json?.error || text;
+  } catch {
+    return text;
+  }
+}
+
+export default function OrderDetailClient({ orderId, readOnly = false }: Props) {
+  const router = useRouter();
+  const { mutate: mutateGlobal } = useSWRConfig();
+
+  // 편집 모드
+  const [isEditMode, setIsEditMode] = useState(false);
+  // 카드별 편집 토글
+  const [editingCustomer, setEditingCustomer] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(false);
+  const [editingItems, setEditingItems] = useState(false);
+  const [editingRequest, setEditingRequest] = useState(false);
+  const [isSyncingNice, setIsSyncingNice] = useState(false);
+
+  // 주문 전체 데이터를 SWR로 가져옴
+  const {
+    data: orderDetail,
+    error: orderError,
+    isLoading: isOrderLoading,
+    mutate: mutateOrder,
+  } = useSWR<OrderDetail>(orderId ? `/api/orders/${orderId}` : null, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+  // 처리 이력 데이터를 SWRInfinite로 가져옴. (키: `/api/orders/${orderId}/history?…`)
+  const {
+    data: historyPages,
+    error: historyError,
+    mutate: mutateHistory,
+  } = useSWRInfinite(getOrderHistoryKey(orderId), authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+  const canTrackDelivery =
+    !isVisitPickupOrder(orderDetail?.shippingInfo) &&
+    Boolean(orderDetail?.shippingInfo?.invoice?.trackingNumber);
+  const {
+    data: trackingData,
+    error: trackingError,
+    isLoading: isTrackingLoading,
+  } = useSWR<OrderTrackingResponse>(
+    canTrackDelivery ? `/api/orders/${orderId}/tracking` : null,
+    trackingSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+
+  // local 상태를 두어 "옵티미스틱 업데이트"가 가능하게 적용
+  // 서버에서 받아온 orderDetail.status가 바뀌면 자동 동기화
+  const [localStatus, setLocalStatus] = useState<string>(orderDetail?.status || "대기중");
+
+  const [isProcessingCancelRequest, setIsProcessingCancelRequest] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<CancelRequestConfirmAction | null>(null);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [rejectMemo, setRejectMemo] = useState("");
+
+  useEffect(() => {
+    if (orderDetail && orderDetail.status !== localStatus) {
+      setLocalStatus(orderDetail.status);
+    }
+  }, [orderDetail]);
+
+  const handleNiceSync = async () => {
+    if (readOnly || !orderDetail || isSyncingNice) return;
+    setIsSyncingNice(true);
+    try {
+      const res = await fetch(`/api/payments/nice/sync/${orderDetail._id}`, {
+        method: "POST",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error || "PG 상태 재동기화에 실패했습니다.");
+      }
+      await mutateOrder();
+      await mutateGlobal(
+        (key) =>
+          typeof key === "string" &&
+          (key.startsWith("/api/orders") || key.startsWith("/api/admin/operations")),
+      );
+      showSuccessToast("PG 결제 상태를 확인했습니다.");
+    } catch (error: any) {
+      showErrorToast(error?.message || "PG 상태 재동기화 중 오류가 발생했습니다.");
+    } finally {
+      setIsSyncingNice(false);
+    }
+  };
+
+  // 로딩/에러 처리
+  if (orderError) {
+    return (
+      <AsyncState
+        kind="error"
+        tone="admin"
+        variant="page-center"
+        resourceName="주문 상세"
+        onAction={() => {
+          void mutateOrder();
+        }}
+      />
+    );
+  }
+  if (!orderDetail) {
+    if (isOrderLoading) {
+      return (
+        <AdminPageShell className="space-y-6 py-8">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-9 w-48" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-24" />
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-24 rounded-xl" />
+            ))}
+          </div>
+          <div className="grid grid-cols-[1.4fr_1fr] gap-6">
+            <Skeleton className="h-[460px] rounded-xl" />
+            <Skeleton className="h-[460px] rounded-xl" />
+          </div>
+        </AdminPageShell>
+      );
+    }
+    return (
+      <AsyncState
+        kind="empty"
+        tone="admin"
+        variant="page-center"
+        resourceName="주문 상세"
+        title="주문 정보를 찾을 수 없습니다"
+        description="주문 ID를 확인한 뒤 다시 시도해 주세요."
+      />
+    );
+  }
+
+  // 취소 요청 상태 정보 계산
+  const cancelInfo = buildAdminCancelRequestView((orderDetail as any)?.cancelRequest, "order");
+
+  // 실제 cancelRequest.status 를 보고 "요청됨" 상태인지 여부
+  const cancelStatus = normalizeAdminCancelRequestStatus(
+    (orderDetail as any).cancelRequest?.status,
+  );
+  const isCancelRequested = cancelStatus === "requested";
+
+  const isCanceled = ["취소", "결제취소", "환불", "취소완료", "취소승인", "환불완료"].includes(
+    localStatus,
+  );
+  const adminCancelHasTrackingNumber = Boolean(orderDetail?.shippingInfo?.invoice?.trackingNumber);
+  const isCancelableByPolicy = isAdminCancelableOrderStatus(localStatus);
+  const isForceCancelRequired = isAdminForceCancelRequired(
+    localStatus,
+    adminCancelHasTrackingNumber,
+  );
+  const cancelPolicyMessage = getAdminCancelPolicyMessage(
+    localStatus,
+    adminCancelHasTrackingNumber,
+  );
+
+  // 상단 운영 콘솔 배지 공통 클래스
+  const summaryBadgeClass = cn(
+    badgeBase,
+    badgeSizeSm,
+    "inline-flex w-fit self-start shrink-0 whitespace-nowrap",
+  );
+  const shortOrderId = orderDetail._id ? orderDetail._id.slice(-6).toUpperCase() : "-";
+
+  // 대표 stage 카드/연결 가이드용 기준 신청서: 서버에서 선별한 latestActiveLinkedApplication 우선 사용
+  const latestLinkedApplication = orderDetail.latestActiveLinkedApplication ?? null;
+  const isLinkedStageBlockedByOrder = isOrderBlockedForLinkedAutomation(localStatus);
+  const isLinkedStageBlockedByApplication = latestLinkedApplication
+    ? isApplicationClosedForLinkedAutomation({
+        status: latestLinkedApplication.status,
+        cancelRequestStatus: latestLinkedApplication.cancelRequestStatus,
+      })
+    : false;
+  const linkedStageBlockedReason = isLinkedStageBlockedByOrder
+    ? `주문 상태(${localStatus})에서는 연결 진행 단계를 변경할 수 없습니다.`
+    : isLinkedStageBlockedByApplication
+      ? "신청서가 취소되었거나 취소 승인 완료 상태여서 연결 진행 단계를 변경할 수 없습니다."
+      : null;
+
+  const shouldShowLinkedSelfShipSummary = latestLinkedApplication?.needsInboundTracking === true;
+
+  // 연결된 교체서비스 신청서 ID(있다면 최신 1개를 우선 사용)
+  // - 상품 구매 + 교체서비스가 묶인 케이스에서는 운송장/배송정보를 '신청서'에서 단일 관리하도록 통일.
+  const linkedStringingAppId =
+    latestLinkedApplication?.id ?? orderDetail.stringingApplicationId ?? null;
+
+  const expectsStringingApplication = orderDetail.shippingInfo?.withStringService === true;
+
+  const hasActiveLinkedStringingApplication = Boolean(linkedStringingAppId);
+
+  const needsStringingApplication =
+    expectsStringingApplication && !hasActiveLinkedStringingApplication;
+
+  const isShippingManagedByApplication = hasActiveLinkedStringingApplication;
+
+  const isLinkedStringingOrder =
+    expectsStringingApplication ||
+    orderDetail.isStringServiceApplied === true ||
+    hasActiveLinkedStringingApplication;
+
+  // 관리자 상세에서 “수령/배송(사용자가 체크아웃에서 선택한 값)”을 한눈에 보기 위한 배지
+  // - 목록(/admin/orders)에서 쓰는 규칙과 동일한 기준으로 표시한다.
+  // - 통합건(주문+신청)이라도, 실제 운송장/배송 등록은 신청서에서 하더라도
+  // “사용자가 무엇을 선택했는지”는 운영자가 즉시 확인할 수 있어야 한다.
+  const shippingMethodBadge = getShippingMethodBadge(orderDetail as any);
+  const shippingMethodValue =
+    orderDetail.shippingInfo?.shippingMethod ?? (orderDetail.shippingInfo as any)?.deliveryMethod;
+  const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
+  const isVisitPickup = isVisitPickupOrder(orderDetail.shippingInfo);
+  const hasShippingInfoRegistered = canEnterShippingPhase(orderDetail.shippingInfo).ok;
+  const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail.shippingInfo);
+  const displayOrderStatusLabel = getOrderStatusLabelForDisplay(
+    localStatus,
+    orderDetail.shippingInfo,
+  ).trim();
+  const shouldShowTrackingSummarySkeleton = isTrackingLoading && !trackingData && !trackingError;
+  const shouldShowTrackingStatusNotice = Boolean(
+    trackingData &&
+    trackingData.success &&
+    trackingData.supported &&
+    trackingData.displayStatus &&
+    trackingData.displayStatus.trim() !== displayOrderStatusLabel,
+  );
+
+  // 페이지네이션 없이 가져온 모든 이력 합치기
+  const allHistory: any[] = historyPages ? historyPages.flatMap((page: any) => page.history) : [];
+
+  // 날짜/통화 포맷 함수
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "날짜 없음";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "유효하지 않은 날짜";
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(date);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("ko-KR", {
+      style: "currency",
+      currency: "KRW",
+    }).format(amount);
+  };
+  const formatDateTime = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(date);
+  };
+
+  const productSubtotal = orderDetail.items.reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
+    0,
+  );
+  const rawShippingFee = orderDetail.shippingFee ?? orderDetail.paymentInfo?.shippingFee;
+  const rawServiceFee = orderDetail.serviceFee ?? orderDetail.paymentInfo?.serviceFee;
+  const rawPointsUsed = orderDetail.pointsUsed ?? orderDetail.paymentInfo?.pointsUsed;
+  const shippingFee = Number.isFinite(Number(rawShippingFee))
+    ? Math.max(0, Number(rawShippingFee))
+    : 0;
+  const serviceFee = Number.isFinite(Number(rawServiceFee))
+    ? Math.max(0, Number(rawServiceFee))
+    : 0;
+  const pointsUsed = Number.isFinite(Number(rawPointsUsed))
+    ? Math.max(0, Number(rawPointsUsed))
+    : 0;
+  const calculatedPaymentTotal = productSubtotal + serviceFee + shippingFee - pointsUsed;
+  const hasPaymentAmountMismatch = calculatedPaymentTotal !== Number(orderDetail.total);
+
+  // 연결 문서(표시용) 구성: 신청서(복수) 우선, 없으면 레거시 단일 필드 사용
+  // - 핵심: “연결/통합”을 운영자가 한눈에 파악하도록, 상세 화면에서도 공용 카드로 통일
+  const linkedDocs: LinkedDocItem[] = (() => {
+    const docs: LinkedDocItem[] = [];
+    const apps = Array.isArray(orderDetail.stringingApplications)
+      ? orderDetail.stringingApplications
+      : [];
+
+    if (apps.length > 0) {
+      for (const app of apps) {
+        if (!app?.id) continue;
+        const parts: string[] = [];
+        if (app.status)
+          parts.push(`상태: ${getCommonApplicationStatusLabel(app.status) ?? app.status}`);
+        if (app.createdAt) parts.push(formatDate(app.createdAt));
+        parts.push(`라켓 ${app.racketCount ?? 0}개`);
+        docs.push({
+          kind: "stringing_application",
+          id: app.id,
+          href: `/admin/applications/stringing/${app.id}`,
+          subtitle: parts.filter(Boolean).join(" · ") || undefined,
+        });
+      }
+      return docs;
+    }
+
+    if (orderDetail.stringingApplicationId) {
+      docs.push({
+        kind: "stringing_application",
+        id: orderDetail.stringingApplicationId,
+        href: `/admin/applications/stringing/${orderDetail.stringingApplicationId}`,
+      });
+    }
+
+    return docs;
+  })();
+
+  const linkedApplicationForGuide = latestLinkedApplication;
+  const latestStringNames = Array.from(
+    new Set(
+      (latestLinkedApplication?.stringNames ?? [])
+        .map((name) => String(name ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+  const latestStringSummary = latestStringNames.length > 0 ? latestStringNames.join(", ") : null;
+  const latestApplicationLines = latestLinkedApplication?.lines ?? [];
+  const latestRequirements =
+    latestLinkedApplication?.requirements ||
+    latestApplicationLines.map((line) => line.note).find(Boolean) ||
+    null;
+  const latestRacketCount =
+    typeof latestLinkedApplication?.racketCount === "number"
+      ? latestLinkedApplication.racketCount
+      : null;
+  const latestPackageInfo = latestLinkedApplication?.packageInfo ?? null;
+  const latestPackageApplied = latestPackageInfo?.applied === true;
+  const latestPackageTitle = String(latestPackageInfo?.passTitle ?? "").trim();
+  const latestPackageSize =
+    typeof latestPackageInfo?.packageSize === "number" ? latestPackageInfo.packageSize : null;
+  const latestPackageUsedCount =
+    typeof latestPackageInfo?.usedCount === "number" ? latestPackageInfo.usedCount : null;
+  const latestPackageRemainingCount =
+    typeof latestPackageInfo?.remainingCount === "number" ? latestPackageInfo.remainingCount : null;
+  const latestPackageSummary = (() => {
+    if (
+      latestPackageSize !== null &&
+      latestPackageUsedCount !== null &&
+      latestPackageRemainingCount !== null
+    ) {
+      if (latestPackageTitle) {
+        return `패키지 사용 현황: ${latestPackageTitle} · 총 ${latestPackageSize}회 / 사용 ${latestPackageUsedCount}회 / 남은 ${latestPackageRemainingCount}회`;
+      }
+      return `교체 서비스 사용 현황: 총 ${latestPackageSize}회 / 사용 ${latestPackageUsedCount}회 / 남은 ${latestPackageRemainingCount}회`;
+    }
+    return "이 주문은 교체서비스 신청서와 연결되어 있습니다. 핵심 접수 정보는 우측 요약에서 확인하세요.";
+  })();
+
+  const orderGuide = inferNextActionForOperationGroup([
+    {
+      kind: "order",
+      statusLabel: localStatus,
+      shippingMethod: shippingMethodValue,
+      paymentLabel: orderDetail.paymentStatus,
+      related: linkedApplicationForGuide
+        ? {
+            kind: "stringing_application",
+            id: linkedApplicationForGuide.id,
+            href: `/admin/applications/stringing/${linkedApplicationForGuide.id}`,
+          }
+        : null,
+      hasShippingInfo: hasShippingInfoRegistered,
+      hasOutboundTracking: Boolean(orderDetail.shippingInfo?.invoice?.trackingNumber),
+    },
+    ...(linkedApplicationForGuide
+      ? [
+          {
+            kind: "stringing_application" as const,
+            statusLabel: linkedApplicationForGuide.status,
+            paymentLabel: null,
+          },
+        ]
+      : []),
+  ]);
+  const adminPaymentState = getAdminOrderPaymentState({
+    paymentStatus: orderDetail.paymentStatus,
+    paymentMethod: orderDetail.paymentMethod,
+    paymentProvider: orderDetail.paymentProvider,
+    totalPrice: orderDetail.total,
+  });
+
+  const paymentMethodDisplayLabel =
+    adminPaymentState.kind === "not_required"
+      ? "결제 불필요"
+      : getPaymentDisplaySummary({
+          method: orderDetail.paymentMethod,
+          provider: orderDetail.paymentProvider,
+          easyPayProvider: orderDetail.paymentEasyPayProvider,
+          cardDisplayName: orderDetail.paymentCardDisplayName,
+          cardLabel: orderDetail.paymentCardLabel,
+          cardCompany: orderDetail.paymentCardCompany,
+          bank: orderDetail.paymentBank,
+          depositor: orderDetail.shippingInfo?.depositor,
+        }).adminLabel;
+
+  const paymentStatusDisplayLabel = adminPaymentState.label;
+  const canEditPaymentTotal =
+    !new Set([
+      "결제완료",
+      "결제취소",
+      "환불",
+      "환불완료",
+      "취소",
+      "paid",
+      "canceled",
+      "cancelled",
+      "refunded",
+    ]).has(String(orderDetail.paymentStatus ?? "").trim()) &&
+    !String(orderDetail.paymentTid ?? "").trim();
+  const needsPaymentCheck = adminPaymentState.needsCheck;
+
+  const paymentBadgeStatus =
+    adminPaymentState.kind === "not_required" ? "결제완료" : orderDetail.paymentStatus;
+  const needsShippingInfo =
+    !isShippingManagedByApplication &&
+    !isVisitPickup &&
+    !hasShippingInfoRegistered;
+  const needsCancelFinalization = needsOrderCancelFinalization({
+    status: localStatus,
+    paymentStatus: orderDetail.paymentStatus,
+    paymentInfo: orderDetail.paymentInfo,
+    paymentNiceSync: orderDetail.paymentNiceSync,
+  });
+  const isDoneLikeStatus = ["완료", "구매확정", "취소", "cancel", "confirmed"].some((token) =>
+    String(localStatus ?? "")
+      .toLowerCase()
+      .includes(token.toLowerCase()),
+  );
+  const nextActionGuide: AdminNextActionGuide = isCancelRequested
+    ? {
+        tone: "urgent",
+        title: "취소 요청 검토 필요",
+        description: "취소 요청 카드에서 승인/거절 여부를 먼저 판단하세요.",
+      }
+    : needsCancelFinalization
+      ? {
+          tone: "urgent",
+          title: "PG 결제취소 감지",
+          description:
+            "결제는 취소되었지만 주문 상태가 아직 완료/진행 상태입니다. 재고/포인트/연결 교체서비스 후처리를 진행하세요.",
+          actionLabel: "주문 취소 후처리",
+          actionHref: "#admin-order-cancel-controls",
+        }
+      : needsPaymentCheck
+        ? {
+            tone: "warning",
+            title: adminPaymentState.actionLabel ?? "결제 상태 확인 필요",
+            description:
+              adminPaymentState.kind === "bank_pending"
+                ? needsStringingApplication
+                  ? "입금 내역과 교체서비스 신청서 접수 여부를 함께 확인하세요."
+                  : "고객 입금 내역을 확인한 뒤 결제 상태를 반영하세요."
+                : adminPaymentState.kind === "pg_pending"
+                  ? "PG 승인 결과를 확인한 뒤 주문 상태를 점검하세요."
+                  : adminPaymentState.kind === "failed"
+                    ? "결제 실패 사유와 재결제 필요 여부를 확인하세요."
+                    : "결제 반영 여부를 확인한 뒤 다음 처리 단계를 진행하세요.",
+          }
+        : needsStringingApplication
+          ? {
+              tone: "warning",
+              title: "교체서비스 신청서 미접수",
+              description:
+                "주문에 교체서비스가 포함되어 있지만 활성 신청서가 없습니다. 고객에게 신청서 작성을 안내하세요.",
+            }
+          : needsShippingInfo
+            ? {
+                tone: "warning",
+                title: "배송 정보 등록 필요",
+                description: "결제 확인 후 운송장 또는 수령 방식을 등록하세요.",
+                actionLabel: "배송 정보 등록/수정",
+                actionHref: `/admin/orders/${orderId}/shipping-update`,
+              }
+            : linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId)
+              ? {
+                  tone: "info",
+                  title: "주문에 포함된 교체서비스 확인",
+                  description:
+                    "결제는 주문에서 처리되었습니다. 장착 정보와 요청사항은 교체 작업 정보에서 확인하세요.",
+                }
+              : orderGuide.stage || isDoneLikeStatus
+                ? {
+                    tone: "success",
+                    title: "처리 이력 확인",
+                    description: "상세 처리 이력과 최근 변경 내역을 확인하세요.",
+                  }
+                : {
+                    tone: "success",
+                    title: "추가 조치 필요 없음",
+                    description: "현재 기준으로 즉시 필요한 선행 조치는 없습니다.",
+                  };
+  const recommendedActions = [
+    { label: "결제 정보 확인", href: "#admin-order-payment", show: true },
+    { label: "배송/수령 정보 확인", href: "#admin-order-shipping", show: true },
+    {
+      label: "취소 요청 확인",
+      href: "#admin-order-cancel",
+      show: isCancelRequested || Boolean(cancelInfo),
+    },
+    {
+      label: "교체 작업 정보 보기",
+      href: "#admin-order-linked",
+      show: linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId),
+    },
+    { label: "처리 이력 보기", href: "#admin-order-history", show: true },
+  ].filter((action) => action.show);
+
+  const latestProcessingHistory = allHistory[0] ?? null;
+  const latestProcessingHistoryStatusLabel =
+    latestProcessingHistory?.status
+      ? getOrderStatusLabelForDisplay(latestProcessingHistory.status, orderDetail.shippingInfo)
+      : "기록 없음";
+  const latestProcessingDate = formatDateTime(latestProcessingHistory?.date);
+  const variantStockDeductionItems = Array.isArray(orderDetail.items)
+    ? orderDetail.items.filter((item) => item?.stockDeduction?.mode === "variant")
+    : [];
+  const isVariantStockMode = variantStockDeductionItems.length > 0;
+  const currentStatusText = String(localStatus ?? orderDetail.status ?? "");
+  const normalizedStatusText = currentStatusText.toLowerCase();
+  const isCanceledState =
+    currentStatusText === "취소완료" ||
+    currentStatusText === "취소승인" ||
+    currentStatusText === "취소" ||
+    normalizedStatusText === "cancelled" ||
+    normalizedStatusText === "canceled";
+
+  // 취소 성공 시 호출되는 콜백
+  const handleCancelSuccess = async (reason: string, detail?: string) => {
+    if (readOnly) return;
+    // 옵티미스틱 업데이트: 클라이언트 화면에서 곧바로 상태를 '취소'로 바꿔줌
+    setLocalStatus("취소");
+
+    try {
+      // SWR 캐시의 해당 키를 revalidate (서버에서 최신 정보 가져오기)
+      await mutateOrder(); // `/api/orders/${orderId}` 다시 호출
+      await mutateHistory(); // `/api/orders/${orderId}/history?…` 다시 호출
+      showSuccessToast("주문이 취소되었습니다.");
+    } catch (err) {
+      console.error("[OrderDetailClient] cancel mutate error:", err);
+      showErrorToast("취소 후 데이터 갱신 중 오류가 발생했습니다.");
+      // 오류 시, 서버에서 받아온 원래 상태로 복원
+      if (orderDetail.status !== "취소") {
+        setLocalStatus(orderDetail.status);
+      }
+    }
+  };
+
+  // 🔹 (추가) "취소 요청 승인" 버튼 클릭 시
+  const handleApproveCancelRequest = async () => {
+    if (readOnly || !orderId) return;
+
+    if (!isCancelableByPolicy) {
+      showErrorToast(cancelPolicyMessage);
+      return;
+    }
+
+    setIsProcessingCancelRequest(true);
+    try {
+      const existingReq: any = (orderDetail as any).cancelRequest ?? {};
+
+      const res = await fetch(`/api/orders/${orderId}/cancel-approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          // 고객이 요청할 때 저장된 reasonCode / reasonText 를 그대로 넘겨줌
+          reasonCode: existingReq.reasonCode,
+          reasonText: existingReq.reasonText,
+          force: isForceCancelRequired ? true : undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const msg = await parseCancelApproveError(res);
+        throw new Error(msg || "취소 승인 실패");
+      }
+
+      // 서버에서 주문/신청/패키지 복원 처리 후 최신 상태로 갱신
+      await mutateOrder();
+      await mutateHistory();
+      setLocalStatus("취소");
+      showSuccessToast("주문 취소 요청을 승인했습니다.");
+    } catch (err: any) {
+      console.error(err);
+      showErrorToast(err?.message || "취소 승인 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsProcessingCancelRequest(false);
+    }
+  };
+
+  // 🔹 (추가) "취소 요청 거절" 버튼 클릭 시
+  const handleRejectCancelRequest = async () => {
+    if (readOnly || !orderId) return;
+
+    setIsProcessingCancelRequest(true);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel-reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          adminMemo: rejectMemo.trim() || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(msg || "취소 거절 실패");
+      }
+
+      await mutateOrder();
+      await mutateHistory();
+      setRejectMemo("");
+      setIsRejectDialogOpen(false);
+      showSuccessToast("주문 취소 요청을 거절했습니다.");
+    } catch (err: any) {
+      console.error(err);
+      showErrorToast(err?.message || "취소 거절 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsProcessingCancelRequest(false);
+    }
+  };
+
+  const handleConfirmCancelRequestAction = () => {
+    if (confirmAction === "approveCancel") {
+      void handleApproveCancelRequest();
+    }
+    setConfirmAction(null);
+  };
+
+  const cancelRequestAny: any = (orderDetail as any).cancelRequest ?? {};
+  const pgCancelBlocked = cancelRequestAny.pgCancelBlocked ?? null;
+  const paymentNiceSync = orderDetail.paymentNiceSync ?? orderDetail.paymentInfo?.niceSync ?? null;
+  const paymentInfoStatus = String(orderDetail.paymentInfo?.status ?? "")
+    .trim()
+    .toLowerCase();
+  const paymentNicePgStatus = String(paymentNiceSync?.pgStatus ?? "")
+    .trim()
+    .toLowerCase();
+  const isPgCancelCompleted =
+    orderDetail.paymentStatus === "결제취소" ||
+    paymentInfoStatus === "canceled" ||
+    paymentNicePgStatus === "cancelled" ||
+    paymentNicePgStatus === "canceled";
+  const hasNiceUnsettledAmountShortage =
+    !isPgCancelCompleted &&
+    (paymentNiceSync?.resultCode === "2026" ||
+      pgCancelBlocked?.reason === "unsettled_amount_shortage");
+  const niceBlockedTid = String(pgCancelBlocked?.tid ?? orderDetail.paymentTid ?? "").trim();
+  const niceBlockedTotalAmount = Number(orderDetail.total ?? 0);
+  const niceBlockedCancelAmount = Number(
+    pgCancelBlocked?.amount ?? paymentNiceSync?.cancelAmount ?? orderDetail.total ?? 0,
+  );
+  const niceBlockedResultCode = String(
+    pgCancelBlocked?.resultCode ?? paymentNiceSync?.resultCode ?? "",
+  ).trim();
+  const niceBlockedResultMsg = String(
+    pgCancelBlocked?.resultMsg ?? paymentNiceSync?.resultMsg ?? "",
+  ).trim();
+
+  const handleCopyNiceInquiryTemplate = () => {
+    const message = `거래금액: ${niceBlockedTotalAmount.toLocaleString("ko-KR")}원
+TID: ${niceBlockedTid || "-"}
+취소요청 금액: ${niceBlockedCancelAmount.toLocaleString("ko-KR")}원
+
+NICE 미정산금액 부족으로 자동취소가 실패했습니다.
+입금 후 취소 절차 안내 부탁드립니다.`;
+
+    void navigator.clipboard
+      .writeText(message)
+      .then(() => showSuccessToast("NICE 문의 양식이 복사되었습니다."))
+      .catch(() => showErrorToast("문의 양식 복사에 실패했습니다."));
+  };
+
+  const handleShippingUpdate = () => {
+    if (readOnly) return;
+    if (isCanceled) {
+      showErrorToast("취소된 주문은 배송 정보를 수정할 수 없습니다.");
+      return;
+    }
+
+    // 연결 주문(상품 구매 + 교체서비스 신청서)인 경우:
+    // 배송정보/운송장은 신청서에서 단일 관리 → 신청서 배송등록 페이지로 이동
+    if (isShippingManagedByApplication && linkedStringingAppId) {
+      showSuccessToast(
+        "이 주문은 교체서비스가 포함되어 있어 고객 발송 라켓과 반송 운송장은 교체 작업에서 관리합니다.",
+      );
+      router.push(`/admin/applications/stringing/${linkedStringingAppId}/shipping-update`);
+      return;
+    }
+
+    router.push(`/admin/orders/${orderId}/shipping-update`);
+  };
+
+  return (
+    <AdminPageShell variant="wide" className="space-y-4">
+      <div>
+        <div className="mb-4 space-y-4">
+          <AdminPageHeader
+            variant="detail"
+            className="flex-wrap"
+            title={`주문 ${shortOrderId} 상세`}
+            description={
+              readOnly
+                ? "현재 주문의 결제·배송·교체서비스 연결 상태를 조회합니다."
+                : "현재 주문의 결제·배송·교체서비스 연결 상태를 관리합니다."
+            }
+            icon={Settings}
+            scope={`전체 주문 ID: ${orderDetail._id}`}
+            helperText={
+              readOnly
+                ? "Portfolio Demo에서는 주문 정보를 변경할 수 없습니다."
+                : "상태 변경 전 결제·배송 정보와 연결 작업을 함께 확인하세요."
+            }
+            actions={
+              <>
+                <PortfolioDemoDataBadge kind={orderDetail.portfolioDemoDataKind} />
+                {needsCancelFinalization ? (
+                  <Badge
+                    className={cn(
+                      summaryBadgeClass,
+                      "border-destructive/30 bg-destructive/10 text-destructive",
+                    )}
+                  >
+                    PG 결제취소 감지
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant={getOrderStatusBadgeSpec(localStatus).variant}
+                    className={summaryBadgeClass}
+                  >
+                    {getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
+                  </Badge>
+                )}
+                <Badge
+                  variant={getPaymentStatusBadgeSpec(paymentBadgeStatus).variant}
+                  className={summaryBadgeClass}
+                >
+                  {paymentStatusDisplayLabel}
+                </Badge>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 px-2 text-ui-label"
+                  aria-label="전체 주문 ID 복사"
+                  onClick={() => {
+                    void navigator.clipboard
+                      .writeText(orderDetail._id)
+                      .then(() => showSuccessToast("주문 ID가 복사되었습니다."))
+                      .catch(() => {});
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  복사
+                </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 whitespace-nowrap border-border bg-card hover:bg-muted"
+                asChild
+              >
+                <Link href="/admin/orders">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  <span>주문 목록으로 돌아가기</span>
+                </Link>
+              </Button>
+              {!readOnly && (
+                <>
+                  <Button
+                    type="button"
+                    variant={isEditMode ? "destructive" : "outline"}
+                    size="sm"
+                    onClick={() => setIsEditMode(!isEditMode)}
+                    className={cn(
+                      "w-auto",
+                      isEditMode ? "" : "border-border bg-card hover:bg-muted",
+                    )}
+                  >
+                    <Pencil className="mr-1 h-4 w-4" />
+                    {isEditMode ? "편집 취소" : "편집 모드"}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleShippingUpdate}
+                    className="w-auto whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    <Truck className="mr-2 h-4 w-4" />
+                    {isVisitPickup
+                      ? isShippingManagedByApplication
+                        ? "신청서 수령 정보 확인"
+                        : hasShippingInfoRegistered
+                          ? "방문 수령 정보 수정하기"
+                          : "방문 수령 정보 등록하기"
+                      : isShippingManagedByApplication
+                        ? "고객 발송 라켓 확인"
+                        : hasShippingInfoRegistered
+                          ? "배송 정보 수정하기"
+                          : "배송 정보 등록하기"}
+                  </Button>
+                </>
+              )}
+              </>
+            }
+          />
+
+          {readOnly && (
+            <div className="rounded-lg border border-primary/25 bg-primary/5 px-4 py-3 text-ui-body-sm text-foreground">
+              <p className="font-semibold">Portfolio Demo 조회 전용</p>
+              <p className="mt-1 text-foreground/75">
+                주문·결제·배송·취소·내부 메모 변경 기능은 숨겨져 있으며 조회 기능만 제공됩니다.
+              </p>
+            </div>
+          )}
+
+          {/* 상태 요약 카드 */}
+          <div className={adminSurface.statusGrid}>
+            <AdminStatusCard
+              density="compact"
+              title="주문 상태"
+              value={(() => {
+                if (needsCancelFinalization) {
+                  return (
+                    <div className="flex flex-col items-start gap-1">
+                      <Badge
+                        className={cn(
+                          summaryBadgeClass,
+                          "border-destructive/30 bg-destructive/10 text-destructive",
+                        )}
+                      >
+                        PG 결제취소 감지
+                      </Badge>
+                      <span className="text-ui-label text-foreground/70">
+                        주문 상태:{" "}
+                        {getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
+                      </span>
+                    </div>
+                  );
+                }
+                const st = getOrderStatusBadgeSpec(localStatus);
+                return (
+                  <Badge variant={st.variant} className={summaryBadgeClass}>
+                    {getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
+                  </Badge>
+                );
+              })()}
+              description={`주문일시 ${formatDateTime(orderDetail.date)}`}
+              icon={Package}
+              tone={isCancelRequested || needsCancelFinalization ? "danger" : "neutral"}
+            />
+            <AdminStatusCard
+              density="compact"
+              title="결제 상태"
+              value={(() => {
+                const pay = getPaymentStatusBadgeSpec(paymentBadgeStatus);
+                return (
+                  <Badge variant={pay.variant} className={summaryBadgeClass}>
+                    {paymentStatusDisplayLabel}
+                  </Badge>
+                );
+              })()}
+              description={`총 결제금액 ${formatCurrency(orderDetail.total)}`}
+              icon={CreditCard}
+              tone={needsPaymentCheck ? "warning" : "neutral"}
+            />
+            <AdminStatusCard
+              density="compact"
+              title="수령/배송"
+              value={
+                <Badge variant={shippingMethodBadge.variant} className={summaryBadgeClass}>
+                  {shippingMethodBadge.label}
+                </Badge>
+              }
+              description={
+                isShippingManagedByApplication
+                  ? "고객 발송 라켓·반송 운송장은 교체 작업에서 관리"
+                  : hasShippingInfoRegistered
+                    ? "배송/수령 정보 등록됨"
+                    : "배송/수령 정보 확인 필요"
+              }
+              icon={Truck}
+              tone={needsShippingInfo ? "warning" : "neutral"}
+            />
+            {isLinkedStringingOrder ? (
+              <AdminStatusCard
+                density="compact"
+                title="연결 교체 작업"
+                value={
+                  needsStringingApplication ? (
+                    <Badge
+                      className={cn(
+                        summaryBadgeClass,
+                        "border-warning/30 bg-warning/10 text-warning",
+                      )}
+                    >
+                      신청서 미접수
+                    </Badge>
+                  ) : (
+                    "주문에 포함된 교체 작업"
+                  )
+                }
+                description={
+                  needsStringingApplication
+                    ? "교체서비스 포함 주문이지만 활성 신청서가 없습니다."
+                    : latestLinkedApplication?.status
+                      ? `작업 상태 ${
+                          getCommonApplicationStatusLabel(latestLinkedApplication.status) ??
+                          latestLinkedApplication.status
+                        }`
+                      : "교체 작업 문서 확인 필요"
+                }
+                icon={LinkIcon}
+                tone={needsStringingApplication ? "warning" : "primary"}
+              />
+            ) : (
+              <AdminStatusCard
+                density="compact"
+                title="연결 교체 작업"
+                value="교체 작업 없음"
+                description="일반 주문으로 처리합니다."
+                icon={LinkIcon}
+              />
+            )}
+          </div>
+        </div>
+
+        <AdminDetailSectionNav
+          className="mb-4"
+          label="주문 상세 섹션"
+          items={[
+            { href: "#admin-order-action", label: "다음 처리" },
+            ...(cancelInfo ? [{ href: "#admin-order-cancel", label: "취소 요청" }] : []),
+            ...(isLinkedStringingOrder
+              ? [{ href: "#admin-order-linked", label: "교체서비스" }]
+              : []),
+            { href: "#admin-order-customer", label: "고객정보" },
+            { href: "#admin-order-payment", label: "결제정보" },
+            { href: "#admin-order-shipping", label: "배송정보" },
+            { href: "#admin-order-items", label: "주문품목" },
+            { href: "#admin-order-notes", label: "메모" },
+            { href: "#admin-order-history", label: "이력" },
+          ]}
+        />
+
+        <div id="admin-order-action">
+          <AdminNextActionPanel
+            className="mb-6"
+            tone={nextActionGuide.tone}
+            badgeLabel={
+              nextActionGuide.tone === "urgent"
+                ? "긴급"
+                : nextActionGuide.tone === "warning"
+                  ? "확인 필요"
+                  : nextActionGuide.tone === "success"
+                    ? "정상"
+                    : "안내"
+            }
+            stage={
+              orderGuide.stage ||
+              getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)
+            }
+            nextActionTitle={nextActionGuide.title}
+            nextActionDescription={nextActionGuide.description}
+            primaryAction={
+              !readOnly && nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                <Button asChild size="sm">
+                  <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                </Button>
+              ) : null
+            }
+            secondaryActions={recommendedActions.slice(0, 2).map((action) => (
+              <Button
+                key={action.href}
+                asChild
+                size="sm"
+                variant="outline"
+                className="bg-transparent"
+              >
+                <a href={action.href}>{action.label}</a>
+              </Button>
+            ))}
+            note="결제대기 되돌리기 같은 역방향 변경은 일반 다음 작업으로 노출하지 않습니다."
+            footer={
+              latestProcessingHistory ? (
+                <div className="grid grid-cols-2 gap-1.5 leading-relaxed">
+                  <p>
+                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                    {latestProcessingHistoryStatusLabel}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                    {latestProcessingDate}
+                  </p>
+                  {latestProcessingHistory.description ? (
+                    <p className="col-span-2">
+                      <span className="font-medium text-foreground">내용:</span>{" "}
+                      {latestProcessingHistory.description}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null
+            }
+          />
+          {needsCancelFinalization && (
+            <div className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-ui-body-sm text-destructive">
+              <p className="font-semibold">PG 결제취소 감지</p>
+              <p className="mt-1">
+                나이스페이에서 결제는 취소되었지만, 주문 상태는 아직 취소 처리되지 않았습니다.
+              </p>
+              <p className="mt-1">
+                이 상태에서는 재고 복구, 포인트 복원/회수, 연결 교체서비스 취소가 완료되지 않았을 수
+                있습니다.
+              </p>
+              <p className="mt-1">주문 취소 후처리를 완료하려면 관리자 강제 취소를 진행하세요.</p>
+            </div>
+          )}
+        </div>
+
+        {/* 취소 요청 상태 안내 (관리자용) */}
+        {cancelInfo && (
+          <div id="admin-order-cancel" className="mb-6">
+            <AdminCancelRequestCard
+              className="border-solid border-destructive/40 bg-destructive/10"
+              badgeLabel={cancelInfo.badgeLabel}
+              description={cancelInfo.description}
+              reasonSummary={cancelInfo.reasonSummary}
+              tone={cancelInfo.tone}
+              rightSlot={
+                <div className="rounded-md border border-border/60 bg-background px-3 py-2">
+                  <p className="text-ui-label font-medium text-muted-foreground">환불 계좌 정보</p>
+                  <dl className="mt-2 space-y-1 text-ui-label text-foreground/90">
+                    <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                      <dt className="text-muted-foreground">환불 은행</dt>
+                      <dd>{cancelInfo.refundAccount?.bankLabel || "미입력"}</dd>
+                    </div>
+                    <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                      <dt className="text-muted-foreground">계좌번호</dt>
+                      <dd className="font-mono">{cancelInfo.refundAccount?.account || "미입력"}</dd>
+                    </div>
+                    <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                      <dt className="text-muted-foreground">예금주</dt>
+                      <dd>{cancelInfo.refundAccount?.holder || "미입력"}</dd>
+                    </div>
+                  </dl>
+                </div>
+              }
+            />
+          </div>
+        )}
+
+        {/* 연결 교체 작업 통합 패널 */}
+        {isLinkedStringingOrder && (
+          <div id="admin-order-linked" className="mb-6">
+            <Card className={cn(adminSurface.card, "border-primary/25")}>
+              <CardHeader className="pb-3">
+                <div className="flex flex-row items-start justify-between gap-3">
+                  <div>
+                    <CardTitle className={adminTypography.sectionTitle}>
+                      주문에 포함된 교체 작업
+                    </CardTitle>
+                    <CardDescription className={cn("mt-1", adminTypography.meta)}>
+                      {needsStringingApplication
+                        ? "교체서비스 포함 의사표시는 있으나 활성 신청서가 아직 없습니다."
+                        : "주문에 연결된 교체 작업의 진행 단계와 접수 정보를 확인합니다."}
+                    </CardDescription>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "w-fit",
+                      needsStringingApplication
+                        ? "border-warning/30 text-warning"
+                        : "border-primary/30 text-primary",
+                    )}
+                  >
+                    {needsStringingApplication ? "신청서 미접수" : "주문 결제에 포함됨"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {needsStringingApplication ? (
+                  <div className="rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
+                    <p className="text-ui-body-sm font-semibold text-foreground">
+                      교체서비스 신청서 확인이 필요합니다.
+                    </p>
+                    <p className="mt-1 text-ui-label text-muted-foreground">
+                      고객에게 주문 상세 또는 교체서비스 신청 경로에서 신청서를 작성하도록
+                      안내하세요.
+                    </p>
+                  </div>
+                ) : null}
+                {latestLinkedApplication?.id && latestLinkedApplication?.status && (
+                  <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2">
+                    <p className={adminTypography.bodyStrong}>
+                      연결 진행 단계:{" "}
+                      {orderGuide.stage ||
+                        getCommonApplicationStatusLabel(latestLinkedApplication.status) ||
+                        latestLinkedApplication.status}
+                    </p>
+                    <p className={cn("text-right", adminTypography.meta)}>
+                      다음 할 일:{" "}
+                      <span className="font-medium text-foreground">{orderGuide.nextAction}</span>
+                    </p>
+                  </div>
+                )}
+                {latestLinkedApplication?.id && latestLinkedApplication?.status && (
+                  <details className="group rounded-lg border border-border/60 bg-background/60 p-1">
+                    <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
+                      연결 진행 단계 상세 보기
+                      <span className="text-ui-label font-medium text-muted-foreground group-open:hidden">
+                        펼치기
+                      </span>
+                      <span className="hidden text-ui-label font-medium text-muted-foreground group-open:inline">
+                        접기
+                      </span>
+                    </summary>
+                    <div className="mt-1 border-t border-border/60 p-3">
+                      <LinkedFlowStageCard
+                        className={cn("overflow-hidden", adminSurface.fieldPanel)}
+                        orderId={orderId}
+                        orderStatus={localStatus}
+                        applicationStatus={latestLinkedApplication.status}
+                        shippingInfo={orderDetail.shippingInfo}
+                        disabled={readOnly || Boolean(linkedStageBlockedReason)}
+                        disabledReason={
+                          readOnly
+                            ? "Portfolio Demo에서는 연결 진행 단계를 변경할 수 없습니다."
+                            : linkedStageBlockedReason
+                        }
+                        onSaved={async () => {
+                          await mutateOrder();
+                          await mutateHistory();
+                          router.refresh();
+                        }}
+                      />
+                    </div>
+                  </details>
+                )}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className={adminSurface.fieldPanel}>
+                    <p className={cn("mb-2", adminTypography.panelTitle)}>교체 작업 문서</p>
+                    <div className="space-y-2">
+                      {linkedDocs.length > 0 ? (
+                        linkedDocs.map((doc) => (
+                          <div
+                            key={`${doc.kind}:${doc.id}`}
+                            className="flex flex-row items-center justify-between gap-2 border-b border-border/50 py-2 last:border-0"
+                          >
+                            <p className="text-ui-body-sm text-foreground/80">
+                              교체 작업 ID:{" "}
+                              <span className="font-mono text-foreground">{doc.id}</span>
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  void navigator.clipboard
+                                    .writeText(String(doc.id))
+                                    .then(() => {
+                                      showSuccessToast("ID가 복사되었습니다.");
+                                    })
+                                    .catch(() => {});
+                                }}
+                              >
+                                복사
+                              </Button>
+                              <Link href={doc.href}>
+                                <Button type="button" variant="outline" size="sm">
+                                  상세 보기
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className={adminTypography.meta}>
+                          연결된 교체 작업 문서를 확인할 수 없습니다.
+                        </p>
+                      )}
+                    </div>
+                    <p className="mt-3 text-ui-label text-foreground/75">{latestPackageSummary}</p>
+                  </div>
+
+                  <div className={adminSurface.fieldPanel}>
+                    <p className="mb-2 text-ui-body-sm font-semibold text-foreground">
+                      최신 작업 접수 요약
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-ui-body-sm">
+                      {latestLinkedApplication?.status && (
+                        <p>
+                          <span className="text-muted-foreground">작업 상태:</span>{" "}
+                          <span className="font-medium text-foreground">
+                            {getCommonApplicationStatusLabel(latestLinkedApplication.status) ??
+                              latestLinkedApplication.status}
+                          </span>
+                        </p>
+                      )}
+                      {latestLinkedApplication?.receptionLabel && (
+                        <p>
+                          <span className="text-muted-foreground">접수 방식:</span>{" "}
+                          <span className="font-medium text-foreground">
+                            {latestLinkedApplication.receptionLabel}
+                          </span>
+                        </p>
+                      )}
+                      {latestRacketCount !== null && (
+                        <p>
+                          <span className="text-muted-foreground">라인 수:</span>{" "}
+                          <span className="font-medium text-foreground">{latestRacketCount}개</span>
+                        </p>
+                      )}
+                      {latestStringSummary && (
+                        <p>
+                          <span className="text-muted-foreground">스트링:</span>{" "}
+                          <span className="font-medium text-foreground">{latestStringSummary}</span>
+                        </p>
+                      )}
+                      {latestLinkedApplication?.tensionSummary && (
+                        <p>
+                          <span className="text-muted-foreground">텐션:</span>{" "}
+                          <span className="font-medium text-foreground">
+                            {latestLinkedApplication.tensionSummary}
+                          </span>
+                        </p>
+                      )}
+                      {latestLinkedApplication?.reservationLabel && (
+                        <p>
+                          <span className="text-muted-foreground">예약:</span>{" "}
+                          <span className="font-medium text-foreground">
+                            {latestLinkedApplication.reservationLabel}
+                          </span>
+                        </p>
+                      )}
+                      {latestApplicationLines.length > 0 && (
+                        <div className="col-span-2">
+                          <span className="text-muted-foreground">장착 정보:</span>{" "}
+                          <div className="mt-1 space-y-1">
+                            {latestApplicationLines.map((line, index) => {
+                              const storedRacketLabel =
+                                line.racketLabel || line.racketType || `${index + 1}번째 라켓`;
+                              const storedStringLabel = line.stringName || "스트링 미입력";
+                              const hasGenericRacketLabel = /^(?:라켓|라켓명|라켓 종류|라켓 정보)$/u.test(
+                                storedRacketLabel.trim(),
+                              );
+                              const hasRacketStringCollision =
+                                Boolean(line.stringName) &&
+                                storedRacketLabel.trim() === storedStringLabel.trim();
+                              const needsRacketLabelReview =
+                                hasGenericRacketLabel || hasRacketStringCollision;
+
+                              return (
+                                <div
+                                  key={line.id ?? `${latestLinkedApplication?.id}-line-${index}`}
+                                  className="space-y-1"
+                                >
+                                  <p className="font-medium text-foreground">
+                                    {needsRacketLabelReview
+                                      ? "라켓명 확인 필요"
+                                      : storedRacketLabel}{" "}
+                                    · {storedStringLabel}
+                                    {line.gauge || line.colorLabel || line.color
+                                      ? ` · 게이지(굵기) ${line.gauge ? formatGaugeLabel(line.gauge) : "-"} / 색상 ${line.colorLabel || line.color || "-"}`
+                                      : ""}
+                                  </p>
+                                  {needsRacketLabelReview && (
+                                    <p className="text-ui-label text-warning">
+                                      저장된 라켓명이 구체적이지 않거나 스트링명과 동일합니다. 원본
+                                      신청서 확인이 필요합니다.
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {latestRequirements && (
+                        <p className="col-span-2">
+                          <span className="text-muted-foreground">요청사항:</span>{" "}
+                          <span className="whitespace-pre-wrap font-medium text-foreground">
+                            {latestRequirements}
+                          </span>
+                        </p>
+                      )}
+                      {typeof latestLinkedApplication?.totalPrice === "number" && (
+                        <p>
+                          <span className="text-muted-foreground">교체 비용:</span>{" "}
+                          <span className="font-medium text-foreground">
+                            {isLinkedStringingOrder
+                              ? "주문 결제에 포함됨"
+                              : formatCurrency(latestLinkedApplication.totalPrice)}
+                          </span>
+                        </p>
+                      )}
+                      <p>
+                        <span className="text-muted-foreground">패키지 적용:</span>{" "}
+                        <span className="font-medium text-foreground">
+                          {latestPackageApplied ? "적용" : "미적용"}
+                        </span>
+                      </p>
+                      {latestPackageTitle && (
+                        <p>
+                          <span className="text-muted-foreground">패키지 상품:</span>{" "}
+                          <span className="font-medium text-foreground">{latestPackageTitle}</span>
+                        </p>
+                      )}
+                      {latestPackageSize !== null &&
+                        latestPackageUsedCount !== null &&
+                        latestPackageRemainingCount !== null && (
+                          <p className="col-span-2">
+                            <span className="text-muted-foreground">패키지 사용 현황:</span>{" "}
+                            <span className="font-medium text-foreground">
+                              총 {latestPackageSize}회 / 사용 {latestPackageUsedCount}회 / 남은{" "}
+                              {latestPackageRemainingCount}회
+                            </span>
+                          </p>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        <Card className={cn("mb-6", adminSurface.cardMuted)}>
+          <CardHeader className="pb-2">
+            <CardTitle className={adminTypography.panelTitle}>재고 운영 정보</CardTitle>
+            <CardDescription className={adminTypography.meta}>
+              차감·복구 기준만 보조 정보로 확인합니다.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className={adminSurface.fieldPanel}>
+              <div className="space-y-1.5 text-ui-label leading-relaxed text-muted-foreground">
+                <p>
+                  <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
+                  {isVariantStockMode ? "색상×게이지(굵기) 조합 재고" : "기존 재고 방식"}
+                </p>
+                <p>
+                  {isVariantStockMode
+                    ? "선택한 색상과 게이지(굵기) 조합 기준으로 재고가 차감되었습니다."
+                    : "기존 색상/게이지(굵기) 재고 기준으로 처리된 주문입니다."}
+                </p>
+                {isVariantStockMode ? (
+                  <div className="space-y-1">
+                    {variantStockDeductionItems.map((item, index) => (
+                      <p key={`${item.name}-${index}`}>
+                        {item.name}: 색상 {stringColorLabel(item.stockDeduction?.colorValue) || "-"}{" "}
+                        / 게이지(굵기) {formatGaugeLabel(item.stockDeduction?.gaugeValue) || "-"}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+                <p>
+                  <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
+                  {orderDetail.stockRestore?.variantStockRestoredAt
+                    ? "복구 완료"
+                    : "복구 정보 없음"}
+                </p>
+                {orderDetail.stockRestore?.variantStockRestoredAt ? (
+                  <p>
+                    {formatDateTime(orderDetail.stockRestore.variantStockRestoredAt)}
+                    {orderDetail.stockRestore.variantStockRestoreReason
+                      ? ` · ${orderDetail.stockRestore.variantStockRestoreReason}`
+                      : ""}
+                  </p>
+                ) : isVariantStockMode && isCanceledState ? (
+                  <p className="text-muted-foreground/80">
+                    취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 주문 상태 및 요약 */}
+        <Card className={cn("mb-6 overflow-hidden", adminSurface.cardMuted)}>
+          <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle>
+                {readOnly
+                  ? isLinkedStringingOrder
+                    ? "결제·취소·환불 상태"
+                    : "주문 상태"
+                  : isLinkedStringingOrder
+                    ? "결제·취소·환불"
+                    : "주문 처리 정보"}
+              </CardTitle>
+              {(() => {
+                const st = getOrderStatusBadgeSpec(localStatus);
+                return (
+                  <Badge
+                    variant={st.variant}
+                    className={cn(badgeBase, badgeSizeSm, "w-fit self-start")}
+                  >
+                    {getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
+                  </Badge>
+                );
+              })()}
+            </div>
+            <CardDescription>
+              {readOnly
+                ? isLinkedStringingOrder
+                  ? "결제·취소·환불 상태와 연결 진행 단계를 조회합니다."
+                  : "현재 주문 상태와 취소 관련 정보를 조회합니다."
+                : isLinkedStringingOrder
+                  ? "결제 상태를 확인하고 취소/환불을 처리합니다. 통합 진행 상태는 위 연결 진행 단계에서 변경하세요."
+                  : "현재 주문의 상태 변경과 취소 관련 운영 액션을 한곳에서 처리합니다."}
+              <br />
+              {/* 방문 수령 주문은 수령 전/후 기준으로 안내 문구 분기 */}
+              {isVisitPickup
+                ? `${formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(수령 전)와 환불(수령 후)은 별도 정책으로 운영합니다.`
+                : `${formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-5">
+            <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-3">
+              {/* 왼쪽: 상태 변경 영역 */}
+              <div className="rounded-xl border border-border/60 bg-background p-4">
+                <div className="space-y-3">
+                  {isLinkedStringingOrder ? (
+                    <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-3 text-ui-body-sm text-foreground/80">
+                      <p className="font-medium text-foreground">
+                        이 주문은 교체서비스 신청서와 연결되어 있습니다.
+                      </p>
+                      <p className="mt-1">
+                        주문과 신청서의 진행 상태는 상단 연결 진행 단계에서 함께 변경합니다. 이
+                        영역에서는 결제 상태를 확인하고 취소/환불을 처리하세요.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="rounded-md border border-border bg-muted/20 px-3 py-2 text-ui-body-sm font-medium text-foreground">
+                        이 영역은 현재 주문의 개별 상태만 조정합니다.
+                      </div>
+                      <div>
+                        <p className="text-ui-body-sm font-semibold text-foreground">
+                          주문 진행 상태
+                        </p>
+                        <p className="mt-1 text-ui-label text-foreground/75">
+                          현재 주문의 진행 단계를 확인하고 필요한 경우 상태를 변경합니다.
+                        </p>
+                      </div>
+
+                      <div className="max-w-[280px]">
+                        <OrderStatusSelect
+                          orderId={orderId!}
+                          currentStatus={localStatus}
+                          paymentStatus={orderDetail.paymentStatus}
+                          shippingInfo={orderDetail.shippingInfo}
+                          readOnly={readOnly}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {!isCanceled && (
+                    <p className="text-ui-label text-foreground/75">
+                      운영 기준: {cancelPolicyMessage}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* 오른쪽: 취소/승인/거절 액션 영역 */}
+              <div className="rounded-xl border border-border/60 bg-background p-4">
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-ui-body-sm font-semibold text-foreground">
+                      {readOnly ? "취소/환불 정책" : "운영 액션"}
+                    </p>
+                    <p className="mt-1 text-ui-label text-foreground/75">
+                      {readOnly
+                        ? "현재 취소 요청과 환불 계좌·결제 상태를 조회합니다."
+                        : "고객 요청 기반 취소 승인/거절 또는 관리자 직접 취소를 진행합니다. 처리 전 환불 계좌·결제 상태를 먼저 확인해주세요."}
+                    </p>
+                  </div>
+
+                  <div
+                    id="admin-order-cancel-controls"
+                    className="flex min-h-[40px] flex-wrap items-center gap-2"
+                  >
+                    {readOnly ? (
+                      <div className="rounded-md border border-border bg-muted px-3 py-2 text-ui-body-sm text-foreground/80">
+                        Portfolio Demo 조회 전용 · 취소/환불 처리를 실행할 수 없습니다.
+                      </div>
+                    ) : localStatus === "취소" ? (
+                      <div className="rounded-md border border-border bg-muted px-3 py-2 text-ui-body-sm text-foreground/80">
+                        취소된 주문입니다. 추가 액션이 불가능합니다.
+                      </div>
+                    ) : isCancelRequested ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setConfirmAction("approveCancel")}
+                          disabled={isProcessingCancelRequest || !isCancelableByPolicy}
+                        >
+                          취소 승인
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setIsRejectDialogOpen(true)}
+                          disabled={isProcessingCancelRequest}
+                        >
+                          취소 거절
+                        </Button>
+                      </>
+                    ) : (
+                      <AdminCancelOrderDialog
+                        orderId={orderId!}
+                        onCancelSuccess={handleCancelSuccess}
+                        key={"cancel-" + allHistory.length}
+                        disabled={!isCancelableByPolicy}
+                        status={localStatus}
+                        hasTrackingNumber={adminCancelHasTrackingNumber}
+                        needsCancelFinalization={needsCancelFinalization}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {!readOnly && <AdminConfirmDialog
+                open={confirmAction === "approveCancel"}
+                title="취소 요청을 승인할까요?"
+                description={
+                  isForceCancelRequired
+                    ? "이 주문은 일반 사용자 취소가 불가능한 상태입니다. 관리자는 운영상 강제 취소할 수 있지만, 결제취소, 포인트 회수/복구, 재고 복구, 연결된 교체서비스 취소가 함께 처리될 수 있습니다. 실제 상품 회수 여부와 CS 상황을 확인한 뒤 진행하세요."
+                    : "고객의 주문 취소 요청을 승인합니다.\n결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.\n처리 후 주문/결제 상태가 변경되므로 환불 계좌와 결제 상태를 먼저 확인해주세요."
+                }
+                severity="danger"
+                confirmText="취소 승인"
+                onOpenChange={(open) => {
+                  if (!open) {
+                    setConfirmAction(null);
+                  }
+                }}
+                onConfirm={handleConfirmCancelRequestAction}
+                onCancel={() => setConfirmAction(null)}
+                eventKey="admin-order-cancel-approve-confirm"
+                eventMeta={{ orderId }}
+              />}
+
+              {!readOnly && <AlertDialog
+                open={isRejectDialogOpen}
+                onOpenChange={(open) => {
+                  setIsRejectDialogOpen(open);
+                  if (!open && !isProcessingCancelRequest) {
+                    setRejectMemo("");
+                  }
+                }}
+              >
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>취소 요청을 거절할까요?</AlertDialogTitle>
+                    <AlertDialogDescription className="whitespace-pre-line">
+                      고객의 주문 취소 요청을 거절합니다.
+                      {"\n"}
+                      주문은 기존 처리 흐름을 유지하며, 필요한 경우 거절 사유를 남겨 처리 이력으로
+                      관리할 수 있습니다.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="space-y-2">
+                    <Label htmlFor="cancel-reject-memo">
+                      거절 사유 <span className="text-ui-label text-muted-foreground">(선택)</span>
+                    </Label>
+                    <Textarea
+                      id="cancel-reject-memo"
+                      placeholder="예) 이미 배송 준비가 완료되어 취소가 어렵습니다."
+                      value={rejectMemo}
+                      onChange={(event) => setRejectMemo(event.target.value)}
+                      disabled={isProcessingCancelRequest}
+                    />
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isProcessingCancelRequest}>취소</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        if (isProcessingCancelRequest) return;
+                        void handleRejectCancelRequest();
+                      }}
+                      disabled={isProcessingCancelRequest}
+                    >
+                      취소 거절
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-12 gap-4">
+          {/* 고객 및 수령 정보 */}
+          <Card
+            id="admin-order-customer"
+            className={cn("col-span-6 overflow-hidden", adminSurface.tableCard)}
+          >
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <User className="h-5 w-5 text-foreground" />
+                  <span>고객 및 수령 정보</span>
+                </div>
+                {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
+              </CardTitle>
+            </CardHeader>
+
+            {editingCustomer ? (
+              <CardContent className="p-5">
+                <CustomerEditForm
+                  initialData={{
+                    name: orderDetail.customer.name,
+                    email: orderDetail.customer.email,
+                    phone: orderDetail.customer.phone,
+                    address: orderDetail.customer.address,
+                    addressDetail: orderDetail.customer.addressDetail ?? "",
+                    postalCode: orderDetail.customer.postalCode || "",
+                  }}
+                  orderId={orderDetail._id}
+                  resourcePath="/api/orders"
+                  onSuccess={(updated: any) => {
+                    mutateOrder(); // SWR 캐시 갱신
+                    mutateHistory();
+                    setEditingCustomer(false);
+                  }}
+                  onCancel={() => setEditingCustomer(false)}
+                />
+              </CardContent>
+            ) : (
+              <>
+                <CardContent className="p-5">
+                  <div className="grid grid-cols-2 gap-3">
+                    <AdminCompactField
+                      label="이름"
+                      value={orderDetail.customer.name}
+                      emptyValue="이름 미등록"
+                    />
+                    <AdminCompactField
+                      label="이메일"
+                      value={orderDetail.customer.email}
+                      emptyValue="이메일 미등록"
+                      valueClassName="break-all"
+                    />
+                    <AdminCompactField
+                      label="전화번호"
+                      value={formatKoreanPhone(orderDetail.customer.phone)}
+                      emptyValue="전화번호 미등록"
+                    />
+                    <AdminCompactField
+                      label="주소"
+                      value={
+                        orderDetail.customer.address ? (
+                          <>
+                            <span>{orderDetail.customer.address}</span>
+                            {orderDetail.customer.addressDetail ? (
+                              <span className="mt-1 block text-foreground/80">
+                                {orderDetail.customer.addressDetail}
+                              </span>
+                            ) : null}
+                            {orderDetail.customer.postalCode ? (
+                              <span className="mt-1 block text-foreground/70">
+                                우편번호: {orderDetail.customer.postalCode}
+                              </span>
+                            ) : null}
+                            {isVisitPickup ? (
+                              <span className="mt-2 block text-ui-label text-muted-foreground">
+                                고객이 입력한 주소이며 방문 수령 배송지로 사용되지 않습니다.
+                              </span>
+                            ) : null}
+                          </>
+                        ) : null
+                      }
+                      emptyValue="주소 미등록"
+                      className="col-span-2"
+                    />
+                  </div>
+                </CardContent>
+
+                {isEditMode && (
+                  <CardFooter className="flex justify-center border-t border-border/60 bg-muted/20 py-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingCustomer(true)}
+                      className="hover:bg-muted border-border"
+                    >
+                      수정하기
+                    </Button>
+                  </CardFooter>
+                )}
+              </>
+            )}
+          </Card>
+
+          {/* 배송 정보 */}
+          <Card
+            id="admin-order-shipping"
+            className="overflow-hidden border border-border/70 bg-card shadow-sm col-span-6"
+          >
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+              <CardTitle className="flex items-center">
+                <Truck className="mr-2 h-5 w-5 text-primary" />
+                {isShippingManagedByApplication
+                  ? "고객 발송·반송 정보"
+                  : getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}
+              </CardTitle>
+              {isShippingManagedByApplication && (
+                <CardDescription>
+                  고객 발송 라켓, 입고 확인, 작업 완료 후 반송 운송장을 교체 작업 기준으로
+                  확인하거나 등록합니다.
+                </CardDescription>
+              )}
+            </CardHeader>
+            <CardContent className="p-5">
+              {isShippingManagedByApplication && linkedStringingAppId ? (
+                <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-ui-body-sm text-foreground dark:bg-primary/20">
+                  <div className="flex items-start gap-2">
+                    <LinkIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div className="space-y-2">
+                      <p className="font-medium">
+                        이 주문은 교체서비스 신청서와 연결되어 있어{" "}
+                        {isVisitPickup ? "방문 접수·인도 정보" : "고객 발송 라켓 정보"}를 교체
+                        작업에서 관리합니다.
+                      </p>
+                      <div className="flex items-center space-x-3 p-3 bg-card dark:bg-card rounded-lg border border-border/60 dark:border-border">
+                        <Truck className="h-4 w-4 text-primary" />
+                        <div>
+                          <p className="text-ui-body-sm text-foreground/80">
+                            주문 시 선택한 수령 방식
+                          </p>
+                          <p className="font-medium text-primary">{shippingMethodLabel}</p>
+                        </div>
+                      </div>
+                      {shouldShowLinkedSelfShipSummary && latestLinkedApplication && (
+                        <div className="rounded-lg border border-border/60 bg-card p-3 text-ui-body-sm dark:bg-card">
+                          <p className="font-medium text-foreground">
+                            고객 발송 운송장:{" "}
+                            {latestLinkedApplication.shippingInfo?.selfShip?.trackingNo
+                              ? "등록됨"
+                              : "미등록"}
+                          </p>
+                          <p className="mt-1 text-ui-body-sm text-foreground/75">
+                            운송장:{" "}
+                            {latestLinkedApplication.shippingInfo?.selfShip?.trackingNo ?? "미등록"}
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" className="bg-transparent" asChild>
+                          <Link href={`/admin/applications/stringing/${linkedStringingAppId}`}>
+                            교체 작업 상세 보기
+                          </Link>
+                        </Button>
+
+                        {!readOnly && (
+                          <Button
+                            size="sm"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            onClick={() =>
+                              router.push(
+                                `/admin/applications/stringing/${linkedStringingAppId}/shipping-update`,
+                              )
+                            }
+                          >
+                            <Truck className="mr-2 h-4 w-4" />
+                            {isVisitPickup
+                              ? "수령 준비 정보 등록/수정"
+                              : "고객 발송·반송 정보 확인"}
+                          </Button>
+                        )}
+                      </div>
+
+                      <p className="text-ui-label text-foreground/75">
+                        이 영역은 고객 발송 라켓과 작업 완료 후 반송 정보를 확인하거나 등록하는
+                        곳입니다. 주문과 신청서의 진행 상태는 연결 진행 단계에서 함께 변경하세요.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-ui-body-sm text-foreground/80">
+                        {isVisitPickup ? "수령 방법" : "배송 방법"}
+                      </p>
+                      <p className="font-medium text-foreground">{shippingMethodLabel}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-ui-body-sm text-foreground/80">예상 수령일</p>
+                      <p className="font-medium text-foreground">
+                        {orderDetail.shippingInfo.estimatedDate
+                          ? formatDate(orderDetail.shippingInfo.estimatedDate)
+                          : "미등록"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {!showDeliveryOnlyFields && (
+                    <p className="text-ui-body-sm text-foreground/80">
+                      방문 수령 주문은 준비 완료 안내 후 매장에서 수령 처리합니다.
+                    </p>
+                  )}
+
+                  {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber && (
+                    <>
+                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
+                        <div>
+                          <p className="text-ui-body-sm text-foreground/80">택배사</p>
+                          <p className="font-medium text-foreground">
+                            {getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
+                        <div>
+                          <p className="text-ui-body-sm text-foreground/80">운송장 번호</p>
+                          <p className="font-medium text-foreground">
+                            {orderDetail.shippingInfo.invoice.trackingNumber}
+                          </p>
+                        </div>
+                      </div>
+                      {shouldShowTrackingSummarySkeleton && (
+                        <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3 text-ui-body-sm dark:bg-card">
+                          <Skeleton className="h-4 w-40" />
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-4 w-36" />
+                          <Skeleton className="h-8 w-24" />
+                        </div>
+                      )}
+                      {!isTrackingLoading && !trackingError && trackingData && (
+                        <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3 text-ui-body-sm dark:bg-card">
+                          {trackingData.success && trackingData.supported ? (
+                            <>
+                              <p className="text-foreground">
+                                <span className="text-muted-foreground">실시간 배송 상태:</span>{" "}
+                                {trackingData.displayStatus}
+                              </p>
+                              {trackingData.lastEvent?.locationName && (
+                                <p className="text-foreground">
+                                  <span className="text-muted-foreground">최근 위치:</span>{" "}
+                                  {trackingData.lastEvent.locationName}
+                                </p>
+                              )}
+                              {trackingData.lastEvent?.time && (
+                                <p className="text-foreground">
+                                  <span className="text-muted-foreground">최근 갱신:</span>{" "}
+                                  {formatDateTime(trackingData.lastEvent.time)}
+                                </p>
+                              )}
+                              {shouldShowTrackingStatusNotice && (
+                                <div className="space-y-0.5 rounded-md bg-background px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
+                                  <p>실시간 배송 상태는 택배사 기준이며,</p>
+                                  <p>주문 상태와 다를 수 있습니다.</p>
+                                </div>
+                              )}
+                              {trackingData.progresses.length > 0 && (
+                                <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+                                  {trackingData.progresses.map((progress, idx) => (
+                                    <li key={`${progress.time ?? "na"}-${idx}`}>
+                                      {(progress.statusText ?? "상태 업데이트") +
+                                        (progress.locationName
+                                          ? ` · ${progress.locationName}`
+                                          : "") +
+                                        (progress.time
+                                          ? ` · ${formatDateTime(progress.time)}`
+                                          : "")}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  window.open(trackingData.linkUrl, "_blank", "noopener,noreferrer")
+                                }
+                              >
+                                배송조회
+                              </Button>
+                            </>
+                          ) : trackingData.success && !trackingData.supported ? (
+                            <p className="text-muted-foreground">{trackingData.message}</p>
+                          ) : (
+                            <p className="text-destructive">
+                              {getTrackingFailureMessage(trackingData)}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {trackingError && (
+                        <p className="text-ui-body-sm text-destructive">
+                          {getTrackingErrorMessage(trackingData, trackingError)}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 결제 정보 */}
+          <Card
+            id="admin-order-payment"
+            className="overflow-hidden border border-border/70 bg-card shadow-sm col-span-6"
+          >
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <span>결제 정보</span>
+                </div>
+                {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
+              </CardTitle>
+            </CardHeader>
+
+            {editingPayment ? (
+              <CardContent className="p-5">
+                <PaymentEditForm
+                  initialData={{ total: orderDetail.total }}
+                  orderId={orderId}
+                  onSuccess={() => {
+                    mutateOrder();
+                    mutateHistory();
+                    setEditingPayment(false);
+                  }}
+                  onCancel={() => setEditingPayment(false)}
+                />
+              </CardContent>
+            ) : (
+              <>
+                <CardContent className="p-5">
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-3">
+                      <AdminCompactField
+                        label="총 결제 금액"
+                        value={formatCurrency(orderDetail.total)}
+                        valueClassName="font-semibold text-primary"
+                      />
+                      <AdminCompactField
+                        label="결제 상태"
+                        value={(() => {
+                          const pay = getPaymentStatusBadgeSpec(paymentBadgeStatus);
+                          return (
+                            <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                              {paymentStatusDisplayLabel}
+                            </Badge>
+                          );
+                        })()}
+                      />
+                      <AdminCompactField label="결제 방식" value={paymentMethodDisplayLabel} />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 rounded-lg border border-border/60 bg-muted/15 p-3 xl:grid-cols-3">
+                      <AdminCompactField
+                        label="상품 금액"
+                        value={formatCurrency(productSubtotal)}
+                      />
+                      <AdminCompactField
+                        label="교체서비스"
+                        value={formatCurrency(serviceFee)}
+                      />
+                      <AdminCompactField label="배송비" value={formatCurrency(shippingFee)} />
+                      <AdminCompactField
+                        label="포인트 사용"
+                        value={pointsUsed > 0 ? `-${formatCurrency(pointsUsed)}` : formatCurrency(0)}
+                      />
+                      <AdminCompactField
+                        label="최종 결제"
+                        value={formatCurrency(orderDetail.total)}
+                        valueClassName="font-semibold text-primary"
+                      />
+                    </div>
+                    {hasPaymentAmountMismatch && (
+                      <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-ui-label text-destructive">
+                        금액 구성 합계 {formatCurrency(calculatedPaymentTotal)}와 저장된 최종 결제금액{" "}
+                        {formatCurrency(orderDetail.total)}이 일치하지 않습니다.
+                      </div>
+                    )}
+
+                    <details className="group rounded-lg border border-border/60 bg-background/70 p-1">
+                      <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
+                        입금/PG 상세 정보
+                        <span className="text-ui-label font-medium text-muted-foreground group-open:hidden">
+                          펼치기
+                        </span>
+                        <span className="hidden text-ui-label font-medium text-muted-foreground group-open:inline">
+                          접기
+                        </span>
+                      </summary>
+                      <div className="mt-1 border-t border-border/60 p-3 text-ui-body-sm">
+                        <PaymentMethodDetail
+                          method={orderDetail.paymentMethod || "결제 정보 확인 필요"}
+                          paymentStatusLabel={paymentStatusDisplayLabel}
+                          bankKey={orderDetail.paymentBank}
+                          depositor={orderDetail.shippingInfo?.depositor}
+                          paymentProvider={orderDetail.paymentProvider}
+                          easyPayProvider={orderDetail.paymentEasyPayProvider}
+                          paymentStatus={orderDetail.paymentStatus}
+                          paymentTid={orderDetail.paymentTid}
+                          paymentCardDisplayName={orderDetail.paymentCardDisplayName}
+                          paymentCardCompany={orderDetail.paymentCardCompany}
+                          paymentCardLabel={orderDetail.paymentCardLabel}
+                          paymentNiceSync={orderDetail.paymentNiceSync}
+                        />
+                        {!readOnly &&
+                          String(orderDetail.paymentProvider ?? "")
+                            .trim()
+                            .toLowerCase() === "nicepay" && (
+                          <div className="mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleNiceSync}
+                              disabled={isSyncingNice}
+                            >
+                              {isSyncingNice ? "확인 중..." : "PG 상태 다시 확인"}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  </div>
+                </CardContent>
+                {hasNiceUnsettledAmountShortage && (
+                  <Card className="border-warning/40 bg-warning/10">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base text-warning">
+                        NICE 자동 카드취소 불가
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        가맹점 미정산금액이 취소금액보다 부족해 NICE 자동취소가 거절되었습니다. NICE
+                        입금 후 취소 절차를 진행한 뒤, 강제취소 완료 후 이 화면에서 PG 상태를 다시
+                        확인하세요.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pt-0">
+                      <div className="grid grid-cols-4 gap-3">
+                        <AdminCompactField label="TID" value={niceBlockedTid || "-"} />
+                        <AdminCompactField
+                          label="거래금액"
+                          value={formatCurrency(niceBlockedTotalAmount)}
+                        />
+                        <AdminCompactField
+                          label="취소요청금액"
+                          value={formatCurrency(niceBlockedCancelAmount)}
+                        />
+                        <AdminCompactField
+                          label="NICE 결과"
+                          value={
+                            niceBlockedResultCode || niceBlockedResultMsg
+                              ? `${niceBlockedResultCode || "-"}${niceBlockedResultMsg ? ` / ${niceBlockedResultMsg}` : ""}`
+                              : "-"
+                          }
+                        />
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={handleCopyNiceInquiryTemplate}>
+                          <Copy className="mr-2 h-4 w-4" />
+                          NICE 문의 양식 복사
+                        </Button>
+                        {!readOnly && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleNiceSync}
+                            disabled={isSyncingNice}
+                          >
+                            {isSyncingNice ? "확인 중..." : "PG 상태 다시 확인"}
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                {isEditMode && canEditPaymentTotal && (
+                  <CardFooter className="flex justify-center border-t border-border/60 bg-muted/20 py-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingPayment(true)}
+                      className="hover:bg-muted border-border"
+                    >
+                      수정하기
+                    </Button>
+                  </CardFooter>
+                )}
+              </>
+            )}
+          </Card>
+
+          {/* 주문 항목 */}
+          <Card
+            id="admin-order-items"
+            className="overflow-hidden border border-border/70 bg-card shadow-sm col-span-6"
+          >
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+              <CardTitle className="flex items-center">
+                <ShoppingCart className="mr-2 h-5 w-5 text-foreground" />
+                주문 항목
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5">
+              <div className="space-y-4">
+                {orderDetail.items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start justify-between gap-3 rounded-xl bg-muted p-4 transition-colors hover:bg-muted dark:hover:bg-muted"
+                  >
+                    <div className="flex min-w-0 flex-1 gap-3">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border/60 bg-background">
+                        {item.imageUrl ? (
+                          <Image
+                            src={item.imageUrl}
+                            alt={item.name}
+                            fill
+                            sizes="64px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="flex h-full w-full items-center justify-center text-muted-foreground"
+                            aria-label="상품 이미지 없음"
+                          >
+                            <Package className="h-6 w-6" aria-hidden="true" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
+                          {item.name}
+                        </h4>
+                        <p className="text-ui-body-sm text-foreground/80">수량: {item.quantity}개</p>
+                        {item.selectedStringName && (
+                          <p className="text-ui-label text-foreground/70">
+                            선택 스트링: {item.selectedStringName}
+                          </p>
+                        )}
+                        {item.selectedGauge && (
+                          <p className="text-ui-label text-foreground/70">
+                            게이지(굵기): {formatGaugeLabel(item.selectedGauge)}
+                          </p>
+                        )}
+                        {(item.selectedColorLabel || item.selectedColor) && (
+                          <p className="flex items-center gap-2 text-ui-label text-foreground/70">
+                            <span>색상:</span>
+                            {item.selectedColorHex && (
+                              <span
+                                className="h-3 w-3 rounded-full border border-border"
+                                style={{
+                                  backgroundColor: item.selectedColorHex,
+                                }}
+                                aria-hidden="true"
+                              />
+                            )}
+                            <span>{item.selectedColorLabel || item.selectedColor}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
+                        단가: {formatCurrency(item.price)}
+                      </p>
+                      {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
+                        <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
+                          스트링 가격: {formatCurrency(item.stringPrice)}
+                        </p>
+                      )}
+                      {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
+                        <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
+                          장착비: {formatCurrency(item.mountingFee)}
+                        </p>
+                      )}
+                      <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
+                        상품 소계: {formatCurrency(item.price * item.quantity)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 방문 수령 주문은 배송 요청사항 카드를 숨김 */}
+        {showDeliveryOnlyFields && (
+          <Card className="mt-6 mb-6 overflow-hidden border border-border/60 bg-muted/20 shadow-none col-span-6">
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+              <CardTitle className="flex items-center justify-between">
+                <span>배송 요청사항</span>
+                {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
+              </CardTitle>
+              <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
+            </CardHeader>
+            {editingRequest ? (
+              <CardContent className="p-5">
+                <RequestEditForm
+                  initialData={orderDetail.shippingInfo.deliveryRequest || ""}
+                  orderId={orderId}
+                  onSuccess={() => {
+                    mutateOrder();
+                    mutateHistory();
+                    setEditingRequest(false);
+                  }}
+                  onCancel={() => setEditingRequest(false)}
+                />
+              </CardContent>
+            ) : (
+              <>
+                <CardContent className="p-5">
+                  {orderDetail.shippingInfo.deliveryRequest ? (
+                    <div className="bg-muted border border-border rounded-lg p-4">
+                      <p className="text-foreground whitespace-pre-line">
+                        {orderDetail.shippingInfo.deliveryRequest}
+                      </p>
+                    </div>
+                  ) : (
+                    <AdminInlineEmpty>배송 요청사항 없음</AdminInlineEmpty>
+                  )}
+                </CardContent>
+                {isEditMode && (
+                  <CardFooter className="flex justify-center border-t border-border/60 bg-muted/20 py-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingRequest(true)}
+                      className="hover:bg-muted border-border"
+                    >
+                      수정하기
+                    </Button>
+                  </CardFooter>
+                )}
+              </>
+            )}
+          </Card>
+        )}
+
+        <div id="admin-order-notes" className="col-span-12">
+          <AdminInternalNotesCard
+            targetType="order"
+            targetId={orderDetail._id}
+            className="h-full"
+            readOnly={readOnly}
+          />
+        </div>
+
+        {/* 처리 이력 */}
+        <Card
+          id="admin-order-history"
+          className={cn("overflow-hidden col-span-12", adminSurface.tableCard)}
+        >
+          <CardHeader className="border-b bg-muted/20">
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              <span>처리 이력</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-5">
+            <OrderHistory orderId={orderId} shippingMethod={orderDetail.shippingInfo} embedded />
+          </CardContent>
+        </Card>
+      </div>
+    </AdminPageShell>
+  );
+}
