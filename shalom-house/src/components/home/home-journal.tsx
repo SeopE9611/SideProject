@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { HomeHero } from "./home-hero";
 import { HomeLifeStories } from "./home-life-stories";
+import { HomeProgramDisclosure } from "./home-program-disclosure";
 import type { HeroImage } from "./home-hero-media";
 import type { FacilityOverviewContent, ContactInformationContent } from "@/features/site-content/site-content.types";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
@@ -111,24 +112,13 @@ export function HomeJournal({
           </header>
           <div>
             {programs.map((program) => (
-              <details key={program.slug} className="program-disclosure">
-                <summary>
-                  <span>{program.category}</span>
-                  <h4 className="text-safe-wrap">{program.title}</h4>
-                  <span className="disclosure-mark" aria-hidden="true">
-                    +
-                  </span>
-                </summary>
-                <div>
-                  <p className="text-safe-wrap">{program.summary}</p>
-                  <Link
-                    href={preview ? `/design-preview/programs/${program.slug}` : `/life/programs/${program.slug}`}
-                    className="institution-link"
-                  >
-                    프로그램 자세히 보기 ↗
-                  </Link>
-                </div>
-              </details>
+              <HomeProgramDisclosure
+                key={program.slug}
+                category={program.category}
+                title={program.title}
+                summary={program.summary}
+                href={preview ? `/design-preview/programs/${program.slug}` : `/life/programs/${program.slug}`}
+              />
             ))}
             {!programs.length ? (
               <p className="journal-empty">
