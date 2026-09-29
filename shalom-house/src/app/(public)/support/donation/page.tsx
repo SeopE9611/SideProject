@@ -24,8 +24,8 @@ export default async function DonationPage() {
         title="후원하기"
         description={guidance.pageDescription}
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "함께하기", href: "/support" }, { label: "후원하기" }]}
+        adminAction={<PublicAdminEditLink href="/admin/site-content/donation-guidance" />}
       />
-      <PublicAdminEditLink href="/admin/site-content/donation-guidance" />
       <div className="mx-auto grid max-w-site items-start gap-9 px-page py-9 sm:px-page-wide sm:py-12 lg:grid-cols-12 lg:gap-12">
         <section aria-labelledby="donation-steps-heading" className="min-w-0 lg:col-span-8">
           <p className="text-small font-bold text-accent">확인 순서</p>

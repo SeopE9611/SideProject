@@ -31,8 +31,8 @@ export default async function AboutPage() {
         title="시설개요"
         description={content.pageDescription}
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "시설소개" }]}
+        adminAction={<PublicAdminEditLink href="/admin/site-content/facility-overview" />}
       />
-      <PublicAdminEditLink href="/admin/site-content/facility-overview" />
       <div className="mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-10">
         <section aria-labelledby="about-summary-heading">
           <h2 id="about-summary-heading" className="text-heading font-bold">
