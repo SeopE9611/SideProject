@@ -129,7 +129,7 @@ export default async function DesignPreview({
                     <textarea
                       rows={8}
                       className="rounded-control border border-border-strong p-3"
-                      defaultValue="테스트1입니다.\n테스트2입니다."
+                      defaultValue={"테스트1입니다.\n테스트2입니다."}
                     />
                   </label>
                   <div className="flex gap-4 items-center">
