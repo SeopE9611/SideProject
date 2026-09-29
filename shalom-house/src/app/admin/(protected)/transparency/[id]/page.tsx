@@ -56,7 +56,7 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
     ],
   ];
   return (
-    <div className="min-w-0 space-y-8">
+    <div className="admin-detail-layout">
       <AdminDetailHeader
         backHref="/admin/transparency"
         backLabel="자료공개 관리로 돌아가기"

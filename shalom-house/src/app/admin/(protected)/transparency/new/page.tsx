@@ -9,7 +9,7 @@ export default async function NewTransparencyPage() {
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "content.create")) redirect("/admin?forbidden=1");
   return (
-    <div className="min-w-0 space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref="/admin/transparency"
         backLabel="자료공개 관리로 돌아가기"

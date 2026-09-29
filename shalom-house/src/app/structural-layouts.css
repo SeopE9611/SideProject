@@ -1219,3 +1219,9 @@
     scroll-behavior: auto;
   }
 }
+
+@media (min-width: 768px) {
+  .design-review-bar:has(+ .workbench) {
+    margin-left: 6.5rem;
+  }
+}

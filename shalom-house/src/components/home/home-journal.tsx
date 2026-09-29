@@ -41,6 +41,9 @@ export function HomeJournal({
   preview = false,
   errors = {},
 }: HomeJournalProps) {
+  const latestPosts = [...notices, ...activities]
+    .toSorted((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+    .slice(0, 3);
   const hasNotices = notices.length > 0;
   const hasActivities = activities.length > 0;
   return (
@@ -56,7 +59,7 @@ export function HomeJournal({
             <p className="text-small text-muted-foreground">미리보기 · 테스트 소식입니다.</p>
           ) : null}
           <ul>
-            {[...notices, ...activities].slice(0, 3).map((post) => (
+            {latestPosts.map((post) => (
               <li key={post.id}>
                 <Link href={preview ? `/design-preview/news/${post.slug}` : `/news/${post.slug}`}>
                   <time dateTime={post.publishedAt}>{formatPublicDate(post.publishedAt)}</time>
@@ -188,11 +191,11 @@ export function HomeJournal({
           <ul>
             {documents.map((doc) => (
               <li key={doc.slug}>
-                <Link href="/transparency">
+                <a href={`/api/transparency/${doc.slug}/document`} target="_blank" rel="noreferrer">
                   <span>{transparencyCategoryLabels[doc.category]}</span>
                   <strong className="text-safe-wrap">{doc.title}</strong>
                   <span aria-hidden="true">↗</span>
-                </Link>
+                </a>
               </li>
             ))}
           </ul>

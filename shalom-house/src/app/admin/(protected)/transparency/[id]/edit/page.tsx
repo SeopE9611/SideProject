@@ -11,7 +11,7 @@ export default async function EditTransparencyPage({ params }: { params: Promise
   if (!admin || !hasAdminPermission(admin, "content.update")) redirect("/admin?forbidden=1");
   if (!document.isEditable) notFound();
   return (
-    <div className="min-w-0 space-y-8">
+    <div className="admin-editor-layout">
       <AdminFormPageHeader
         backHref={`/admin/transparency/${document.id}`}
         backLabel="상세로 돌아가기"
