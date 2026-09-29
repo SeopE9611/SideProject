@@ -197,6 +197,10 @@
   cursor: default;
   opacity: 0.35;
 }
+.life-filmstrip-controls button:not(:disabled):focus-visible {
+  color: var(--color-primary-foreground);
+  background: var(--color-primary);
+}
 .life-filmstrip > li {
   flex: 0 0 39%;
   min-width: 0;
@@ -240,6 +244,10 @@
   font-weight: 600;
   margin-top: 0.75rem;
 }
+.life-filmstrip a:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
 .journal-empty {
   padding: 2rem 0;
   border-block: 1px solid var(--color-border);
@@ -259,20 +267,19 @@
 .program-disclosure {
   border-bottom: 1px solid var(--color-border-strong);
 }
-.program-disclosure summary {
+.program-disclosure > button {
+  width: 100%;
   display: grid;
   grid-template-columns: 6rem 1fr auto;
   align-items: baseline;
   gap: 1.5rem;
   padding: 1.5rem 0;
   cursor: pointer;
+  text-align: left;
   list-style: none;
   transition: background-color var(--motion-duration-fast) var(--ease-standard);
 }
-.program-disclosure summary::-webkit-details-marker {
-  display: none;
-}
-.program-disclosure summary > span:first-child {
+.program-disclosure > button > span:first-child {
   font-size: 0.8rem;
   color: var(--color-muted-foreground);
 }
@@ -281,15 +288,61 @@
   font-weight: 600;
 }
 .program-disclosure .disclosure-mark {
-  font-size: 1.6rem;
+  position: relative;
+  width: 1.25rem;
+  height: 1.25rem;
+  align-self: center;
+  color: var(--color-primary);
 }
-.program-disclosure[open] .disclosure-mark {
-  transform: rotate(45deg);
+.program-disclosure .disclosure-mark::before,
+.program-disclosure .disclosure-mark::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 2px;
+  background: currentColor;
+  transform: translateY(-50%);
 }
-.program-disclosure > div {
+.program-disclosure .disclosure-mark::after {
+  transform: translateY(-50%) rotate(90deg);
+  transition:
+    opacity var(--motion-duration-fast) var(--ease-standard),
+    transform var(--motion-duration-fast) var(--ease-standard);
+}
+.program-disclosure[data-open] h4 {
+  color: var(--color-primary);
+}
+.program-disclosure[data-open] .disclosure-mark::after {
+  opacity: 0;
+  transform: translateY(-50%) rotate(90deg) scaleX(0);
+}
+.program-disclosure-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--motion-duration-standard) var(--ease-standard),
+    opacity var(--motion-duration-standard) var(--ease-standard),
+    visibility 0s linear var(--motion-duration-standard);
+}
+.program-disclosure-content > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.program-disclosure[data-open] .program-disclosure-content {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--motion-duration-standard) var(--ease-standard),
+    opacity var(--motion-duration-standard) var(--ease-standard),
+    visibility 0s;
+}
+.program-disclosure-content-inner {
   padding: 0 0 1.7rem 7.5rem;
 }
-.program-disclosure > div a {
+.program-disclosure-content a {
   margin-top: 1rem;
 }
 .journal-about {
@@ -454,6 +507,13 @@
   padding: 0.7rem 0;
   border-bottom: 1px solid var(--color-border);
   color: var(--color-muted-foreground);
+  transition:
+    color var(--motion-duration-fast) var(--ease-standard),
+    background-color var(--motion-duration-fast) var(--ease-standard);
+}
+.rail-navigation a:not([aria-current="page"]):focus-visible {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-hover);
 }
 .rail-navigation a[aria-current="page"] {
   color: var(--color-primary);
@@ -480,7 +540,7 @@
 
 .home-cover-note .cover-link:focus-visible,
 .home-cover-index a:focus-visible,
-.program-disclosure summary:focus-visible,
+.program-disclosure > button:focus-visible,
 .journal-directory li a:focus-visible {
   background: var(--color-primary-soft);
   outline: 2px solid var(--color-focus-ring);
@@ -495,7 +555,7 @@
     background: #ffffff1a;
   }
   .home-cover-index a:hover,
-  .program-disclosure summary:hover,
+  .program-disclosure > button:hover,
   .journal-directory li a:hover {
     background: var(--color-primary-soft);
   }
@@ -507,6 +567,15 @@
   .life-filmstrip-controls button:not(:disabled):hover {
     color: var(--color-primary-foreground);
     background: var(--color-primary);
+  }
+  .life-filmstrip a:hover h3 {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+  }
+  .rail-navigation a:not([aria-current="page"]):hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-hover);
   }
 }
 
@@ -1145,17 +1214,17 @@
     gap: 1.5rem;
     margin-top: 2rem;
   }
-  .program-disclosure summary {
+  .program-disclosure > button {
     grid-template-columns: 1fr auto;
     gap: 0.5rem;
   }
-  .program-disclosure summary > span:first-child {
+  .program-disclosure > button > span:first-child {
     grid-column: 1/-1;
   }
   .program-disclosure h4 {
     font-size: 1.2rem;
   }
-  .program-disclosure > div {
+  .program-disclosure-content-inner {
     padding-left: 0;
   }
   .journal-about-content {

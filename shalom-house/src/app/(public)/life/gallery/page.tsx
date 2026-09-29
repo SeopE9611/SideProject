@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { GalleryCollection } from "@/components/gallery/gallery-collection";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { findPublicGalleryItems } from "@/features/gallery/gallery.repository";
 import { createPublicPageMetadata } from "@/features/seo/metadata";
@@ -32,17 +32,26 @@ export default async function GalleryPage() {
         aria-labelledby="gallery-list-heading"
         className="mx-auto max-w-site px-page py-7 sm:px-page-wide sm:py-9"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-          <h2 id="gallery-list-heading" className="text-heading font-bold">
-            활동 기록{" "}
-            {items !== null ? (
-              <span className="text-base font-medium text-muted-foreground">{items.length}건</span>
-            ) : null}
-          </h2>
-          <Link className="institution-link text-small" href="/news/activities">
-            활동소식 보기
-          </Link>
-        </div>
+        {items && items.length > 0 ? (
+          <GalleryCollection
+            items={items.map((item) => ({
+              ...item,
+              dateLabel: formatPublicDate(item.activityDate),
+            }))}
+          />
+        ) : (
+          <div className="gallery-list-toolbar border-b border-border pb-3">
+            <h2 id="gallery-list-heading" className="text-heading font-bold">
+              활동 기록{" "}
+              {items !== null ? (
+                <span className="text-base font-medium text-muted-foreground">{items.length}건</span>
+              ) : null}
+            </h2>
+            <Link className="institution-link text-small" href="/news/activities">
+              활동소식 보기
+            </Link>
+          </div>
+        )}
         {items === null ? (
           <div className="border-b border-border py-6" role="status">
             <h3 className="font-semibold">활동사진을 불러오지 못했습니다.</h3>
@@ -52,42 +61,7 @@ export default async function GalleryPage() {
               다시 불러오기
             </a>
           </div>
-        ) : items.length > 0 ? (
-          <ul className="gallery-collection">
-            {items.map((item, index) => (
-              <li key={item.slug} className="min-w-0">
-                <Link
-                  className="photo-link block"
-                  href={"/life/gallery/" + item.slug}
-                  aria-label={item.title + " 사진 보기"}
-                >
-                  <Image
-                    src={"/api/gallery/" + item.slug + "/media"}
-                    alt={item.altText}
-                    width={item.width}
-                    height={item.height}
-                    loading={index < 3 ? "eager" : "lazy"}
-                    fetchPriority={index === 0 ? "high" : "auto"}
-                    className="aspect-[4/3] w-full bg-surface-subtle object-cover"
-                    unoptimized
-                  />
-                </Link>
-                <p className="text-safe-wrap mt-3 text-small text-muted-foreground">
-                  {item.category} · <time dateTime={item.activityDate}>{formatPublicDate(item.activityDate)}</time>
-                </p>
-                <h3 className="mt-2 text-lg font-semibold">
-                  <Link
-                    className="text-safe-wrap underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                    href={"/life/gallery/" + item.slug}
-                  >
-                    {item.title}
-                  </Link>
-                </h3>
-                <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">{item.description}</p>
-              </li>
-            ))}
-          </ul>
-        ) : (
+        ) : items.length > 0 ? null : (
           <div className="border-b border-border py-6">
             <h3 className="text-safe-wrap font-semibold">아직 등록된 활동사진이 없습니다.</h3>
             <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
