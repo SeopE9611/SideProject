@@ -25,6 +25,16 @@ const createStorage = () => {
 test("명시적 checkout source와 전체 query를 30분 동안 보존한다", () => {
   const storage = createStorage();
   const href = "/checkout?mode=buynow&withService=1&mountingFee=12000&careItemId=care-1";
+  const validHrefs = [
+    "/checkout?mode=buynow",
+    "/checkout?mode=buynow&withService=1&mountingFee=12000",
+    "/checkout?source=cart-selection",
+    "/checkout?source=cart-selection&withService=1",
+  ];
+  validHrefs.forEach((validHref) =>
+    assert.equal(recovery.isSafeCheckoutRecoveryHref(validHref), true),
+  );
+
   assert.equal(recovery.saveCheckoutRecoveryContext(storage, href, 1_000), true);
   assert.deepEqual(recovery.readCheckoutRecoveryContext(storage, 1_001), {
     href,
@@ -45,11 +55,20 @@ test("missing source, malformed, expired, external recovery는 폐기한다", ()
     "//example.com/checkout?mode=buynow",
     "javascript:alert(1)",
     "/checkout?mode=buynow&source=cart-selection",
+    "/checkout?mode=buynow&source=foo",
+    "/checkout?source=cart-selection&mode=foo",
   ];
   unsafeHrefs.forEach((href) => assert.equal(recovery.isSafeCheckoutRecoveryHref(href), false));
 
   const storage = createStorage();
   storage.setItem(recovery.CHECKOUT_RECOVERY_CONTEXT_KEY, "not-json");
+  assert.equal(recovery.readCheckoutRecoveryContext(storage, 1_000), null);
+  assert.equal(storage.values.size, 0);
+
+  storage.setItem(
+    recovery.CHECKOUT_RECOVERY_CONTEXT_KEY,
+    JSON.stringify({ href: "/checkout?mode=buynow&source=foo", expiresAt: 1_000 + TTL_MS }),
+  );
   assert.equal(recovery.readCheckoutRecoveryContext(storage, 1_000), null);
   assert.equal(storage.values.size, 0);
 

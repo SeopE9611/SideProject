@@ -17,9 +17,11 @@ export const isSafeCheckoutRecoveryHref = (href: unknown): href is string => {
     const url = new URL(href, "https://checkout.local");
     if (url.origin !== "https://checkout.local" || url.pathname !== "/checkout") return false;
 
-    const isBuyNow = url.searchParams.get("mode") === "buynow";
-    const isCartSelection = url.searchParams.get("source") === "cart-selection";
-    return isBuyNow !== isCartSelection;
+    const isBuyNow =
+      url.searchParams.get("mode") === "buynow" && !url.searchParams.has("source");
+    const isCartSelection =
+      url.searchParams.get("source") === "cart-selection" && !url.searchParams.has("mode");
+    return isBuyNow || isCartSelection;
   } catch {
     return false;
   }
