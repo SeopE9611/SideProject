@@ -16,8 +16,10 @@ type BuyNowState = {
   expiredOnHydration: boolean;
   setItem: (item: CartItem) => void;
   clear: () => void; // 성공/이탈 시 초기화
+  expire: () => void;
   consumeHydrationExpiration: () => void;
   finishHydration: () => void;
+  failHydration: () => void;
 };
 
 export const useBuyNowStore = create<BuyNowState>()(
@@ -33,8 +35,14 @@ export const useBuyNowStore = create<BuyNowState>()(
         set({ item: null, expiresAt: null, expiredOnHydration: false });
         useBuyNowStore.persist.clearStorage();
       },
+      expire: () => {
+        set({ item: null, expiresAt: null, expiredOnHydration: true });
+        useBuyNowStore.persist.clearStorage();
+      },
       consumeHydrationExpiration: () => set({ expiredOnHydration: false }),
       finishHydration: () => set({ hasHydrated: true }),
+      failHydration: () =>
+        set({ item: null, expiresAt: null, expiredOnHydration: false, hasHydrated: true }),
     }),
     {
       name: BUY_NOW_STORAGE_KEY,
@@ -48,9 +56,17 @@ export const useBuyNowStore = create<BuyNowState>()(
         }
         return { ...currentState, item: persisted.item, expiresAt: persisted.expiresAt ?? null };
       },
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: (initialState) => (state, error) => {
+        if (error || !state) {
+          try {
+            sessionStorage.removeItem(BUY_NOW_STORAGE_KEY);
+          } finally {
+            initialState.failHydration();
+          }
+          return;
+        }
         if (state?.expiredOnHydration) sessionStorage.removeItem(BUY_NOW_STORAGE_KEY);
-        state?.finishHydration();
+        state.finishHydration();
       },
     },
   ),

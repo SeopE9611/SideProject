@@ -57,3 +57,37 @@ test("checkout은 hydration 이후 bundle을 일반 buy-now보다 우선한다",
     /loading \|\| \(mode === "buynow" && !isCheckoutIntentHydrated\)/,
   );
 });
+
+test("checkout은 hydration 이후에도 timer와 visibility 복귀 시 intent 만료를 다시 확인한다", () => {
+  const checkout = readSource("app/checkout/page.tsx");
+
+  assert.match(checkout, /window\.setTimeout\(expireStaleIntents/);
+  assert.match(checkout, /document\.addEventListener\("visibilitychange", expireStaleIntents\)/);
+  assert.match(checkout, /isCheckoutIntentExpired\(buyNowExpiresAt\)/);
+  assert.match(checkout, /isCheckoutIntentExpired\(pdpBundleExpiresAt\)/);
+});
+
+test("만료 toast는 buy-now checkout에서만 한 번 표시하고 expiration flag를 소비한다", () => {
+  const checkout = readSource("app/checkout/page.tsx");
+
+  assert.match(
+    checkout,
+    /mode === "buynow" && !expirationToastShownRef\.current/,
+  );
+  assert.match(checkout, /expirationToastShownRef\.current = true/);
+  assert.match(checkout, /consumeBuyNowExpiration\(\);\s*consumePdpBundleExpiration\(\)/);
+});
+
+test("hydration 실패 시 빈 상태로 정리하고 hydration을 완료한다", () => {
+  const buyNowStore = readSource("app/store/buyNowStore.ts");
+  const pdpBundleStore = readSource("app/store/pdpBundleStore.ts");
+
+  for (const store of [buyNowStore, pdpBundleStore]) {
+    assert.match(store, /onRehydrateStorage: \(initialState\) => \(state, error\)/);
+    assert.match(store, /if \(error \|\| !state\)/);
+    assert.match(store, /initialState\.failHydration\(\)/);
+    assert.match(store, /hasHydrated: true/);
+  }
+  assert.match(buyNowStore, /item: null, expiresAt: null, expiredOnHydration: false/);
+  assert.match(pdpBundleStore, /items: \[\], expiresAt: null, expiredOnHydration: false/);
+});

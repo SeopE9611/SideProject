@@ -16,8 +16,10 @@ type PdpBundleState = {
   expiredOnHydration: boolean;
   setItems: (items: CartItem[]) => void;
   clear: () => void;
+  expire: () => void;
   consumeHydrationExpiration: () => void;
   finishHydration: () => void;
+  failHydration: () => void;
 };
 
 export const usePdpBundleStore = create<PdpBundleState>()(
@@ -33,8 +35,14 @@ export const usePdpBundleStore = create<PdpBundleState>()(
         set({ items: [], expiresAt: null, expiredOnHydration: false });
         usePdpBundleStore.persist.clearStorage();
       },
+      expire: () => {
+        set({ items: [], expiresAt: null, expiredOnHydration: true });
+        usePdpBundleStore.persist.clearStorage();
+      },
       consumeHydrationExpiration: () => set({ expiredOnHydration: false }),
       finishHydration: () => set({ hasHydrated: true }),
+      failHydration: () =>
+        set({ items: [], expiresAt: null, expiredOnHydration: false, hasHydrated: true }),
     }),
     {
       name: PDP_BUNDLE_STORAGE_KEY,
@@ -48,9 +56,17 @@ export const usePdpBundleStore = create<PdpBundleState>()(
         }
         return { ...currentState, items: persisted.items, expiresAt: persisted.expiresAt ?? null };
       },
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: (initialState) => (state, error) => {
+        if (error || !state) {
+          try {
+            sessionStorage.removeItem(PDP_BUNDLE_STORAGE_KEY);
+          } finally {
+            initialState.failHydration();
+          }
+          return;
+        }
         if (state?.expiredOnHydration) sessionStorage.removeItem(PDP_BUNDLE_STORAGE_KEY);
-        state?.finishHydration();
+        state.finishHydration();
       },
     },
   ),
