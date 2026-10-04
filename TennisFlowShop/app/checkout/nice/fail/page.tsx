@@ -1,4 +1,4 @@
-import { PaymentFailureResult } from "@/components/checkout/PaymentFailureResult";
+import NiceCheckoutFailResult from "@/app/checkout/nice/fail/NiceCheckoutFailResult";
 
 import type { Metadata } from "next";
 
@@ -98,21 +98,11 @@ export default async function NiceCheckoutFailPage({
   const requiresPaymentCheck = guide.accent === "warning";
 
   return (
-    <PaymentFailureResult
+    <NiceCheckoutFailResult
       guide={guide}
       code={code}
       message={rawMessage}
-      primaryAction={
-        requiresPaymentCheck
-          ? { label: "주문 내역 확인", href: "/mypage?tab=orders" }
-          : { label: "체크아웃으로 돌아가기", href: "/checkout" }
-      }
-      secondaryAction={
-        requiresPaymentCheck
-          ? { label: "고객센터로 이동", href: "/support" }
-          : { label: "장바구니로 이동", href: "/cart" }
-      }
-      warningMessage="결제 승인이 완료됐을 가능성이 있으니 같은 상품을 바로 반복 결제하지 마시고, 먼저 주문 내역 또는 고객센터에서 상태를 확인해주세요."
+      requiresPaymentCheck={requiresPaymentCheck}
     />
   );
 }

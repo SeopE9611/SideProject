@@ -10,6 +10,7 @@ import {
   removeSelectedCartItems,
   validateCartCheckoutSelection,
 } from "@/app/store/cartCheckoutSelection";
+import { clearCheckoutRecoveryContext } from "@/app/store/checkoutRecoveryContext";
 
 export default function ClearCartOnMount() {
   const cartItems = useCartStore((s) => s.items);
@@ -34,6 +35,7 @@ export default function ClearCartOnMount() {
       });
     }
     clearCartCheckoutSelectionStorage(sessionStorage);
+    clearCheckoutRecoveryContext(sessionStorage);
     clearBuyNow(); //  buy-now 임시 상태도 함께 비우기
     clearPdpBundle();
   }, [cartItems, clearBuyNow, clearPdpBundle]);

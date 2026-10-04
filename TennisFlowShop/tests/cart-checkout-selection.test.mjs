@@ -111,7 +111,7 @@ test("checkout과 success는 invalid selection을 full cart 처리하지 않는�
     "utf8",
   );
 
-  assert.match(checkout, /isCartSelectionSource\s*\? selectedCartItems\s*: cartItems/);
+  assert.match(checkout, /isCartSelectionSource\s*\? selectedCartItems\s*: \[\]/);
   assert.match(cleanup, /if \(selection\)/);
   assert.match(cleanup, /items: removeSelectedCartItems\(cartItems, selection\)/);
   assert.doesNotMatch(cleanup, /\bclearCart\s*[;(=]/);

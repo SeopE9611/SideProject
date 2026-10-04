@@ -7,6 +7,7 @@ import {
   validateStringingApplicationInputForOrder,
 } from "@/lib/checkout-stringing-guard";
 import { requestNicePayWithRootScrollGuard } from "@/lib/payments/nice/client-scroll-lock";
+import { saveCheckoutRecoveryContext } from "@/app/store/checkoutRecoveryContext";
 import { CreditCard, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -41,6 +42,7 @@ export default function NiceCheckoutButton({
   disabled,
   payload,
   payableAmount,
+  checkoutHref,
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
   buttonId,
@@ -50,6 +52,7 @@ export default function NiceCheckoutButton({
   disabled: boolean;
   payload: Record<string, unknown>;
   payableAmount: number;
+  checkoutHref: string;
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
   buttonId?: string;
@@ -142,6 +145,7 @@ export default function NiceCheckoutButton({
     setLoading(true);
 
     try {
+      saveCheckoutRecoveryContext(sessionStorage, checkoutHref);
       const prepRes = await fetch("/api/payments/nice/prepare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
