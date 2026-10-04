@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 import type { ContactInformationContent } from "@/features/site-content/site-content.types";
 
 type AdminContactInformationFormProps = { initialContent: ContactInformationContent; expectedUpdatedAt: string | null };
@@ -19,6 +20,7 @@ const fields: { key: TextKey; label: string; multiline?: boolean }[] = [
   { key: "instagramUrl", label: "인스타그램 URL" },
 ];
 export function AdminContactInformationForm({ initialContent, expectedUpdatedAt }: AdminContactInformationFormProps) {
+  const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const [content, setContent] = useState(initialContent),
     [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false),
@@ -66,7 +68,7 @@ export function AdminContactInformationForm({ initialContent, expectedUpdatedAt 
         setMessage("연락처 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
         return;
       }
-      window.location.assign(data.redirectTo);
+      navigateAfterSave(() => window.location.assign(data.redirectTo!));
     } catch {
       setMessage("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
     } finally {
@@ -74,7 +76,7 @@ export function AdminContactInformationForm({ initialContent, expectedUpdatedAt 
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
+    <form onChangeCapture={markDirty} onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
       {fields.map(({ key, label, multiline }) => {
         const id = `contact-${key}`,
           error = errors[key],
@@ -115,7 +117,7 @@ export function AdminContactInformationForm({ initialContent, expectedUpdatedAt 
       </div>
       <div className="border-l-4 border-warning bg-warning-soft p-4">
         <label className="flex items-start gap-3">
-          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} aria-invalid={errors.saveConfirmed ? true : undefined} aria-describedby={errors.saveConfirmed ? "contact-confirm-error" : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <input type="checkbox" data-unsaved-ignore checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} aria-invalid={errors.saveConfirmed ? true : undefined} aria-describedby={errors.saveConfirmed ? "contact-confirm-error" : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
           <span>입력한 주소와 연락처가 공개 홈페이지 전체에 반영되는 것을 확인했습니다.</span>
         </label>
         {errors.saveConfirmed ? <p id="contact-confirm-error" role="alert" className="mt-3 text-small font-semibold text-danger">{errors.saveConfirmed}</p> : null}

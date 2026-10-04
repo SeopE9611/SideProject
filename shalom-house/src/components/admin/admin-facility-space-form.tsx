@@ -8,6 +8,7 @@ import {
   type FacilitySpaceFieldErrors,
 } from "@/features/facility-spaces/facility-space.validation";
 import { convertImageToWebp, type ConvertedWebpImage } from "@/lib/client-image-conversion";
+import { useAdminUnsavedChangesGuard } from "@/lib/use-admin-unsaved-changes-guard";
 
 export type AdminFacilitySpaceMediaView = {
   src: string;
@@ -71,6 +72,9 @@ export function AdminFacilitySpaceForm({
   const [recoveryHref, setRecoveryHref] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [mediaBusy, setMediaBusy] = useState(false);
+  const { navigateAfterSave } = useAdminUnsavedChangesGuard(
+    JSON.stringify(space) !== JSON.stringify(initialSpace) || converted !== null || altText !== "",
+  );
   useEffect(
     () => () => {
       if (previewRef.current) URL.revokeObjectURL(previewRef.current);
@@ -247,7 +251,7 @@ export function AdminFacilitySpaceForm({
           return;
         }
       }
-      window.location.assign(body.redirectTo);
+      navigateAfterSave(() => window.location.assign(body.redirectTo!));
     } catch {
       setMessage("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
     } finally {

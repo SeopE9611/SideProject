@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 import type { DonationGuidanceContent } from "@/features/site-content/site-content.types";
 
 type AdminDonationGuidanceFormProps = {
@@ -21,6 +22,7 @@ const fields: { key: TextKey; label: string; multiline?: boolean }[] = [
 ];
 
 export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }: AdminDonationGuidanceFormProps) {
+  const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const [content, setContent] = useState(initialContent);
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -74,7 +76,7 @@ export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }:
         setMessage("후원 안내를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
         return;
       }
-      window.location.assign(data.redirectTo);
+      navigateAfterSave(() => window.location.assign(data.redirectTo!));
     } catch {
       setMessage("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
     } finally {
@@ -83,7 +85,7 @@ export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }:
   }
 
   return (
-    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
+    <form onChangeCapture={markDirty} onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-6">
       {fields.slice(0, 2).map(({ key, label, multiline }) => (
         <TextField key={key} {...{ keyName: key, label, multiline, value: content[key], errors, updateText }} />
       ))}
@@ -119,7 +121,7 @@ export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }:
       ))}
       <div className="border-l-4 border-warning bg-warning-soft p-4">
         <label className="flex items-start gap-3">
-          <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} aria-describedby={errors.saveConfirmed ? "donation-confirm-error" : undefined} aria-invalid={errors.saveConfirmed ? true : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+          <input type="checkbox" data-unsaved-ignore checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} aria-describedby={errors.saveConfirmed ? "donation-confirm-error" : undefined} aria-invalid={errors.saveConfirmed ? true : undefined} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
           <span>입력한 후원 안내가 공개 홈페이지에 즉시 반영되는 것을 확인했습니다.</span>
         </label>
         {errors.saveConfirmed ? <p id="donation-confirm-error" role="alert" className="mt-3 text-small font-semibold text-danger">{errors.saveConfirmed}</p> : null}

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 import type { StaffProfileInput } from "@/features/staff/staff.types";
 import { validateStaffProfileInput, type StaffProfileFieldErrors } from "@/features/staff/staff.validation";
 export type AdminStaffProfileFormProps = {
@@ -14,6 +15,7 @@ function joinDescriptionIds(...ids: Array<string | false | null | undefined>): s
   return value || undefined;
 }
 export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProfile }: AdminStaffProfileFormProps) {
+  const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const [profile, setProfile] = useState(initialProfile);
   const [confirmed, setConfirmed] = useState(false);
   const [errors, setErrors] = useState<StaffProfileFieldErrors>({});
@@ -74,7 +76,7 @@ export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProf
         );
         return;
       }
-      window.location.assign(body.redirectTo);
+      navigateAfterSave(() => window.location.assign(body.redirectTo!));
     } catch {
       setMessage("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
     } finally {
@@ -135,7 +137,7 @@ export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProf
     </div>
   );
   return (
-    <form className="max-w-4xl space-y-6" onSubmit={submit} aria-busy={busy}>
+    <form className="max-w-4xl space-y-6" onChangeCapture={markDirty} onSubmit={submit} aria-busy={busy}>
       {textField("role", "직책·역할")}
       <div className="grid gap-2 border-b border-border pb-6">
         <label className="font-semibold" htmlFor="responsibility">
@@ -265,7 +267,7 @@ export function AdminStaffProfileForm({ mode, id, expectedUpdatedAt, initialProf
       <div>
         <div className="border-l-4 border-warning bg-warning-soft p-4">
           <label className="flex items-start gap-3">
-            <input type="checkbox" required checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} aria-invalid={errors.saveConfirmed ? true : undefined} aria-describedby={joinDescriptionIds("save-help", errors.saveConfirmed ? "save-error" : undefined)} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
+            <input type="checkbox" required data-unsaved-ignore checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} aria-invalid={errors.saveConfirmed ? true : undefined} aria-describedby={joinDescriptionIds("save-help", errors.saveConfirmed ? "save-error" : undefined)} className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />
             <span id="save-help" className="font-semibold">입력한 직원 정보와 공개 범위를 확인했습니다.</span>
           </label>
         </div>
