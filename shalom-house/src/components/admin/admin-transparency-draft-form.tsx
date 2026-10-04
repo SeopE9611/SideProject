@@ -62,9 +62,10 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
       }
       const result = (await response.json().catch(() => null)) as TransparencyFormResponse | null;
       if (!result) throw new Error("invalid_json_response");
-      if (response.ok && typeof result.redirectTo === "string" && result.redirectTo) {
+      const redirectTo = result.redirectTo;
+      if (response.ok && typeof redirectTo === "string" && redirectTo) {
         navigateAfterSave(() => {
-          router.push(result.redirectTo);
+          router.push(redirectTo);
           router.refresh();
         });
         return;

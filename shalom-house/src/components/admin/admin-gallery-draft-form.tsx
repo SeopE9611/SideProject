@@ -139,9 +139,10 @@ export function AdminGalleryDraftForm(props: Props) {
           }),
         });
       const result = (await response.json().catch(() => null)) as GalleryFormResponse | null;
-      if (response.ok && result?.redirectTo) {
+      const redirectTo = result?.redirectTo;
+      if (response.ok && redirectTo) {
         navigateAfterSave(() => {
-          router.push(result.redirectTo);
+          router.push(redirectTo);
           router.refresh();
         });
         return;
