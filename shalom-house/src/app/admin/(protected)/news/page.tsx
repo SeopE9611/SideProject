@@ -54,7 +54,6 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
   const admin = await getCurrentAdmin();
   const canCreate = Boolean(admin && hasAdminPermission(admin, "content.create"));
   const query = await searchParams;
-  const wasCreated = typeof query.created === "string" && query.created === "1";
   const category = typeof query.category === "string" && isNewsCategory(query.category) ? query.category : undefined;
   const publicationStatus =
     typeof query.publication === "string" && isNewsPublicationStatus(query.publication) ? query.publication : undefined;
@@ -81,11 +80,6 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
           <Link href="/news" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">공개 뉴스 페이지 보기</Link>
         </>}
       />
-      {wasCreated ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
-          새 게시물을 작성 중·승인 대기 상태로 저장했습니다.
-        </p>
-      ) : null}
 
       <AdminFilterPanel headingId="admin-news-filter-heading" title="뉴스 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
         <form key={filterFormKey} method="get" action="/admin/news" className="mt-4 grid gap-3 lg:grid-cols-3">

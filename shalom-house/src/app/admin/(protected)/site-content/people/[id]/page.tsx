@@ -51,11 +51,6 @@ export default async function Page({
           </Link>
         }
       />
-      {(await searchParams).saved === "1" ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
-          저장했습니다.
-        </p>
-      ) : null}
       <AdminStatusSummary
         items={[
           { label: "공개 상태", value: getStaffPublicationStatusLabel(d.publicationStatus) },

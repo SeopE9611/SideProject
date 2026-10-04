@@ -10,13 +10,7 @@ import { adminRoleLabels, adminUserStatusLabels } from "@/features/admin-auth/ad
 import { getAdminUserDetail } from "@/features/admin-users/admin-user.admin-repository";
 import { formatAdminDate } from "@/lib/format-admin-date";
 
-export default async function Page({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string>>;
-}) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const a = await authorizeCurrentAdmin("admin_users.manage");
   if (!a.ok) redirect("/admin?forbidden=1");
   const { id } = await params;
@@ -24,22 +18,8 @@ export default async function Page({
   const u = await getAdminUserDetail(id, a.admin.id);
   if (!u) notFound();
   if (u === "invalid_document") throw new Error("invalid_document");
-  const q = await searchParams,
-    msg =
-      q.created === "1"
-        ? "관리자 계정을 생성했습니다."
-        : q.updated === "1"
-          ? "관리자 계정 정보를 저장했습니다."
-          : q.sessionsRevoked === "1"
-            ? "관리자 계정의 로그인 세션을 해제했습니다."
-            : null;
   return (
     <div className="admin-detail-layout">
-      {msg ? (
-        <p role="status" className="rounded-control border border-border bg-surface px-4 py-3 font-semibold">
-          {msg}
-        </p>
-      ) : null}
       <AdminDetailHeader
         backHref="/admin/admin-users"
         backLabel="관리자 계정 관리"

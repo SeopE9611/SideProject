@@ -45,17 +45,6 @@ export default async function AdminTrashPage({
         <p>복구하면 게시 상태와 승인 상태가 초기화되며 초안부터 다시 검토해야 합니다.</p>
       </AdminFormGuidance>
 
-      {query.deleted === "1" ? (
-        <p role="status" className="rounded-control border border-border bg-surface px-4 py-3 font-semibold">
-          콘텐츠를 휴지통으로 이동했습니다.
-        </p>
-      ) : null}
-      {query.restored === "1" ? (
-        <p role="status" className="rounded-control border border-border bg-surface px-4 py-3 font-semibold">
-          콘텐츠를 안전한 초안으로 복구했습니다.
-        </p>
-      ) : null}
-
       <section aria-labelledby="trash-domain-filter-heading">
         <h2 id="trash-domain-filter-heading" className="text-heading font-bold">
           콘텐츠 종류

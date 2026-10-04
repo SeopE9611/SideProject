@@ -17,26 +17,14 @@ function DateValue({ value }: { value: string | null }) {
   return value ? <time dateTime={value}>{formatAdminDate(value)}</time> : "—";
 }
 
-export default async function Page({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
-}) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const auth = await authorizeCurrentAdmin("donations.manage");
   if (!auth.ok) redirect("/admin?forbidden=1");
-  const saved = (await searchParams).saved === "1";
   const donation = await getAdminDonation((await params).id);
   if (!donation) notFound();
 
   return (
     <div className="admin-detail-layout">
-      {saved ? (
-        <p role="status" className="rounded-control border border-border bg-surface px-4 py-3 font-semibold">
-          후원금 기록을 저장했습니다.
-        </p>
-      ) : null}
       <AdminDetailHeader
         backHref="/admin/donations"
         backLabel="후원금 관리대장"
