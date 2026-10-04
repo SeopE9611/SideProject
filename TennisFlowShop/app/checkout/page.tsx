@@ -50,6 +50,7 @@ import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   Building2,
@@ -423,8 +424,38 @@ export default function CheckoutPage() {
 
   const { items: cartItems } = useCartStore();
   const [selectedLineKeys, setSelectedLineKeys] = useState<string[] | null>(null);
-  const { item: buyNowItem } = useBuyNowStore();
-  const { items: pdpBundleItems } = usePdpBundleStore();
+  const {
+    item: buyNowItem,
+    hasHydrated: hasBuyNowHydrated,
+    expiredOnHydration: buyNowExpired,
+    consumeHydrationExpiration: consumeBuyNowExpiration,
+  } = useBuyNowStore();
+  const {
+    items: pdpBundleItems,
+    hasHydrated: hasPdpBundleHydrated,
+    expiredOnHydration: pdpBundleExpired,
+    consumeHydrationExpiration: consumePdpBundleExpiration,
+  } = usePdpBundleStore();
+  const expirationToastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (!hasBuyNowHydrated || !hasPdpBundleHydrated) return;
+    if (!buyNowExpired && !pdpBundleExpired) return;
+
+    if (!expirationToastShownRef.current) {
+      expirationToastShownRef.current = true;
+      showErrorToast("주문 정보의 유효시간이 만료되었습니다. 상품 정보를 다시 확인해주세요.");
+    }
+    consumeBuyNowExpiration();
+    consumePdpBundleExpiration();
+  }, [
+    buyNowExpired,
+    consumeBuyNowExpiration,
+    consumePdpBundleExpiration,
+    hasBuyNowHydrated,
+    hasPdpBundleHydrated,
+    pdpBundleExpired,
+  ]);
 
   useEffect(() => {
     if (mode === "buynow" || !isCartSelectionSource) {
@@ -1238,7 +1269,8 @@ export default function CheckoutPage() {
     };
   }, [user]);
 
-  const isInitialLoading = loading;
+  const isCheckoutIntentHydrated = hasBuyNowHydrated && hasPdpBundleHydrated;
+  const isInitialLoading = loading || (mode === "buynow" && !isCheckoutIntentHydrated);
   const previewTotalPrice = subtotal + shippingFee + baseServiceFee;
   const previewPointCapBase = Math.max(0, previewTotalPrice - shippingFee);
   const previewMaxPointsByPolicy = user ? previewPointCapBase : 0;

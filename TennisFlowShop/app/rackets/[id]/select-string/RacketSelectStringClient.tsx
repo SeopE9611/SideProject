@@ -1,6 +1,7 @@
 "use client";
 
 import SelectStringLayout from "@/app/components/select-string/SelectStringLayout";
+import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { useCartStore } from "@/app/store/cartStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import {
@@ -53,6 +54,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   // Stores
   const setItems = usePdpBundleStore((s) => s.setItems);
   const clearBundle = usePdpBundleStore((s) => s.clear);
+  const clearBuyNow = useBuyNowStore((s) => s.clear);
   const cartItems = useCartStore((s) => s.items);
   const addItem = useCartStore((s) => s.addItem);
   const removeItem = useCartStore((s) => s.removeItem);
@@ -349,6 +351,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     }
 
     // Buy-now mode
+    clearBuyNow();
     setItems([
       {
         id: racket.id,
