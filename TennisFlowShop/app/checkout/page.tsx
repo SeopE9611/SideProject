@@ -12,6 +12,7 @@ import {
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { CartItem, useCartStore } from "@/app/store/cartStore";
+import { isCheckoutIntentExpired } from "@/app/store/checkoutIntentPersistence";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
@@ -426,14 +427,18 @@ export default function CheckoutPage() {
   const [selectedLineKeys, setSelectedLineKeys] = useState<string[] | null>(null);
   const {
     item: buyNowItem,
+    expiresAt: buyNowExpiresAt,
     hasHydrated: hasBuyNowHydrated,
     expiredOnHydration: buyNowExpired,
+    expire: expireBuyNow,
     consumeHydrationExpiration: consumeBuyNowExpiration,
   } = useBuyNowStore();
   const {
     items: pdpBundleItems,
+    expiresAt: pdpBundleExpiresAt,
     hasHydrated: hasPdpBundleHydrated,
     expiredOnHydration: pdpBundleExpired,
+    expire: expirePdpBundle,
     consumeHydrationExpiration: consumePdpBundleExpiration,
   } = usePdpBundleStore();
   const expirationToastShownRef = useRef(false);
@@ -442,7 +447,7 @@ export default function CheckoutPage() {
     if (!hasBuyNowHydrated || !hasPdpBundleHydrated) return;
     if (!buyNowExpired && !pdpBundleExpired) return;
 
-    if (!expirationToastShownRef.current) {
+    if (mode === "buynow" && !expirationToastShownRef.current) {
       expirationToastShownRef.current = true;
       showErrorToast("주문 정보의 유효시간이 만료되었습니다. 상품 정보를 다시 확인해주세요.");
     }
@@ -454,7 +459,45 @@ export default function CheckoutPage() {
     consumePdpBundleExpiration,
     hasBuyNowHydrated,
     hasPdpBundleHydrated,
+    mode,
     pdpBundleExpired,
+  ]);
+
+  useEffect(() => {
+    if (!hasBuyNowHydrated || !hasPdpBundleHydrated) return;
+
+    const expireStaleIntents = () => {
+      if (buyNowItem && isCheckoutIntentExpired(buyNowExpiresAt)) expireBuyNow();
+      if (pdpBundleItems.length > 0 && isCheckoutIntentExpired(pdpBundleExpiresAt)) {
+        expirePdpBundle();
+      }
+    };
+
+    expireStaleIntents();
+    const expirationTimes = [
+      buyNowItem ? buyNowExpiresAt : null,
+      pdpBundleItems.length > 0 ? pdpBundleExpiresAt : null,
+    ].filter((expiresAt): expiresAt is number => typeof expiresAt === "number");
+    const nextExpiration = expirationTimes.length > 0 ? Math.min(...expirationTimes) : null;
+    const timeoutId =
+      nextExpiration === null
+        ? null
+        : window.setTimeout(expireStaleIntents, Math.max(0, nextExpiration - Date.now()));
+
+    document.addEventListener("visibilitychange", expireStaleIntents);
+    return () => {
+      if (timeoutId !== null) window.clearTimeout(timeoutId);
+      document.removeEventListener("visibilitychange", expireStaleIntents);
+    };
+  }, [
+    buyNowExpiresAt,
+    buyNowItem,
+    expireBuyNow,
+    expirePdpBundle,
+    hasBuyNowHydrated,
+    hasPdpBundleHydrated,
+    pdpBundleExpiresAt,
+    pdpBundleItems,
   ]);
 
   useEffect(() => {
