@@ -2,6 +2,7 @@
 import { useWishlist } from "@/app/features/wishlist/useWishlist";
 import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
+import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
 import { CatalogPrice, CatalogRating } from "@/components/commerce";
 import {
@@ -203,6 +204,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
   const { setItem: setBuyNowItem } = useBuyNowStore();
+  const clearPdpBundle = usePdpBundleStore((state) => state.clear);
   const router = useRouter();
   const searchParams = useSearchParams();
   // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
@@ -841,6 +843,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       selectedColorPayload,
     });
 
+    clearPdpBundle();
     setBuyNowItem(buyNowItem);
 
     // 장바구니는 건드리지 않고, buy-now 모드로 checkout 진입
@@ -887,6 +890,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       selectedColorPayload,
     });
 
+    clearPdpBundle();
     setBuyNowItem(buyNowItem);
 
     // 장착비(서비스비) – 없으면 0
