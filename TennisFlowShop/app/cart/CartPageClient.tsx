@@ -4,6 +4,11 @@ import CartOptionChangeOverlay from "@/app/cart/_components/CartOptionChangeOver
 import WishlistSidebar from "@/app/cart/_components/WishlistSidebar";
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useCartStore, type CartItem } from "@/app/store/cartStore";
+import {
+  createCartCheckoutSelection,
+  getCartLineKey,
+  saveCartCheckoutSelection,
+} from "@/app/store/cartCheckoutSelection";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { EmptyState, PriceSummary, PublicSurface, type PriceSummaryRow } from "@/components/public";
@@ -46,11 +51,6 @@ const formatKRW = (n: number) => n.toLocaleString("ko-KR");
 // 장바구니 아이템에 저장된 재고(가용 수량) 값을 안전하게 해석
 const getMaxStock = (stock?: number) =>
   typeof stock === "number" && Number.isFinite(stock) ? stock : Number.POSITIVE_INFINITY;
-
-const CART_CHECKOUT_SELECTION_KEY = "cart.checkout.selectedLineKeys.v1";
-
-const getCartLineKey = (item: { id: string; selectedGauge?: string; selectedColor?: string }) =>
-  `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
 
 type CartStockSnapshotStatus = "available" | "sold_out" | "option_missing" | "unavailable";
 
@@ -993,9 +993,10 @@ export default function CartPageClient() {
       return;
     }
 
-    const checkoutLineKeys = selectedCartItems.map((item) => getCartLineKey(item));
+    const selection = createCartCheckoutSelection(cartItems, selectedCartItems);
+    if (!selection) return;
 
-    sessionStorage.setItem(CART_CHECKOUT_SELECTION_KEY, JSON.stringify(checkoutLineKeys));
+    saveCartCheckoutSelection(sessionStorage, selection);
 
     window.location.href = checkoutHref;
   };

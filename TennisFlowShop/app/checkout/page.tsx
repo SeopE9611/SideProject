@@ -12,6 +12,12 @@ import {
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { CartItem, useCartStore } from "@/app/store/cartStore";
+import {
+  CART_CHECKOUT_SELECTION_KEY,
+  clearCartCheckoutSelectionStorage,
+  getCartLineKey,
+  validateCartCheckoutSelection,
+} from "@/app/store/cartCheckoutSelection";
 import { isCheckoutIntentExpired } from "@/app/store/checkoutIntentPersistence";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
@@ -110,11 +116,6 @@ declare global {
     daum: any;
   }
 }
-
-const CART_CHECKOUT_SELECTION_KEY = "cart.checkout.selectedLineKeys.v1";
-
-const getCartLineKey = (item: { id: string; selectedGauge?: string; selectedColor?: string }) =>
-  `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
 
 type CheckoutField =
   | "name"
@@ -442,6 +443,8 @@ export default function CheckoutPage() {
     consumeHydrationExpiration: consumePdpBundleExpiration,
   } = usePdpBundleStore();
   const expirationToastShownRef = useRef(false);
+  const cartSelectionToastShownRef = useRef(false);
+  const [cartSelectionValidationVersion, setCartSelectionValidationVersion] = useState(0);
 
   useEffect(() => {
     if (!hasBuyNowHydrated || !hasPdpBundleHydrated) return;
@@ -503,19 +506,33 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (mode === "buynow" || !isCartSelectionSource) {
       setSelectedLineKeys(null);
+      clearCartCheckoutSelectionStorage(sessionStorage);
       return;
     }
 
-    try {
-      const raw = sessionStorage.getItem(CART_CHECKOUT_SELECTION_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      setSelectedLineKeys(
-        Array.isArray(parsed) ? parsed.filter((key): key is string => typeof key === "string") : [],
-      );
-    } catch {
+    const selection = validateCartCheckoutSelection(
+      sessionStorage.getItem(CART_CHECKOUT_SELECTION_KEY),
+      cartItems,
+    );
+    if (!selection) {
+      clearCartCheckoutSelectionStorage(sessionStorage);
       setSelectedLineKeys([]);
+      if (!cartSelectionToastShownRef.current) {
+        cartSelectionToastShownRef.current = true;
+        showErrorToast(
+          "장바구니 선택 정보가 만료되었거나 변경되었습니다. 장바구니에서 상품을 다시 선택해주세요.",
+        );
+      }
+      return;
     }
-  }, [isCartSelectionSource, mode]);
+
+    setSelectedLineKeys(selection.lineKeys);
+    const timeoutId = window.setTimeout(
+      () => setCartSelectionValidationVersion((version) => version + 1),
+      Math.max(0, selection.expiresAt - Date.now()),
+    );
+    return () => window.clearTimeout(timeoutId);
+  }, [cartItems, cartSelectionValidationVersion, isCartSelectionSource, mode]);
 
   const selectedCartItems = useMemo(() => {
     if (!isCartSelectionSource) return cartItems;
