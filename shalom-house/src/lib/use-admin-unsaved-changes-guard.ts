@@ -87,6 +87,7 @@ function onPopState() {
 
 function installListeners() {
   if (listenersInstalled) return;
+  approvedNavigation = false;
   listenersInstalled = true;
   window.addEventListener("beforeunload", onBeforeUnload);
   window.addEventListener("popstate", onPopState);
