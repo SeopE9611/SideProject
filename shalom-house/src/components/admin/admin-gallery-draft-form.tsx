@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { convertImageToWebp, type ConvertedWebpImage } from "@/lib/client-image-conversion";
+import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 type Values = {
   slug: string;
   title: string;
@@ -59,6 +60,7 @@ const fields: [keyof Values, string, string][] = [
 export function AdminGalleryDraftForm(props: Props) {
   const router = useRouter(),
     previewRef = useRef<string | null>(null);
+  const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const [preview, setPreview] = useState<string | null>(null),
     [converted, setConverted] = useState<ConvertedWebpImage | null>(null),
     [status, setStatus] = useState(""),
@@ -138,8 +140,10 @@ export function AdminGalleryDraftForm(props: Props) {
         });
       const result = (await response.json().catch(() => null)) as GalleryFormResponse | null;
       if (response.ok && result?.redirectTo) {
-        router.push(result.redirectTo);
-        router.refresh();
+        navigateAfterSave(() => {
+          router.push(result.redirectTo);
+          router.refresh();
+        });
         return;
       }
       setFieldErrors(result?.fieldErrors ?? {});
@@ -157,7 +161,7 @@ export function AdminGalleryDraftForm(props: Props) {
   const controlClass =
     "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
   return (
-    <form onSubmit={submit} className="max-w-4xl space-y-6" aria-busy={busy || undefined}>
+    <form onChangeCapture={markDirty} onSubmit={submit} className="max-w-4xl space-y-6" aria-busy={busy || undefined}>
       {formError ? (
         <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formError}
@@ -340,6 +344,7 @@ export function AdminGalleryDraftForm(props: Props) {
           <input
             id="gallery-safety"
             name="contentSafetyConfirmed"
+            data-unsaved-ignore
             type="checkbox"
             required
             aria-invalid={Boolean(fieldErrors.contentSafetyConfirmed) || undefined}

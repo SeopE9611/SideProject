@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 type Values = {
   slug: string;
   title: string;
@@ -30,6 +31,7 @@ const fields = [
 ] as const;
 export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
   const router = useRouter();
+  const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -61,8 +63,10 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
       const result = (await response.json().catch(() => null)) as TransparencyFormResponse | null;
       if (!result) throw new Error("invalid_json_response");
       if (response.ok && typeof result.redirectTo === "string" && result.redirectTo) {
-        router.push(result.redirectTo);
-        router.refresh();
+        navigateAfterSave(() => {
+          router.push(result.redirectTo);
+          router.refresh();
+        });
         return;
       }
       const nextFieldErrors = result.fieldErrors ?? {};
@@ -86,7 +90,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
   const controlClass =
     "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
   return (
-    <form onSubmit={submit} aria-busy={busy} className="min-w-0 max-w-4xl space-y-6">
+    <form onChangeCapture={markDirty} onSubmit={submit} aria-busy={busy} className="min-w-0 max-w-4xl space-y-6">
       {formError ? (
         <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formError}

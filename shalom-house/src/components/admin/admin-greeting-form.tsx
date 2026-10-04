@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import type { GreetingContent } from "@/features/site-content/site-content.types";
+import { useAdminUnsavedChangesGuard } from "@/lib/use-admin-unsaved-changes-guard";
 export function AdminGreetingForm({
   content: initial,
   updatedAt,
@@ -16,6 +17,9 @@ export function AdminGreetingForm({
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
+  const { navigateAfterSave } = useAdminUnsavedChangesGuard(
+    JSON.stringify(content) !== JSON.stringify(initial),
+  );
   const update = (key: keyof GreetingContent, value: string | boolean) => setContent((c) => ({ ...c, [key]: value }));
   const field = (
     label: string,
@@ -83,7 +87,7 @@ export function AdminGreetingForm({
         );
         return;
       }
-      if (data.redirectTo) window.location.assign(data.redirectTo);
+      if (data.redirectTo) navigateAfterSave(() => window.location.assign(data.redirectTo!));
     } catch {
       setMessage("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
     } finally {

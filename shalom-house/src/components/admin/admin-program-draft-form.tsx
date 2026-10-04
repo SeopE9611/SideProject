@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 import {
   ADMIN_PROGRAM_BODY_MAX_LENGTH,
   ADMIN_PROGRAM_CATEGORY_MAX_LENGTH,
@@ -44,6 +45,7 @@ const fields = [
 ] as const;
 export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
   const router = useRouter();
+  const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const [errors, setErrors] = useState<AdminProgramDraftFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -104,11 +106,13 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
         redirectTo?: string;
       } | null;
       if (response.ok && body?.ok) {
-        router.push(
-          body.redirectTo ??
-            (props.mode === "create" ? "/admin/programs?created=1" : `/admin/programs/${props.programId}?updated=1`),
-        );
-        router.refresh();
+        navigateAfterSave(() => {
+          router.push(
+            body.redirectTo ??
+              (props.mode === "create" ? "/admin/programs?created=1" : `/admin/programs/${props.programId}?updated=1`),
+          );
+          router.refresh();
+        });
         return;
       }
       if (body?.fieldErrors) setErrors(body.fieldErrors);
@@ -124,7 +128,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
     }
   }
   return (
-    <form onSubmit={submit} aria-busy={busy || undefined} className="max-w-4xl space-y-6">
+    <form onChangeCapture={markDirty} onSubmit={submit} aria-busy={busy || undefined} className="max-w-4xl space-y-6">
       {formError ? (
         <p role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formError}
@@ -209,6 +213,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
           <input
             id="admin-program-safety"
             name="contentSafetyConfirmed"
+            data-unsaved-ignore
             type="checkbox"
             required
             aria-invalid={errors.contentSafetyConfirmed ? true : undefined}

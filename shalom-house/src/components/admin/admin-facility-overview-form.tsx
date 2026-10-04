@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 import type { FacilityOverviewContent } from "@/features/site-content/site-content.types";
 
 type Props = { content: FacilityOverviewContent; updatedAt: string | null };
 type Errors = Record<string, string>;
 
 export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props) {
+  const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const confirmationErrorId = "facility-overview-save-error";
   const [content, setContent] = useState(() => structuredClone(initial));
   const [confirmed, setConfirmed] = useState(false);
@@ -77,7 +79,7 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
         );
         return;
       }
-      if (data.redirectTo) window.location.assign(data.redirectTo);
+      if (data.redirectTo) navigateAfterSave(() => window.location.assign(data.redirectTo!));
       else setMessage("공식 콘텐츠를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     } catch {
       setMessage("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
@@ -88,7 +90,7 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
   const set = (key: keyof FacilityOverviewContent, value: string) =>
     setContent((current) => ({ ...current, [key]: value }));
   return (
-    <form onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-8">
+    <form onChangeCapture={markDirty} onSubmit={submit} aria-busy={busy} className="max-w-4xl space-y-8">
       {field("페이지 설명", "pageDescription", content.pageDescription, (v) => set("pageDescription", v), true)}
       <fieldset className="space-y-5">
         <legend className="text-heading font-bold">시설 기본 정보 3개</legend>
@@ -223,7 +225,7 @@ export function AdminFacilityOverviewForm({ content: initial, updatedAt }: Props
         <label className="flex items-start gap-3">
           <input
             type="checkbox"
-            checked={confirmed}
+            data-unsaved-ignore checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
             aria-describedby={errors.saveConfirmed ? confirmationErrorId : undefined}
             aria-invalid={errors.saveConfirmed ? true : undefined}

@@ -13,6 +13,7 @@ import {
   type AdminNewsDraftField,
   type AdminNewsDraftFieldErrors,
 } from "@/features/news/news.admin-validation";
+import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 import { PUBLIC_NEWS_RESERVED_SLUGS } from "@/features/news/news.types";
 
 const fieldErrorIds: Record<AdminNewsDraftField, string> = {
@@ -94,6 +95,7 @@ function getSafeRedirect(value: unknown): string | null {
 
 export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
   const router = useRouter();
+  const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const [fieldErrors, setFieldErrors] = useState<AdminNewsDraftFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -140,8 +142,10 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       const expectedSuccessStatus = props.mode === "create" ? 201 : 200;
       if (response.status === expectedSuccessStatus && isRecord(responseBody) && responseBody.ok === true) {
         const fallback = props.mode === "create" ? "/admin/news?created=1" : `/admin/news/${props.postId}?updated=1`;
-        router.push(getSafeRedirect(responseBody) ?? fallback);
-        router.refresh();
+        navigateAfterSave(() => {
+          router.push(getSafeRedirect(responseBody) ?? fallback);
+          router.refresh();
+        });
         return;
       }
       if (response.status === 401) {
@@ -175,7 +179,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
     "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
 
   return (
-    <form onSubmit={handleSubmit} aria-busy={isSubmitting ? true : undefined} className="max-w-4xl space-y-6">
+    <form onChangeCapture={markDirty} onSubmit={handleSubmit} aria-busy={isSubmitting ? true : undefined} className="max-w-4xl space-y-6">
       {formError ? (
         <div role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formError}
@@ -299,6 +303,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
           <input
             id="admin-news-content-safety"
             name="contentSafetyConfirmed"
+            data-unsaved-ignore
             type="checkbox"
             required
             aria-invalid={fieldErrors.contentSafetyConfirmed ? true : undefined}

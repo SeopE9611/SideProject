@@ -1,5 +1,6 @@
 "use client";
 import { FormEvent, useState } from "react";
+import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 export type AdminProgramMediaFormProps = {
   programId: string;
   expectedUpdatedAt: string;
@@ -34,6 +35,7 @@ function responseError(response: Response, body: ResponseBody) {
   return body.error && messages[body.error] ? messages[body.error] : "요청을 처리하지 못했습니다. 다시 시도해 주세요.";
 }
 export function AdminProgramMediaForm(props: AdminProgramMediaFormProps) {
+  const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const expectedRedirect = `/admin/programs/${props.programId}?mediaUpdated=1`;
   const [coverId, setCoverId] = useState(props.currentCover?.id ?? "");
   const [coverConfirmed, setCoverConfirmed] = useState(false);
@@ -66,7 +68,7 @@ export function AdminProgramMediaForm(props: AdminProgramMediaFormProps) {
       setError({ form: "현재 서버 응답을 확인할 수 없습니다. 잠시 후 다시 시도해 주세요." });
       return;
     }
-    window.location.assign(body.redirectTo);
+    navigateAfterSave(() => window.location.assign(body.redirectTo!));
   }
   async function saveCover(event: FormEvent) {
     event.preventDefault();
@@ -149,7 +151,7 @@ export function AdminProgramMediaForm(props: AdminProgramMediaFormProps) {
       <h2 id="program-media-heading" className="text-heading font-bold">
         대표 이미지·첨부파일
       </h2>
-      <form onSubmit={saveCover} aria-busy={coverBusy} className="space-y-4">
+      <form onChangeCapture={markDirty} onSubmit={saveCover} aria-busy={coverBusy} className="space-y-4">
         <h3 className="font-bold">대표 활동사진</h3>
         {props.currentCover && !props.currentCover.publiclyAvailable ? (
           <p role="alert">
@@ -203,6 +205,7 @@ export function AdminProgramMediaForm(props: AdminProgramMediaFormProps) {
             type="checkbox"
             disabled={!props.editable}
             checked={coverConfirmed}
+            data-unsaved-ignore
             aria-invalid={coverErrors.mediaConfirmed ? true : undefined}
             aria-describedby={coverErrors.mediaConfirmed ? "program-cover-confirmed-error" : undefined}
             onChange={(e) => {
@@ -242,7 +245,7 @@ export function AdminProgramMediaForm(props: AdminProgramMediaFormProps) {
           ) : null}
         </div>
       </form>
-      <form onSubmit={saveAttachment} aria-busy={attachmentBusy} className="space-y-4">
+      <form onChangeCapture={markDirty} onSubmit={saveAttachment} aria-busy={attachmentBusy} className="space-y-4">
         <h3 className="font-bold">PDF 첨부파일</h3>
         <p className="text-small text-muted-foreground">
           거주인 이름, 장애·건강 정보, 개인 연락처, 주민등록번호, 계좌·카드번호, 내부 사건·사고·상담·회의·인사자료가
@@ -304,6 +307,7 @@ export function AdminProgramMediaForm(props: AdminProgramMediaFormProps) {
             type="checkbox"
             disabled={!props.editable}
             checked={safe}
+            data-unsaved-ignore
             aria-invalid={attachmentErrors.contentSafetyConfirmed ? true : undefined}
             aria-describedby={attachmentErrors.contentSafetyConfirmed ? "program-pdf-confirmed-error" : undefined}
             onChange={(e) => {
