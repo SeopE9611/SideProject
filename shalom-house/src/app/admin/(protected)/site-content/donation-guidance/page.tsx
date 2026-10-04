@@ -20,9 +20,6 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
   return (
     <div className="admin-editor-layout">
       <AdminFormPageHeader backHref="/admin/site-content" backLabel="공식 콘텐츠 관리" eyebrow="시설 공식 정보 · 후원 안내" title="후원 안내 관리" description="공개 후원 페이지의 안내 문구와 문의 경로를 관리합니다." />
-      {(await searchParams).saved === "1" ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">후원 안내를 저장했습니다.</p>
-      ) : null}
       <div className="max-w-4xl space-y-3">
         <p>{detail.persisted ? <>MongoDB 저장됨 · 최근 수정 <time dateTime={detail.updatedAt!}>{formatAdminDate(detail.updatedAt!)}</time></> : "현재 코드 기본 콘텐츠를 사용 중입니다."}</p>
         <Link className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" href="/support/donation">공개 후원 페이지 보기</Link>

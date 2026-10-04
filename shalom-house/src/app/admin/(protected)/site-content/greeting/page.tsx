@@ -23,11 +23,6 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
         title="원장 인사말 편집"
         description="공개 홈페이지의 원장 인사말과 서명 표시를 관리합니다."
       />
-      {(await searchParams).saved === "1" ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
-          저장했습니다.
-        </p>
-      ) : null}
       <AdminFormGuidance title="공개 전 확인" description="저장하면 현재 공개 인사말이 즉시 변경됩니다.">
         인사말 본문과 원장 이름 공개 여부를 확인해 주세요.
       </AdminFormGuidance>

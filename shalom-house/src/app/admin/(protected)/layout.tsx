@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AdminFormFeedback } from "@/components/admin/admin-form-feedback";
+import { AdminSuccessToast } from "@/components/admin/admin-success-toast";
 import { AdminWorkbench } from "@/components/admin/admin-workbench";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
@@ -36,6 +37,7 @@ export default async function ProtectedAdminLayout({ children }: Readonly<{ chil
         {children}
       </AdminWorkbench>
       <AdminFormFeedback />
+      <AdminSuccessToast />
     </>
   );
 }

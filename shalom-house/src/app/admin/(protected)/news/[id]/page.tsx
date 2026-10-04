@@ -44,22 +44,8 @@ function DateValue({ value }: { value: string | null }) {
   return value ? <time dateTime={value}>{dateFormatter.format(new Date(value))}</time> : <>게시일 미설정</>;
 }
 
-export default async function AdminNewsDetailPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{
-    updated?: string | string[];
-    reviewRequested?: string | string[];
-    decision?: string | string[];
-    published?: string | string[];
-    directPublished?: string | string[];
-    publication?: string | string[];
-    mediaUpdated?: string | string[];
-  }>;
-}) {
-  const [{ id }, query] = await Promise.all([params, searchParams]);
+export default async function AdminNewsDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const post = await findAdminNewsPostById(id);
   if (!post) notFound();
   const admin = await getCurrentAdmin();
@@ -74,19 +60,12 @@ export default async function AdminNewsDetailPage({
   const publicCover = post.coverGalleryItemId
     ? await findPublicGalleryCoverById(new ObjectId(post.coverGalleryItemId))
     : null;
-  const wasUpdated = typeof query.updated === "string" && query.updated === "1";
-  const wasReviewRequested = typeof query.reviewRequested === "string" && query.reviewRequested === "1";
   const isPendingReview = post.publicationStatus === "review" && post.approvalStatus === "pending";
   const isApprovedReview =
     post.publicationStatus === "review" && post.approvalStatus === "approved" && post.publishedAt === null;
   const isRejectedDraft =
     post.publicationStatus === "draft" && post.approvalStatus === "rejected" && post.publishedAt === null;
-  const decision = typeof query.decision === "string" ? query.decision : null;
-  const wasPublished = typeof query.published === "string" && query.published === "1";
-  const wasDirectPublished = typeof query.directPublished === "string" && query.directPublished === "1";
-  const publication = typeof query.publication === "string" ? query.publication : null;
   const isArchived = post.publicationStatus === "archived" && post.approvalStatus === "approved";
-  const wasMediaUpdated = query.mediaUpdated === "1";
 
   return (
     <div className="admin-detail-layout">
@@ -116,66 +95,6 @@ export default async function AdminNewsDetailPage({
           </>
         }
       />
-
-      {wasUpdated ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
-          게시물 내용을 수정했습니다.
-        </p>
-      ) : null}
-      {wasMediaUpdated ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
-          대표 이미지 또는 첨부파일을 저장했습니다.
-        </p>
-      ) : null}
-
-      {wasReviewRequested ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
-          게시물을 검토 중 상태로 전환했습니다.
-        </p>
-      ) : null}
-
-      {decision === "approved" ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
-          게시물 검토를 승인했습니다. 아직 공개되지는 않았습니다.
-        </p>
-      ) : null}
-
-      {decision === "rejected" ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
-          게시물을 반려해 수정 가능한 초안으로 되돌렸습니다.
-        </p>
-      ) : null}
-
-      {wasDirectPublished ? (
-        <p role="status" className="rounded-control border border-border-strong bg-surface p-4 font-semibold">
-          게시물을 승인과 동시에 바로 공개했습니다.
-        </p>
-      ) : null}
-
-      {wasPublished ? (
-        <div role="status" className="rounded-control border border-border-strong bg-surface p-4">
-          <p className="font-semibold">게시물을 공개했습니다.</p>
-          <p className="mt-2 text-small text-muted-foreground">공개 뉴스 목록과 상세 페이지에서 확인할 수 있습니다.</p>
-        </div>
-      ) : null}
-
-      {publication === "unpublished" ? (
-        <div role="status" className="rounded-control border border-border-strong bg-surface p-4">
-          <p className="font-semibold">게시를 중단했습니다.</p>
-          <p className="mt-2 text-small text-muted-foreground">
-            공개 뉴스 목록과 상세 페이지에서 더 이상 표시되지 않습니다.
-          </p>
-        </div>
-      ) : null}
-
-      {publication === "archived" ? (
-        <div role="status" className="rounded-control border border-border-strong bg-surface p-4">
-          <p className="font-semibold">게시물을 보관 상태로 전환했습니다.</p>
-          <p className="mt-2 text-small text-muted-foreground">
-            공개 뉴스 목록과 상세 페이지에서 더 이상 표시되지 않습니다.
-          </p>
-        </div>
-      ) : null}
 
       <AdminStatusSummary
         items={[
