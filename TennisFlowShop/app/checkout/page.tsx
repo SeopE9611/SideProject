@@ -19,6 +19,7 @@ import {
   validateCartCheckoutSelection,
 } from "@/app/store/cartCheckoutSelection";
 import { isCheckoutIntentExpired } from "@/app/store/checkoutIntentPersistence";
+import { clearCheckoutRecoveryContext } from "@/app/store/checkoutRecoveryContext";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
@@ -27,7 +28,7 @@ import CheckoutLoadingShell from "@/components/checkout/CheckoutLoadingShell";
 import CheckoutPageHeader from "@/components/checkout/CheckoutPageHeader";
 import CheckoutSection from "@/components/checkout/CheckoutSection";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PriceSummary, SummaryCard, type PriceSummaryRow } from "@/components/public";
+import { PriceSummary, ResultState, SummaryCard, type PriceSummaryRow } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -419,6 +420,9 @@ export default function CheckoutPage() {
 
   const mode = sp.get("mode"); // 'buynow' | null
   const isCartSelectionSource = sp.get("source") === "cart-selection";
+  const hasExplicitCheckoutSource =
+    (mode === "buynow" && !sp.has("source")) ||
+    (isCartSelectionSource && !sp.has("mode"));
 
   // 비회원 체크아웃 노출 정책(클라)
   const guestOrderMode = getGuestOrderModeClient();
@@ -535,7 +539,7 @@ export default function CheckoutPage() {
   }, [cartItems, cartSelectionValidationVersion, isCartSelectionSource, mode]);
 
   const selectedCartItems = useMemo(() => {
-    if (!isCartSelectionSource) return cartItems;
+    if (!isCartSelectionSource) return [];
     if (!selectedLineKeys) return [];
     return cartItems.filter((item) => selectedLineKeys.includes(getCartLineKey(item)));
   }, [cartItems, isCartSelectionSource, selectedLineKeys]);
@@ -550,7 +554,7 @@ export default function CheckoutPage() {
           : []
       : isCartSelectionSource
         ? selectedCartItems
-        : cartItems;
+        : [];
   const orderItemsKey = orderItems
     .map(
       (it) =>
@@ -602,6 +606,10 @@ export default function CheckoutPage() {
     const nextQs = params.toString();
     return nextQs ? `/checkout?${nextQs}` : "/checkout";
   }, [queryString]);
+
+  useEffect(() => {
+    clearCheckoutRecoveryContext(sessionStorage);
+  }, []);
 
   // URL withService=1 → "장착 서비스 포함"으로 최초 상태를 자동 ON
   // - 라켓 포함: 라켓 구매/대여 + 장착 서비스 번들
@@ -1360,6 +1368,23 @@ export default function CheckoutPage() {
     return <LoginGate next={checkoutHref} variant="checkout" />;
   }
 
+  if (!hasExplicitCheckoutSource) {
+    return (
+      <SiteContainer className="flex min-h-[60vh] items-center">
+        <ResultState
+          status="warning"
+          title="주문할 상품을 다시 선택해주세요"
+          description="체크아웃 진입 정보가 없거나 올바르지 않아 주문을 진행할 수 없어요."
+          actions={
+            <Button asChild variant="highlight" size="lg">
+              <Link href="/cart">장바구니에서 선택하기</Link>
+            </Button>
+          }
+        />
+      </SiteContainer>
+    );
+  }
+
   const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
     const checkoutPackageUsage = resolveCheckoutPackageUsage(
       withStringService,
@@ -1612,6 +1637,7 @@ export default function CheckoutPage() {
                     onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
                     onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                     payableAmount={payableTotalPrice}
+                    checkoutHref={checkoutHref}
                     payload={{
                       items: orderItems.map((item) => ({
                         productId: item.id,
