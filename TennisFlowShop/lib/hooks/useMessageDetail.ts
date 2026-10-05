@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import type { MessageDetail } from "@/lib/types/message";
 
 type Res = { ok: true; item: MessageDetail } | { ok: false; error: string };
@@ -9,6 +10,7 @@ type Res = { ok: true; item: MessageDetail } | { ok: false; error: string };
 export function useMessageDetail(id: string | null, enabled: boolean) {
   const key = enabled && id ? `/api/messages/${id}` : null;
   const { data, error, isLoading, mutate } = useSWR<Res>(key, authenticatedSWRFetcher, {
+    ...swrTransientRetryConfig,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });

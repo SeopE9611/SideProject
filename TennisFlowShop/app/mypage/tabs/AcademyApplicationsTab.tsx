@@ -6,6 +6,7 @@ import { SemanticBadge as Badge } from "@/components/badges/SemanticBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import AcademyApplicationsListSkeleton from "@/app/mypage/tabs/_components/AcademyApplicationsListSkeleton";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import {
   ChevronDown,
   ChevronUp,
@@ -132,6 +133,7 @@ export default function AcademyApplicationsTab() {
   };
 
   const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite(getKey, fetcher, {
+    ...swrTransientRetryConfig,
     revalidateOnFocus: false,
   });
 

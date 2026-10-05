@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import { ArrowRight, Calendar, CheckCircle, Clock, MessageCircleQuestion } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -51,6 +52,7 @@ export default function QnAList() {
     getKey,
     fetcher,
     {
+      ...swrTransientRetryConfig,
       revalidateFirstPage: true,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,

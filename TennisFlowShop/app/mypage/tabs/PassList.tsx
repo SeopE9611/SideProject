@@ -6,6 +6,7 @@ import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import { badgeStyleSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import { Clock, Ticket } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -85,6 +86,7 @@ function dateTime(value: string | null) {
 
 export default function PassList() {
   const { data, isLoading, error, mutate } = useSWR<Res>("/api/passes/me", fetcher, {
+    ...swrTransientRetryConfig,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });

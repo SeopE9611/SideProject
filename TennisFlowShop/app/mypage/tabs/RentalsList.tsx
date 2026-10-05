@@ -23,6 +23,7 @@ import {
 import { useMemo, useState } from "react";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { getCustomerRentalStatusLabel } from "@/app/mypage/_lib/flow-display";
 import { isRentalReturnedStatus } from "@/lib/status/flow-status";
@@ -105,6 +106,7 @@ export default function RentalsList() {
   const [cancelRentalDialogId, setCancelRentalDialogId] = useState<string | null>(null);
 
   const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite(getKey, fetcher, {
+    ...swrTransientRetryConfig,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
