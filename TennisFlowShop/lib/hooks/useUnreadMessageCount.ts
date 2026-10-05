@@ -1,26 +1,24 @@
 "use client";
 
 import useSWR from "swr";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { createSWRPollingRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 
 type UnreadCountRes = { ok: true; count: number } | { ok: false; error: string };
 
-const fetcher = async (url: string): Promise<UnreadCountRes> => {
-  const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) {
-    throw new Error(`unread-count fetch failed: ${res.status}`);
-  }
-  return res.json();
-};
+const pollingRetryConfig = createSWRPollingRetryConfig(60_000);
 
 // 상단 네비게이션의 'N(새 쪽지)' 뱃지를 위해 미열람 개수를 가볍게 폴링
 export function useUnreadMessageCount(enabled: boolean) {
   const { data, error, isLoading, mutate } = useSWR<UnreadCountRes>(
     enabled ? "/api/messages/unread-count" : null,
-    fetcher,
+    authenticatedSWRFetcher,
     {
+      ...pollingRetryConfig,
       dedupingInterval: 30_000,
       refreshInterval: 60_000,
       revalidateOnFocus: true,
+      revalidateOnReconnect: true,
     },
   );
 

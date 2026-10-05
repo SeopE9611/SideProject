@@ -61,3 +61,19 @@ export const swrTransientRetryConfig: SWRConfiguration = {
     setTimeout(() => revalidate(revalidateOptions), delay);
   },
 };
+
+export function createSWRPollingRetryConfig(retryIntervalMs: number): SWRConfiguration {
+  return {
+    shouldRetryOnError: isRetryableSWRFailure,
+    onErrorRetry: (error, _key, config, revalidate, revalidateOptions) => {
+      if (!isRetryableSWRFailure(error)) return;
+
+      setTimeout(() => {
+        if (!config.refreshWhenHidden && !config.isVisible()) return;
+        if (!config.refreshWhenOffline && !config.isOnline()) return;
+
+        revalidate({ ...revalidateOptions, retryCount: 0 });
+      }, retryIntervalMs);
+    },
+  };
+}

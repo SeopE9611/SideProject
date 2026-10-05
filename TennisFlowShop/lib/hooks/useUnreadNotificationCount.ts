@@ -1,23 +1,23 @@
 "use client";
 
 import useSWR from "swr";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { createSWRPollingRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 
 type UnreadNotificationCountRes = { ok: true; count: number } | { ok: false; error: string };
 
-const fetcher = async (url: string): Promise<UnreadNotificationCountRes> => {
-  const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) throw new Error(`notification unread-count fetch failed: ${res.status}`);
-  return res.json();
-};
+const pollingRetryConfig = createSWRPollingRetryConfig(60_000);
 
 export function useUnreadNotificationCount(enabled: boolean) {
   const { data, error, isLoading, mutate } = useSWR<UnreadNotificationCountRes>(
     enabled ? "/api/notifications/unread-count" : null,
-    fetcher,
+    authenticatedSWRFetcher,
     {
+      ...pollingRetryConfig,
       dedupingInterval: 10_000,
       refreshInterval: 60_000,
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
     },
   );
 
