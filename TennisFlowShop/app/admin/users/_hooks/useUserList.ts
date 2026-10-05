@@ -1,6 +1,7 @@
 "use client";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import type { AdminUsersListResponseDto } from "@/types/admin/users";
 import useSWR from "swr";
 
@@ -29,6 +30,7 @@ export function useUserList(filters: UserListFilters) {
 
   const key = `/api/admin/users?${queryString}`;
   const swr = useSWR<AdminUsersListResponseDto>(key, authenticatedSWRFetcher, {
+    ...swrTransientRetryConfig,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });

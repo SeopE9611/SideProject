@@ -60,6 +60,7 @@ import {
 } from "@/lib/admin/adminFetcher";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import {
   getCommonApplicationStatusLabel,
   getCommonRentalStatusLabel,
@@ -379,6 +380,7 @@ export default function AdminRentalsClient() {
     mutate,
     error,
   } = useSWR<AdminRentalsListResponseDto>(key, authenticatedSWRFetcher, {
+    ...swrTransientRetryConfig,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
