@@ -2,6 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type AdminListPageSkeletonProps = {
   columns?: number;
+  filterColumns?: 2 | 3 | 4;
   filterFields?: number;
   headerActions?: number;
   rows?: number;
@@ -10,12 +11,19 @@ type AdminListPageSkeletonProps = {
 
 export function AdminListPageSkeleton({
   columns = 6,
+  filterColumns = 2,
   filterFields = 3,
   headerActions = 1,
   rows = 6,
   summaryItems = 0,
 }: AdminListPageSkeletonProps) {
   const columnsClassName = columns === 7 ? "xl:grid-cols-7" : "xl:grid-cols-6";
+  const filterGridClassName =
+    filterColumns === 4
+      ? "sm:grid-cols-2 lg:grid-cols-4"
+      : filterColumns === 3
+        ? "lg:grid-cols-3"
+        : "sm:grid-cols-2";
 
   return (
     <div className="admin-list-layout" aria-busy="true">
@@ -45,11 +53,11 @@ export function AdminListPageSkeleton({
       <section className="admin-filter" aria-hidden="true">
         <Skeleton className="h-6 w-28" />
         <Skeleton className="mt-2 h-4 w-36" />
-        <div className="mt-4 flex flex-col gap-4 max-lg:grid max-lg:grid-cols-2 max-sm:grid-cols-1">
+        <div className={`mt-4 grid gap-3 ${filterGridClassName}`}>
           {Array.from({ length: filterFields }).map((_, index) => (
             <div key={index} className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-11 w-full" /></div>
           ))}
-          <div className="flex gap-2 max-lg:col-span-2 max-sm:col-span-1"><Skeleton className="h-11 w-24" /><Skeleton className="h-11 w-24" /></div>
+          <div className="col-span-full flex gap-2"><Skeleton className="h-11 w-24" /><Skeleton className="h-11 w-24" /></div>
         </div>
       </section>
 
