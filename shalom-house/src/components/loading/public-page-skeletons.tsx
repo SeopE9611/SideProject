@@ -9,14 +9,14 @@ function PublicHeaderSkeleton() {
   );
 }
 
-export function NewsListPageSkeleton() {
+export function NewsListPageSkeleton({ showCategoryFilter = true }: { showCategoryFilter?: boolean }) {
   return (
     <div className="section-layout" aria-busy="true">
       <p className="sr-only" role="status">소식 목록을 불러오는 중입니다.</p><PublicHeaderSkeleton />
       <div className="mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-12" aria-hidden="true">
-        <div className="filter-toolbar grid grid-cols-2 items-end gap-4 p-5 sm:grid-cols-[minmax(0,1fr)_10rem_auto] sm:px-7 sm:py-6">
-          <div className="col-span-2 space-y-2 sm:col-span-1"><Skeleton className="h-4 w-16" /><Skeleton className="h-13 w-full" /></div>
-          <div className="space-y-2"><Skeleton className="h-4 w-12" /><Skeleton className="h-13 w-full" /></div><Skeleton className="h-13 w-24" />
+        <div className={`filter-toolbar grid items-end gap-4 p-5 sm:px-7 sm:py-6 ${showCategoryFilter ? "grid-cols-2 sm:grid-cols-[minmax(0,1fr)_10rem_auto]" : "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]"}`}>
+          <div className={showCategoryFilter ? "col-span-2 space-y-2 sm:col-span-1" : "space-y-2"}><Skeleton className="h-4 w-16" /><Skeleton className="h-13 w-full" /></div>
+          {showCategoryFilter ? <div className="space-y-2"><Skeleton className="h-4 w-12" /><Skeleton className="h-13 w-full" /></div> : null}<Skeleton className="h-13 w-24" />
         </div>
         <section className="mt-8 sm:mt-10"><div className="border-b border-border-strong pb-5"><Skeleton className="h-8 w-36" /></div>
           <div className="divide-y divide-border border-b border-border">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="grid gap-4 py-7 md:grid-cols-[7rem_minmax(0,1fr)_9rem]"><Skeleton className="h-5 w-20" /><div className="space-y-3"><Skeleton className="h-6 w-4/5" /><Skeleton className="h-4 w-full" /></div><Skeleton className="h-4 w-24 md:justify-self-end" /></div>)}</div>
