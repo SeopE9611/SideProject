@@ -59,6 +59,7 @@ import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { getPaymentStatusBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -342,6 +343,7 @@ export default function PackageOrdersClient() {
     `/api/admin/package-orders?${queryString}`,
     authenticatedSWRFetcher,
     {
+      ...swrTransientRetryConfig,
       dedupingInterval: 1000,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,

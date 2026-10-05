@@ -64,6 +64,7 @@ import {
   stringMaterialLabel,
 } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import { showErrorToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
@@ -200,6 +201,7 @@ export default function ProductsClient() {
     `/api/admin/products?${qs}`,
     authenticatedSWRFetcher,
     {
+      ...swrTransientRetryConfig,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       keepPreviousData: true, // SWR v2 전환 중 깜빡임 줄어듬

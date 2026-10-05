@@ -51,6 +51,7 @@ import {
   linkBadgeClass,
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { shortenId } from "@/lib/shorten";
@@ -198,6 +199,7 @@ export default function OrdersClient() {
     `/api/orders?${qs}`,
     authenticatedSWRFetcher,
     {
+      ...swrTransientRetryConfig,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
     },
