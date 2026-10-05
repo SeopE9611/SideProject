@@ -25,6 +25,7 @@ import {
   getPaymentStatusBadgeSpec,
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import {
   trackingSWRFetcher,
   type TrackingSWRFetcherError,
@@ -342,6 +343,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
     isLoading: isOrderLoading,
     mutate: mutateOrderDetail,
   } = useSWR<OrderDetail>(`/api/orders/${orderId}`, authenticatedSWRFetcher, {
+    ...swrTransientRetryConfig,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });

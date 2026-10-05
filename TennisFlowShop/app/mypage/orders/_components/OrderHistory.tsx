@@ -16,6 +16,7 @@ import {
   PackageCheck,
 } from "lucide-react";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 
 // 상태별로 아이콘 컴포넌트와 클래스 리턴하는 헬퍼 함수
@@ -108,6 +109,7 @@ export default function OrderHistory({
     isValidating,
     mutate: mutateHistory,
   } = useSWRInfinite<HistoryResponse>(getKey(orderId), fetcher, {
+    ...swrTransientRetryConfig,
     revalidateOnFocus: false, // 탭 포커스 돌아올 때 재요청 금지
     revalidateOnReconnect: false, // 네트워크 복구 시 재요청 금지
     // refreshInterval: 0

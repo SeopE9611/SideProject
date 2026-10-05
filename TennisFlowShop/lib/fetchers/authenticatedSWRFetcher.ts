@@ -4,6 +4,11 @@ import {
   getResumeDebugSnapshot,
   warnResumeFetchFailure,
 } from "@/lib/debug/resume-debug";
+import {
+  createSWRFailure,
+  toSWRRequestFailure,
+  type SWRHttpError,
+} from "@/lib/fetchers/swrRetryPolicy";
 
 const AUTH_RETRY_HEADER = { "x-suppress-auth-expired": "1" } as const;
 
@@ -11,8 +16,30 @@ async function parseJsonResponse<T>(res: Response): Promise<T> {
   try {
     return (await res.json()) as T;
   } catch (error) {
-    throw error instanceof Error ? error : new Error("INVALID_JSON");
+    const message = error instanceof Error ? error.message : "INVALID_JSON";
+    throw createSWRFailure(message, { kind: "parse", status: res.status });
   }
+}
+
+async function buildHttpError(res: Response): Promise<SWRHttpError> {
+  let responseBody: unknown;
+  try {
+    responseBody = await res.json();
+  } catch {
+    responseBody = null;
+  }
+
+  const body = responseBody as { message?: unknown; errorCode?: unknown } | null;
+  const message = typeof body?.message === "string" && body.message.trim()
+    ? body.message
+    : `HTTP_${res.status}`;
+
+  return createSWRFailure(message, {
+    kind: "http",
+    status: res.status,
+    errorCode: typeof body?.errorCode === "string" ? body.errorCode : undefined,
+    responseBody,
+  });
 }
 
 async function request(url: string, suppressAuthExpiredHeader: boolean): Promise<Response> {
@@ -95,7 +122,7 @@ export async function authenticatedSWRFetcher<T>(url: string): Promise<T> {
         errorType,
       }),
     );
-    throw error;
+    throw toSWRRequestFailure(error);
   }
 
   if (response.ok) {
@@ -165,7 +192,7 @@ export async function authenticatedSWRFetcher<T>(url: string): Promise<T> {
           errorType,
         }),
       );
-      throw error;
+      throw toSWRRequestFailure(error);
     }
   } else {
     warnResumeFetchFailure(
@@ -180,5 +207,5 @@ export async function authenticatedSWRFetcher<T>(url: string): Promise<T> {
     );
   }
 
-  throw new Error(`HTTP_${response.status}`);
+  throw await buildHttpError(response);
 }
