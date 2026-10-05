@@ -1,5 +1,12 @@
 const DELIVERY_TRACKER_GRAPHQL_ENDPOINT = "https://apis.tracker.delivery/graphql";
 
+export const DELIVERY_TRACKER_MAX_RETRIES = 2;
+export const DELIVERY_TRACKER_RETRY_BASE_DELAY_MS = 400;
+export const DELIVERY_TRACKER_RETRY_JITTER_MS = 200;
+export const DELIVERY_TRACKER_RETRY_MAX_DELAY_MS = 1_500;
+
+const RETRYABLE_HTTP_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
+
 type DeliveryStatus = "배송준비중" | "배송중" | "배송완료" | "조회불가";
 
 type DeliveryTrackerProgressItem = {
@@ -76,6 +83,30 @@ type DeliveryTrackerErrorInfo = Pick<
   DeliveryTrackerSummaryFailure,
   "errorCode" | "message" | "statusCode"
 >;
+
+export function shouldRetryDeliveryTrackerHttpStatus(status: number): boolean {
+  return RETRYABLE_HTTP_STATUSES.has(status);
+}
+
+export function shouldRetryDeliveryTrackerGraphQLError(
+  errorCode: DeliveryTrackerSummaryFailure["errorCode"],
+): boolean {
+  return errorCode === "INTERNAL";
+}
+
+export function getDeliveryTrackerRetryDelay(
+  retryCount: number,
+  random = Math.random,
+): number {
+  const exponent = Math.max(0, retryCount - 1);
+  const exponentialDelay = DELIVERY_TRACKER_RETRY_BASE_DELAY_MS * 2 ** exponent;
+  const jitter = Math.floor(random() * DELIVERY_TRACKER_RETRY_JITTER_MS);
+  return Math.min(exponentialDelay + jitter, DELIVERY_TRACKER_RETRY_MAX_DELAY_MS);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function maskTrackingNumber(trackingNumber: string): string {
   const trimmed = String(trackingNumber ?? "").trim();
@@ -175,22 +206,43 @@ export async function fetchDeliveryTrackerSummary(params: {
   const { carrierId, trackingNumber, clientId, clientSecret, carrierDisplayName } = params;
   const auth = `TRACKQL-API-KEY ${clientId}:${clientSecret}`;
 
-  try {
-    const response = await fetch(DELIVERY_TRACKER_GRAPHQL_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: auth,
-        "Content-Type": "application/json",
-        "Accept-Language": "ko",
-      },
-      body: JSON.stringify({
-        query: TRACKING_QUERY,
-        variables: { carrierId, trackingNumber },
-      }),
-      cache: "no-store",
-    });
+  for (let attempt = 1; attempt <= DELIVERY_TRACKER_MAX_RETRIES + 1; attempt += 1) {
+    let response: Response;
+    try {
+      response = await fetch(DELIVERY_TRACKER_GRAPHQL_ENDPOINT, {
+        method: "POST",
+        headers: {
+          Authorization: auth,
+          "Content-Type": "application/json",
+          "Accept-Language": "ko",
+        },
+        body: JSON.stringify({
+          query: TRACKING_QUERY,
+          variables: { carrierId, trackingNumber },
+        }),
+        cache: "no-store",
+      });
+    } catch {
+      if (attempt <= DELIVERY_TRACKER_MAX_RETRIES) {
+        await sleep(getDeliveryTrackerRetryDelay(attempt));
+        continue;
+      }
+      return {
+        success: false,
+        errorCode: "UNKNOWN",
+        statusCode: 503,
+        message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+      };
+    }
 
     if (!response.ok) {
+      if (
+        shouldRetryDeliveryTrackerHttpStatus(response.status) &&
+        attempt <= DELIVERY_TRACKER_MAX_RETRIES
+      ) {
+        await sleep(getDeliveryTrackerRetryDelay(attempt));
+        continue;
+      }
       return {
         success: false,
         errorCode: response.status === 401 ? "UNAUTHENTICATED" : "UNKNOWN",
@@ -210,6 +262,13 @@ export async function fetchDeliveryTrackerSummary(params: {
     }
     if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
       const errorInfo = getDeliveryTrackerErrorInfo(payload);
+      if (
+        shouldRetryDeliveryTrackerGraphQLError(errorInfo.errorCode) &&
+        attempt <= DELIVERY_TRACKER_MAX_RETRIES
+      ) {
+        await sleep(getDeliveryTrackerRetryDelay(attempt));
+        continue;
+      }
       console.warn("[delivery-tracker] graphql-error", {
         errorCode: errorInfo.errorCode,
         carrierId,
@@ -254,12 +313,12 @@ export async function fetchDeliveryTrackerSummary(params: {
       lastEvent,
       progresses,
     };
-  } catch {
-    return {
-      success: false,
-      errorCode: "UNKNOWN",
-      statusCode: 503,
-      message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
-    };
   }
+
+  return {
+    success: false,
+    errorCode: "UNKNOWN",
+    statusCode: 503,
+    message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+  };
 }
