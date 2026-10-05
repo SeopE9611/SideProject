@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import type { MessageListItem } from "@/lib/types/message";
 
 type Res =
@@ -22,6 +23,7 @@ export function useMessageList(
 ) {
   const key = enabled ? `/api/messages/${box}?page=${page}&limit=${limit}` : null;
   const { data, error, isLoading, mutate } = useSWR<Res>(key, authenticatedSWRFetcher, {
+    ...swrTransientRetryConfig,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });

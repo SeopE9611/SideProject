@@ -22,6 +22,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { swrTransientRetryConfig } from "@/lib/fetchers/swrRetryPolicy";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import {
   isOrderCanceledStatus,
@@ -194,6 +195,7 @@ export default function OrderList() {
     getKey,
     fetcher,
     {
+      ...swrTransientRetryConfig,
       revalidateFirstPage: true,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
