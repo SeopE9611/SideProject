@@ -234,6 +234,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
 
   let cancelCalled = false;
+  let cancelPostPending = false;
   try {
     const before = await getNicePaymentByTid({ tid, clientKey, secretKey });
     const lookupCode = String(before.resultCode ?? before.ResultCode ?? "").trim();
@@ -248,10 +249,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       // 이전 요청의 외부 성공을 재시도 사전조회에서 확인했습니다.
     } else if (beforeStatus === "paid" && beforeBalance === totalAmount) {
       cancelCalled = true;
+      cancelPostPending = true;
       const canceled = await cancelNicePaymentByTid({
         tid, orderId: cancelOrderId, cancelAmt: depositAmount,
         reason: "반납 완료 대여 보증금 환불", clientKey, secretKey,
       });
+      cancelPostPending = false;
       resultCode = String(canceled.resultCode ?? canceled.ResultCode ?? "").trim();
       resultMsg = String(canceled.resultMsg ?? canceled.ResultMsg ?? "").trim();
       if (resultCode === "2026") {
@@ -325,7 +328,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ ok: true, id, depositRefundedAt: completedAt.toISOString() });
   } catch (error: any) {
     const errorResultCode = String(error?.resultCode ?? "").trim();
-    if (errorResultCode === "2026") {
+    if (cancelPostPending && (!error?.operation || error.operation === "cancel") && errorResultCode === "2026") {
       await rentals.updateOne({ _id, "paymentInfo.depositRefund.token": claimToken }, { $set: {
         "paymentInfo.depositRefund.status": "failed",
         "paymentInfo.depositRefund.updatedAt": new Date(),
@@ -348,10 +351,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       "paymentInfo.depositRefund.manualActionRequired": cancelCalled,
       "paymentInfo.depositRefund.manualActionReason": cancelCalled ? "unknown_external_result" : null,
     } });
+    const lookupFailed = error?.operation === "lookup";
     return NextResponse.json({
       ok: false,
-      errorCode: cancelCalled ? "NICE_DEPOSIT_REFUND_NEEDS_RECONCILIATION" : "NICE_DEPOSIT_REFUND_FAILED",
-      message: cancelCalled ? "NICE 부분취소 결과 확인이 필요합니다. 재시도 시 PG 상태와 잔액을 먼저 확인합니다." : String(error?.message || "NICE 보증금 환불 중 오류가 발생했습니다."),
-    }, { status: cancelCalled ? 502 : 400 });
+      errorCode: cancelCalled ? "NICE_DEPOSIT_REFUND_NEEDS_RECONCILIATION" : lookupFailed ? "NICE_PAYMENT_LOOKUP_FAILED" : "NICE_DEPOSIT_REFUND_FAILED",
+      message: cancelCalled ? "NICE 부분취소 결과 확인이 필요합니다. 재시도 시 PG 상태와 잔액을 먼저 확인합니다." : lookupFailed ? "NICE 거래 조회에 실패하여 이번 요청의 보증금 환불을 진행하지 않았습니다." : String(error?.message || "NICE 보증금 환불 중 오류가 발생했습니다."),
+    }, { status: cancelCalled || lookupFailed ? 502 : 400 });
   }
 }
