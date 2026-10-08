@@ -3,6 +3,7 @@ import test from "node:test";
 import { compileTsModule } from "./helpers/compile-ts-module.mjs";
 
 const {
+  DELIVERY_TRACKER_REQUEST_TIMEOUT_MS,
   DELIVERY_TRACKER_RETRY_MAX_DELAY_MS,
   fetchDeliveryTrackerSummary,
   getDeliveryTrackerRetryDelay,
@@ -183,3 +184,71 @@ for (const errorCode of ["UNAUTHENTICATED", "FORBIDDEN", "NOT_FOUND"]) {
     });
   });
 }
+
+for (const phase of ["fetch", "body"]) {
+  for (const failures of [1, 3]) {
+    test(`tracker ${phase} timeout ${failures} attempt(s) keeps bounded retry`, async () => {
+      const originalFetch = globalThis.fetch;
+      const originalTimeout = AbortSignal.timeout;
+      const originalSetTimeout = globalThis.setTimeout;
+      const controllers = new Map();
+      const signals = [];
+      const timeoutValues = [];
+      const backoffs = [];
+      let fetchCount = 0;
+      AbortSignal.timeout = (ms) => {
+        timeoutValues.push(ms);
+        const controller = new AbortController();
+        controllers.set(controller.signal, controller);
+        return controller.signal;
+      };
+      globalThis.setTimeout = (callback, ms) => { backoffs.push(ms); callback(); return 0; };
+      globalThis.fetch = async (_url, { signal }) => {
+        fetchCount += 1;
+        signals.push(signal);
+        const fail = () => {
+          controllers.get(signal).abort(new DOMException("Request timed out", "TimeoutError"));
+          signal.throwIfAborted();
+        };
+        if (fetchCount <= failures) {
+          if (phase === "fetch") fail();
+          return { ok: true, json: async () => fail() };
+        }
+        return mockResponse(200, successPayload);
+      };
+      try {
+        const result = await fetchDeliveryTrackerSummary(requestParams);
+        const expectedAttempts = failures === 1 ? 2 : 3;
+        assert.equal(fetchCount, expectedAttempts);
+        assert.equal(new Set(signals).size, expectedAttempts);
+        assert.equal(DELIVERY_TRACKER_REQUEST_TIMEOUT_MS, 4_000);
+        assert.deepEqual(timeoutValues, Array(expectedAttempts).fill(4_000));
+        assert.equal(backoffs.length, expectedAttempts - 1);
+        assert.ok(backoffs[0] >= 400 && backoffs[0] <= 599);
+        if (failures === 1) assert.equal(result.success, true);
+        else {
+          assert.ok(backoffs[1] >= 800 && backoffs[1] <= 999);
+          assert.deepEqual(result, {
+            success: false,
+            errorCode: "UNKNOWN",
+            statusCode: 503,
+            message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+          });
+        }
+      } finally {
+        globalThis.fetch = originalFetch;
+        AbortSignal.timeout = originalTimeout;
+        globalThis.setTimeout = originalSetTimeout;
+      }
+    });
+  }
+}
+
+test("tracker malformed JSON remains a non-retried 502", async () => {
+  await withFetchSequence([{ ok: true, json: async () => { throw new SyntaxError("invalid JSON"); } }], async (count) => {
+    const result = await fetchDeliveryTrackerSummary(requestParams);
+    assert.equal(result.success, false);
+    assert.equal(result.statusCode, 502);
+    assert.equal(count(), 1);
+  });
+});

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const WEATHER_REQUEST_TIMEOUT_MS = 5_000;
+
 export async function GET() {
   const apiKey = process.env.OPENWEATHER_API_KEY;
   const lat = process.env.WEATHER_LAT ?? "37.5665"; // 기본값: 서울
@@ -26,6 +28,7 @@ export async function GET() {
     const res = await fetch(url.toString(), {
       // 캐시가 오래 남으면 의미가 없으니 짧게 잡거나 no-store 처리
       cache: "no-store",
+      signal: AbortSignal.timeout(WEATHER_REQUEST_TIMEOUT_MS),
     });
 
     if (!res.ok) {

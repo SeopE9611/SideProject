@@ -1,5 +1,6 @@
 const DELIVERY_TRACKER_GRAPHQL_ENDPOINT = "https://apis.tracker.delivery/graphql";
 
+export const DELIVERY_TRACKER_REQUEST_TIMEOUT_MS = 4_000;
 export const DELIVERY_TRACKER_MAX_RETRIES = 2;
 export const DELIVERY_TRACKER_RETRY_BASE_DELAY_MS = 400;
 export const DELIVERY_TRACKER_RETRY_JITTER_MS = 200;
@@ -208,6 +209,8 @@ export async function fetchDeliveryTrackerSummary(params: {
 
   for (let attempt = 1; attempt <= DELIVERY_TRACKER_MAX_RETRIES + 1; attempt += 1) {
     let response: Response;
+    let payload: Awaited<ReturnType<Response["json"]>> = null;
+    const signal = AbortSignal.timeout(DELIVERY_TRACKER_REQUEST_TIMEOUT_MS);
     try {
       response = await fetch(DELIVERY_TRACKER_GRAPHQL_ENDPOINT, {
         method: "POST",
@@ -221,7 +224,15 @@ export async function fetchDeliveryTrackerSummary(params: {
           variables: { carrierId, trackingNumber },
         }),
         cache: "no-store",
+        signal,
       });
+      if (response.ok) {
+        payload = await response.json().catch((error: unknown) => {
+          // A body-read timeout belongs to the same bounded attempt retry.
+          if (signal.aborted) throw error;
+          return null;
+        });
+      }
     } catch {
       if (attempt <= DELIVERY_TRACKER_MAX_RETRIES) {
         await sleep(getDeliveryTrackerRetryDelay(attempt));
@@ -251,7 +262,6 @@ export async function fetchDeliveryTrackerSummary(params: {
       };
     }
 
-    const payload = await response.json().catch(() => null);
     if (!payload) {
       return {
         success: false,

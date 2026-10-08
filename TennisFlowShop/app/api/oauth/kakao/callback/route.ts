@@ -15,6 +15,8 @@ import { isAdminRole } from "@/lib/admin/roles";
 import { Collection } from "mongodb";
 import crypto from "crypto";
 
+const OAUTH_EXTERNAL_REQUEST_TIMEOUT_MS = 7_000;
+
 /**
  * GET /api/oauth/kakao/callback
  * - code/state 검증
@@ -69,39 +71,48 @@ export async function GET(req: NextRequest) {
     code,
   });
 
-  const tokenRes = await fetch("https://kauth.kakao.com/oauth/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
-    },
-    body: tokenBody.toString(),
-  });
+  let meJson: Awaited<ReturnType<Response["json"]>>;
+  // Never retry an authorization code after an ambiguous token-exchange timeout.
+  try {
+    const tokenRes = await fetch("https://kauth.kakao.com/oauth/token", {
+      method: "POST",
+      signal: AbortSignal.timeout(OAUTH_EXTERNAL_REQUEST_TIMEOUT_MS),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+      },
+      body: tokenBody.toString(),
+    });
 
-  if (!tokenRes.ok) {
-    const loginUrl = `${getBaseUrl()}/login?tab=login`;
-    return NextResponse.redirect(loginUrl);
+    if (!tokenRes.ok) {
+      const loginUrl = `${getBaseUrl()}/login?tab=login`;
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const tokenJson: any = await tokenRes.json();
+    const kakaoAccessToken = tokenJson?.access_token;
+
+    if (!kakaoAccessToken) {
+      const loginUrl = `${getBaseUrl()}/login?tab=login`;
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // 4) 사용자 정보 조회(user/me)
+    const meRes = await fetch("https://kapi.kakao.com/v2/user/me", {
+      method: "GET",
+      signal: AbortSignal.timeout(OAUTH_EXTERNAL_REQUEST_TIMEOUT_MS),
+      headers: { Authorization: `Bearer ${kakaoAccessToken}` },
+    });
+
+    if (!meRes.ok) {
+      const loginUrl = `${getBaseUrl()}/login?tab=login`;
+      return NextResponse.redirect(loginUrl);
+    }
+
+    meJson = await meRes.json();
+  } catch {
+    return NextResponse.redirect(`${getBaseUrl()}/login?tab=login`);
   }
 
-  const tokenJson: any = await tokenRes.json();
-  const kakaoAccessToken = tokenJson?.access_token;
-
-  if (!kakaoAccessToken) {
-    const loginUrl = `${getBaseUrl()}/login?tab=login`;
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // 4) 사용자 정보 조회(user/me)
-  const meRes = await fetch("https://kapi.kakao.com/v2/user/me", {
-    method: "GET",
-    headers: { Authorization: `Bearer ${kakaoAccessToken}` },
-  });
-
-  if (!meRes.ok) {
-    const loginUrl = `${getBaseUrl()}/login?tab=login`;
-    return NextResponse.redirect(loginUrl);
-  }
-
-  const meJson: any = await meRes.json();
   const kakaoId = meJson?.id;
   const emailRaw = meJson?.kakao_account?.email ? String(meJson.kakao_account.email) : "";
   const email = emailRaw.trim().toLowerCase();

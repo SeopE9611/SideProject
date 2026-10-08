@@ -15,6 +15,8 @@ import { isAdminRole } from "@/lib/admin/roles";
 import { Collection } from "mongodb";
 import crypto from "crypto";
 
+const OAUTH_EXTERNAL_REQUEST_TIMEOUT_MS = 7_000;
+
 /**
  * GET /api/oauth/naver/callback
  * - code/state 검증
@@ -68,34 +70,43 @@ export async function GET(req: NextRequest) {
     state,
   });
 
-  const tokenRes = await fetch("https://nid.naver.com/oauth2.0/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
-    },
-    body: tokenBody.toString(),
-  });
+  let meJson: Awaited<ReturnType<Response["json"]>>;
+  // Never retry an authorization code after an ambiguous token-exchange timeout.
+  try {
+    const tokenRes = await fetch("https://nid.naver.com/oauth2.0/token", {
+      method: "POST",
+      signal: AbortSignal.timeout(OAUTH_EXTERNAL_REQUEST_TIMEOUT_MS),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+      },
+      body: tokenBody.toString(),
+    });
 
-  const tokenJson = (await tokenRes.json().catch(() => null)) as any;
-  const naverAccessToken = tokenJson?.access_token;
+    const tokenJson = (await tokenRes.json().catch(() => null)) as any;
+    const naverAccessToken = tokenJson?.access_token;
 
-  if (!naverAccessToken) {
-    const loginUrl = `${getBaseUrl()}/login?tab=login`;
-    return NextResponse.redirect(loginUrl);
+    if (!naverAccessToken) {
+      const loginUrl = `${getBaseUrl()}/login?tab=login`;
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // 4) 사용자 정보 조회(nid/me)
+    const meRes = await fetch("https://openapi.naver.com/v1/nid/me", {
+      method: "GET",
+      signal: AbortSignal.timeout(OAUTH_EXTERNAL_REQUEST_TIMEOUT_MS),
+      headers: { Authorization: `Bearer ${naverAccessToken}` },
+    });
+
+    if (!meRes.ok) {
+      const loginUrl = `${getBaseUrl()}/login?tab=login`;
+      return NextResponse.redirect(loginUrl);
+    }
+
+    meJson = await meRes.json().catch(() => null);
+  } catch {
+    return NextResponse.redirect(`${getBaseUrl()}/login?tab=login`);
   }
 
-  // 4) 사용자 정보 조회(nid/me)
-  const meRes = await fetch("https://openapi.naver.com/v1/nid/me", {
-    method: "GET",
-    headers: { Authorization: `Bearer ${naverAccessToken}` },
-  });
-
-  if (!meRes.ok) {
-    const loginUrl = `${getBaseUrl()}/login?tab=login`;
-    return NextResponse.redirect(loginUrl);
-  }
-
-  const meJson = (await meRes.json().catch(() => null)) as any;
   const naverId = meJson?.response?.id ? String(meJson.response.id) : null;
   const emailRaw = meJson?.response?.email ? String(meJson.response.email) : "";
   const email = emailRaw.trim().toLowerCase();
