@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -179,46 +180,58 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
               </a>
             </div>
           ) : !hasUserFilter && total === 0 ? (
-            <div className="border-b border-border py-10">
-              <h3 className="text-safe-wrap text-heading font-bold">
-                {fixedCategory === "notice"
+            <EmptyState
+              title={
+                fixedCategory === "notice"
                   ? "공지사항을 준비하고 있습니다."
                   : fixedCategory === "activity"
                     ? "활동소식을 준비하고 있습니다."
-                    : "전체 게시물을 준비하고 있습니다."}
-              </h3>
-              <p className="text-safe-wrap mt-3 text-muted-foreground">
-                {fixedCategory === "notice"
-                  ? "공개된 공지사항이 아직 없습니다."
-                  : fixedCategory === "activity"
-                    ? "공개된 활동소식이 아직 없습니다."
-                    : "공개된 게시물이 아직 없습니다."}
-              </p>
-              <div className="mt-5 flex flex-wrap gap-5">
-                <Link className="institution-link" href="/support/contact">
-                  문의하기
-                </Link>
-                <Link className="font-bold text-primary underline underline-offset-4" href="/">
-                  홈으로 이동
-                </Link>
-              </div>
-            </div>
+                    : "전체 게시물을 준비하고 있습니다."
+              }
+              description={
+                <p className="text-safe-wrap mt-3 text-muted-foreground">
+                  {fixedCategory === "notice"
+                    ? "공개된 공지사항이 아직 없습니다."
+                    : fixedCategory === "activity"
+                      ? "공개된 활동소식이 아직 없습니다."
+                      : "공개된 게시물이 아직 없습니다."}
+                </p>
+              }
+              actions={
+                <div className="mt-5 flex flex-wrap gap-5">
+                  <Link className="institution-link" href="/support/contact">
+                    문의하기
+                  </Link>
+                  <Link className="font-bold text-primary underline underline-offset-4" href="/">
+                    홈으로 이동
+                  </Link>
+                </div>
+              }
+              variant="list"
+              className="py-10! [&_h3]:text-heading [&_h3]:font-bold"
+            />
           ) : total === 0 ? (
-            <div className="border-b border-border py-10">
-              <h3 className="text-heading font-bold">현재 조건에 맞는 소식이 없습니다.</h3>
-              <p className="text-safe-wrap mt-3 text-muted-foreground">
-                분류 {categoryLabel}
-                {q ? `, 검색어 “${q}”` : ""}에 해당하는 결과가 없습니다.
-              </p>
-              <div className="mt-5">
-                <Link
-                  className="inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                  href={basePath}
-                >
-                  조건 초기화
-                </Link>
-              </div>
-            </div>
+            <EmptyState
+              title="현재 조건에 맞는 소식이 없습니다."
+              description={
+                <p className="text-safe-wrap mt-3 text-muted-foreground">
+                  분류 {categoryLabel}
+                  {q ? `, 검색어 “${q}”` : ""}에 해당하는 결과가 없습니다.
+                </p>
+              }
+              actions={
+                <div className="mt-5">
+                  <Link
+                    className="inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                    href={basePath}
+                  >
+                    조건 초기화
+                  </Link>
+                </div>
+              }
+              variant="list"
+              className="py-10! [&_h3]:text-heading [&_h3]:font-bold"
+            />
           ) : (
             <ul>
               {posts.map((post) => (

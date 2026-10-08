@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { DonationStatus, DonationReceiptStatus } from "@/features/donations/donation.types";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminDetailHeader } from "@/components/admin/admin-detail-header";
@@ -12,6 +14,18 @@ import {
   donationStatusLabels,
 } from "@/features/donations/donation.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const statusTone = {
+  draft: "neutral",
+  confirmed: "success",
+  voided: "danger",
+} satisfies Record<DonationStatus, SemanticStatusTone>;
+
+const receiptTone = {
+  not_requested: "neutral",
+  requested: "warning",
+  issued: "success",
+} satisfies Record<DonationReceiptStatus, SemanticStatusTone>;
 
 function DateValue({ value }: { value: string | null }) {
   return value ? <time dateTime={value}>{formatAdminDate(value)}</time> : "—";
@@ -42,7 +56,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
       <AdminStatusSummary
         items={[
-          { label: "기록 상태", value: donationStatusLabels[donation.status], emphasized: true },
+          { label: "기록 상태", value: <SemanticStatusBadge tone={statusTone[donation.status]}>{donationStatusLabels[donation.status]}</SemanticStatusBadge>, emphasized: true },
           { label: "후원 일자", value: <time dateTime={donation.donatedOn}>{donation.donatedOn}</time> },
           { label: "금액", value: `${new Intl.NumberFormat("ko-KR").format(donation.amountWon)}원` },
           { label: "최근 수정", value: <DateValue value={donation.updatedAt} /> },
@@ -84,7 +98,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           <div>
             <dt className="text-small font-semibold text-muted-foreground">영수증 처리</dt>
             <dd className="mt-1">
-              {donationReceiptStatusLabels[donation.receiptStatus]}
+              <SemanticStatusBadge tone={receiptTone[donation.receiptStatus]}>{donationReceiptStatusLabels[donation.receiptStatus]}</SemanticStatusBadge>
               {donation.receiptIssuedOn ? (
                 <>
                   {" "}

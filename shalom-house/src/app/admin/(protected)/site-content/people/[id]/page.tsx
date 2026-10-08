@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { StaffPublicationStatus } from "@/features/staff/staff.types";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
@@ -8,6 +10,13 @@ import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getAdminStaffProfile } from "@/features/staff/staff.admin-repository";
 import { getStaffPublicationStatusLabel } from "@/features/staff/staff.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const publicationTone = {
+  draft: "neutral",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<StaffPublicationStatus, SemanticStatusTone>;
+
 export default async function Page({
   params,
   searchParams,
@@ -53,9 +62,9 @@ export default async function Page({
       />
       <AdminStatusSummary
         items={[
-          { label: "공개 상태", value: getStaffPublicationStatusLabel(d.publicationStatus) },
+          { label: "공개 상태", value: <SemanticStatusBadge tone={publicationTone[d.publicationStatus]}>{getStaffPublicationStatusLabel(d.publicationStatus)}</SemanticStatusBadge> },
           { label: "표시 순서", value: String(d.displayOrder) },
-          { label: "이름 공개 여부", value: d.showName ? "공개" : "비공개" },
+          { label: "이름 공개 여부", value: <SemanticStatusBadge tone={d.showName ? "success" : "neutral"}>{d.showName ? "공개" : "비공개"}</SemanticStatusBadge> },
           { label: "최근 수정", value: <time dateTime={d.updatedAt}>{formatAdminDate(d.updatedAt)}</time> },
         ]}
       />

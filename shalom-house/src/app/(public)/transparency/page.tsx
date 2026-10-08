@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { createPublicPageMetadata } from "@/features/seo/metadata";
@@ -132,19 +133,22 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
               </a>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="border-b border-border py-6">
-              <h3 className="text-safe-wrap font-semibold">
-                {hasFilter ? "선택한 조건에 맞는 자료가 없습니다." : "현재 공개된 운영 자료가 없습니다."}
-              </h3>
-              <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
-                {hasFilter
-                  ? "조건을 바꾸거나 전체 자료를 확인해 주세요."
-                  : "새로운 자료가 게시되면 이 목록에서 안내합니다."}
-              </p>
-              <Link className="institution-link mt-3" href={hasFilter ? "/transparency" : "/support/contact"}>
-                {hasFilter ? "전체 자료 보기" : "자료 문의하기"}
-              </Link>
-            </div>
+            <EmptyState
+              title={hasFilter ? "선택한 조건에 맞는 자료가 없습니다." : "현재 공개된 운영 자료가 없습니다."}
+              description={
+                <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
+                  {hasFilter
+                    ? "조건을 바꾸거나 전체 자료를 확인해 주세요."
+                    : "새로운 자료가 게시되면 이 목록에서 안내합니다."}
+                </p>
+              }
+              actions={
+                <Link className="institution-link mt-3" href={hasFilter ? "/transparency" : "/support/contact"}>
+                  {hasFilter ? "전체 자료 보기" : "자료 문의하기"}
+                </Link>
+              }
+              variant="list"
+            />
           ) : (
             <ul className="border-b border-border">
               {filtered.map((document) => (

@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { ProgramPublicationStatus, ProgramApprovalStatus } from "@/features/programs/program.types";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
 import { AdminContentDeleteForm } from "@/components/admin/admin-content-delete-form";
 import { AdminDirectPublishForm } from "@/components/admin/admin-direct-publish-form";
@@ -25,6 +27,19 @@ import {
   getProgramCategoryLabel,
   getProgramPublicationStatusLabel,
 } from "@/features/programs/program.types";
+
+const publicationTone = {
+  draft: "neutral",
+  review: "warning",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<ProgramPublicationStatus, SemanticStatusTone>;
+
+const approvalTone = {
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
+} satisfies Record<ProgramApprovalStatus, SemanticStatusTone>;
 
 export const metadata: Metadata = {
   title: "프로그램 상세",
@@ -98,9 +113,9 @@ export default async function AdminProgramDetailPage({ params }: { params: Promi
 
       <AdminStatusSummary
         items={[
-          { label: "게시 상태", value: getProgramPublicationStatusLabel(post.publicationStatus) },
-          { label: "승인 상태", value: getProgramApprovalStatusLabel(post.approvalStatus) },
-          { label: "공개 여부", value: post.isPubliclyVisible ? "공개 중" : "비공개", emphasized: true },
+          { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[post.publicationStatus]}>{getProgramPublicationStatusLabel(post.publicationStatus)}</SemanticStatusBadge> },
+          { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[post.approvalStatus]}>{getProgramApprovalStatusLabel(post.approvalStatus)}</SemanticStatusBadge> },
+          { label: "공개 여부", value: <SemanticStatusBadge tone={post.isPubliclyVisible ? "success" : "neutral"}>{post.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
           { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
         ]}
       />

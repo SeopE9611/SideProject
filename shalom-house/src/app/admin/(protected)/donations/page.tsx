@@ -1,3 +1,6 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { DonationReceiptStatus } from "@/features/donations/donation.types";
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
@@ -19,6 +22,18 @@ import {
   type DonationMethod,
   type DonationStatus,
 } from "@/features/donations/donation.types";
+
+const statusTone = {
+  draft: "neutral",
+  confirmed: "success",
+  voided: "danger",
+} satisfies Record<DonationStatus, SemanticStatusTone>;
+
+const receiptTone = {
+  not_requested: "neutral",
+  requested: "warning",
+  issued: "success",
+} satisfies Record<DonationReceiptStatus, SemanticStatusTone>;
 
 const canonicalId = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{24}$/.test(value);
 
@@ -223,11 +238,11 @@ export default async function Page({
                   </p>
                   <p>
                     <strong className="text-small font-semibold xl:sr-only">영수증 상태 </strong>
-                    {donationReceiptStatusLabels[item.receiptStatus]}
+                    <SemanticStatusBadge tone={receiptTone[item.receiptStatus]}>{donationReceiptStatusLabels[item.receiptStatus]}</SemanticStatusBadge>
                   </p>
                   <p>
                     <strong className="text-small font-semibold xl:sr-only">기록 상태 </strong>
-                    {donationStatusLabels[item.status]}
+                    <SemanticStatusBadge tone={statusTone[item.status]}>{donationStatusLabels[item.status]}</SemanticStatusBadge>
                   </p>
                   <Link
                     className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
@@ -240,19 +255,19 @@ export default async function Page({
             </ul>
           </>
         ) : (
-          <div className="rounded-card border border-border bg-surface p-6">
-            <h3 className="text-heading font-bold">
-              {hasFilters ? "선택한 조건에 맞는 후원금 기록이 없습니다." : "등록된 후원금 기록이 없습니다."}
-            </h3>
-            {hasFilters ? (
-              <Link
-                href="/admin/donations"
-                className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                필터 초기화
-              </Link>
-            ) : null}
-          </div>
+          <EmptyState
+            title={hasFilters ? "선택한 조건에 맞는 후원금 기록이 없습니다." : "등록된 후원금 기록이 없습니다."}
+            actions={
+              hasFilters ? (
+                <Link
+                  href="/admin/donations"
+                  className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  필터 초기화
+                </Link>
+              ) : null
+            }
+          />
         )}
       </section>
 

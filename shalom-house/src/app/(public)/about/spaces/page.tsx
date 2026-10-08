@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
@@ -75,12 +76,16 @@ export default async function SpacesPage() {
             ))}
           </ul>
         ) : (
-          <div className="border-b border-border py-6">
-            <h3 className="text-safe-wrap text-lg font-semibold">현재 공개된 생활공간 안내가 없습니다.</h3>
-            <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
-              방문에 필요한 주소와 연락처는 찾아오시는 길에서 확인할 수 있습니다.
-            </p>
-          </div>
+          <EmptyState
+            title="현재 공개된 생활공간 안내가 없습니다."
+            description={
+              <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
+                방문에 필요한 주소와 연락처는 찾아오시는 길에서 확인할 수 있습니다.
+              </p>
+            }
+            variant="list"
+            className="[&_h3]:text-lg"
+          />
         )}
         <nav aria-label="생활공간 관련 안내" className="mt-5 flex flex-wrap gap-x-6 gap-y-2">
           <Link className="institution-link" href="/about">

@@ -1,3 +1,6 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { FacilitySpacePublicationStatus } from "@/features/facility-spaces/facility-space.types";
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -6,6 +9,13 @@ import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { listAdminFacilitySpaces } from "@/features/facility-spaces/facility-space.admin-repository";
 import { getFacilitySpacePublicationStatusLabel } from "@/features/facility-spaces/facility-space.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const publicationTone = {
+  draft: "neutral",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<FacilitySpacePublicationStatus, SemanticStatusTone>;
+
 export default async function Page() {
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "site_content.manage")) redirect("/admin?forbidden=1");
@@ -45,7 +55,7 @@ export default async function Page() {
               {spaces.map((space) => (
                 <tr className="border-t" key={space.id}>
                   <td className="p-3">{space.title}</td>
-                  <td className="p-3">{getFacilitySpacePublicationStatusLabel(space.publicationStatus)}</td>
+                  <td className="p-3"><SemanticStatusBadge tone={publicationTone[space.publicationStatus]}>{getFacilitySpacePublicationStatusLabel(space.publicationStatus)}</SemanticStatusBadge></td>
                   <td className="p-3">{space.displayOrder}</td>
                   <td className="p-3">
                     <time dateTime={space.updatedAt}>{formatAdminDate(space.updatedAt)}</time>
@@ -66,9 +76,7 @@ export default async function Page() {
           </table>
         </div>
       ) : (
-        <div className="rounded-card border border-border bg-surface p-6">
-          <h2 className="text-heading font-bold">등록된 생활공간이 없습니다.</h2>
-        </div>
+        <EmptyState title="등록된 생활공간이 없습니다." headingLevel={2} />
       )}
     </div>
   );

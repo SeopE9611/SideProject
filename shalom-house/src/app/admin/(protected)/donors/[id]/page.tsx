@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { DonorStatus } from "@/features/donations/donor.types";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminDetailHeader } from "@/components/admin/admin-detail-header";
@@ -7,6 +9,11 @@ import { getAdminDonor } from "@/features/donations/donor.admin-repository";
 import { donorAuditActionLabels, donorAuditFieldLabels } from "@/features/donations/donor.audit";
 import { donorStatusLabels, donorTypeLabels } from "@/features/donations/donor.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const statusTone = {
+  active: "success",
+  archived: "neutral",
+} satisfies Record<DonorStatus, SemanticStatusTone>;
 
 function DateValue({ value }: { value: string | null }) {
   return value ? <time dateTime={value}>{formatAdminDate(value)}</time> : "—";
@@ -47,7 +54,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         items={[
           { label: "참조번호", value: donor.reference },
           { label: "유형", value: donorTypeLabels[donor.type] },
-          { label: "상태", value: donorStatusLabels[donor.status], emphasized: true },
+          { label: "상태", value: <SemanticStatusBadge tone={statusTone[donor.status]}>{donorStatusLabels[donor.status]}</SemanticStatusBadge>, emphasized: true },
           { label: "최근 수정", value: <DateValue value={donor.updatedAt} /> },
         ]}
       />

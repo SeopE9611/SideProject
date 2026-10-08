@@ -1,3 +1,10 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type {
+  TransparencyPublicationStatus,
+  TransparencyPrivacyReviewStatus,
+  TransparencyFinalDocumentStatus,
+} from "@/features/transparency/transparency.types";
+import { EmptyState } from "@/components/ui/empty-state";
 import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
 import { AdminListPagination } from "@/components/admin/admin-list-pagination";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -19,6 +26,24 @@ import {
   transparencyPrivacyReviewStatusLabels,
   transparencyPublicationStatusLabels,
 } from "@/features/transparency/transparency.types";
+
+const publicationTone = {
+  draft: "neutral",
+  review: "warning",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<TransparencyPublicationStatus, SemanticStatusTone>;
+
+const privacyReviewTone = {
+  pending: "warning",
+  confirmed: "success",
+} satisfies Record<TransparencyPrivacyReviewStatus, SemanticStatusTone>;
+
+const finalDocumentTone = {
+  draft: "neutral",
+  final: "success",
+} satisfies Record<TransparencyFinalDocumentStatus, SemanticStatusTone>;
+
 function buildTransparencyPageHref(
   page: number,
   filters: {
@@ -157,16 +182,28 @@ export default async function AdminTransparencyPage({
                 <li key={item.id} className={`grid min-w-0 gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${"xl:grid-cols-[2fr_1.2fr_1fr_0.8fr_0.8fr_1fr]"}`}>
                   <div className="min-w-0 md:col-span-2 xl:col-span-1"><Link href={`/admin/transparency/${item.id}`} className="text-safe-wrap text-heading font-bold underline-offset-4 hover:underline">{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{transparencyCategoryLabels[item.category]}</p></div>
                   <p><strong className="text-small font-semibold xl:sr-only">기준 기간 / 문서일 </strong>{item.periodLabel} / {item.documentDate}</p>
-                  <p><strong className="text-small font-semibold xl:sr-only">개인정보 검토 </strong>{transparencyPrivacyReviewStatusLabels[item.privacyReviewStatus]}</p>
-                  <p><strong className="text-small font-semibold xl:sr-only">최종본 </strong>{transparencyFinalDocumentStatusLabels[item.finalDocumentStatus]}</p>
-                  <p><strong className="text-small font-semibold xl:sr-only">게시 상태 </strong>{transparencyPublicationStatusLabels[item.publicationStatus]}</p>
+                  <p><strong className="text-small font-semibold xl:sr-only">개인정보 검토 </strong><SemanticStatusBadge tone={privacyReviewTone[item.privacyReviewStatus]}>{transparencyPrivacyReviewStatusLabels[item.privacyReviewStatus]}</SemanticStatusBadge></p>
+                  <p><strong className="text-small font-semibold xl:sr-only">최종본 </strong><SemanticStatusBadge tone={finalDocumentTone[item.finalDocumentStatus]}>{transparencyFinalDocumentStatusLabels[item.finalDocumentStatus]}</SemanticStatusBadge></p>
+                  <p><strong className="text-small font-semibold xl:sr-only">게시 상태 </strong><SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{transparencyPublicationStatusLabels[item.publicationStatus]}</SemanticStatusBadge></p>
                   <p><strong className="text-small font-semibold xl:sr-only">최근 수정 </strong><time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time></p>
                 </li>
               ))}
             </ul>
           </>
         ) : (
-          <div className="rounded-card border border-border bg-surface p-6"><h3 className="text-heading font-bold">{hasFilters ? "선택한 조건에 맞는 자료공개 문서가 없습니다." : "등록된 자료공개 문서가 없습니다."}</h3>{hasFilters ? <Link href="/admin/transparency" className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">필터 초기화</Link> : null}</div>
+          <EmptyState
+            title={hasFilters ? "선택한 조건에 맞는 자료공개 문서가 없습니다." : "등록된 자료공개 문서가 없습니다."}
+            actions={
+              hasFilters ? (
+                <Link
+                  href="/admin/transparency"
+                  className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
+                >
+                  필터 초기화
+                </Link>
+              ) : null
+            }
+          />
         )}
       </section>
       <AdminListPagination

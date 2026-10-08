@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { NewsPublicationStatus, NewsApprovalStatus } from "@/features/news/news.types";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import type { Metadata } from "next";
@@ -25,6 +27,19 @@ import {
   getNewsCategoryLabel,
   getNewsPublicationStatusLabel,
 } from "@/features/news/news.types";
+
+const publicationTone = {
+  draft: "neutral",
+  review: "warning",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<NewsPublicationStatus, SemanticStatusTone>;
+
+const approvalTone = {
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
+} satisfies Record<NewsApprovalStatus, SemanticStatusTone>;
 
 export const metadata: Metadata = {
   title: "소식 상세 관리",
@@ -98,9 +113,9 @@ export default async function AdminNewsDetailPage({ params }: { params: Promise<
 
       <AdminStatusSummary
         items={[
-          { label: "게시 상태", value: getNewsPublicationStatusLabel(post.publicationStatus) },
-          { label: "승인 상태", value: getNewsApprovalStatusLabel(post.approvalStatus) },
-          { label: "공개 여부", value: post.isPubliclyVisible ? "공개 중" : "비공개", emphasized: true },
+          { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[post.publicationStatus]}>{getNewsPublicationStatusLabel(post.publicationStatus)}</SemanticStatusBadge> },
+          { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[post.approvalStatus]}>{getNewsApprovalStatusLabel(post.approvalStatus)}</SemanticStatusBadge> },
+          { label: "공개 여부", value: <SemanticStatusBadge tone={post.isPubliclyVisible ? "success" : "neutral"}>{post.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
           { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
         ]}
       />

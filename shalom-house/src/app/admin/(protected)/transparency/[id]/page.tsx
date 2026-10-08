@@ -1,3 +1,10 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type {
+  TransparencyPublicationStatus,
+  TransparencyApprovalStatus,
+  TransparencyPrivacyReviewStatus,
+  TransparencyFinalDocumentStatus,
+} from "@/features/transparency/transparency.types";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
@@ -22,6 +29,30 @@ import {
   transparencyPrivacyReviewStatusLabels,
   transparencyPublicationStatusLabels,
 } from "@/features/transparency/transparency.types";
+
+const publicationTone = {
+  draft: "neutral",
+  review: "warning",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<TransparencyPublicationStatus, SemanticStatusTone>;
+
+const approvalTone = {
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
+} satisfies Record<TransparencyApprovalStatus, SemanticStatusTone>;
+
+const privacyReviewTone = {
+  pending: "warning",
+  confirmed: "success",
+} satisfies Record<TransparencyPrivacyReviewStatus, SemanticStatusTone>;
+
+const finalDocumentTone = {
+  draft: "neutral",
+  final: "success",
+} satisfies Record<TransparencyFinalDocumentStatus, SemanticStatusTone>;
+
 export default async function TransparencyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const document = await findAdminTransparencyDocumentById((await params).id);
   if (!document) notFound();
@@ -95,15 +126,24 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
       />
       <AdminStatusSummary
         items={[
-          { label: "게시 상태", value: transparencyPublicationStatusLabels[document.publicationStatus] },
-          { label: "승인 상태", value: transparencyApprovalStatusLabels[document.approvalStatus] },
+          { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[document.publicationStatus]}>{transparencyPublicationStatusLabels[document.publicationStatus]}</SemanticStatusBadge> },
+          { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[document.approvalStatus]}>{transparencyApprovalStatusLabels[document.approvalStatus]}</SemanticStatusBadge> },
           {
             label: "공개 여부",
-            value: document.isPubliclyVisible ? "공개 중" : `비공개 (${document.publicVisibilityReason})`,
+            value: (
+              <div className="flex flex-wrap items-center gap-2">
+                <SemanticStatusBadge tone={document.isPubliclyVisible ? "success" : "neutral"}>
+                  {document.isPubliclyVisible ? "공개 중" : "비공개"}
+                </SemanticStatusBadge>
+                {!document.isPubliclyVisible ? (
+                  <span className="text-small text-muted-foreground">({document.publicVisibilityReason})</span>
+                ) : null}
+              </div>
+            ),
             emphasized: true,
           },
-          { label: "개인정보 검토", value: transparencyPrivacyReviewStatusLabels[document.privacyReviewStatus] },
-          { label: "최종본", value: transparencyFinalDocumentStatusLabels[document.finalDocumentStatus] },
+          { label: "개인정보 검토", value: <SemanticStatusBadge tone={privacyReviewTone[document.privacyReviewStatus]}>{transparencyPrivacyReviewStatusLabels[document.privacyReviewStatus]}</SemanticStatusBadge> },
+          { label: "최종본", value: <SemanticStatusBadge tone={finalDocumentTone[document.finalDocumentStatus]}>{transparencyFinalDocumentStatusLabels[document.finalDocumentStatus]}</SemanticStatusBadge> },
           {
             label: "최근 수정",
             value: <time dateTime={document.updatedAt}>{formatAdminDate(document.updatedAt)}</time>,

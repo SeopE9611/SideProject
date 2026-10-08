@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { GalleryCollection } from "@/components/gallery/gallery-collection";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
@@ -62,22 +63,27 @@ export default async function GalleryPage() {
             </a>
           </div>
         ) : items.length > 0 ? null : (
-          <div className="border-b border-border py-6">
-            <h3 className="text-safe-wrap font-semibold">아직 등록된 활동사진이 없습니다.</h3>
-            <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
-              새로운 사진 기록은 이곳에서 안내합니다. 글로 전하는 활동은 활동소식에서 확인할 수 있습니다.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-              <Link className="institution-link" href="/news/activities">
-                활동소식
-              </Link>
-              {contact.showInstagram && contact.instagramUrl ? (
-                <a className="institution-link" href={contact.instagramUrl} target="_blank" rel="noreferrer">
-                  공식 인스타그램 <span className="text-xs">(새 창)</span>
-                </a>
-              ) : null}
-            </div>
-          </div>
+          <EmptyState
+            title="아직 등록된 활동사진이 없습니다."
+            description={
+              <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
+                새로운 사진 기록은 이곳에서 안내합니다. 글로 전하는 활동은 활동소식에서 확인할 수 있습니다.
+              </p>
+            }
+            actions={
+              <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
+                <Link className="institution-link" href="/news/activities">
+                  활동소식
+                </Link>
+                {contact.showInstagram && contact.instagramUrl ? (
+                  <a className="institution-link" href={contact.instagramUrl} target="_blank" rel="noreferrer">
+                    공식 인스타그램 <span className="text-xs">(새 창)</span>
+                  </a>
+                ) : null}
+              </div>
+            }
+            variant="list"
+          />
         )}
       </section>
     </div>

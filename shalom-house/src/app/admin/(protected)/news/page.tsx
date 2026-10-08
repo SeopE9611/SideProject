@@ -1,3 +1,6 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { NewsPublicationStatus, NewsApprovalStatus } from "@/features/news/news.types";
+import { EmptyState } from "@/components/ui/empty-state";
 import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
 import { AdminListPagination } from "@/components/admin/admin-list-pagination";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -15,6 +18,19 @@ import {
   isNewsCategory,
   isNewsPublicationStatus,
 } from "@/features/news/news.types";
+
+const publicationTone = {
+  draft: "neutral",
+  review: "warning",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<NewsPublicationStatus, SemanticStatusTone>;
+
+const approvalTone = {
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
+} satisfies Record<NewsApprovalStatus, SemanticStatusTone>;
 
 type AdminNewsSearchParams = {
   category?: string | string[];
@@ -177,17 +193,17 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
                     <div className="min-w-0">
                       <p className="text-small font-semibold xl:hidden">게시 상태</p>
                       <p className="mt-1 break-words xl:mt-0">
-                        {getNewsPublicationStatusLabel(item.publicationStatus)}
+                        <SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getNewsPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge>
                       </p>
                     </div>
                     <div className="min-w-0">
                       <p className="text-small font-semibold xl:hidden">승인 상태</p>
-                      <p className="mt-1 break-words xl:mt-0">{getNewsApprovalStatusLabel(item.approvalStatus)}</p>
+                      <p className="mt-1 break-words xl:mt-0"><SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getNewsApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge></p>
                     </div>
                     <div className="min-w-0">
                       <p className="text-small font-semibold xl:hidden">공개 여부</p>
                       <p className="mt-1 break-words font-semibold xl:mt-0">
-                        {item.isPubliclyVisible ? "공개 중" : "비공개"}
+                        <SemanticStatusBadge tone={item.isPubliclyVisible ? "success" : "neutral"}>{item.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>
                       </p>
                     </div>
                     <div className="min-w-0">
@@ -212,23 +228,26 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
             </ul>
           </>
         ) : (
-          <div className="rounded-card border border-border bg-surface p-6">
-            <h3 className="text-heading font-bold">
-              {hasFilters ? "선택한 조건에 맞는 게시물이 없습니다." : "아직 등록된 뉴스 게시물이 없습니다."}
-            </h3>
-            {hasFilters ? (
-              <Link
-                href="/admin/news"
-                className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                필터 초기화
-              </Link>
-            ) : (
-              <p className="mt-3 text-muted-foreground">
-                새 게시물 작성에서 초안을 저장하면 이 화면에서 게시 상태를 확인할 수 있습니다.
-              </p>
-            )}
-          </div>
+          <EmptyState
+            title={hasFilters ? "선택한 조건에 맞는 게시물이 없습니다." : "아직 등록된 뉴스 게시물이 없습니다."}
+            description={
+              !hasFilters ? (
+                <p className="mt-3 text-muted-foreground">
+                  새 게시물 작성에서 초안을 저장하면 이 화면에서 게시 상태를 확인할 수 있습니다.
+                </p>
+              ) : null
+            }
+            actions={
+              hasFilters ? (
+                <Link
+                  href="/admin/news"
+                  className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  필터 초기화
+                </Link>
+              ) : null
+            }
+          />
         )}
       </section>
 

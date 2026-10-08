@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminContentRestoreForm } from "@/components/admin/admin-content-restore-form";
@@ -119,19 +120,19 @@ export default async function AdminTrashPage({
             ))}
           </ul>
         ) : (
-          <div className="rounded-card border border-border bg-surface p-6">
-            <h3 className="text-heading font-bold">
-              {domain ? "선택한 종류의 삭제된 콘텐츠가 없습니다." : "휴지통에 콘텐츠가 없습니다."}
-            </h3>
-            {domain ? (
-              <Link
-                href="/admin/trash"
-                className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                전체 보기
-              </Link>
-            ) : null}
-          </div>
+          <EmptyState
+            title={domain ? "선택한 종류의 삭제된 콘텐츠가 없습니다." : "휴지통에 콘텐츠가 없습니다."}
+            actions={
+              domain ? (
+                <Link
+                  href="/admin/trash"
+                  className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  전체 보기
+                </Link>
+              ) : null
+            }
+          />
         )}
       </section>
 

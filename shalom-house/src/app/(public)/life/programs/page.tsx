@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -94,20 +95,25 @@ export default async function ProgramsPage() {
             ))}
           </ul>
         ) : (
-          <div className="border-b border-border py-6">
-            <h3 className="font-semibold">아직 등록된 프로그램 안내가 없습니다.</h3>
-            <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
-              활동 기록은 생활이야기와 활동소식에서 확인할 수 있습니다.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-              <Link className="institution-link" href="/life">
-                생활이야기
-              </Link>
-              <Link className="institution-link" href="/news/activities">
-                활동소식
-              </Link>
-            </div>
-          </div>
+          <EmptyState
+            title="아직 등록된 프로그램 안내가 없습니다."
+            description={
+              <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
+                활동 기록은 생활이야기와 활동소식에서 확인할 수 있습니다.
+              </p>
+            }
+            actions={
+              <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
+                <Link className="institution-link" href="/life">
+                  생활이야기
+                </Link>
+                <Link className="institution-link" href="/news/activities">
+                  활동소식
+                </Link>
+              </div>
+            }
+            variant="list"
+          />
         )}
       </section>
     </div>
