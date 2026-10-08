@@ -58,6 +58,7 @@ export const advisoryContractFiles = [
   "admin-operations-count-consistency.advisory.test.mjs",
   "admin-order-detail-display.contract.test.mjs",
   "admin-package-read-model.contract.test.mjs",
+  "admin-swr-retry-consumers.contract.test.mjs",
   "admin-boards-metrics.snapshot.test.mjs",
   "apps-in-toss-rackets.contract.test.mjs",
   "apps-in-toss-racket-purchase-payment.contract.test.mjs",
@@ -80,6 +81,7 @@ export const advisoryContractFiles = [
   "review-domain-contract.test.mjs",
   "review-management-context.test.mjs",
   "review-summary-cache.advisory.test.mjs",
+  "swr-retry-consumers.contract.test.mjs",
   "typescript-project-boundary.contract.test.mjs",
 ];
 
