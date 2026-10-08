@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 const testsDirectory = resolve(process.cwd(), "tests");
 
 export const coreContractFiles = [
+  "nice-cancel-error-origin.core.test.mjs",
   "nice-payment-lookup.core.test.mjs",
   "nice-payment-cancel.core.test.mjs",
   "admin-board-detail-actions.contract.test.mjs",
