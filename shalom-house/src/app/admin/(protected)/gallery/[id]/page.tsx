@@ -1,3 +1,9 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type {
+  GalleryPublicationStatus,
+  GalleryApprovalStatus,
+  GalleryConsentStatus,
+} from "@/features/gallery/gallery.types";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import Link from "next/link";
@@ -21,6 +27,27 @@ import {
   getGalleryPublicationStatusLabel,
   getGallerySubjectPresenceLabel,
 } from "@/features/gallery/gallery.types";
+
+const publicationTone = {
+  draft: "neutral",
+  review: "warning",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<GalleryPublicationStatus, SemanticStatusTone>;
+
+const approvalTone = {
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
+} satisfies Record<GalleryApprovalStatus, SemanticStatusTone>;
+
+const consentTone = {
+  not_required: "neutral",
+  pending: "warning",
+  confirmed: "success",
+  withdrawn: "danger",
+} satisfies Record<GalleryConsentStatus, SemanticStatusTone>;
+
 export default async function GalleryDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params,
     item = await findAdminGalleryItemById(id);
@@ -79,10 +106,10 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
       />
       <AdminStatusSummary
         items={[
-          { label: "게시 상태", value: getGalleryPublicationStatusLabel(item.publicationStatus) },
-          { label: "승인 상태", value: getGalleryApprovalStatusLabel(item.approvalStatus) },
-          { label: "공개 여부", value: item.isPubliclyVisible ? "공개 중" : "비공개", emphasized: true },
-          { label: "동의 상태", value: getGalleryConsentStatusLabel(item.consentStatus) },
+          { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getGalleryPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge> },
+          { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getGalleryApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge> },
+          { label: "공개 여부", value: <SemanticStatusBadge tone={item.isPubliclyVisible ? "success" : "neutral"}>{item.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
+          { label: "동의 상태", value: <SemanticStatusBadge tone={consentTone[item.consentStatus]}>{getGalleryConsentStatusLabel(item.consentStatus)}</SemanticStatusBadge> },
           {
             label: "최근 수정",
             value: <time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time>,

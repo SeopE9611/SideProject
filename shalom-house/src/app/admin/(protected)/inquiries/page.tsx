@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
@@ -14,6 +16,14 @@ import {
   type InquiryStatus,
 } from "@/features/inquiries/inquiry.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const statusTone = {
+  received: "info",
+  in_review: "warning",
+  contacted: "info",
+  completed: "success",
+  archived: "neutral",
+} satisfies Record<InquiryStatus, SemanticStatusTone>;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -162,7 +172,7 @@ export default async function InquiriesPage({
                   </p>
                   <p>
                     <strong className="text-small font-semibold xl:sr-only">처리 상태 </strong>
-                    {inquiryStatusLabels[item.status]}
+                    <SemanticStatusBadge tone={statusTone[item.status]}>{inquiryStatusLabels[item.status]}</SemanticStatusBadge>
                   </p>
                   <p>
                     <strong className="text-small font-semibold xl:sr-only">접수 시각 </strong>
@@ -179,19 +189,19 @@ export default async function InquiriesPage({
             </ul>
           </>
         ) : (
-          <div className="rounded-card border border-border bg-surface p-6">
-            <h3 className="text-heading font-bold">
-              {hasFilters ? "선택한 조건에 맞는 문의가 없습니다." : "접수된 문의가 없습니다."}
-            </h3>
-            {hasFilters ? (
-              <Link
-                href="/admin/inquiries"
-                className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                필터 초기화
-              </Link>
-            ) : null}
-          </div>
+          <EmptyState
+            title={hasFilters ? "선택한 조건에 맞는 문의가 없습니다." : "접수된 문의가 없습니다."}
+            actions={
+              hasFilters ? (
+                <Link
+                  href="/admin/inquiries"
+                  className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  필터 초기화
+                </Link>
+              ) : null
+            }
+          />
         )}
       </section>
 

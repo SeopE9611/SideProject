@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { FacilitySpacePublicationStatus } from "@/features/facility-spaces/facility-space.types";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
@@ -8,6 +10,13 @@ import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getAdminFacilitySpace } from "@/features/facility-spaces/facility-space.admin-repository";
 import { getFacilitySpacePublicationStatusLabel } from "@/features/facility-spaces/facility-space.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const publicationTone = {
+  draft: "neutral",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<FacilitySpacePublicationStatus, SemanticStatusTone>;
+
 export default async function Page({
   params,
   searchParams,
@@ -50,7 +59,7 @@ export default async function Page({
       />
       <AdminStatusSummary
         items={[
-          { label: "공개 상태", value: getFacilitySpacePublicationStatusLabel(d.publicationStatus) },
+          { label: "공개 상태", value: <SemanticStatusBadge tone={publicationTone[d.publicationStatus]}>{getFacilitySpacePublicationStatusLabel(d.publicationStatus)}</SemanticStatusBadge> },
           { label: "표시 순서", value: String(d.displayOrder) },
           { label: "최근 수정", value: <time dateTime={d.updatedAt}>{formatAdminDate(d.updatedAt)}</time> },
         ]}

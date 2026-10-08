@@ -1,3 +1,6 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { StaffPublicationStatus } from "@/features/staff/staff.types";
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -6,6 +9,13 @@ import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getStaffPublicationStatusLabel } from "@/features/staff/staff.types";
 import { listAdminStaffProfiles } from "@/features/staff/staff.admin-repository";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const publicationTone = {
+  draft: "neutral",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<StaffPublicationStatus, SemanticStatusTone>;
+
 export default async function Page() {
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "site_content.manage")) redirect("/admin?forbidden=1");
@@ -46,7 +56,7 @@ export default async function Page() {
                 <tr className="border-t" key={p.id}>
                   <td className="p-3">{p.role}</td>
                   <td className="p-3">{p.publicName}</td>
-                  <td className="p-3">{getStaffPublicationStatusLabel(p.publicationStatus)}</td>
+                  <td className="p-3"><SemanticStatusBadge tone={publicationTone[p.publicationStatus]}>{getStaffPublicationStatusLabel(p.publicationStatus)}</SemanticStatusBadge></td>
                   <td className="p-3">{p.displayOrder}</td>
                   <td className="p-3">
                     <time dateTime={p.updatedAt}>{formatAdminDate(p.updatedAt)}</time>
@@ -67,9 +77,7 @@ export default async function Page() {
           </table>
         </div>
       ) : (
-        <div className="rounded-card border border-border bg-surface p-6">
-          <h2 className="text-heading font-bold">등록된 직원 소개가 없습니다.</h2>
-        </div>
+        <EmptyState title="등록된 직원 소개가 없습니다." headingLevel={2} />
       )}
     </div>
   );

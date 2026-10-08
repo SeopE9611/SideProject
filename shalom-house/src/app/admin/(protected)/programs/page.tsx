@@ -1,3 +1,6 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { ProgramPublicationStatus, ProgramApprovalStatus } from "@/features/programs/program.types";
+import { EmptyState } from "@/components/ui/empty-state";
 import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
 import { AdminListPagination } from "@/components/admin/admin-list-pagination";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -15,6 +18,20 @@ import {
   isProgramApprovalStatus,
   isProgramPublicationStatus,
 } from "@/features/programs/program.types";
+
+const publicationTone = {
+  draft: "neutral",
+  review: "warning",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<ProgramPublicationStatus, SemanticStatusTone>;
+
+const approvalTone = {
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
+} satisfies Record<ProgramApprovalStatus, SemanticStatusTone>;
+
 const adminProgramsDesktopGridClass = "xl:grid-cols-[2fr_1fr_0.6fr_0.8fr_0.8fr_1fr_0.7fr]";
 const date = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
@@ -112,11 +129,11 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
                   </p>
                   <p>
                     <strong className="xl:sr-only">게시 상태 </strong>
-                    {getProgramPublicationStatusLabel(item.publicationStatus)}
+                    <SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getProgramPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge>
                   </p>
                   <p>
                     <strong className="xl:sr-only">승인 상태 </strong>
-                    {getProgramApprovalStatusLabel(item.approvalStatus)}
+                    <SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getProgramApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge>
                   </p>
                   <p>
                     <strong className="xl:sr-only">최근 수정 </strong>
@@ -124,14 +141,26 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
                   </p>
                   <p>
                     <strong className="xl:sr-only">공개 여부 </strong>
-                    {item.isPubliclyVisible ? "공개 중" : "비공개"}
+                    <SemanticStatusBadge tone={item.isPubliclyVisible ? "success" : "neutral"}>{item.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>
                   </p>
                 </li>
               ))}
             </ul>
           </>
         ) : (
-          <div className="rounded-card border border-border bg-surface p-6"><h3 className="text-heading font-bold">{hasFilters ? "선택한 조건에 맞는 프로그램이 없습니다." : "등록된 프로그램이 없습니다."}</h3>{hasFilters ? <Link href="/admin/programs" className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">필터 초기화</Link> : null}</div>
+          <EmptyState
+            title={hasFilters ? "선택한 조건에 맞는 프로그램이 없습니다." : "등록된 프로그램이 없습니다."}
+            actions={
+              hasFilters ? (
+                <Link
+                  href="/admin/programs"
+                  className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
+                >
+                  필터 초기화
+                </Link>
+              ) : null
+            }
+          />
         )}
       </section>
       <AdminListPagination label="프로그램 목록 페이지 이동" page={result.page} totalPages={result.totalPages} previousHref={href(result.page - 1, filters)} nextHref={href(result.page + 1, filters)} />

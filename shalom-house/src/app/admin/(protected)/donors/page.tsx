@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
@@ -14,6 +16,11 @@ import {
   type DonorType,
 } from "@/features/donations/donor.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const statusTone = {
+  active: "success",
+  archived: "neutral",
+} satisfies Record<DonorStatus, SemanticStatusTone>;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -178,7 +185,7 @@ export default async function Page({
                   </p>
                   <p>
                     <strong className="text-small font-semibold xl:sr-only">상태 </strong>
-                    {donorStatusLabels[item.status]}
+                    <SemanticStatusBadge tone={statusTone[item.status]}>{donorStatusLabels[item.status]}</SemanticStatusBadge>
                   </p>
                   <p>
                     <strong className="text-small font-semibold xl:sr-only">최근 수정 </strong>
@@ -201,19 +208,19 @@ export default async function Page({
             </ul>
           </>
         ) : (
-          <div className="rounded-card border border-border bg-surface p-6">
-            <h3 className="text-heading font-bold">
-              {hasFilters ? "선택한 조건에 맞는 후원자가 없습니다." : "등록된 후원자가 없습니다."}
-            </h3>
-            {hasFilters ? (
-              <Link
-                href="/admin/donors"
-                className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                필터 초기화
-              </Link>
-            ) : null}
-          </div>
+          <EmptyState
+            title={hasFilters ? "선택한 조건에 맞는 후원자가 없습니다." : "등록된 후원자가 없습니다."}
+            actions={
+              hasFilters ? (
+                <Link
+                  href="/admin/donors"
+                  className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  필터 초기화
+                </Link>
+              ) : null
+            }
+          />
         )}
       </section>
 

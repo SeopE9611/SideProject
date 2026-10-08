@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
@@ -15,6 +17,11 @@ import {
 import { getAdminUserCounts, listAdminUsers } from "@/features/admin-users/admin-user.admin-repository";
 import { ADMIN_USER_PAGE_SIZE } from "@/features/admin-users/admin-user.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const statusTone = {
+  active: "success",
+  disabled: "neutral",
+} satisfies Record<AdminUserStatus, SemanticStatusTone>;
 
 const adminUserListGridClass =
   "xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.65fr)_minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,1fr)_minmax(0,0.5fr)]";
@@ -177,7 +184,7 @@ export default async function Page({
                   </p>
                   <p>
                     <strong className="text-small font-semibold xl:sr-only">상태 </strong>
-                    {adminUserStatusLabels[x.status]}
+                    <SemanticStatusBadge tone={statusTone[x.status]}>{adminUserStatusLabels[x.status]}</SemanticStatusBadge>
                   </p>
                   <p>
                     <strong className="text-small font-semibold xl:sr-only">마지막 로그인 </strong>
@@ -202,19 +209,19 @@ export default async function Page({
             </ul>
           </>
         ) : (
-          <div className="rounded-card border border-border bg-surface p-6">
-            <h3 className="text-heading font-bold">
-              {hasFilters ? "선택한 조건에 맞는 관리자 계정이 없습니다." : "등록된 관리자 계정이 없습니다."}
-            </h3>
-            {hasFilters ? (
-              <Link
-                href="/admin/admin-users"
-                className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                필터 초기화
-              </Link>
-            ) : null}
-          </div>
+          <EmptyState
+            title={hasFilters ? "선택한 조건에 맞는 관리자 계정이 없습니다." : "등록된 관리자 계정이 없습니다."}
+            actions={
+              hasFilters ? (
+                <Link
+                  href="/admin/admin-users"
+                  className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  필터 초기화
+                </Link>
+              ) : null
+            }
+          />
         )}
       </section>
 

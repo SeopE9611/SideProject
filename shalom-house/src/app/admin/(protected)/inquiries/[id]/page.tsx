@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { InquiryStatus } from "@/features/inquiries/inquiry.types";
 import { notFound, redirect } from "next/navigation";
 import { AdminDetailHeader } from "@/components/admin/admin-detail-header";
 import { AdminInquiryUpdateForm } from "@/components/admin/admin-inquiry-update-form";
@@ -9,6 +11,14 @@ import { inquiryAuditActionLabels, inquiryAuditFieldLabels } from "@/features/in
 import { inquiryKindLabels, inquiryStatusLabels } from "@/features/inquiries/inquiry.types";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const statusTone = {
+  received: "info",
+  in_review: "warning",
+  contacted: "info",
+  completed: "success",
+  archived: "neutral",
+} satisfies Record<InquiryStatus, SemanticStatusTone>;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,7 +45,7 @@ export default async function InquiryPage({ params }: { params: Promise<{ id: st
       <AdminStatusSummary
         items={[
           { label: "문의 종류", value: inquiryKindLabels[inquiry.kind] },
-          { label: "처리 상태", value: inquiryStatusLabels[inquiry.status], emphasized: true },
+          { label: "처리 상태", value: <SemanticStatusBadge tone={statusTone[inquiry.status]}>{inquiryStatusLabels[inquiry.status]}</SemanticStatusBadge>, emphasized: true },
           { label: "접수 시각", value: <DateValue value={inquiry.createdAt} /> },
           { label: "최근 수정", value: <DateValue value={inquiry.updatedAt} /> },
         ]}

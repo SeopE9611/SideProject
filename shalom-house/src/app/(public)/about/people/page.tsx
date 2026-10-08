@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
 import { SectionPageHeader } from "@/components/layout/section-page-header";
@@ -67,12 +68,16 @@ export default async function PeoplePage() {
             ))}
           </ul>
         ) : (
-          <div className="border-b border-border py-6">
-            <h3 className="text-safe-wrap text-lg font-semibold">현재 공개된 직원 소개가 없습니다.</h3>
-            <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
-              시설에 관한 질문은 문의 페이지에서 접수할 수 있습니다.
-            </p>
-          </div>
+          <EmptyState
+            title="현재 공개된 직원 소개가 없습니다."
+            description={
+              <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
+                시설에 관한 질문은 문의 페이지에서 접수할 수 있습니다.
+              </p>
+            }
+            variant="list"
+            className="[&_h3]:text-lg"
+          />
         )}
         <nav aria-label="직원 소개 관련 안내" className="mt-5 flex flex-wrap gap-x-6 gap-y-2">
           <Link className="institution-link" href="/about">

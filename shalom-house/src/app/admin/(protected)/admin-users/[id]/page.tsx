@@ -1,3 +1,5 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type { AdminUserStatus } from "@/features/admin-auth/admin-auth.types";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
@@ -9,6 +11,11 @@ import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization
 import { adminRoleLabels, adminUserStatusLabels } from "@/features/admin-auth/admin-auth.types";
 import { getAdminUserDetail } from "@/features/admin-users/admin-user.admin-repository";
 import { formatAdminDate } from "@/lib/format-admin-date";
+
+const statusTone = {
+  active: "success",
+  disabled: "neutral",
+} satisfies Record<AdminUserStatus, SemanticStatusTone>;
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const a = await authorizeCurrentAdmin("admin_users.manage");
@@ -38,7 +45,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <AdminStatusSummary
         items={[
           { label: "역할", value: adminRoleLabels[u.role] },
-          { label: "상태", value: adminUserStatusLabels[u.status], emphasized: true },
+          { label: "상태", value: <SemanticStatusBadge tone={statusTone[u.status]}>{adminUserStatusLabels[u.status]}</SemanticStatusBadge>, emphasized: true },
           { label: "활성 세션", value: `${u.activeSessionCount}개` },
           { label: "최근 수정", value: <time dateTime={u.updatedAt}>{formatAdminDate(u.updatedAt)}</time> },
         ]}

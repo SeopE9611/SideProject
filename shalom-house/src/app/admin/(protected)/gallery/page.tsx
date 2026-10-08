@@ -1,3 +1,10 @@
+import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
+import type {
+  GalleryPublicationStatus,
+  GalleryApprovalStatus,
+  GalleryConsentStatus,
+} from "@/features/gallery/gallery.types";
+import { EmptyState } from "@/components/ui/empty-state";
 import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
 import { AdminListPagination } from "@/components/admin/admin-list-pagination";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -15,6 +22,26 @@ import {
 } from "@/features/gallery/gallery.types";
 import { formatAdminDate } from "@/lib/format-admin-date";
 import Link from "next/link";
+
+const publicationTone = {
+  draft: "neutral",
+  review: "warning",
+  published: "success",
+  archived: "neutral",
+} satisfies Record<GalleryPublicationStatus, SemanticStatusTone>;
+
+const approvalTone = {
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
+} satisfies Record<GalleryApprovalStatus, SemanticStatusTone>;
+
+const consentTone = {
+  not_required: "neutral",
+  pending: "warning",
+  confirmed: "success",
+  withdrawn: "danger",
+} satisfies Record<GalleryConsentStatus, SemanticStatusTone>;
 
 const gridClass = "xl:grid-cols-[2fr_0.8fr_1fr_1fr_0.8fr_0.8fr_1fr]";
 
@@ -45,8 +72,20 @@ export default async function AdminGalleryPage({ searchParams }: { searchParams:
       </AdminFilterPanel>
       <section aria-labelledby="gallery-list"><h2 id="gallery-list" className="sr-only">활동사진 목록</h2>
         {result.items.length ? <><div className={`hidden gap-3 border-y border-border bg-surface-subtle px-4 py-3 text-small font-bold xl:grid ${gridClass}`}><span>활동사진</span><span>활동일</span><span>인물 상태</span><span>동의 상태</span><span>게시 상태</span><span>승인 상태</span><span>최근 수정</span></div>
-          <ul className="divide-y divide-border border-b border-border">{result.items.map((item) => <li key={item.id} className={`grid min-w-0 gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${gridClass}`}><div className="min-w-0 md:col-span-2 xl:col-span-1"><Link className="break-words text-heading font-bold underline-offset-4 hover:underline" href={`/admin/gallery/${item.id}`}>{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{item.category}</p></div><p><strong className="text-small font-semibold xl:sr-only">활동일 </strong>{item.activityDate}</p><p><strong className="text-small font-semibold xl:sr-only">인물 상태 </strong>{getGallerySubjectPresenceLabel(item.subjectPresence)}</p><p><strong className="text-small font-semibold xl:sr-only">동의 상태 </strong>{getGalleryConsentStatusLabel(item.consentStatus)}</p><p><strong className="text-small font-semibold xl:sr-only">게시 상태 </strong>{getGalleryPublicationStatusLabel(item.publicationStatus)}</p><p><strong className="text-small font-semibold xl:sr-only">승인 상태 </strong>{getGalleryApprovalStatusLabel(item.approvalStatus)}</p><p><strong className="text-small font-semibold xl:sr-only">최근 수정 </strong><time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time></p></li>)}</ul></> :
-          <div className="rounded-card border border-border bg-surface p-6"><h3 className="text-heading font-bold">{hasFilters ? "선택한 조건에 맞는 활동사진이 없습니다." : "등록된 활동사진이 없습니다."}</h3>{hasFilters ? <Link href="/admin/gallery" className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">필터 초기화</Link> : null}</div>}
+          <ul className="divide-y divide-border border-b border-border">{result.items.map((item) => <li key={item.id} className={`grid min-w-0 gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${gridClass}`}><div className="min-w-0 md:col-span-2 xl:col-span-1"><Link className="break-words text-heading font-bold underline-offset-4 hover:underline" href={`/admin/gallery/${item.id}`}>{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{item.category}</p></div><p><strong className="text-small font-semibold xl:sr-only">활동일 </strong>{item.activityDate}</p><p><strong className="text-small font-semibold xl:sr-only">인물 상태 </strong>{getGallerySubjectPresenceLabel(item.subjectPresence)}</p><p><strong className="text-small font-semibold xl:sr-only">동의 상태 </strong><SemanticStatusBadge tone={consentTone[item.consentStatus]}>{getGalleryConsentStatusLabel(item.consentStatus)}</SemanticStatusBadge></p><p><strong className="text-small font-semibold xl:sr-only">게시 상태 </strong><SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getGalleryPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge></p><p><strong className="text-small font-semibold xl:sr-only">승인 상태 </strong><SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getGalleryApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge></p><p><strong className="text-small font-semibold xl:sr-only">최근 수정 </strong><time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time></p></li>)}</ul></> :
+          <EmptyState
+            title={hasFilters ? "선택한 조건에 맞는 활동사진이 없습니다." : "등록된 활동사진이 없습니다."}
+            actions={
+              hasFilters ? (
+                <Link
+                  href="/admin/gallery"
+                  className="mt-4 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4"
+                >
+                  필터 초기화
+                </Link>
+              ) : null
+            }
+          />}
       </section>
       <AdminListPagination label="활동사진 목록 페이지" page={result.page} totalPages={result.totalPages} previousHref={`?page=${result.page - 1}`} nextHref={`?page=${result.page + 1}`} />
     </div>
