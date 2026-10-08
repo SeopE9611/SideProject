@@ -40,7 +40,7 @@ export function AdminFormFeedback() {
   const activeForm = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
-    const root = document.querySelector<HTMLElement>(".admin-main");
+    const root = document.querySelector<HTMLElement>(".workbench-main");
     if (!root) return;
 
     let scheduledFrame = 0;
