@@ -186,8 +186,11 @@ export async function cancelNicePaymentByTid(params: {
   };
   if (!body.orderId) throw new Error("NICE_ORDER_ID_REQUIRED");
 
-  if (typeof params.cancelAmt === "number") {
-    body.amount = toPositiveAmount(params.cancelAmt);
+  if (params.cancelAmt !== undefined) {
+    if (typeof params.cancelAmt !== "number" || !Number.isFinite(params.cancelAmt) || !Number.isSafeInteger(params.cancelAmt) || params.cancelAmt <= 0) {
+      throw new Error("NICE_CANCEL_AMOUNT_INVALID");
+    }
+    body.cancelAmt = params.cancelAmt;
   }
 
   return requestNicePayment({
