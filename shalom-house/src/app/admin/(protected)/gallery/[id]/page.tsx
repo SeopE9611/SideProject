@@ -1,3 +1,4 @@
+import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type {
   GalleryPublicationStatus,
@@ -82,6 +83,12 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
     ["생성일", item.createdAt],
   ];
   const editable = item.isEditable && canUpdate;
+  const hasWorkflowActions =
+    (item.canRequestReview && canRequestReview) ||
+    (item.canDecideReview && canDecideReview) ||
+    (item.canPublish && canPublish) ||
+    (item.canManagePublicationState && canPublish) ||
+    (item.canWithdrawConsent && canWithdrawConsent);
   return (
     <div className="admin-detail-layout">
       <AdminDetailHeader
@@ -92,12 +99,18 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
         actions={
           <>
             {editable ? (
-              <Link href={`/admin/gallery/${id}/edit`} className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+              <Link
+                href={`/admin/gallery/${id}/edit`}
+                className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              >
                 메타데이터 수정
               </Link>
             ) : null}
             {item.isPubliclyVisible ? (
-              <Link href={`/life/gallery/${item.slug}`} className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+              <Link
+                href={`/life/gallery/${item.slug}`}
+                className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              >
                 공개 상세 보기
               </Link>
             ) : null}
@@ -116,23 +129,41 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
           },
         ]}
       />
-      <section>
-        <h2 className="text-heading font-bold">비공개 미리보기</h2>
+      <AdminSectionNavigation
+        items={[
+          { id: "admin-status-summary-heading", label: "현재 상태" },
+          { id: "admin-gallery-preview-heading", label: "비공개 미리보기" },
+          { id: "admin-gallery-description-heading", label: "설명과 대체 텍스트" },
+          { id: "admin-gallery-details-heading", label: "상세 정보" },
+          ...(hasWorkflowActions ? [{ id: "admin-gallery-workflow-heading", label: "검토·게시·동의 작업" }] : []),
+          ...(item.isArchivable && canArchive ? [{ id: "admin-gallery-archive", label: "보관" }] : []),
+          ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
+          { id: "admin-audit-history-heading", label: "수정 이력" },
+        ]}
+      />
+      <section aria-labelledby="admin-gallery-preview-heading">
+        <h2 id="admin-gallery-preview-heading" className="text-heading font-bold">
+          비공개 미리보기
+        </h2>
         <img
           src={`/api/admin/gallery/${id}/media`}
           alt={item.altText}
           className="mt-3 h-auto max-h-[36rem] max-w-full rounded-card object-contain"
         />
       </section>
-      <section>
-        <h2 className="text-heading font-bold">설명과 대체 텍스트</h2>
+      <section aria-labelledby="admin-gallery-description-heading">
+        <h2 id="admin-gallery-description-heading" className="text-heading font-bold">
+          설명과 대체 텍스트
+        </h2>
         <p className="mt-3 whitespace-pre-wrap break-words">{item.description}</p>
         <p className="mt-3 whitespace-pre-wrap break-words">
           <strong>대체 텍스트:</strong> {item.altText}
         </p>
       </section>
-      <section>
-        <h2 className="text-heading font-bold">상세 정보</h2>
+      <section aria-labelledby="admin-gallery-details-heading">
+        <h2 id="admin-gallery-details-heading" className="text-heading font-bold">
+          상세 정보
+        </h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
           {details.map(([label, value]) => (
             <div key={label} className="min-w-0">
@@ -142,23 +173,32 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
           ))}
         </dl>
       </section>
-      <div className="grid gap-5">
-        {item.canRequestReview && canRequestReview ? (
-          <AdminGalleryReviewForm id={id} expectedUpdatedAt={item.updatedAt} />
-        ) : null}
-        {item.canDecideReview && canDecideReview ? (
-          <AdminGalleryReviewDecisionForm id={id} expectedUpdatedAt={item.updatedAt} />
-        ) : null}
-        {item.canPublish && canPublish ? <AdminGalleryPublishForm id={id} expectedUpdatedAt={item.updatedAt} /> : null}
-        {item.canManagePublicationState && canPublish ? (
-          <AdminGalleryPublicationStateForm id={id} expectedUpdatedAt={item.updatedAt} />
-        ) : null}
-        {item.canWithdrawConsent && canWithdrawConsent ? (
-          <AdminGalleryConsentWithdrawalForm id={id} expectedUpdatedAt={item.updatedAt} />
-        ) : null}
-      </div>
+      {hasWorkflowActions ? (
+        <section aria-labelledby="admin-gallery-workflow-heading" className="grid gap-5">
+          <h2 id="admin-gallery-workflow-heading" className="text-heading font-bold">
+            검토·게시·동의 작업
+          </h2>
+          {item.canRequestReview && canRequestReview ? (
+            <AdminGalleryReviewForm id={id} expectedUpdatedAt={item.updatedAt} />
+          ) : null}
+          {item.canDecideReview && canDecideReview ? (
+            <AdminGalleryReviewDecisionForm id={id} expectedUpdatedAt={item.updatedAt} />
+          ) : null}
+          {item.canPublish && canPublish ? (
+            <AdminGalleryPublishForm id={id} expectedUpdatedAt={item.updatedAt} />
+          ) : null}
+          {item.canManagePublicationState && canPublish ? (
+            <AdminGalleryPublicationStateForm id={id} expectedUpdatedAt={item.updatedAt} />
+          ) : null}
+          {item.canWithdrawConsent && canWithdrawConsent ? (
+            <AdminGalleryConsentWithdrawalForm id={id} expectedUpdatedAt={item.updatedAt} />
+          ) : null}
+        </section>
+      ) : null}
       {item.isArchivable && canArchive ? (
-        <AdminGalleryArchiveForm id={id} expectedUpdatedAt={item.updatedAt} />
+        <div id="admin-gallery-archive" tabIndex={-1}>
+          <AdminGalleryArchiveForm id={id} expectedUpdatedAt={item.updatedAt} />
+        </div>
       ) : null}
       {canDelete ? (
         <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5">

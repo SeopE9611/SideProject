@@ -997,6 +997,51 @@
   background: white;
   padding: 1.5rem;
 }
+.admin-section-navigation {
+  min-width: 0;
+  padding-block: 0.5rem;
+}
+/* The workbench top header scrolls with the page. */
+.admin-detail-layout :is(h2[id], #admin-audit-history-heading, [id$="-archive"]) {
+  scroll-margin-top: 1rem;
+}
+.admin-sticky-form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.75rem 0.25rem calc(0.75rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+.admin-sticky-form-actions > * {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+form:has(> .admin-sticky-form-actions) :is(input, select, textarea) {
+  scroll-margin-block: 5rem 9rem;
+}
+/* Keep the validation notice above these forms' bottom save controls. */
+body:has(.admin-sticky-form-actions) .admin-form-feedback {
+  top: 1rem;
+  bottom: auto;
+  max-height: max(3rem, calc(100dvh - 12rem));
+  overflow-y: auto;
+}
+body:has(.admin-sticky-form-actions) .admin-form-feedback button {
+  min-height: 2.75rem;
+}
+@media (max-height: 480px) {
+  .admin-sticky-form-actions {
+    position: static;
+  }
+}
 .admin-editor-layout {
   display: grid;
   grid-template-columns: 16rem minmax(0, 1fr);

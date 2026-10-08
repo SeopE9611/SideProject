@@ -121,7 +121,7 @@ export function AdminFormFeedback() {
   return (
     <div
       role="alert"
-      className="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-2xl flex-col gap-3 border border-danger/35 bg-danger-soft px-5 py-4 text-danger shadow-elevated sm:flex-row sm:items-center sm:justify-between"
+      className="admin-form-feedback fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-2xl flex-col gap-3 border border-danger/35 bg-danger-soft px-5 py-4 text-danger shadow-elevated sm:flex-row sm:items-center sm:justify-between"
     >
       <p className="text-small font-semibold">
         확인할 입력 항목이 {notice.count}개 있습니다. 첫 항목은 ‘{notice.firstFieldLabel}’입니다.

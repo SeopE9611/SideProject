@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { AdminStickyFormActions } from "./admin-sticky-form-actions";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
@@ -254,7 +255,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
           </p>
         ) : null}
       </div>
-      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+      <AdminStickyFormActions>
         <button
           type="submit"
           disabled={busy}
@@ -268,7 +269,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
         >
           취소
         </Link>
-      </div>
+      </AdminStickyFormActions>
     </form>
   );
 }
