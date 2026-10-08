@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AdminStickyFormActions } from "./admin-sticky-form-actions";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -318,7 +319,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <FieldError field="contentSafetyConfirmed" errors={fieldErrors} />
       </div>
 
-      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+      <AdminStickyFormActions>
         <button
           type="submit"
           disabled={isSubmitting}
@@ -332,7 +333,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         >
           취소
         </Link>
-      </div>
+      </AdminStickyFormActions>
     </form>
   );
 }

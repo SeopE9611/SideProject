@@ -1,3 +1,4 @@
+import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type { NewsPublicationStatus, NewsApprovalStatus } from "@/features/news/news.types";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
@@ -120,6 +121,29 @@ export default async function AdminNewsDetailPage({ params }: { params: Promise<
         ]}
       />
 
+      <AdminSectionNavigation
+        items={[
+          { id: "admin-news-management-heading", label: "관리 정보" },
+          { id: "admin-news-content-heading", label: "내용" },
+          { id: "news-media-heading", label: "미디어 관리" },
+          ...(post.canDirectPublish && canDirectPublish
+            ? [{ id: "admin-news-direct-publish-heading", label: "바로 게시" }]
+            : []),
+          ...(post.canRequestReview && canRequestReview
+            ? [{ id: "admin-news-request-review-heading", label: isRejectedDraft ? "재검토 요청" : "검토 요청" }]
+            : []),
+          ...(post.canDecideReview && canDecideReview
+            ? [{ id: "admin-news-decide-review-heading", label: "검토 결과 처리" }]
+            : []),
+          ...(post.canPublish && canPublish ? [{ id: "admin-news-publish-heading", label: "게시" }] : []),
+          ...(post.canManagePublicationState && canPublish
+            ? [{ id: "admin-news-publication-state-heading", label: "게시 상태 변경" }]
+            : []),
+          ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
+          { id: "admin-audit-history-heading", label: "수정 이력" },
+        ]}
+      />
+
       {!post.isEditable ? (
         <aside className="admin-notice">
           {isPendingReview ? (
@@ -238,6 +262,7 @@ export default async function AdminNewsDetailPage({ params }: { params: Promise<
 
       {post.canDirectPublish && canDirectPublish ? (
         <AdminWorkflowPanel
+          id="admin-news-direct-publish-heading"
           title="바로 게시"
           description={
             <>
@@ -260,6 +285,7 @@ export default async function AdminNewsDetailPage({ params }: { params: Promise<
 
       {post.canRequestReview && canRequestReview ? (
         <AdminWorkflowPanel
+          id="admin-news-request-review-heading"
           title={isRejectedDraft ? "재검토 요청" : "검토 요청"}
           description={
             <>
@@ -284,6 +310,7 @@ export default async function AdminNewsDetailPage({ params }: { params: Promise<
 
       {post.canDecideReview && canDecideReview ? (
         <AdminWorkflowPanel
+          id="admin-news-decide-review-heading"
           title="검토 결과 처리"
           description={
             <>
@@ -301,6 +328,7 @@ export default async function AdminNewsDetailPage({ params }: { params: Promise<
 
       {post.canPublish && canPublish ? (
         <AdminWorkflowPanel
+          id="admin-news-publish-heading"
           title="게시"
           description={
             <>
@@ -318,6 +346,7 @@ export default async function AdminNewsDetailPage({ params }: { params: Promise<
 
       {post.canManagePublicationState && canPublish ? (
         <AdminWorkflowPanel
+          id="admin-news-publication-state-heading"
           title="게시 상태 변경"
           description={
             <>

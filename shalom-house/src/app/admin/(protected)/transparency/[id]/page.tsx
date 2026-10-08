@@ -1,3 +1,4 @@
+import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type {
   TransparencyPublicationStatus,
@@ -86,6 +87,11 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
       </time>,
     ],
   ];
+  const hasWorkflowActions =
+    (document.canRequestReview && canRequestReview) ||
+    (document.canDecideReview && canDecideReview) ||
+    (document.canPublish && canPublish) ||
+    (document.canManagePublicationState && canPublish);
   return (
     <div className="admin-detail-layout">
       <AdminDetailHeader
@@ -150,8 +156,21 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
           },
         ]}
       />
-      <section className="rounded-card border p-5">
-        <h2 className="font-bold">파일</h2>
+      <AdminSectionNavigation
+        items={[
+          { id: "admin-status-summary-heading", label: "현재 상태" },
+          { id: "admin-transparency-file-heading", label: "파일" },
+          { id: "admin-transparency-document-heading", label: "문서 정보" },
+          ...(hasWorkflowActions ? [{ id: "admin-transparency-workflow-heading", label: "검토·게시 작업" }] : []),
+          ...(document.isArchivable && canArchive ? [{ id: "admin-transparency-archive", label: "보관" }] : []),
+          ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
+          { id: "admin-audit-history-heading", label: "수정 이력" },
+        ]}
+      />
+      <section aria-labelledby="admin-transparency-file-heading" className="rounded-card border p-5">
+        <h2 id="admin-transparency-file-heading" className="font-bold">
+          파일
+        </h2>
         <dl className="mt-3">
           <dt>원본 파일명</dt>
           <dd className="text-safe-wrap break-all">{document.file.originalFileName}</dd>
@@ -172,20 +191,29 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
           ))}
         </dl>
       </section>
-      {document.canRequestReview && canRequestReview ? (
-        <AdminTransparencyReviewForm id={document.id} expectedUpdatedAt={document.updatedAt} />
-      ) : null}
-      {document.canDecideReview && canDecideReview ? (
-        <AdminTransparencyReviewDecisionForm id={document.id} expectedUpdatedAt={document.updatedAt} />
-      ) : null}
-      {document.canPublish && canPublish ? (
-        <AdminTransparencyPublishForm id={document.id} expectedUpdatedAt={document.updatedAt} />
-      ) : null}
-      {document.canManagePublicationState && canPublish ? (
-        <AdminTransparencyPublicationStateForm id={document.id} expectedUpdatedAt={document.updatedAt} />
+      {hasWorkflowActions ? (
+        <section aria-labelledby="admin-transparency-workflow-heading" className="grid gap-5">
+          <h2 id="admin-transparency-workflow-heading" className="text-heading font-bold">
+            검토·게시 작업
+          </h2>
+          {document.canRequestReview && canRequestReview ? (
+            <AdminTransparencyReviewForm id={document.id} expectedUpdatedAt={document.updatedAt} />
+          ) : null}
+          {document.canDecideReview && canDecideReview ? (
+            <AdminTransparencyReviewDecisionForm id={document.id} expectedUpdatedAt={document.updatedAt} />
+          ) : null}
+          {document.canPublish && canPublish ? (
+            <AdminTransparencyPublishForm id={document.id} expectedUpdatedAt={document.updatedAt} />
+          ) : null}
+          {document.canManagePublicationState && canPublish ? (
+            <AdminTransparencyPublicationStateForm id={document.id} expectedUpdatedAt={document.updatedAt} />
+          ) : null}
+        </section>
       ) : null}
       {document.isArchivable && canArchive ? (
-        <AdminTransparencyArchiveForm id={document.id} expectedUpdatedAt={document.updatedAt} />
+        <div id="admin-transparency-archive" tabIndex={-1}>
+          <AdminTransparencyArchiveForm id={document.id} expectedUpdatedAt={document.updatedAt} />
+        </div>
       ) : null}
       {canDelete ? (
         <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5">

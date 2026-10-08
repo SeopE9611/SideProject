@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { AdminStickyFormActions } from "./admin-sticky-form-actions";
 import { useRouter } from "next/navigation";
 import { convertImageToWebp, type ConvertedWebpImage } from "@/lib/client-image-conversion";
 import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
@@ -367,7 +368,7 @@ export function AdminGalleryDraftForm(props: Props) {
           </p>
         ) : null}
       </div>
-      <div className="flex flex-wrap gap-3 border-t border-border pt-6">
+      <AdminStickyFormActions>
         <button
           type="submit"
           disabled={busy}
@@ -381,7 +382,7 @@ export function AdminGalleryDraftForm(props: Props) {
         >
           취소
         </Link>
-      </div>
+      </AdminStickyFormActions>
     </form>
   );
 }

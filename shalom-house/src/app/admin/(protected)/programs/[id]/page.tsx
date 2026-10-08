@@ -1,3 +1,4 @@
+import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type { ProgramPublicationStatus, ProgramApprovalStatus } from "@/features/programs/program.types";
 import { AdminAuditHistory } from "@/components/admin/admin-audit-history";
@@ -117,6 +118,29 @@ export default async function AdminProgramDetailPage({ params }: { params: Promi
           { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[post.approvalStatus]}>{getProgramApprovalStatusLabel(post.approvalStatus)}</SemanticStatusBadge> },
           { label: "공개 여부", value: <SemanticStatusBadge tone={post.isPubliclyVisible ? "success" : "neutral"}>{post.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
           { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
+        ]}
+      />
+
+      <AdminSectionNavigation
+        items={[
+          { id: "admin-program-management-heading", label: "관리 정보" },
+          { id: "admin-program-content-heading", label: "내용" },
+          { id: "program-media-heading", label: "미디어 관리" },
+          ...(post.canDirectPublish && canDirectPublish
+            ? [{ id: "admin-program-direct-publish-heading", label: "바로 게시" }]
+            : []),
+          ...(post.canRequestReview && canRequestReview
+            ? [{ id: "admin-program-request-review-heading", label: isRejectedDraft ? "재검토 요청" : "검토 요청" }]
+            : []),
+          ...(post.canDecideReview && canDecideReview
+            ? [{ id: "admin-program-decide-review-heading", label: "검토 결과 처리" }]
+            : []),
+          ...(post.canPublish && canPublish ? [{ id: "admin-program-publish-heading", label: "게시" }] : []),
+          ...(post.canManagePublicationState && canPublish
+            ? [{ id: "admin-program-publication-state-heading", label: "게시 상태 변경" }]
+            : []),
+          ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
+          { id: "admin-audit-history-heading", label: "수정 이력" },
         ]}
       />
 
@@ -250,6 +274,7 @@ export default async function AdminProgramDetailPage({ params }: { params: Promi
 
       {post.canDirectPublish && canDirectPublish ? (
         <AdminWorkflowPanel
+          id="admin-program-direct-publish-heading"
           title="바로 게시"
           description={
             <>
@@ -272,6 +297,7 @@ export default async function AdminProgramDetailPage({ params }: { params: Promi
 
       {post.canRequestReview && canRequestReview ? (
         <AdminWorkflowPanel
+          id="admin-program-request-review-heading"
           title={isRejectedDraft ? "재검토 요청" : "검토 요청"}
           description={
             <>
@@ -296,6 +322,7 @@ export default async function AdminProgramDetailPage({ params }: { params: Promi
 
       {post.canDecideReview && canDecideReview ? (
         <AdminWorkflowPanel
+          id="admin-program-decide-review-heading"
           title="검토 결과 처리"
           description={
             <>
@@ -313,6 +340,7 @@ export default async function AdminProgramDetailPage({ params }: { params: Promi
 
       {post.canPublish && canPublish ? (
         <AdminWorkflowPanel
+          id="admin-program-publish-heading"
           title="게시"
           description={
             <>
@@ -330,6 +358,7 @@ export default async function AdminProgramDetailPage({ params }: { params: Promi
 
       {post.canManagePublicationState && canPublish ? (
         <AdminWorkflowPanel
+          id="admin-program-publication-state-heading"
           title="게시 상태 변경"
           description={
             <>
