@@ -302,6 +302,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       } else {
         existing = claimed;
         let cancelCalled = false;
+        let cancelPostPending = false;
         const cancelOrderId: string | null = claimCancelOrderId;
         let pgStatus = "";
         let pgBalanceAmount = 0;
@@ -397,6 +398,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
               });
             }
             cancelCalled = true;
+            cancelPostPending = true;
             successRaw = await cancelNicePaymentByTid({
               tid,
               orderId: cancelOrderId,
@@ -405,6 +407,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
               clientKey,
               secretKey,
             });
+            cancelPostPending = false;
             resultCode = String(successRaw.resultCode ?? successRaw.ResultCode ?? "").trim();
             resultMsg = String(successRaw.resultMsg ?? successRaw.ResultMsg ?? "").trim();
             if (resultCode === "2026") return handleUnsettledAmountShortage(resultMsg);
@@ -469,12 +472,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           }
           existing = await rentals.findOne({ _id });
         } catch (error: any) {
-          if (String(error?.resultCode ?? "").trim() === "2026") {
+          if (cancelPostPending && (!error?.operation || error.operation === "cancel") && String(error?.resultCode ?? "").trim() === "2026") {
             return handleUnsettledAmountShortage(
               String(error?.resultMsg ?? error?.message ?? "").trim(),
             );
           }
           const reconciliation = cancelCalled || error?.afterCancel;
+          const lookupFailed = error?.operation === "lookup";
           await rentals.updateOne(
             { _id, "cancelRequest.pgCancelClaim.token": claimToken },
             {
@@ -491,12 +495,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
               ok: false,
               errorCode: reconciliation
                 ? "NICE_CANCEL_NEEDS_RECONCILIATION"
+                : lookupFailed ? "NICE_PAYMENT_LOOKUP_FAILED"
                 : "NICE_CANCEL_FAILED",
               message: reconciliation
                 ? "NICE 취소 결과 확인이 필요합니다. 다시 시도하면 PG 상태를 먼저 확인합니다."
+                : lookupFailed ? "NICE 거래 조회에 실패하여 이번 요청의 취소를 진행하지 않았습니다."
                 : String(error?.message || "NICE 결제 취소 중 오류가 발생했습니다."),
             },
-            { status: reconciliation ? 502 : 400 },
+            { status: reconciliation || lookupFailed ? 502 : 400 },
           );
         }
       }
