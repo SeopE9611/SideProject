@@ -2,6 +2,47 @@ import { Buffer } from "node:buffer";
 
 export const NICE_DEFAULT_APPROVE_API_BASE = "https://api.nicepay.co.kr/v1/payments";
 export const NICE_PAYMENT_CLAIM_LEASE_MS = 5 * 60 * 1000;
+// Initial lookup budget, not a measured provider SLA. POSTs do not use this deadline.
+export const NICE_PAYMENT_LOOKUP_TIMEOUT_MS = 10_000;
+
+type NiceLookupErrorKind = "timeout" | "network" | "invalid_response" | "provider_http" | "provider_business";
+
+function lookupError(kind: NiceLookupErrorKind, httpStatus?: number, raw: Record<string, string> = {}, cause?: unknown) {
+  const resultCode = raw.resultCode || raw.ResultCode || "";
+  const resultMsg = raw.resultMsg || raw.ResultMsg || raw.message || "";
+  return Object.assign(new Error(resultMsg || `NICE_LOOKUP_${kind.toUpperCase()}`, { cause }), {
+    provider: "nicepay" as const,
+    operation: "lookup" as const,
+    kind,
+    httpStatus,
+    resultCode,
+    resultMsg,
+  });
+}
+
+async function readLookupResponse(response: Response, signal: AbortSignal): Promise<Record<string, string>> {
+  let parsed: unknown;
+  try {
+    const text = await response.text();
+    signal.throwIfAborted();
+    parsed = JSON.parse(text);
+  } catch (cause) {
+    throw lookupError(signal.aborted ? "timeout" : response.ok ? "invalid_response" : "provider_http", response.status, {}, cause);
+  }
+  const isObject = parsed !== null && typeof parsed === "object" && !Array.isArray(parsed);
+  const raw = isObject ? toRecordString(parsed) : {};
+  if (!response.ok) throw lookupError("provider_http", response.status, raw);
+  const record = isObject ? parsed as Record<string, unknown> : {};
+  const code = record.resultCode ?? record.ResultCode;
+  if (typeof code !== "string" || !/^\d{4}$/.test(code)) {
+    throw lookupError("invalid_response", response.status);
+  }
+  if (code !== "0000") throw lookupError("provider_business", response.status, raw);
+  const status = record.status ?? record.Status;
+  if (typeof status !== "string" || !status.trim()) throw lookupError("invalid_response", response.status, raw);
+  // Transaction identity, amount and state meaning remain the caller's responsibility.
+  return raw;
+}
 
 function toPositiveAmount(amount: unknown): number {
   const normalized = Math.floor(Number(amount) || 0);
@@ -237,6 +278,7 @@ async function requestNicePayment(params: {
       body: requestBody,
     });
   }
+  const signal = params.method === "GET" ? AbortSignal.timeout(NICE_PAYMENT_LOOKUP_TIMEOUT_MS) : undefined;
   const response = await fetch(url, {
     method: params.method,
     headers: {
@@ -245,7 +287,13 @@ async function requestNicePayment(params: {
     },
     body: requestBody ? JSON.stringify(requestBody) : undefined,
     cache: "no-store",
+    ...(signal ? { signal } : {}),
+  }).catch((cause: unknown) => {
+    if (signal) throw lookupError(signal.aborted ? "timeout" : "network", undefined, {}, cause);
+    throw cause;
   });
+
+  if (signal) return readLookupResponse(response, signal);
 
   const text = await response.text().catch(() => "");
   let parsed: unknown = null;
