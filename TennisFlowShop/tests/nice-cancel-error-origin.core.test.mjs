@@ -96,9 +96,9 @@ function fixture(t, route, scenario = {}) {
       },
     },
   };
-  const module = compileTsModule(paths[route], stubs);
+  const routeModule = compileTsModule(paths[route], stubs);
   const run = async () => {
-    const response = await module.POST(new Request("https://shop.invalid/api/admin/cancel", { method: "POST", body: "{}", headers: { "Content-Type": "application/json" } }), { params: Promise.resolve({ id }) });
+    const response = await routeModule.POST(new Request("https://shop.invalid/api/admin/cancel", { method: "POST", body: "{}", headers: { "Content-Type": "application/json" } }), { params: Promise.resolve({ id }) });
     return { response, body: await response.json() };
   };
   return { run, document, updates, histories, calls };
