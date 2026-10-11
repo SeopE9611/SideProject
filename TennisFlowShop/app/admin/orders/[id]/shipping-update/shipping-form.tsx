@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { AdminFetchError, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import {
   hasAnyRegisteredFulfillmentField,
@@ -23,6 +23,7 @@ import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Loader2, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -75,6 +76,7 @@ export default function ShippingForm({
   const [courier, setCourier] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasConflict, setHasConflict] = useState(false);
   const router = useRouter();
 
   // courier / trackingNumber 초기값 세팅
@@ -242,6 +244,9 @@ export default function ShippingForm({
       }
       router.push(`/admin/orders/${orderId}`);
     } catch (error) {
+      if (error instanceof AdminFetchError && error.status === 409) {
+        setHasConflict(true);
+      }
       showErrorToast(getAdminErrorMessage(error));
       console.error("배송 정보 업데이트 오류:", error);
     } finally {
@@ -259,6 +264,15 @@ export default function ShippingForm({
     >
       <form onSubmit={handleSubmit}>
         <div className="space-y-4 p-6">
+          {hasConflict && (
+            <div role="alert" className="rounded-md border border-destructive p-3 text-ui-body-sm">
+              <p>주문 정보가 변경되어 저장하지 못했습니다. 입력값은 유지되어 있습니다.</p>
+              <Link href={`/admin/orders/${orderId}`} target="_blank" rel="noopener noreferrer" className="underline">
+                새 탭에서 최신 주문·배송 정보 확인
+              </Link>
+              <p>확인 후 이 화면을 새로고침하고 변경 내용을 다시 입력해주세요.</p>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="shipping-method" className={adminTypography.bodyStrong}>
               {isVisitPickupOrder ? "수령 방법" : "배송 방법"}

@@ -21,7 +21,11 @@ const SHIPPING_GUARD_MESSAGES = new Set([
 ]);
 
 // fetcher 함수: API 호출 후 JSON 파싱
-const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((res) => res.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url, { credentials: "include" });
+  if (!res.ok) throw new Error("최신 주문 정보를 불러오지 못했습니다.");
+  return res.json();
+};
 
 // 이력 API 키 생성기: 이전 페이지가 비었으면 더 이상 요청하지 않음
 const getHistoryKey =
@@ -98,6 +102,7 @@ export default function OrderStatusSelect({
   // 셀렉트 변경 핸들러
   const handleChange = async (nextStatus: string) => {
     const prevStatus = current;
+    let conflictDetected = false;
     try {
       // 동일 값이면 네트워크 호출 불필요 -> 바로 리턴
       if (nextStatus === prevStatus) return;
@@ -122,10 +127,9 @@ export default function OrderStatusSelect({
         body: JSON.stringify({ status: nextStatus, expectedStatus: prevStatus }),
       });
       if (res.status === 409) {
-        await mutateStatus();
-        await mutateOrderDetail();
-        await mutateHistory();
+        conflictDetected = true;
         showErrorToast("다른 작업으로 주문 정보가 변경되었습니다. 최신 상태를 확인하고 다시 시도해주세요.");
+        await Promise.all([mutateStatus(), mutateOrderDetail(), mutateHistory()]);
         return;
       }
       if (!res.ok) {
@@ -143,6 +147,10 @@ export default function OrderStatusSelect({
       showSuccessToast(`주문 상태가 '${displayStatus}'(으)로 변경되었습니다.`);
     } catch (err: unknown) {
       console.error(err);
+      if (conflictDetected) {
+        showErrorToast("최신 주문 정보를 불러오지 못했습니다. 화면을 새로고침해 확인해주세요.");
+        return;
+      }
       await mutateStatus({ status: prevStatus }, false);
 
       const errorMessage = err instanceof Error ? err.message.trim() : "서버 오류";
