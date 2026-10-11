@@ -119,8 +119,15 @@ export default function OrderStatusSelect({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // access/refresh 쿠키를 서버가 읽을 수 있게
-        body: JSON.stringify({ status: nextStatus }),
+        body: JSON.stringify({ status: nextStatus, expectedStatus: prevStatus }),
       });
+      if (res.status === 409) {
+        await mutateStatus();
+        await mutateOrderDetail();
+        await mutateHistory();
+        showErrorToast("다른 작업으로 주문 정보가 변경되었습니다. 최신 상태를 확인하고 다시 시도해주세요.");
+        return;
+      }
       if (!res.ok) {
         const errorMessage = await res.text().catch(() => "서버 오류");
         throw new Error(errorMessage || "서버 오류");

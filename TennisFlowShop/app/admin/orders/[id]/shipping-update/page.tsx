@@ -148,6 +148,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
           initialCourier={order.shippingInfo?.invoice?.courier ?? ""}
           initialTrackingNumber={order.shippingInfo?.invoice?.trackingNumber ?? ""}
           isVisitPickupOrder={isVisitPickup}
+          initialOrderStatus={String(order.status ?? "")}
         />
     </AdminPageShell>
   );

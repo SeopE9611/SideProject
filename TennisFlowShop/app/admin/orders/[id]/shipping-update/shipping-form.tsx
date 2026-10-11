@@ -32,6 +32,7 @@ interface ShippingFormProps {
   initialEstimatedDelivery?: string;
   initialCourier?: string;
   initialTrackingNumber?: string;
+  initialOrderStatus?: string;
   orderId?: string;
   onSuccess?: () => void;
   isVisitPickupOrder?: boolean;
@@ -46,6 +47,7 @@ export default function ShippingForm({
   initialEstimatedDelivery,
   initialCourier,
   initialTrackingNumber,
+  initialOrderStatus = "",
   orderId,
   onSuccess,
   isVisitPickupOrder = false,
@@ -205,6 +207,13 @@ export default function ShippingForm({
         },
         credentials: "include",
         body: JSON.stringify({
+          expectedShipping: {
+            status: initialOrderStatus,
+            shippingMethod: initialRegisteredShippingMethod ?? "",
+            estimatedDate: initialEstimatedDelivery ?? "",
+            courier: initialCourier ?? "",
+            trackingNumber: initialTrackingNumber ?? "",
+          },
           shippingMethod: effectiveMethod, // 공통 필드
           estimatedDate: estimatedDelivery, // 공통 필드
           courier: isCourierShippingMethod(effectiveMethod)
