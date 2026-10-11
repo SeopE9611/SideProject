@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { useAdminUnsavedChangesGuard } from "@/lib/use-admin-unsaved-changes-guard";
 import type {
   DonationMethod,
   DonationPurpose,
@@ -54,6 +55,9 @@ export function AdminDonationForm({
     [confirmed, setConfirmed] = useState(false),
     [busy, setBusy] = useState(false),
     [errors, setErrors] = useState<Record<string, string>>({});
+  const { navigateAfterSave } = useAdminUnsavedChangesGuard(
+    (Object.keys(empty) as (keyof Data)[]).some((key) => d[key] !== initial[key]),
+  );
   const locked = !!id && initial.status === "confirmed",
     voided = !!id && initial.status === "voided";
   const set = <K extends keyof Data>(k: K, v: Data[K]) => {
@@ -107,8 +111,9 @@ export function AdminDonationForm({
               )[typeof responseBody.error === "string" ? responseBody.error : ""] ?? "저장하지 못했습니다.",
           },
         );
-      if (typeof responseBody.redirectTo === "string" && responseBody.redirectTo.startsWith("/admin/donations/"))
-        location.assign(responseBody.redirectTo);
+      const redirectTo = responseBody.redirectTo;
+      if (typeof redirectTo === "string" && redirectTo.startsWith("/admin/donations/"))
+        navigateAfterSave(() => location.assign(redirectTo));
       else setErrors({ form: "이동 경로가 올바르지 않습니다." });
     } catch {
       setErrors({ form: "네트워크 오류로 저장하지 못했습니다." });

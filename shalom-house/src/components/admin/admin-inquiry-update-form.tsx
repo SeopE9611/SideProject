@@ -1,6 +1,7 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { inquiryStatusLabels, type InquiryStatus } from "@/features/inquiries/inquiry.types";
+import { useAdminUnsavedChangesGuard } from "@/lib/use-admin-unsaved-changes-guard";
 type ResponseBody = { error?: string; fieldErrors?: Record<string, string>; redirectTo?: string };
 export function AdminInquiryUpdateForm({
   id,
@@ -27,6 +28,9 @@ export function AdminInquiryUpdateForm({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { navigateAfterSave } = useAdminUnsavedChangesGuard(
+    status !== initialStatus || note !== initialInternalNote,
+  );
   const clearError = (key: string) =>
     setErrors((current) => {
       if (!current[key]) return current;
@@ -47,13 +51,14 @@ export function AdminInquiryUpdateForm({
         body: JSON.stringify({ expectedUpdatedAt, updateConfirmed: confirmed, status, internalNote: note }),
       });
       const body: ResponseBody | null = await response.json().catch(() => null);
+      const redirectTo = body?.redirectTo;
       if (
         response.ok &&
-        typeof body?.redirectTo === "string" &&
-        body.redirectTo.length > 0 &&
-        body.redirectTo.startsWith(`/admin/inquiries/${id}`)
+        typeof redirectTo === "string" &&
+        redirectTo.length > 0 &&
+        redirectTo.startsWith(`/admin/inquiries/${id}`)
       )
-        location.assign(body.redirectTo);
+        navigateAfterSave(() => location.assign(redirectTo));
       else if (body?.error === "validation") {
         setErrors(body.fieldErrors ?? {});
         setMessage("입력 내용을 확인해 주세요.");

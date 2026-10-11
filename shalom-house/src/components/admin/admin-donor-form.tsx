@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import type { DonorStatus, DonorType } from "@/features/donations/donor.types";
+import { useAdminUnsavedChangesGuard } from "@/lib/use-admin-unsaved-changes-guard";
 type Props = {
   id?: string;
   expectedUpdatedAt?: string;
@@ -30,6 +31,9 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
     [confirmed, setConfirmed] = useState(false),
     [busy, setBusy] = useState(false),
     [errors, setErrors] = useState<Record<string, string>>({});
+  const { navigateAfterSave } = useAdminUnsavedChangesGuard(
+    (Object.keys(empty) as (keyof typeof d)[]).some((key) => d[key] !== initial[key]),
+  );
   const change = (key: keyof typeof d, value: string) => {
     setD({ ...d, [key]: value });
     setConfirmed(false);
@@ -73,8 +77,9 @@ export function AdminDonorForm({ id, expectedUpdatedAt, initial = empty }: Props
         );
         return;
       }
-      if (typeof responseBody.redirectTo === "string" && responseBody.redirectTo.startsWith("/admin/donors/"))
-        location.assign(responseBody.redirectTo);
+      const redirectTo = responseBody.redirectTo;
+      if (typeof redirectTo === "string" && redirectTo.startsWith("/admin/donors/"))
+        navigateAfterSave(() => location.assign(redirectTo));
       else setErrors({ form: "이동 경로가 올바르지 않습니다." });
     } catch {
       setErrors({ form: "네트워크 오류로 저장하지 못했습니다." });
