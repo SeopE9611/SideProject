@@ -164,9 +164,6 @@ export async function ensureTossPaymentSessionIndexes(db: Db) {
   await db
     .collection<TossPaymentSession>("toss_payment_sessions")
     .createIndex({ niceOrderId: 1 }, { unique: true, sparse: true });
-  await db
-    .collection<TossPaymentSession>("toss_payment_sessions")
-    .createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 }
 
 export function tossPaymentSessions(db: Db) {
