@@ -9,6 +9,7 @@ export interface Props {
   initialEstimatedDelivery?: string;
   initialCourier?: string;
   initialTrackingNumber?: string;
+  initialOrderStatus?: string;
   onSuccess?: () => void;
   isVisitPickupOrder?: boolean;
 }
@@ -19,6 +20,7 @@ export default function ShippingFormClient({
   initialEstimatedDelivery,
   initialCourier,
   initialTrackingNumber,
+  initialOrderStatus,
   onSuccess,
   isVisitPickupOrder,
 }: Props) {
@@ -30,6 +32,7 @@ export default function ShippingFormClient({
       initialEstimatedDelivery={initialEstimatedDelivery}
       initialCourier={initialCourier}
       initialTrackingNumber={initialTrackingNumber}
+      initialOrderStatus={initialOrderStatus}
       onSuccess={onSuccess}
       isVisitPickupOrder={isVisitPickupOrder}
     />
