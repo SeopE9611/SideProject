@@ -5,6 +5,7 @@ import { insertInquiryAuditEvent, listInquiryAuditEvents } from "./inquiry.audit
 import type { InquiryDocument, InquiryKind, InquiryStatus } from "./inquiry.types";
 import {
   inquiryPrivacyConsentVersion,
+  inquiryKinds,
   inquiryRetentionDays,
   inquiryStatuses,
   isInquiryKind,
@@ -100,6 +101,58 @@ export async function listAdminInquiries(input: {
     })),
   };
 }
+export async function countReceivedAdminInquiries(): Promise<number> {
+  const db = await getMongoDatabase();
+  // Mirror isValidStoredInquiryDocument for received inquiries without fetching personal data.
+  // MongoDB counts code points; JavaScript string.length counts UTF-16 code units.
+  const stringValue = (field: string) => ({
+    $cond: [{ $eq: [{ $type: `$${field}` }, "string"] }, `$${field}`, ""],
+  });
+  const length = (value: unknown) => ({
+    $add: [
+      { $strLenCP: value },
+      { $size: { $regexFindAll: { input: value, regex: "[\\x{10000}-\\x{10FFFF}]" } } },
+    ],
+  });
+  // ECMAScript String.trim whitespace, including BOM and excluding NUL.
+  const trim = (field: string) => ({
+    $trim: { input: stringValue(field), chars: "\u0009\u000a\u000b\u000c\u000d\u0020\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff" },
+  });
+  return db.collection<InquiryDocument>("inquiries").countDocuments({
+    ...visible(new Date()),
+    status: "received",
+    $expr: {
+      $and: [
+        { $eq: [{ $type: "$_id" }, "objectId"] },
+        { $regexMatch: { input: stringValue("reference"), regex: "^INQ-[A-Z0-9]{12}$" } },
+        { $in: ["$kind", inquiryKinds] },
+        ...["name", "phone", "email", "message", "internalNote"].map((field) => ({
+          $eq: [{ $type: `$${field}` }, "string"],
+        })),
+        { $gte: [length(trim("name")), 1] },
+        { $lte: [length(trim("name")), 80] },
+        { $or: [{ $ne: [trim("phone"), ""] }, { $ne: [trim("email"), ""] }] },
+        { $gte: [length(stringValue("message")), 10] },
+        { $lte: [length(stringValue("message")), 2000] },
+        { $lte: [length(stringValue("internalNote")), 2000] },
+        { $eq: ["$privacyConsentVersion", inquiryPrivacyConsentVersion] },
+        ...["createdAt", "updatedAt", "privacyConsentedAt"].map((field) => ({
+          $and: [
+            { $eq: [{ $type: `$${field}` }, "date"] },
+            { $gte: [`$${field}`, new Date(-8_640_000_000_000_000)] },
+            { $lte: [`$${field}`, new Date(8_640_000_000_000_000)] },
+          ],
+        })),
+        { $gte: ["$updatedAt", "$createdAt"] },
+        { $eq: ["$privacyConsentedAt", "$createdAt"] },
+        ...["completedAt", "archivedAt", "deleteAfter"].map((field) => ({
+          $eq: [{ $type: `$${field}` }, "null"],
+        })),
+      ],
+    },
+  });
+}
+
 export async function getAdminInquiryCounts() {
   const db = await getMongoDatabase();
   const documents = await db.collection<InquiryDocument>("inquiries").find(visible(new Date())).toArray();
