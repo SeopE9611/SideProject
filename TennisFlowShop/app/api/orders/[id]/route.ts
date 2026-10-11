@@ -1146,7 +1146,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     };
 
     const __prevStatus = String(existing.status); // 기존 문서의 상태
-    if (expectedStatus !== undefined && expectedStatus !== __prevStatus) {
+    if (expectedStatus !== undefined && normalizeOrderStatus(expectedStatus) !== normalizeOrderStatus(existing.status)) {
       return new NextResponse("다른 작업으로 주문 상태가 변경되었습니다. 최신 정보를 확인해주세요.", {
         status: 409,
       });
@@ -1155,6 +1155,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       ["취소처리중"].includes(__prevStatus) ||
       ["requested", "approved_pending_pg_cancel", "approved_pending_finalization"].includes(
         String(existing.cancelRequest?.status ?? ""),
+      ) ||
+      ["processing", "needs_reconciliation"].includes(
+        String(existing.cancelRequest?.pgCancelClaim?.status ?? ""),
       )
     ) {
       return new NextResponse("취소 처리 중인 주문입니다. 최신 정보를 확인해주세요.", {
@@ -1261,7 +1264,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         paymentStatus: existing.paymentStatus ?? null,
         "paymentInfo.status": existing.paymentInfo?.status ?? null,
         "paymentInfo.tid": existing.paymentInfo?.tid ?? null,
+        "paymentInfo.provider": existing.paymentInfo?.provider ?? null,
+        "paymentInfo.method": existing.paymentInfo?.method ?? null,
         "cancelRequest.status": existing.cancelRequest?.status ?? null,
+        "cancelRequest.pgCancelClaim.status": existing.cancelRequest?.pgCancelClaim?.status ?? null,
         "shippingInfo.shippingMethod": existing.shippingInfo?.shippingMethod ?? null,
         "shippingInfo.estimatedDate": existing.shippingInfo?.estimatedDate ?? null,
         "shippingInfo.invoice": existing.shippingInfo?.invoice ?? null,

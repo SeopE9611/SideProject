@@ -13,6 +13,7 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
 import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
+import { isOrderTerminalStatus } from "@/lib/status/flow-status";
 
 const shippingMethodMap: Record<string, string> = {
   courier: "택배 배송",
@@ -60,7 +61,16 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
 
     const order: any = await db.collection("orders").findOne({ _id: orderId });
     if (!order) return NextResponse.json({ error: "주문을 찾을 수 없습니다." }, { status: 404 });
-    if (["취소", "결제취소", "취소처리중", "환불", "환불완료", "구매확정"].includes(order.status) || ["requested", "approved_pending_pg_cancel", "approved_pending_finalization"].includes(String(order.cancelRequest?.status ?? ""))) {
+    if (
+      isOrderTerminalStatus(order.status) ||
+      order.status === "취소처리중" ||
+      ["requested", "approved_pending_pg_cancel", "approved_pending_finalization"].includes(
+        String(order.cancelRequest?.status ?? ""),
+      ) ||
+      ["processing", "needs_reconciliation"].includes(
+        String(order.cancelRequest?.pgCancelClaim?.status ?? ""),
+      )
+    ) {
       return NextResponse.json(
         { ok: false, message: "취소된 주문은 배송 정보를 수정할 수 없습니다." },
         { status: 403 },
@@ -74,13 +84,18 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
 
     const prevShippingInfo: any = order?.shippingInfo ?? {};
     const expected = parsed.data.expectedShipping;
-    if (expected && (
-      expected.status !== String(order.status ?? "") ||
-      expected.shippingMethod !== String(prevShippingInfo.shippingMethod ?? "") ||
-      expected.estimatedDate !== String(prevShippingInfo.estimatedDate ?? "") ||
-      expected.courier !== String(prevShippingInfo.invoice?.courier ?? "") ||
-      expected.trackingNumber !== String(prevShippingInfo.invoice?.trackingNumber ?? "")
-    )) {
+    const previousEstimatedDate = prevShippingInfo.estimatedDate instanceof Date
+      ? prevShippingInfo.estimatedDate.toISOString()
+      : String(prevShippingInfo.estimatedDate ?? "");
+    if (
+      expected && (
+        normalizeOrderStatus(expected.status) !== normalizeOrderStatus(order.status) ||
+        expected.shippingMethod !== String(prevShippingInfo.shippingMethod ?? "") ||
+        expected.estimatedDate !== previousEstimatedDate ||
+        expected.courier !== String(prevShippingInfo.invoice?.courier ?? "") ||
+        expected.trackingNumber !== String(prevShippingInfo.invoice?.trackingNumber ?? "")
+      )
+    ) {
       return NextResponse.json({ ok: false, message: "다른 작업으로 배송 정보가 변경되었습니다. 최신 정보를 확인해주세요." }, { status: 409 });
     }
     const isRegistered = hasAnyRegisteredFulfillmentField(prevShippingInfo);
@@ -235,7 +250,9 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
         paymentStatus: order.paymentStatus ?? null,
         "paymentInfo.status": order.paymentInfo?.status ?? null,
         "cancelRequest.status": order.cancelRequest?.status ?? null,
+        "cancelRequest.pgCancelClaim.status": order.cancelRequest?.pgCancelClaim?.status ?? null,
         "shippingInfo.shippingMethod": prevShippingInfo.shippingMethod ?? null,
+        "shippingInfo.deliveryMethod": prevShippingInfo.deliveryMethod ?? null,
         "shippingInfo.estimatedDate": prevShippingInfo.estimatedDate ?? null,
         "shippingInfo.invoice": prevShippingInfo.invoice ?? null,
       },
