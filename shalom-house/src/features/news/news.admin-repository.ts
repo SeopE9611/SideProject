@@ -800,6 +800,20 @@ export async function decideAdminNewsReview(input: {
   });
 }
 
+function adminNewsListFilter(filters: AdminNewsListFilters): Filter<MongoNewsPostDocument> {
+  return {
+    deletedAt: null,
+    ...(filters.category ? { category: filters.category } : {}),
+    ...(filters.publicationStatus ? { publicationStatus: filters.publicationStatus } : {}),
+    ...(filters.approvalStatus ? { approvalStatus: filters.approvalStatus } : {}),
+  };
+}
+
+export async function countAdminNewsPosts(filters: AdminNewsListFilters): Promise<number> {
+  const database = await getMongoDatabase();
+  return database.collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME).countDocuments(adminNewsListFilter(filters));
+}
+
 export async function listAdminNewsPosts(input: {
   page: number;
   filters: AdminNewsListFilters;
@@ -807,15 +821,7 @@ export async function listAdminNewsPosts(input: {
 }): Promise<AdminNewsListResult> {
   const now = input.now ?? new Date();
   const requestedPage = Math.min(ADMIN_NEWS_MAXIMUM_PAGE, Math.max(1, Math.trunc(input.page)));
-  const filter: Filter<MongoNewsPostDocument> = { deletedAt: null };
-
-  if (input.filters.category) filter.category = input.filters.category;
-  if (input.filters.publicationStatus) {
-    filter.publicationStatus = input.filters.publicationStatus;
-  }
-  if (input.filters.approvalStatus) {
-    filter.approvalStatus = input.filters.approvalStatus;
-  }
+  const filter = adminNewsListFilter(input.filters);
 
   const database = await getMongoDatabase();
   const collection = database.collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME);

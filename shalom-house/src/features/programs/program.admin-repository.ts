@@ -859,6 +859,20 @@ export async function decideAdminProgramReview(input: {
   });
 }
 
+function adminProgramListFilter(filters: AdminProgramListFilters): Filter<MongoProgramDocument> {
+  return {
+    deletedAt: null,
+    ...(filters.category ? { category: filters.category } : {}),
+    ...(filters.publicationStatus ? { publicationStatus: filters.publicationStatus } : {}),
+    ...(filters.approvalStatus ? { approvalStatus: filters.approvalStatus } : {}),
+  };
+}
+
+export async function countAdminPrograms(filters: AdminProgramListFilters): Promise<number> {
+  const database = await getMongoDatabase();
+  return database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME).countDocuments(adminProgramListFilter(filters));
+}
+
 export async function listAdminProgramPosts(input: {
   page: number;
   filters: AdminProgramListFilters;
@@ -866,15 +880,7 @@ export async function listAdminProgramPosts(input: {
 }): Promise<AdminProgramListResult> {
   const now = input.now ?? new Date();
   const requestedPage = Math.min(ADMIN_PROGRAM_MAXIMUM_PAGE, Math.max(1, Math.trunc(input.page)));
-  const filter: Filter<MongoProgramDocument> = { deletedAt: null };
-
-  if (input.filters.category) filter.category = input.filters.category;
-  if (input.filters.publicationStatus) {
-    filter.publicationStatus = input.filters.publicationStatus;
-  }
-  if (input.filters.approvalStatus) {
-    filter.approvalStatus = input.filters.approvalStatus;
-  }
+  const filter = adminProgramListFilter(input.filters);
 
   const database = await getMongoDatabase();
   const collection = database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME);

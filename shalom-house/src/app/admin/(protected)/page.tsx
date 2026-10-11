@@ -2,6 +2,9 @@ import { AdminDashboard } from "@/components/admin/admin-dashboard";
 
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
+import { countReceivedAdminInquiries } from "@/features/inquiries/inquiry.admin-repository";
+import { countAdminNewsPosts } from "@/features/news/news.admin-repository";
+import { countAdminPrograms } from "@/features/programs/program.admin-repository";
 
 type TaskLink = {
   href: string;
@@ -28,6 +31,35 @@ export default async function AdminDashboardPage({
   const canManageInquiries = Boolean(admin && hasAdminPermission(admin, "inquiries.manage"));
   const canManageDonations = Boolean(admin && hasAdminPermission(admin, "donations.manage"));
   const canManageAdminUsers = Boolean(admin && hasAdminPermission(admin, "admin_users.manage"));
+  const canReview = Boolean(admin && hasAdminPermission(admin, "content.decide_review"));
+  const pendingTasks = [
+    ...(canManageInquiries ? [{
+      title: "신규 접수 문의",
+      href: "/admin/inquiries?status=received",
+      count: countReceivedAdminInquiries,
+    }] : []),
+    ...(canReview ? [
+      {
+        title: "소식 검토 대기",
+        href: "/admin/news?publication=review&approval=pending",
+        count: () => countAdminNewsPosts({ publicationStatus: "review", approvalStatus: "pending" }),
+      },
+      {
+        title: "프로그램 검토 대기",
+        href: "/admin/programs?publicationStatus=review&approvalStatus=pending",
+        count: () => countAdminPrograms({ publicationStatus: "review", approvalStatus: "pending" }),
+      },
+    ] : []),
+  ];
+  const counts = await Promise.allSettled(pendingTasks.map((task) => task.count()));
+  const pendingSummaries = pendingTasks.map((task, index) => {
+    const result = counts[index];
+    return {
+      title: task.title,
+      href: task.href,
+      count: result.status === "fulfilled" ? result.value : null,
+    };
+  });
   const operationTasks: readonly TaskLink[] = [
     {
       href: "/admin/site-content",
@@ -61,6 +93,7 @@ export default async function AdminDashboardPage({
       contentTasks={contentTasks}
       operationTasks={operationTasks.filter((task) => task.available)}
       canCreate={Boolean(admin && hasAdminPermission(admin, "content.create"))}
+      pendingSummaries={pendingSummaries}
     />
   );
 }
