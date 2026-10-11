@@ -844,7 +844,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return NextResponse.json({ ok: false, message: "INVALID_BODY" }, { status: 400 });
     }
-    const { status, payment, deliveryRequest, customer } = body;
+    const { status, payment, deliveryRequest, customer, expectedStatus } = body;
 
     if (!ObjectId.isValid(id)) {
       return new NextResponse("유효하지 않은 주문 ID입니다.", { status: 400 });
@@ -910,7 +910,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const requestedFields = Object.keys(body);
     const ownerAllowedFields = new Set(["customer", "deliveryRequest"]);
-    const adminAllowedFields = new Set(["customer", "deliveryRequest", "status", "payment"]);
+    const adminAllowedFields = new Set(["customer", "deliveryRequest", "status", "payment", "expectedStatus"]);
     const allowedFields = isAdmin ? adminAllowedFields : ownerAllowedFields;
 
     if (requestedFields.length === 0 || requestedFields.some((field) => !allowedFields.has(field))) {
@@ -928,6 +928,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     const attemptsOrderStatusPatch = Object.prototype.hasOwnProperty.call(body, "status");
+    if (
+      expectedStatus !== undefined &&
+      (!attemptsOrderStatusPatch || typeof expectedStatus !== "string")
+    ) {
+      return new NextResponse("기대 주문 상태 값이 올바르지 않습니다.", { status: 400 });
+    }
     const attemptsPaymentStatusChange =
       Object.prototype.hasOwnProperty.call(body, "paymentStatus") ||
       (body?.paymentInfo &&
@@ -1140,6 +1146,21 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     };
 
     const __prevStatus = String(existing.status); // 기존 문서의 상태
+    if (expectedStatus !== undefined && expectedStatus !== __prevStatus) {
+      return new NextResponse("다른 작업으로 주문 상태가 변경되었습니다. 최신 정보를 확인해주세요.", {
+        status: 409,
+      });
+    }
+    if (
+      ["취소처리중"].includes(__prevStatus) ||
+      ["requested", "approved_pending_pg_cancel", "approved_pending_finalization"].includes(
+        String(existing.cancelRequest?.status ?? ""),
+      )
+    ) {
+      return new NextResponse("취소 처리 중인 주문입니다. 최신 정보를 확인해주세요.", {
+        status: 409,
+      });
+    }
     // status 유효성(현재 프로젝트에서 사용하는 상태만 허용)
     if (typeof status !== "string" || status.trim().length === 0) {
       return new NextResponse("상태 값이 필요합니다.", { status: 400 });
@@ -1233,14 +1254,27 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     };
 
     // 상태 업데이트
-    const result = await orders.updateOne({ _id }, {
-      $set: updateFields,
-      $push: { history: historyEntry },
-    } as any);
+    const result = await orders.updateOne(
+      {
+        _id,
+        status: existing.status ?? null,
+        paymentStatus: existing.paymentStatus ?? null,
+        "paymentInfo.status": existing.paymentInfo?.status ?? null,
+        "paymentInfo.tid": existing.paymentInfo?.tid ?? null,
+        "cancelRequest.status": existing.cancelRequest?.status ?? null,
+        "shippingInfo.shippingMethod": existing.shippingInfo?.shippingMethod ?? null,
+        "shippingInfo.estimatedDate": existing.shippingInfo?.estimatedDate ?? null,
+        "shippingInfo.invoice": existing.shippingInfo?.invoice ?? null,
+      },
+      {
+        $set: updateFields,
+        $push: { history: historyEntry },
+      } as any,
+    );
 
-    if (result.modifiedCount === 0) {
-      return new NextResponse("주문 상태 업데이트에 실패했습니다.", {
-        status: 500,
+    if (result.matchedCount === 0) {
+      return new NextResponse("주문 정보가 변경되었습니다. 최신 정보를 확인한 후 다시 시도해주세요.", {
+        status: 409,
       });
     }
 
