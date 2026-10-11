@@ -27,6 +27,7 @@ const BodySchema = z
     estimatedDate: z.string().min(1),
     courier: z.any().optional(),
     trackingNumber: z.any().optional(),
+    expectedShipping: z.object({ shippingMethod: z.string(), estimatedDate: z.string(), courier: z.string(), trackingNumber: z.string(), status: z.string() }).optional(),
   })
   .passthrough();
 
@@ -59,7 +60,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
 
     const order: any = await db.collection("orders").findOne({ _id: orderId });
     if (!order) return NextResponse.json({ error: "주문을 찾을 수 없습니다." }, { status: 404 });
-    if (["취소", "결제취소"].includes(order.status)) {
+    if (["취소", "결제취소", "취소처리중", "환불", "환불완료", "구매확정"].includes(order.status) || ["requested", "approved_pending_pg_cancel", "approved_pending_finalization"].includes(String(order.cancelRequest?.status ?? ""))) {
       return NextResponse.json(
         { ok: false, message: "취소된 주문은 배송 정보를 수정할 수 없습니다." },
         { status: 403 },
@@ -72,6 +73,16 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       );
 
     const prevShippingInfo: any = order?.shippingInfo ?? {};
+    const expected = parsed.data.expectedShipping;
+    if (expected && (
+      expected.status !== String(order.status ?? "") ||
+      expected.shippingMethod !== String(prevShippingInfo.shippingMethod ?? "") ||
+      expected.estimatedDate !== String(prevShippingInfo.estimatedDate ?? "") ||
+      expected.courier !== String(prevShippingInfo.invoice?.courier ?? "") ||
+      expected.trackingNumber !== String(prevShippingInfo.invoice?.trackingNumber ?? "")
+    )) {
+      return NextResponse.json({ ok: false, message: "다른 작업으로 배송 정보가 변경되었습니다. 최신 정보를 확인해주세요." }, { status: 409 });
+    }
     const isRegistered = hasAnyRegisteredFulfillmentField(prevShippingInfo);
 
     const isOriginalVisitPickup = isVisitPickupOrder(order?.shippingInfo);
@@ -217,7 +228,22 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       updateDoc.$unset = { "shippingInfo.invoice": "" };
     }
 
-    await db.collection("orders").updateOne({ _id: orderId }, updateDoc);
+    const result = await db.collection("orders").updateOne(
+      {
+        _id: orderId,
+        status: order.status ?? null,
+        paymentStatus: order.paymentStatus ?? null,
+        "paymentInfo.status": order.paymentInfo?.status ?? null,
+        "cancelRequest.status": order.cancelRequest?.status ?? null,
+        "shippingInfo.shippingMethod": prevShippingInfo.shippingMethod ?? null,
+        "shippingInfo.estimatedDate": prevShippingInfo.estimatedDate ?? null,
+        "shippingInfo.invoice": prevShippingInfo.invoice ?? null,
+      },
+      updateDoc,
+    );
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ ok: false, message: "다른 작업으로 주문 또는 배송 정보가 변경되었습니다. 최신 정보를 확인해주세요." }, { status: 409 });
+    }
 
     await appendAdminAudit(
       guard.db,
