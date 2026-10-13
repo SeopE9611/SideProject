@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
-import { niceOrderWriteFilter } from "@/lib/payments/nice/order-write-guard";
+import { niceOrderWriteFilter, nicePaymentUpdatePipeline } from "@/lib/payments/nice/order-write-guard";
 import {
   extractNiceCardInfo,
   getNicePaymentByTid,
@@ -244,8 +244,7 @@ export async function syncNicePaymentByOrderId(orderId: string) {
     const nowIso = new Date().toISOString();
     const updateResult = await db.collection("orders").updateOne(
       niceOrderWriteFilter(order, mapped.normalizedPgStatus),
-      {
-        $set: {
+      nicePaymentUpdatePipeline({
           paymentStatus: mapped.nextPaymentStatus,
           "paymentInfo.status": mapped.nextPaymentInfoStatus,
           ...(nextCardDisplayName ? { "paymentInfo.cardDisplayName": nextCardDisplayName } : {}),
@@ -272,8 +271,7 @@ export async function syncNicePaymentByOrderId(orderId: string) {
           "paymentInfo.niceSync.canceledAt": canceledAt || null,
           "paymentInfo.niceSync.cancelAmount": cancelAmount,
           updatedAt: new Date(),
-        },
-      },
+      }),
     );
     console.info("[nicepay][sync]", {
       stage: "after_sync",

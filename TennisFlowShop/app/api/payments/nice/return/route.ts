@@ -1,6 +1,6 @@
 import { createOrder } from "@/app/features/orders/api/handlers";
 import clientPromise from "@/lib/mongodb";
-import { niceOrderWriteFilter } from "@/lib/payments/nice/order-write-guard";
+import { niceOrderWriteFilter, nicePaymentUpdatePipeline } from "@/lib/payments/nice/order-write-guard";
 import {
   approveNicePaymentByTid,
   cancelNicePaymentByTid,
@@ -12,6 +12,7 @@ import {
   ensureTossPaymentSessionIndexes,
   tossPaymentSessions,
   type TossPaymentFailureStage,
+  type TossPaymentSession,
 } from "@/lib/payments/toss/session";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -42,6 +43,20 @@ function redirectToCheckoutSuccess(req: Request, mongoOrderId: string, isGuest: 
   const response = redirect303(req, `/checkout/success?orderId=${encodeURIComponent(mongoOrderId)}`);
   if (isGuest) response.cookies.set("orderAccessToken", signOrderAccessToken({ orderId: mongoOrderId }), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 7 });
   return response;
+}
+
+const PAYMENT_STATE_CONFLICT = "NICE_PAYMENT_STATE_CONFLICT";
+function redirectPaymentConflict(req: Request) {
+  return redirect303(req, toFailUrl(PAYMENT_STATE_CONFLICT,
+    "결제 승인 후 주문 상태 확인이 필요합니다. 다시 결제하지 말고 주문 내역 또는 고객센터에서 확인해주세요."));
+}
+async function redirectApprovedSession(req: Request, session: TossPaymentSession) {
+  if (session.failureCode === PAYMENT_STATE_CONFLICT) return redirectPaymentConflict(req);
+  const client = await clientPromise;
+  const order = ObjectId.isValid(String(session.mongoOrderId))
+    ? await client.db().collection("orders").findOne({ _id: new ObjectId(String(session.mongoOrderId)) }).catch(() => null) : null;
+  if (!order || order.paymentStatus !== "결제완료" || niceOrderWriteFilter(order, "paid").$expr) return redirectPaymentConflict(req);
+  return redirectToCheckoutSuccess(req, String(session.mongoOrderId), !session.userId);
 }
 
 function toAmount(value: string) {
@@ -128,7 +143,7 @@ async function handleNiceReturn(req: Request) {
     }
 
     if (session.status === "approved" && session.mongoOrderId) {
-      return redirectToCheckoutSuccess(req, String(session.mongoOrderId), !session.userId);
+      return redirectApprovedSession(req, session);
     }
 
     if (session.status === "failed") {
@@ -180,7 +195,7 @@ async function handleNiceReturn(req: Request) {
       const latest = await col.findOne({ niceOrderId: orderId });
 
       if (latest?.status === "approved" && latest.mongoOrderId) {
-        return redirectToCheckoutSuccess(req, String(latest.mongoOrderId), !session.userId);
+        return redirectApprovedSession(req, latest);
       }
 
       if (
@@ -251,7 +266,7 @@ async function handleNiceReturn(req: Request) {
       const latest = await col.findOne({ niceOrderId: orderId });
 
       if (latest?.status === "approved" && latest.mongoOrderId) {
-        return redirectToCheckoutSuccess(req, String(latest.mongoOrderId), !session.userId);
+        return redirectApprovedSession(req, latest);
       }
 
       if (
@@ -458,6 +473,11 @@ async function handleNiceReturn(req: Request) {
       presentCardCandidateKeys: approveRawSummary.presentCandidateKeys,
     });
 
+    // Preserve approval evidence even if downstream session recording fails.
+    const approvalEvidence = await col.updateOne({ _id: session._id }, { $set: {
+      niceAuthRaw: raw, niceApprovedRaw: approvedRaw, updatedAt: new Date(),
+    } }).catch(() => null);
+    if (!approvalEvidence?.matchedCount) return redirectPaymentConflict(req);
     const idemKey = `nice:${orderId}`;
     const orderReq = new Request("http://internal/api/orders", {
       method: "POST",
@@ -644,7 +664,7 @@ async function handleNiceReturn(req: Request) {
           { idemKey },
           {
             projection: {
-              _id: 1,
+              _id: 1, status: 1, paymentStatus: 1, paymentInfo: 1, cancelRequest: 1,
             },
           },
         );
@@ -684,9 +704,9 @@ async function handleNiceReturn(req: Request) {
                 failureMessage: "",
               },
             },
-          );
+          ).catch(() => null);
 
-          return redirectToCheckoutSuccess(req, String(recoveredMongoOrderId), !session.userId);
+          return redirectApprovedSession(req, { ...session, mongoOrderId: recoveredMongoOrderId });
         }
         console.error("[nicepay][flow]", {
           stage: "before_auto_cancel_after_create_order_failed",
@@ -817,14 +837,12 @@ async function handleNiceReturn(req: Request) {
         existingOrder
           ? niceOrderWriteFilter(existingOrder, "paid")
           : { _id: new ObjectId(mongoOrderId), $expr: { $eq: [1, 0] } },
-        {
-          $set: {
+        nicePaymentUpdatePipeline({
             orderId,
             paymentStatus: "결제완료",
             ...paymentInfoFields,
             updatedAt: new Date(),
-          },
-        },
+        }),
       );
       console.info("[nicepay][flow]", {
         stage: "after_order_update",
@@ -848,6 +866,11 @@ async function handleNiceReturn(req: Request) {
         { _id: session._id },
         {
           $set: {
+            ...(paymentStateConflict ? {
+              failureCode: PAYMENT_STATE_CONFLICT,
+              failureStage: "create_order_after_approve",
+              failureMessage: "승인 후 주문 결제 저장 충돌: 수동 확인 필요",
+            } : {}),
             status: "approved",
             mongoOrderId,
             niceAuthRaw: raw,
@@ -860,11 +883,7 @@ async function handleNiceReturn(req: Request) {
             },
             updatedAt: new Date(),
           },
-          $unset: {
-            failureStage: "",
-            failureCode: "",
-            failureMessage: "",
-          },
+          ...(!paymentStateConflict ? { $unset: { failureStage: "", failureCode: "", failureMessage: "" } } : {}),
         },
       ).catch((error: unknown) => {
         if (paymentStateConflict) {
@@ -875,15 +894,7 @@ async function handleNiceReturn(req: Request) {
         }
         throw error;
       });
-      if (paymentStateConflict) {
-        return NextResponse.json({
-          success: false,
-          code: "NICE_PAYMENT_STATE_CONFLICT",
-          error: "주문 결제 또는 취소 상태가 변경되었습니다. 주문 내역과 PG 상태를 확인해주세요.",
-          orderId: mongoOrderId,
-          sessionRecorded: Boolean(sessionUpdateResult?.matchedCount),
-        }, { status: 409 });
-      }
+      if (paymentStateConflict) return redirectPaymentConflict(req);
       if (!sessionUpdateResult) throw new Error("SESSION_UPDATE_FAILED");
       console.info("[nicepay][flow]", {
         stage: "after_session_update",

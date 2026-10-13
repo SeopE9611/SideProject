@@ -14,6 +14,12 @@ const FAIL_GUIDE_MAP: Record<
     accent?: "default" | "warning";
   }
 > = {
+  NICE_PAYMENT_STATE_CONFLICT: {
+    title: "주문과 결제 상태를 확인해야 해요",
+    description: ["결제 승인 후 주문 또는 취소 상태가 변경되어 결과 확인이 필요합니다.",
+      "다시 결제하지 말고 주문 내역 또는 고객센터에서 먼저 확인해주세요."],
+    accent: "warning",
+  },
   PAYMENT_PROVIDER_DISABLED: {
     title: "현재 카드/간편결제를 사용할 수 없어요",
     description: [

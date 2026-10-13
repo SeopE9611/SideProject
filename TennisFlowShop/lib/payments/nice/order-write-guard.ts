@@ -1,6 +1,6 @@
+import { isOrderCanceledStatus, isOrderRefundedStatus } from "@/lib/status/flow-status";
 import type { Document, Filter } from "mongodb";
 import {
-  CANCEL_FINALIZED_ORDER_STATUS_VALUES,
   isCancelFinalizedOrderStatus,
   isExternallyCanceledPayment,
 } from "@/lib/orders/cancel-finalization";
@@ -13,6 +13,7 @@ export function niceOrderWriteFilter(order: Document, pgStatus: string): Filter<
   const blocked = claim?.status === "processing" || (!canceled && (
     isExternallyCanceledPayment(order) ||
     isCancelFinalizedOrderStatus(order.status) ||
+    isOrderCanceledStatus(order.status) || isOrderRefundedStatus(order.status) ||
     order.status === "취소처리중" ||
     ["approved", "approved_pending_pg_cancel", "approved_pending_finalization"].includes(order.cancelRequest?.status) ||
     ["needs_reconciliation", "pg_canceled"].includes(claim?.status) ||
@@ -35,6 +36,28 @@ export function niceOrderWriteFilter(order: Document, pgStatus: string): Filter<
     "cancelRequest.pgCancelClaim.status": claim?.status ?? null,
     "cancelRequest.pgCancelClaim.token": claim?.token ?? null,
     // A confirmed canceled result can repair payment state even after finalization.
-    ...(!canceled ? { status: { $nin: [...CANCEL_FINALIZED_ORDER_STATUS_VALUES, "취소처리중"] } } : {}),
+    ...(!canceled ? { status: order.status ?? null } : {}),
   };
+}
+
+// Merge at write time: dotted $set cannot traverse null/scalar parents.
+export function nicePaymentUpdatePipeline(fields: Record<string, unknown>): Document[] {
+  const root: Document = {};
+  const payment: Document = {};
+  const nested: Record<string, Document> = {};
+  for (const [path, value] of Object.entries(fields)) {
+    const parts = path.split(".");
+    if (parts[0] !== "paymentInfo") root[path] = { $literal: value };
+    else if (parts.length === 2) payment[parts[1]] = value;
+    else (nested[parts[1]] ??= {})[parts.slice(2).join(".")] = value;
+  }
+  const objectOrEmpty = (path: string) => ({
+    $cond: [{ $eq: [{ $type: path }, "object"] }, path, {}],
+  });
+  const nestedExpressions: Document = {};
+  for (const [key, values] of Object.entries(nested)) {
+    nestedExpressions[key] = { $mergeObjects: [objectOrEmpty(`$paymentInfo.${key}`), { $literal: values }] };
+  }
+  root.paymentInfo = { $mergeObjects: [objectOrEmpty("$paymentInfo"), { $literal: payment }, nestedExpressions] };
+  return [{ $set: root }];
 }
