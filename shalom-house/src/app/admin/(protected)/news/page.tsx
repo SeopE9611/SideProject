@@ -1,3 +1,4 @@
+import { ADMIN_TITLE_SEARCH_MAX_LENGTH, normalizeAdminTitleSearch } from "@/lib/admin-title-search";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type { NewsPublicationStatus, NewsApprovalStatus } from "@/features/news/news.types";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -33,6 +34,7 @@ const approvalTone = {
 } satisfies Record<NewsApprovalStatus, SemanticStatusTone>;
 
 type AdminNewsSearchParams = {
+  q?: string | string[];
   category?: string | string[];
   publication?: string | string[];
   approval?: string | string[];
@@ -54,8 +56,9 @@ function formatDate(value: string): string {
   return dateFormatter.format(new Date(value));
 }
 
-function createAdminNewsPageHref(page: number, filters: AdminNewsListFilters): string {
+function createAdminNewsPageHref(page: number, filters: AdminNewsListFilters, q: string): string {
   const query = new URLSearchParams();
+  if (q) query.set("q", q);
   if (filters.category) query.set("category", filters.category);
   if (filters.publicationStatus) {
     query.set("publication", filters.publicationStatus);
@@ -70,6 +73,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
   const admin = await getCurrentAdmin();
   const canCreate = Boolean(admin && hasAdminPermission(admin, "content.create"));
   const query = await searchParams;
+  const q = normalizeAdminTitleSearch(query.q);
   const category = typeof query.category === "string" && isNewsCategory(query.category) ? query.category : undefined;
   const publicationStatus =
     typeof query.publication === "string" && isNewsPublicationStatus(query.publication) ? query.publication : undefined;
@@ -77,9 +81,9 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
     typeof query.approval === "string" && isNewsApprovalStatus(query.approval) ? query.approval : undefined;
   const filters = { category, publicationStatus, approvalStatus };
   const requestedPage = normalizeAdminNewsPage(typeof query.page === "string" ? query.page : undefined);
-  const result = await listAdminNewsPosts({ page: requestedPage, filters });
-  const hasFilters = Boolean(category || publicationStatus || approvalStatus);
-  const filterFormKey = [category ?? "", publicationStatus ?? "", approvalStatus ?? ""].join("|");
+  const result = await listAdminNewsPosts({ page: requestedPage, filters, q });
+  const hasFilters = Boolean(q || category || publicationStatus || approvalStatus);
+  const filterFormKey = [q, category ?? "", publicationStatus ?? "", approvalStatus ?? ""].join("|");
 
   return (
     <div className="admin-list-layout">
@@ -99,6 +103,16 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
 
       <AdminFilterPanel headingId="admin-news-filter-heading" title="뉴스 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
         <form key={filterFormKey} method="get" action="/admin/news" className="mt-4 grid gap-3 lg:grid-cols-3">
+          <label className="grid min-w-0 gap-2 font-semibold lg:col-span-3">
+            제목 검색
+            <input
+              type="search"
+              name="q"
+              defaultValue={q}
+              maxLength={ADMIN_TITLE_SEARCH_MAX_LENGTH}
+              className="min-h-11 min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 font-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            />
+          </label>
           <label className="grid gap-2 font-semibold">
             분류
             <select
@@ -143,7 +157,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
               type="submit"
               className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
             >
-              필터 적용
+              검색·필터 적용
             </button>
             <Link
               href="/admin/news"
@@ -255,8 +269,8 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
         label="뉴스 목록 페이지 이동"
         page={result.page}
         totalPages={result.totalPages}
-        previousHref={createAdminNewsPageHref(result.page - 1, filters)}
-        nextHref={createAdminNewsPageHref(result.page + 1, filters)}
+        previousHref={createAdminNewsPageHref(result.page - 1, filters, q)}
+        nextHref={createAdminNewsPageHref(result.page + 1, filters, q)}
       />
     </div>
   );

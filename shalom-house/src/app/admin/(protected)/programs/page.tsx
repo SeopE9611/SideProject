@@ -1,3 +1,4 @@
+import { ADMIN_TITLE_SEARCH_MAX_LENGTH, normalizeAdminTitleSearch } from "@/lib/admin-title-search";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type { ProgramPublicationStatus, ProgramApprovalStatus } from "@/features/programs/program.types";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -40,6 +41,7 @@ const date = new Intl.DateTimeFormat("ko-KR", {
   timeZone: "UTC",
 });
 type Params = {
+  q?: string | string[];
   publicationStatus?: string | string[];
   approvalStatus?: string | string[];
   page?: string | string[];
@@ -52,8 +54,9 @@ type Params = {
   unpublished?: string | string[];
   archived?: string | string[];
 };
-function href(page: number, f: AdminProgramListFilters) {
+function href(page: number, f: AdminProgramListFilters, search: string) {
   const q = new URLSearchParams();
+  if (search) q.set("q", search);
   if (f.publicationStatus) q.set("publicationStatus", f.publicationStatus);
   if (f.approvalStatus) q.set("approvalStatus", f.approvalStatus);
   if (page > 1) q.set("page", String(page));
@@ -63,6 +66,7 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
   const admin = await getCurrentAdmin();
   const canCreate = Boolean(admin && hasAdminPermission(admin, "content.create"));
   const q = await searchParams;
+  const search = normalizeAdminTitleSearch(q.q);
   const publicationStatus =
     typeof q.publicationStatus === "string" && isProgramPublicationStatus(q.publicationStatus)
       ? q.publicationStatus
@@ -73,9 +77,10 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
   const result = await listAdminPrograms({
     page: normalizeAdminProgramPage(typeof q.page === "string" ? q.page : undefined),
     filters,
+    q: search,
   });
-  const hasFilters = Boolean(publicationStatus || approvalStatus);
-  const filterFormKey = [publicationStatus ?? "", approvalStatus ?? ""].join("|");
+  const hasFilters = Boolean(search || publicationStatus || approvalStatus);
+  const filterFormKey = [search, publicationStatus ?? "", approvalStatus ?? ""].join("|");
   return (
     <div className="admin-list-layout">
       <AdminPageHeader
@@ -84,10 +89,20 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
         actions={canCreate ? <Link href="/admin/programs/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">프로그램 작성</Link> : undefined}
       />
       <AdminFilterPanel headingId="program-filter" title="프로그램 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
-        <form key={filterFormKey} className="mt-4 grid gap-3 sm:grid-cols-2" action="/admin/programs">
+        <form key={filterFormKey} className="mt-4 grid gap-3 sm:grid-cols-2" method="get" action="/admin/programs">
+          <label className="grid min-w-0 gap-2 font-semibold sm:col-span-2">
+            제목 검색
+            <input
+              type="search"
+              name="q"
+              defaultValue={search}
+              maxLength={ADMIN_TITLE_SEARCH_MAX_LENGTH}
+              className="min-h-11 min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 font-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            />
+          </label>
           <label className="grid gap-2 font-semibold">게시 상태<select name="publicationStatus" defaultValue={publicationStatus ?? ""} className="min-h-11 rounded-control border border-border-strong bg-background px-3 font-normal"><option value="">전체</option><option value="draft">작성 중</option><option value="review">검토 중</option><option value="published">게시</option><option value="archived">보관</option></select></label>
           <label className="grid gap-2 font-semibold">승인 상태<select name="approvalStatus" defaultValue={approvalStatus ?? ""} className="min-h-11 rounded-control border border-border-strong bg-background px-3 font-normal"><option value="">전체</option><option value="pending">승인 대기</option><option value="approved">승인 완료</option><option value="rejected">반려</option></select></label>
-          <div className="flex flex-wrap gap-3 sm:col-span-2"><button className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground">필터 적용</button><Link href="/admin/programs" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary">필터 초기화</Link></div>
+          <div className="flex flex-wrap gap-3 sm:col-span-2"><button type="submit" className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">검색·필터 적용</button><Link href="/admin/programs" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary">필터 초기화</Link></div>
         </form>
       </AdminFilterPanel>
       <section aria-labelledby="program-list">
@@ -163,7 +178,7 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
           />
         )}
       </section>
-      <AdminListPagination label="프로그램 목록 페이지 이동" page={result.page} totalPages={result.totalPages} previousHref={href(result.page - 1, filters)} nextHref={href(result.page + 1, filters)} />
+      <AdminListPagination label="프로그램 목록 페이지 이동" page={result.page} totalPages={result.totalPages} previousHref={href(result.page - 1, filters, search)} nextHref={href(result.page + 1, filters, search)} />
     </div>
   );
 }

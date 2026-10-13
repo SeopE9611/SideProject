@@ -1,3 +1,4 @@
+import { createAdminTitleSearchExpression } from "@/lib/admin-title-search";
 import { MongoServerError, ObjectId, type ClientSession, type Db, type Filter, type WithId } from "mongodb";
 
 import type { AdminPrincipal } from "@/features/admin-auth/admin-auth.types";
@@ -875,12 +876,15 @@ export async function countAdminPrograms(filters: AdminProgramListFilters): Prom
 
 export async function listAdminProgramPosts(input: {
   page: number;
+  q?: string;
   filters: AdminProgramListFilters;
   now?: Date;
 }): Promise<AdminProgramListResult> {
   const now = input.now ?? new Date();
   const requestedPage = Math.min(ADMIN_PROGRAM_MAXIMUM_PAGE, Math.max(1, Math.trunc(input.page)));
   const filter = adminProgramListFilter(input.filters);
+  const titleExpression = createAdminTitleSearchExpression(input.q);
+  if (titleExpression) filter.title = { $regex: titleExpression };
 
   const database = await getMongoDatabase();
   const collection = database.collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME);
