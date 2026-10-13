@@ -1,5 +1,6 @@
 import { createOrder } from "@/app/features/orders/api/handlers";
 import clientPromise from "@/lib/mongodb";
+import { niceOrderWriteFilter } from "@/lib/payments/nice/order-write-guard";
 import {
   approveNicePaymentByTid,
   cancelNicePaymentByTid,
@@ -759,7 +760,6 @@ async function handleNiceReturn(req: Request) {
         .findOne({ _id: new ObjectId(mongoOrderId) });
       const prevPaymentInfo = (existingOrder?.paymentInfo ?? {}) as Record<string, unknown>;
       const mergedPaymentInfo = {
-        ...prevPaymentInfo,
         provider: "nicepay",
         method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
         status: pick(approvedRaw, "status") || "paid",
@@ -786,10 +786,6 @@ async function handleNiceReturn(req: Request) {
             : undefined,
           easyPay: easyPayProvider ? { provider: easyPayProvider } : undefined,
         },
-        niceSync: {
-          lastSyncedAt: new Date().toISOString(),
-          source: "approve_return",
-        },
         total: Number(prevPaymentInfo.total ?? existingOrder?.totalPrice ?? amount ?? 0),
         originalTotal: Number(
           prevPaymentInfo.originalTotal ??
@@ -802,13 +798,30 @@ async function handleNiceReturn(req: Request) {
         shippingFee: Number(prevPaymentInfo.shippingFee ?? existingOrder?.shippingFee ?? 0),
         serviceFee: Number(prevPaymentInfo.serviceFee ?? existingOrder?.serviceFee ?? 0),
       };
+      // Leaf updates preserve niceSync and unrelated payment metadata.
+      const paymentInfoFields: Record<string, unknown> = {};
+      if (!prevPaymentInfo.niceSync) {
+        paymentInfoFields["paymentInfo.niceSync.lastSyncedAt"] = new Date().toISOString();
+        paymentInfoFields["paymentInfo.niceSync.source"] = "approve_return";
+      }
+      for (const [key, value] of Object.entries(mergedPaymentInfo)) {
+        if (key === "rawSummary" && typeof value === "object" && value !== null) {
+          for (const [rawKey, rawValue] of Object.entries(value)) {
+            if (rawValue !== undefined) paymentInfoFields[`paymentInfo.rawSummary.${rawKey}`] = rawValue;
+          }
+        } else if (value !== undefined) {
+          paymentInfoFields[`paymentInfo.${key}`] = value;
+        }
+      }
       const orderUpdateResult = await db.collection("orders").updateOne(
-        { _id: new ObjectId(mongoOrderId) },
+        existingOrder
+          ? niceOrderWriteFilter(existingOrder, "paid")
+          : { _id: new ObjectId(mongoOrderId), $expr: { $eq: [1, 0] } },
         {
           $set: {
             orderId,
             paymentStatus: "결제완료",
-            paymentInfo: mergedPaymentInfo,
+            ...paymentInfoFields,
             updatedAt: new Date(),
           },
         },
@@ -821,9 +834,9 @@ async function handleNiceReturn(req: Request) {
         matchedCount: orderUpdateResult.matchedCount,
         modifiedCount: orderUpdateResult.modifiedCount,
       });
-      if (orderUpdateResult.matchedCount === 0) {
-        throw new Error("ORDER_UPDATE_TARGET_NOT_FOUND");
-      }
+      // A state conflict is not a creation failure: preserve the approved
+      // session for duplicate returns and do not trigger another PG cancel.
+      const paymentStateConflict = orderUpdateResult.matchedCount === 0;
 
       console.info("[nicepay][flow]", {
         stage: "before_session_update",
@@ -853,7 +866,25 @@ async function handleNiceReturn(req: Request) {
             failureMessage: "",
           },
         },
-      );
+      ).catch((error: unknown) => {
+        if (paymentStateConflict) {
+          // Keep the conflict out of the automatic PG cancellation catch below,
+          // including when recording the approved session fails.
+          console.error("[nicepay][flow]", { stage: "conflict_session_update_failed", mongoOrderId });
+          return null;
+        }
+        throw error;
+      });
+      if (paymentStateConflict) {
+        return NextResponse.json({
+          success: false,
+          code: "NICE_PAYMENT_STATE_CONFLICT",
+          error: "주문 결제 또는 취소 상태가 변경되었습니다. 주문 내역과 PG 상태를 확인해주세요.",
+          orderId: mongoOrderId,
+          sessionRecorded: Boolean(sessionUpdateResult?.matchedCount),
+        }, { status: 409 });
+      }
+      if (!sessionUpdateResult) throw new Error("SESSION_UPDATE_FAILED");
       console.info("[nicepay][flow]", {
         stage: "after_session_update",
         tid,
