@@ -3,6 +3,7 @@ import type {
   GalleryPublicationStatus,
   GalleryApprovalStatus,
   GalleryConsentStatus,
+  GallerySubjectPresence,
 } from "@/features/gallery/gallery.types";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
@@ -44,6 +45,18 @@ const consentTone = {
 } satisfies Record<GalleryConsentStatus, SemanticStatusTone>;
 
 const gridClass = "xl:grid-cols-[2fr_0.8fr_1fr_1fr_0.8fr_0.8fr_1fr]";
+
+function galleryPageHref(page: number, filters: {
+  subjectPresence?: GallerySubjectPresence;
+  consentStatus?: GalleryConsentStatus;
+  publicationStatus?: GalleryPublicationStatus;
+}) {
+  const params = new URLSearchParams({ page: String(page) });
+  if (filters.subjectPresence) params.set("subjectPresence", filters.subjectPresence);
+  if (filters.consentStatus) params.set("consentStatus", filters.consentStatus);
+  if (filters.publicationStatus) params.set("publicationStatus", filters.publicationStatus);
+  return `/admin/gallery?${params.toString()}`;
+}
 
 export default async function AdminGalleryPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const admin = await getCurrentAdmin();
@@ -87,7 +100,7 @@ export default async function AdminGalleryPage({ searchParams }: { searchParams:
             }
           />}
       </section>
-      <AdminListPagination label="활동사진 목록 페이지" page={result.page} totalPages={result.totalPages} previousHref={`?page=${result.page - 1}`} nextHref={`?page=${result.page + 1}`} />
+      <AdminListPagination label="활동사진 목록 페이지" page={result.page} totalPages={result.totalPages} previousHref={galleryPageHref(result.page - 1, { subjectPresence, consentStatus, publicationStatus })} nextHref={galleryPageHref(result.page + 1, { subjectPresence, consentStatus, publicationStatus })} />
     </div>
   );
 }
