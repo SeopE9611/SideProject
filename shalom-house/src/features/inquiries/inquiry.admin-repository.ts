@@ -123,8 +123,10 @@ export async function countReceivedAdminInquiries(): Promise<number> {
     status: "received",
     $expr: {
       $and: [
+        { $eq: [{ $type: "$status" }, "string"] },
+        { $eq: ["$status", "received"] },
         { $eq: [{ $type: "$_id" }, "objectId"] },
-        { $regexMatch: { input: stringValue("reference"), regex: "^INQ-[A-Z0-9]{12}$" } },
+        { $regexMatch: { input: stringValue("reference"), regex: "^INQ-[A-Z0-9]{12}\\z" } },
         { $in: ["$kind", inquiryKinds] },
         ...["name", "phone", "email", "message", "internalNote"].map((field) => ({
           $eq: [{ $type: `$${field}` }, "string"],
