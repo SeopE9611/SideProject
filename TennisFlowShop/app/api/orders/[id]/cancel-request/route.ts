@@ -1,3 +1,5 @@
+import { orderCancelSnapshot, isOrderCancellationInFlight, OrderCancelConflict } from "@/lib/orders/cancel-write-guard";
+import { isStringingCompletedStatus } from "@/lib/status/flow-status";
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import {
   formatOrderPickupLabel,
@@ -111,6 +113,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       if (demoMutationBlock) return demoMutationBlock;
     }
 
+    if (isOrderCancellationInFlight(existing)) {
+      return NextResponse.json({ ok: false, errorCode: "ORDER_CANCEL_CONFLICT", message: "취소 요청 또는 처리가 이미 진행 중입니다." }, { status: 409 });
+    }
+
     // 비즈니스 룰 체크
 
     if (!isAdmin && !isUserCancelableOrderStatus(existing.status)) {
@@ -201,16 +207,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const linkedApps = await stringingAppsCol
       .find({
-        orderId: existing._id, // 이 주문에서 생성된 신청들
-        status: { $nin: ["취소", "cancelled", "거절"] }, // 이미 취소/거절된 건 제외
+        orderId: { $in: [existing._id, String(existing._id)] }, // ObjectId/string legacy links
+        status: { $nin: ["취소", "cancelled", "canceled", "거절"] }, // 이미 취소/거절된 건 제외
       })
-      .project({ _id: 1, status: 1, totalPrice: 1, packageApplied: 1 })
+      .project({ _id: 1, status: 1, totalPrice: 1, packageApplied: 1, cancelRequest: 1 })
       .toArray();
 
     if (linkedApps.length > 0) {
       // 작업 중/완료 상태가 하나라도 있으면: 취소 요청 자체를 막는다.
       const inProgressApps = linkedApps.filter((app: any) =>
-        ["작업 중", "교체완료", "완료"].includes(app.status),
+        ["작업 중", "작업중", "완료"].includes(app.status) || isStringingCompletedStatus(app.status),
       );
 
       if (inProgressApps.length > 0) {
@@ -275,46 +281,49 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       description: `고객이 주문 취소를 요청했습니다. 사유: ${descBase}${descDetail}${refundAccount ? " · 환불 계좌 정보가 등록되었습니다." : ""}`,
     };
 
-    // 연결된 스트링 교체 서비스 신청에도 취소 "요청" 플래그/히스토리 반영
-    // - linkedApps: 위에서 미리 조회한 이 주문 기반 신청들
-    // - withStringing === true 일 때만 실제로 신청에 반영
-    if (linkedApps.length > 0 && withStringing) {
-      // 이번 주문으로 접수된 신청들의 _id 목록
-      const appIds = linkedApps.map((app: any) => app._id);
-
-      // 신청 쪽에 저장할 cancelRequest (status 값은 신청 스키마에 맞춰 '요청' 사용)
-      const appCancelRequest = {
-        status: "요청" as const, // 주문은 'requested', 신청은 '요청'으로 관리
-        reasonCode: cancelRequest.reasonCode,
-        reasonText: cancelRequest.reasonText,
-        requestedAt: now,
-        ...(refundAccount ? { refundAccount } : {}),
-      };
-
-      const appHistoryEntry = {
-        status: "취소요청",
-        date: now,
-        description: `주문 취소 요청과 함께 교체 서비스 신청도 취소를 요청했습니다. 사유: ${cancelRequest.reasonCode}${cancelRequest.reasonText ? ` (${cancelRequest.reasonText})` : ""}${refundAccount ? " · 환불 계좌 정보가 함께 전달되었습니다." : ""}`,
-      };
-
-      await stringingAppsCol.updateMany(
-        { _id: { $in: appIds } } as any,
-        {
-          $set: {
-            cancelRequest: appCancelRequest,
-          },
-          $push: {
-            history: appHistoryEntry,
-          },
-        } as any,
-      );
+    const session = client.startSession();
+    try {
+      await session.withTransaction(async () => {
+        // Re-read every linked application inside the same transaction. Consent
+        // must also cover a newly visible application, not just the earlier list.
+        const currentApps = await stringingAppsCol.find({
+          orderId: { $in: [existing._id, String(existing._id)] },
+          status: { $nin: ["취소", "cancelled", "canceled", "거절"] },
+        }, { session }).toArray();
+        if (currentApps.length && !withStringing) {
+          throw new OrderCancelConflict("연결 신청서가 변경되었습니다. 함께 취소할 신청서를 확인해주세요.");
+        }
+        for (const app of currentApps) {
+          if (["작업 중", "작업중", "완료"].includes(app.status) || isStringingCompletedStatus(app.status) ||
+              ["요청", "requested", "승인", "approved"].includes(app.cancelRequest?.status)) {
+            throw new OrderCancelConflict("작업 중이거나 취소 처리 중인 연결 신청서가 있습니다.");
+          }
+        }
+        const saved = await orders.updateOne(orderCancelSnapshot(existing), {
+          $set: { cancelRequest }, $push: { history: historyEntry },
+        } as any, { session });
+        if (!saved.matchedCount) throw new OrderCancelConflict();
+        for (const app of currentApps) {
+          const savedApp = await stringingAppsCol.updateOne({
+            _id: app._id, orderId: app.orderId, status: app.status ?? null,
+            cancelRequest: app.cancelRequest ?? null,
+          }, {
+            $set: { cancelRequest: {
+              status: "요청", reasonCode: cancelRequest.reasonCode,
+              reasonText: cancelRequest.reasonText, requestedAt: now,
+              ...(refundAccount ? { refundAccount } : {}),
+            } },
+            $push: { history: {
+              status: "취소요청", date: now,
+              description: `주문 취소 요청과 함께 교체 서비스 신청도 취소를 요청했습니다. 사유: ${cancelRequest.reasonCode}${cancelRequest.reasonText ? ` (${cancelRequest.reasonText})` : ""}`,
+            } },
+          } as any, { session });
+          if (!savedApp.matchedCount) throw new OrderCancelConflict();
+        }
+      });
+    } finally {
+      await session.endSession();
     }
-
-    // 7) DB 업데이트
-    await orders.updateOne({ _id }, {
-      $set: { cancelRequest },
-      $push: { history: historyEntry },
-    } as any);
 
     await sendAdminOperationalAlert({
       kind: "cancel_requested",
@@ -391,6 +400,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error instanceof OrderCancelConflict) {
+      return NextResponse.json({ ok: false, errorCode: "ORDER_CANCEL_CONFLICT", message: error.message }, { status: 409 });
+    }
     console.error("POST /api/orders/[id]/cancel-request 오류:", error);
     return new NextResponse("서버 오류가 발생했습니다.", { status: 500 });
   }

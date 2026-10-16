@@ -1,3 +1,4 @@
+import { persistOrderCancelDecision, OrderCancelConflict, isOrderPgCancelLocked } from "@/lib/orders/cancel-write-guard";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
@@ -81,6 +82,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
     if (demoMutationBlock) return demoMutationBlock;
 
+    if (isOrderPgCancelLocked(existing)) {
+      return NextResponse.json({ ok: false, errorCode: "ORDER_CANCEL_CONFLICT", message: "PG 취소 처리 중이거나 종료된 주문입니다." }, { status: 409 });
+    }
+
     const existingReq = existing.cancelRequest || {};
 
     if (existingReq.status !== "requested") {
@@ -110,10 +115,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       description: `${descBase}${descReason}`,
     };
 
-    await orders.updateOne({ _id }, {
+    await persistOrderCancelDecision(client, db, existing, {
       $set: { cancelRequest: updatedCancelRequest },
       $push: { history: historyEntry },
-    } as any);
+    } as any, "rejected", now);
 
     await appendAdminAudit(
       db,
@@ -155,6 +160,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error instanceof OrderCancelConflict) {
+      return NextResponse.json({ ok: false, errorCode: "ORDER_CANCEL_CONFLICT", message: error.message }, { status: 409 });
+    }
     console.error("POST /api/orders/[id]/cancel-reject 오류:", error);
     return new NextResponse("서버 오류가 발생했습니다.", { status: 500 });
   }

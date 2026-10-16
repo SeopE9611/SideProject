@@ -1,3 +1,4 @@
+import { orderCancelSnapshot, isOrderCancellationInFlight } from "@/lib/orders/cancel-write-guard";
 import { issuePassesForPaidOrder } from "@/lib/passes.service";
 import { NextResponse } from "next/server";
 import { ClientSession, ObjectId } from "mongodb";
@@ -110,7 +111,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
           projection: {
             _id: 1,
             status: 1,
-            paymentStatus: 1,
+            paymentStatus: 1, paymentInfo: 1, cancelRequest: 1, shippingInfo: 1,
             updatedAt: 1,
           } as any,
           session: mongoSession,
@@ -121,6 +122,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
         throw new Error("ORDER_NOT_FOUND");
       }
 
+      if (isOrderCancellationInFlight(order)) throw new Error("ORDER_CANCEL_CONFLICT");
       const previousOrderStatus = String((order as any).status ?? "").trim();
       if (LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES.includes(previousOrderStatus as any)) {
         throw new Error(`ORDER_STATUS_BLOCKED:${previousOrderStatus}`);
@@ -131,6 +133,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
         throw new Error("LINKED_APPLICATION_NOT_FOUND");
       }
 
+      if (["요청", "requested"].includes(app.cancelRequest?.status)) throw new Error("ORDER_CANCEL_CONFLICT");
       const previousApplicationStatus = String((app as any).status ?? "").trim();
       if (
         isApplicationClosedForLinkedAutomation({
@@ -193,7 +196,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
       if (nextPaymentStatus) orderSetFields.paymentStatus = nextPaymentStatus;
 
       const orderUpdateRes = await orders.updateOne(
-        { _id },
+        orderCancelSnapshot(order),
         {
           $set: orderSetFields,
           $push: { history: orderHistoryEntry },
@@ -202,7 +205,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
       );
 
       if (!orderUpdateRes.matchedCount) {
-        throw new Error("ORDER_NOT_FOUND");
+        throw new Error("ORDER_CANCEL_CONFLICT");
       }
 
       const appUpdateOps: Record<string, any> = {
@@ -214,13 +217,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
       }
 
       const appUpdateRes = await applications.updateOne(
-        { _id: (app as any)._id },
+        { _id: app._id, status: app.status ?? null, cancelRequest: app.cancelRequest ?? null },
         appUpdateOps as any,
         { session: mongoSession },
       );
 
       if (!appUpdateRes.matchedCount) {
-        throw new Error("LINKED_APPLICATION_NOT_FOUND");
+        throw new Error("ORDER_CANCEL_CONFLICT");
       }
 
       const becamePaid =
@@ -247,6 +250,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
     });
   } catch (e: any) {
     const message = String(e?.message ?? "");
+    if (message === "ORDER_CANCEL_CONFLICT") {
+      return NextResponse.json({ success: false, message: "주문 또는 신청서의 취소 상태가 변경되었습니다. 최신 상태를 확인해주세요." }, { status: 409 });
+    }
     if (message === "ORDER_NOT_FOUND") {
       return NextResponse.json({ success: false, message: "ORDER_NOT_FOUND" }, { status: 404 });
     }

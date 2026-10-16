@@ -96,6 +96,12 @@ function fixture(t, route, scenario = {}) {
       },
     },
   };
+  // Compile the real snapshot helper so the fixture follows the route's CAS
+  // fields without loading its production dependencies or duplicating them.
+  stubs["@/lib/orders/cancel-write-guard"] = compileTsModule("lib/orders/cancel-write-guard.ts", {
+    "@/lib/orders/cancel-finalization": stubs["@/lib/orders/cancel-finalization"],
+    "@/lib/status/flow-status": {},
+  });
   const routeModule = compileTsModule(paths[route], stubs);
   const run = async () => {
     const response = await routeModule.POST(new Request("https://shop.invalid/api/admin/cancel", { method: "POST", body: "{}", headers: { "Content-Type": "application/json" } }), { params: Promise.resolve({ id }) });
