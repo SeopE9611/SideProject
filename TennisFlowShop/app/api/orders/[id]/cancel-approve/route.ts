@@ -1,3 +1,4 @@
+import { orderCancelSnapshot } from "@/lib/orders/cancel-write-guard";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
@@ -499,7 +500,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const claimedAt = new Date();
     const claimResult: any = await orders.findOneAndUpdate(
       {
-        _id,
+        ...orderCancelSnapshot(existing),
         paymentStatus: "결제완료",
         "paymentInfo.provider": { $regex: /^nicepay$/i },
         "paymentInfo.tid": tid,
@@ -517,7 +518,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!claimedOrder) {
       const latest: any = await orders.findOne({ _id });
       if (!isExternallyCanceledPayment(latest ?? {})) {
-        return NextResponse.json({ ok: false, errorCode: "ORDER_CANCEL_ALREADY_PROCESSING", message: "다른 관리자가 NICE 결제 취소를 처리 중입니다." }, { status: 409 });
+        return NextResponse.json({ ok: false, errorCode: "ORDER_CANCEL_ALREADY_PROCESSING", message: "다른 작업으로 주문·배송 또는 취소 상태가 변경되었습니다. 최신 상태를 확인해주세요." }, { status: 409 });
       }
       existing = latest;
     } else {
@@ -608,8 +609,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   let linkedApplicationCount = 0;
   try {
     await session.withTransaction(async () => {
-      const current: any = await orders.findOne({ _id }, { session });
-      if (!current) throw new CancelFinalizationError("ORDER_NOT_FOUND", "주문을 찾을 수 없습니다.");
+      const current: any = await orders.findOne(
+        shouldCancelViaNice ? { _id } : orderCancelSnapshot(existing), { session },
+      );
+      if (!current) throw new CancelFinalizationError("ORDER_CANCEL_CONFLICT", "주문 상태가 변경되었습니다. 최신 정보를 확인해주세요.");
       if (current.status === "취소" && current.cancelRequest?.status === "approved") return;
       if (normalizedProvider === "nicepay" && !isExternallyCanceledPayment(current)) {
         throw new CancelFinalizationError("PG_CANCEL_NOT_CONFIRMED", "PG 결제 취소가 확인되지 않아 후처리할 수 없습니다.");
@@ -638,7 +641,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       }
 
       const appsCol = db.collection("stringing_applications");
-      const linkedApps = await appsCol.find({ orderId: current._id }, { session }).toArray();
+      const linkedApps = await appsCol.find({ orderId: { $in: [current._id, String(current._id)] } }, { session }).toArray();
       linkedApplicationCount = linkedApps.length;
       for (const appDoc of linkedApps) {
         if (appDoc.status === "취소") continue;
@@ -666,12 +669,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const code = error instanceof CancelFinalizationError ? error.code : "ORDER_CANCEL_FINALIZATION_FAILED";
     const latest: any = await orders.findOne({ _id });
     const pgCancelConfirmed = isExternallyCanceledPayment(latest ?? {});
-    const message = code === "PG_CANCEL_NOT_CONFIRMED"
+    const message = code === "ORDER_CANCEL_CONFLICT"
+      ? "주문·배송 또는 취소 요청 상태가 변경되었습니다. 최신 상태를 확인하고 다시 시도해주세요."
+      : code === "PG_CANCEL_NOT_CONFIRMED"
       ? "PG 취소 상태가 확인되지 않아 주문 내부 취소 확정을 진행하지 않았습니다. PG 상태를 확인한 뒤 다시 시도해 주세요."
       : pgCancelConfirmed
         ? "PG 결제 취소는 완료되었지만 주문 내부 후처리가 완료되지 않았습니다. 관리자 후처리를 다시 시도해 주세요."
         : "주문 취소 내부 후처리가 완료되지 않았습니다. 다시 시도해 주세요.";
-    return NextResponse.json({ ok: false, errorCode: code, code, message, detail: error?.message || null }, { status: code === "PG_CANCEL_NOT_CONFIRMED" || code.endsWith("STOCK_RESTORE_FAILED") ? 409 : 500 });
+    return NextResponse.json({ ok: false, errorCode: code, code, message, detail: error?.message || null }, { status: code === "ORDER_CANCEL_CONFLICT" || code === "PG_CANCEL_NOT_CONFIRMED" || code.endsWith("STOCK_RESTORE_FAILED") ? 409 : 500 });
   } finally {
     await session.endSession();
   }

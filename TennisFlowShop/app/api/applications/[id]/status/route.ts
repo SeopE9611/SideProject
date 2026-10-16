@@ -51,6 +51,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const db = client.db();
     const collection = db.collection("stringing_applications");
 
+    const existing = await collection.findOne({ _id: new ObjectId(id) });
+    if (!existing) return new NextResponse("Application not found", { status: 404 });
+    // Match the primary stringing status API: linked progress belongs to the
+    // transactional linked-flow stage endpoint, including this legacy entry.
+    if (existing.orderId || String(existing.paymentSource ?? "").startsWith("order:")) {
+      return NextResponse.json({ message: "연결 주문의 통합 진행 단계에서 변경해주세요." }, { status: 409 });
+    }
     // 해당 ID의 신청서 상태 업데이트
     const result = await collection.updateOne({ _id: new ObjectId(id) }, { $set: { status } });
 

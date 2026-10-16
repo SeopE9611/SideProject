@@ -1,3 +1,4 @@
+import { persistOrderCancelDecision, OrderCancelConflict, isOrderPgCancelLocked } from "@/lib/orders/cancel-write-guard";
 import { appendAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
@@ -117,6 +118,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // 2-3) 현재 cancelRequest 상태가 'requested' 인지 확인
+    if (isOrderPgCancelLocked(existing)) {
+      return NextResponse.json({ ok: false, errorCode: "ORDER_CANCEL_CONFLICT", message: "PG 취소 처리 중이거나 종료된 주문입니다." }, { status: 409 });
+    }
+
     const existingReq: any = existing.cancelRequest || {};
     if (existingReq.status !== "requested") {
       return jsonError(
@@ -144,18 +149,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     };
 
     // ───────── 5) DB 업데이트 (경합 방어: requested 상태일 때만 업데이트) ─────────
-    const result = await orders.updateOne({ _id, "cancelRequest.status": "requested" }, {
+    await persistOrderCancelDecision(client, db, existing, {
       $set: { cancelRequest: updatedCancelRequest, updatedAt: now },
       $push: { history: historyEntry },
-    } as any);
-
-    if (result.matchedCount === 0) {
-      return jsonError(
-        409,
-        "이미 상태가 변경되어 취소 요청을 철회할 수 없습니다.",
-        "CANCEL_REQUEST_RACE_CONDITION",
-      );
-    }
+    } as any, "none", now);
 
     const subject = buildCancelRefundSubject({
       userId: existing.userId ? existing.userId.toString() : null,
@@ -202,6 +199,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       cancelRequest: updatedCancelRequest,
     });
   } catch (error) {
+    if (error instanceof OrderCancelConflict) {
+      return NextResponse.json({ ok: false, errorCode: "ORDER_CANCEL_CONFLICT", message: error.message }, { status: 409 });
+    }
     console.error("POST /api/orders/[id]/cancel-request-withdraw 오류:", error);
     return jsonError(500, "서버 오류가 발생했습니다.", "INTERNAL_SERVER_ERROR");
   }

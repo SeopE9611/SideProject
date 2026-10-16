@@ -1,3 +1,4 @@
+import { orderCancelSnapshot, isOrderCancellationInFlight, OrderCancelConflict } from "@/lib/orders/cancel-write-guard";
 import { submitStringingApplicationCore } from "@/app/features/stringing-applications/api/submit-core";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { getCustomerTransactionPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
@@ -2825,11 +2826,17 @@ export async function handleUpdateShippingInfo(
               servicePickupMethod: 1,
               status: 1,
               paymentStatus: 1,
-              paymentInfo: 1,
+              paymentInfo: 1, cancelRequest: 1,
             },
           },
         )
       : null;
+
+    if ((app as any).orderId && (!linkedOrder || isOrderCancellationInFlight(linkedOrder) ||
+        isCancelApplicationStatus(app.status) ||
+        ["requested", "approved"].includes(normalizeCancelStatus(app.cancelRequest?.status) ?? ""))) {
+      throw new OrderCancelConflict("취소 처리 중이거나 종료된 연결 주문/신청서는 배송 정보를 변경할 수 없습니다.");
+    }
 
     const deriveVisitContext = (doc: any, order: any): boolean => {
       const collectionRaw = doc?.collectionMethod ?? doc?.shippingInfo?.collectionMethod;
@@ -3085,57 +3092,78 @@ export async function handleUpdateShippingInfo(
       };
     }
 
-    await db.collection("stringing_applications").updateOne({ _id: new ObjectId(id) }, updateDoc);
-
-    // 연결된 주문에도 동일 병합
-    if ((app as any).orderId) {
-      const orderShipping = (linkedOrder as any)?.shippingInfo || {};
-      const mergedOrderShippingInfo = {
-        ...orderShipping,
-        ...newShippingInfo,
-      };
-
-      const linkedOrderStatusRaw = String((linkedOrder as any)?.status ?? "").trim();
-      const linkedOrderStatus = normalizeOrderStatus(linkedOrderStatusRaw);
-      const linkedOrderPaymentStatus = normalizePaymentStatus(
-        String(
-          (linkedOrder as any)?.paymentStatus ?? (linkedOrder as any)?.paymentInfo?.status ?? "",
-        ).trim(),
-      );
-      const linkedOrderPaid =
-        linkedOrderPaymentStatus === "결제완료" || linkedOrderStatus === "결제완료";
-      const shouldAutoTransitLinkedOrder =
-        !isOriginalVisitContext &&
-        isStoreRegister &&
-        linkedOrderPaid &&
-        !ORDER_TERMINAL_STATUSES.has(linkedOrderStatus) &&
-        !ORDER_SHIPPING_PHASE_STATUSES.has(linkedOrderStatus);
-
-      const orderUpdateDoc: any = {
-        $set: {
-          shippingInfo: mergedOrderShippingInfo,
-        },
-      };
-
-      if (shouldAutoTransitLinkedOrder) {
-        orderUpdateDoc.$set.status = "배송중";
-        orderUpdateDoc.$push = {
-          history: {
-            status: "배송중",
-            date: now,
-            description:
-              "스트링 신청서 배송정보 최초 등록에 따라 연결 주문 상태가 자동으로 배송중으로 전환되었습니다.",
-          },
-        };
-      }
-
-      await db
-        .collection("orders")
-        .updateOne({ _id: new ObjectId((app as any).orderId) }, orderUpdateDoc);
+    if (!(app as any).orderId) {
+      await db.collection("stringing_applications").updateOne({ _id: new ObjectId(id) }, updateDoc);
+      return NextResponse.json({ success: true });
     }
 
+    const client = await clientPromise;
+    const session = client.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const appSaved = await db.collection("stringing_applications").updateOne({
+          _id: app._id, orderId: app.orderId ?? null, status: app.status ?? null,
+          cancelRequest: app.cancelRequest ?? null, shippingInfo: app.shippingInfo ?? null,
+        }, updateDoc, { session });
+        if (!appSaved.matchedCount) throw new OrderCancelConflict();
+
+        // 연결된 주문에도 동일 병합
+        if ((app as any).orderId) {
+          const orderShipping = (linkedOrder as any)?.shippingInfo || {};
+          const mergedOrderShippingInfo = {
+            ...orderShipping,
+            ...newShippingInfo,
+          };
+
+          const linkedOrderStatusRaw = String((linkedOrder as any)?.status ?? "").trim();
+          const linkedOrderStatus = normalizeOrderStatus(linkedOrderStatusRaw);
+          const linkedOrderPaymentStatus = normalizePaymentStatus(
+            String(
+              (linkedOrder as any)?.paymentStatus ?? (linkedOrder as any)?.paymentInfo?.status ?? "",
+            ).trim(),
+          );
+          const linkedOrderPaid =
+            linkedOrderPaymentStatus === "결제완료" || linkedOrderStatus === "결제완료";
+          const shouldAutoTransitLinkedOrder =
+            !isOriginalVisitContext &&
+            isStoreRegister &&
+            linkedOrderPaid &&
+            !ORDER_TERMINAL_STATUSES.has(linkedOrderStatus) &&
+            !ORDER_SHIPPING_PHASE_STATUSES.has(linkedOrderStatus);
+
+          const orderUpdateDoc: any = {
+            $set: {
+              shippingInfo: mergedOrderShippingInfo,
+            },
+          };
+
+          if (shouldAutoTransitLinkedOrder) {
+            orderUpdateDoc.$set.status = "배송중";
+            orderUpdateDoc.$push = {
+              history: {
+                status: "배송중",
+                date: now,
+                description:
+                  "스트링 신청서 배송정보 최초 등록에 따라 연결 주문 상태가 자동으로 배송중으로 전환되었습니다.",
+              },
+            };
+          }
+
+          const orderSaved = await db.collection("orders").updateOne({
+            ...orderCancelSnapshot(linkedOrder!), shippingInfo: linkedOrder!.shippingInfo ?? null,
+          }, orderUpdateDoc, { session });
+          if (!orderSaved.matchedCount) throw new OrderCancelConflict();
+        }
+
+      });
+    } finally {
+      await session.endSession();
+    }
     return NextResponse.json({ success: true });
   } catch (err) {
+    if (err instanceof OrderCancelConflict) {
+      return NextResponse.json({ success: false, message: err.message }, { status: 409 });
+    }
     console.error("[PATCH /api/applications/stringing/[id]/shipping] error:", err);
     return new NextResponse("서버 오류 발생", { status: 500 });
   }
