@@ -1,3 +1,4 @@
+import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import NiceCheckoutFailResult from "@/app/checkout/nice/fail/NiceCheckoutFailResult";
 
 import type { Metadata } from "next";
@@ -77,6 +78,18 @@ const FAIL_GUIDE_MAP: Record<
     ],
     accent: "warning",
   },
+  PAYMENT_PROCESSING: {
+    title: "결제 처리 결과를 확인하고 있어요",
+    description: ["결제가 진행 중이거나 승인 결과 확인이 필요합니다.",
+      "중복 결제하지 말고 주문 조회 또는 고객센터에서 먼저 확인해주세요."],
+    accent: "warning",
+  },
+  PAYMENT_SESSION_ALREADY_PROCESSING: {
+    title: "이미 결제를 처리하고 있어요",
+    description: ["같은 결제를 다시 요청하지 마세요.",
+      "주문 조회 또는 고객센터에서 처리 결과를 확인해주세요."],
+    accent: "warning",
+  },
   PAYMENT_PROCESSING_FAILED: {
     title: "결제 처리 결과를 확인해야 해요",
     description: [
@@ -103,12 +116,22 @@ export default async function NiceCheckoutFailPage({
   const rawMessage = (sp.message || "").trim();
   const requiresPaymentCheck = guide.accent === "warning";
 
+  const isMember = requiresPaymentCheck && Boolean(await getCurrentUserId());
+  const allowGuestLookup = (process.env.GUEST_ORDER_MODE ?? "on").trim() !== "off" &&
+    (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim() !== "off";
+  const paymentCheckAction = isMember
+    ? { label: "주문 내역 확인", href: "/mypage?tab=orders" }
+    : allowGuestLookup
+      ? { label: "비회원 주문 조회", href: "/order-lookup" }
+      : { label: "고객센터에서 결제 확인", href: "/support" };
+
   return (
     <NiceCheckoutFailResult
       guide={guide}
       code={code}
       message={rawMessage}
       requiresPaymentCheck={requiresPaymentCheck}
+      paymentCheckAction={paymentCheckAction}
     />
   );
 }

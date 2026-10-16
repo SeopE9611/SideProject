@@ -26,11 +26,13 @@ export default function NiceCheckoutFailResult({
   code,
   message,
   requiresPaymentCheck,
+  paymentCheckAction,
 }: {
   guide: FailureGuide;
   code: string;
   message: string;
   requiresPaymentCheck: boolean;
+  paymentCheckAction: { label: string; href: string };
 }) {
   const cartItems = useCartStore((state) => state.items);
   const { item: buyNowItem, expiresAt: buyNowExpiresAt, hasHydrated: hasBuyNowHydrated } =
@@ -80,14 +82,14 @@ export default function NiceCheckoutFailResult({
       message={message}
       primaryAction={
         requiresPaymentCheck
-          ? { label: "주문 내역 확인", href: "/mypage?tab=orders" }
+          ? paymentCheckAction
           : recoveryHref === "/cart"
             ? { label: "장바구니에서 다시 선택하기", href: "/cart" }
             : { label: "체크아웃으로 돌아가기", href: recoveryHref }
       }
       secondaryAction={
         requiresPaymentCheck
-          ? { label: "고객센터로 이동", href: "/support" }
+          ? paymentCheckAction.href === "/support" ? undefined : { label: "고객센터로 이동", href: "/support" }
           : recoveryHref === "/cart"
             ? undefined
             : { label: "장바구니로 이동", href: "/cart" }
