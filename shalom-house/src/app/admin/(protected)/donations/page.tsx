@@ -67,12 +67,12 @@ export default async function Page({
   const totalPages = Math.max(1, Math.ceil(data.total / pageSize));
   const hasFilters = Boolean(status || method || month || donorId);
   const filterFormKey = [status ?? "", method ?? "", month ?? "", donorId ?? ""].join("|");
-  const href = (next: number) => {
+  const href = (next: number, includeDonor = true) => {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
     if (method) params.set("method", method);
     if (month) params.set("month", month);
-    if (donorId) params.set("donorId", donorId);
+    if (donorId && includeDonor) params.set("donorId", donorId);
     params.set("page", String(next));
     return `/admin/donations?${params}`;
   };
@@ -104,6 +104,7 @@ export default async function Page({
         <h2 id="donation-summary-heading" className="text-heading font-bold">
           후원금 현황
         </h2>
+        <p className="mt-2 text-small text-muted-foreground">필터와 관계없이 전체 후원금 기록을 기준으로 집계합니다.</p>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ["확정 후원금 합계", `${new Intl.NumberFormat("ko-KR").format(counts.confirmedAmountWon)}원`],
@@ -126,6 +127,17 @@ export default async function Page({
         page={page}
         totalPages={totalPages}
       >
+        {donorId ? (
+          <div className="mt-4 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-control border border-border bg-surface-subtle px-4 py-3">
+            <p className="min-w-0 break-words font-semibold">특정 후원자의 후원 기록만 표시 중입니다.</p>
+            <Link
+              href={href(1, false)}
+              className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+            >
+              후원자 조건 해제
+            </Link>
+          </div>
+        ) : null}
         <form
           key={filterFormKey}
           method="get"
