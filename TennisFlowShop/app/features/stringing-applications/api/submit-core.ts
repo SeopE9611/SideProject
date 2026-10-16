@@ -1,4 +1,4 @@
-import type { ClientSession, Db, ObjectId } from "mongodb";
+import type { ClientSession, Db, Document, ObjectId } from "mongodb";
 import { ObjectId as MongoObjectId } from "mongodb";
 
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
@@ -197,6 +197,18 @@ export async function submitStringingApplicationCore({
   guestRentalId,
   session,
 }: SubmitCoreParams): Promise<SubmitCoreResult> {
+  if (!session?.inTransaction()) {
+    const transaction = session ?? db.client.startSession();
+    try {
+      const result = await transaction.withTransaction(() => submitStringingApplicationCore({
+        db, input, userId, guestOrderId, guestRentalId, session: transaction,
+      }));
+      if (!result) throw new Error("STRINGING_APPLICATION_TRANSACTION_FAILED");
+      return result;
+    } finally {
+      if (!session) await transaction.endSession();
+    }
+  }
   const {
     applicationId: bodyAppId,
     orderId,
@@ -237,12 +249,13 @@ export async function submitStringingApplicationCore({
 
   const bodyApplicationObjectId = toObjectIdOrThrow(bodyAppId, "applicationId");
 
+  let requestedApplication: Document | null = null;
   if (bodyApplicationObjectId) {
     const existingApp = await db
       .collection("stringing_applications")
       .findOne(
         { _id: bodyApplicationObjectId },
-        { projection: { _id: 1, userId: 1, orderId: 1, rentalId: 1 }, session },
+        { session },
       );
 
     if (!existingApp) {
@@ -263,14 +276,17 @@ export async function submitStringingApplicationCore({
       !!(existingApp as any).rentalId &&
       String((existingApp as any).rentalId) === String(guestRentalId);
 
+    if (String(existingApp.orderId ?? "") !== String(orderObjectId ?? "") ||
+        String(existingApp.rentalId ?? "") !== String(rentalObjectId ?? "")) {
+      throw Object.assign(new Error("신청서 연결 대상이 다릅니다."), { status: 409 });
+    }
+    requestedApplication = existingApp;
     if (!isMemberOwner && !isGuestOrderOwner && !isGuestRentalOwner) {
       throw Object.assign(new Error("수정 권한이 없는 신청서입니다."), {
         status: 403,
       });
     }
   }
-
-  const applicationId: ObjectId = bodyApplicationObjectId ?? new MongoObjectId();
 
   if (orderObjectId) {
     const order = await db
@@ -313,6 +329,48 @@ export async function submitStringingApplicationCore({
       throw Object.assign(new Error("접근할 수 없는 대여입니다."), {
         status: 403,
       });
+    }
+  }
+
+  // Resolve the persisted ID before consuming a pass or reserving a slot.
+  // Both historical orderId representations refer to the same parent.
+  const linkedFilter = orderObjectId
+    ? { orderId: { $in: [orderObjectId, String(orderObjectId)] } }
+    : null;
+  if (linkedFilter && await db.collection("stringing_applications").findOne({
+    ...linkedFilter, status: { $in: ["검토 중", "접수완료", "작업 중", "교체완료"] },
+  }, { session })) {
+    throw Object.assign(new Error("이미 제출된 주문 신청서입니다."), { status: 409 });
+  }
+  if (requestedApplication && requestedApplication.status !== "draft") {
+    throw Object.assign(new Error("이미 제출되었거나 변경된 신청서입니다."), { status: 409 });
+  }
+  const existingDraft = linkedFilter
+    ? await db.collection("stringing_applications").findOne({
+        ...linkedFilter, status: "draft",
+      }, { session, sort: { _id: 1 } })
+    : null;
+  const canonicalApplication = existingDraft ?? requestedApplication;
+  if (canonicalApplication && (
+    canonicalApplication.status !== "draft" ||
+    (canonicalApplication.userId && (!userId || !isSameObjectId(canonicalApplication.userId, userId))) ||
+    ![undefined, null, "none", "rejected"].includes(canonicalApplication.cancelRequest?.status)
+  )) {
+    throw Object.assign(new Error("이미 제출되었거나 변경된 신청서입니다."), { status: 409 });
+  }
+  const applicationId: ObjectId = canonicalApplication?._id ?? bodyApplicationObjectId ?? new MongoObjectId();
+  const targetId = applicationId;
+  if (canonicalApplication) {
+    const claimed = await db.collection("stringing_applications").updateOne({
+      _id: targetId, status: "draft",
+      userId: canonicalApplication.userId ?? null,
+      orderId: canonicalApplication.orderId ?? null,
+      rentalId: canonicalApplication.rentalId ?? null,
+      paymentSource: canonicalApplication.paymentSource ?? null,
+      cancelRequest: canonicalApplication.cancelRequest ?? null,
+    }, { $set: { status: "검토 중" } }, { session });
+    if (!claimed.matchedCount) {
+      throw Object.assign(new Error("신청서가 변경되었습니다. 다시 확인해주세요."), { status: 409 });
     }
   }
 
@@ -491,17 +549,6 @@ export async function submitStringingApplicationCore({
         )
       : null;
 
-  const existingDraft = orderObjectId
-    ? await db
-        .collection("stringing_applications")
-        .findOne(
-          { orderId: orderObjectId, status: "draft" },
-          { projection: { _id: 1, meta: 1 }, session },
-        )
-    : null;
-
-  const targetId = existingDraft?._id ?? applicationId;
-
   if (cm === "visit") {
     await guardVisitReservation({
       db,
@@ -509,7 +556,7 @@ export async function submitStringingApplicationCore({
       time: preferredTime ?? "",
       slotCount: visitSlotCount ?? 1,
       session,
-      excludeApplicationId: bodyApplicationObjectId ?? existingDraft?._id,
+      excludeApplicationId: targetId,
     });
   }
 

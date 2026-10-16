@@ -212,6 +212,17 @@ export async function revertConsumption(
   applicationId: ObjectId,
   options: { session?: ClientSession } = {},
 ) {
+  // A caller's transaction must own both writes. Standalone callers get the
+  // same guarantee without opening a second transaction inside an active one.
+  if (!options.session?.inTransaction()) {
+    const session = options.session ?? db.client.startSession();
+    try {
+      await session.withTransaction(() => revertConsumption(db, passId, applicationId, { session }));
+    } finally {
+      if (!options.session) await session.endSession();
+    }
+    return;
+  }
   const passes = db.collection<ServicePass>("service_passes");
   const consumptions = db.collection<ServicePassConsumption>("service_pass_consumptions");
   const sessionOptions = options.session ? { session: options.session } : undefined;
@@ -231,11 +242,12 @@ export async function revertConsumption(
   if (!log) return;
 
   // 사용된 회차 수 (기록에 없으면 안전하게 1회로 간주)
-  const count = typeof (log as any).count === "number" ? (log as any).count : 1;
+  const count = log.count ?? 1;
+  if (!Number.isSafeInteger(count) || count <= 0) throw new Error("PASS_REVERT_INVALID_COUNT");
 
   // 소비 로그에 reverted 표시
-  await consumptions.updateOne(
-    { passId, applicationId },
+  const claimed = await consumptions.updateOne(
+    { passId, applicationId, $or: [{ reverted: { $exists: false } }, { reverted: false }] },
     {
       $set: {
         reverted: true,
@@ -243,11 +255,19 @@ export async function revertConsumption(
     },
     sessionOptions,
   );
+  if (!claimed.matchedCount) return;
 
   // 패스 문서에서 usedCount / remainingCount를 count 만큼 되돌리고,
   //    해당 applicationId에 대한 redemptions 원소에 reverted 플래그를 남김
-  await passes.updateOne(
-    { _id: passId, "redemptions.applicationId": applicationId },
+  const restored = await passes.updateOne(
+    {
+      _id: passId,
+      usedCount: { $gte: count },
+      redemptions: { $elemMatch: {
+        applicationId,
+        $or: [{ reverted: { $exists: false } }, { reverted: false }],
+      } },
+    },
     {
       $inc: {
         usedCount: -count,
@@ -260,6 +280,7 @@ export async function revertConsumption(
     },
     sessionOptions,
   );
+  if (!restored.matchedCount) throw new Error("PASS_REVERT_FAILED");
 
   const now = new Date();
   const updatedPass = await passes.findOne(
