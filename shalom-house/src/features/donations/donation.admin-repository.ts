@@ -127,10 +127,13 @@ export async function listAdminDonations(input: {
       .sort({ donatedOn: -1, createdAt: -1, _id: -1 })
       .toArray()
   ).filter(isValidStoredDonation);
+  const totalPages = Math.max(1, Math.ceil(ds.length / input.pageSize));
+  const page = Math.min(input.page, totalPages);
   return {
     total: ds.length,
+    page,
     items: ds
-      .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+      .slice((page - 1) * input.pageSize, page * input.pageSize)
       .map((d) => ({
         id: d._id.toHexString(),
         reference: d.reference,

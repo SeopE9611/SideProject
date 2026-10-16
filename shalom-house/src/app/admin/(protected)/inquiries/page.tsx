@@ -1,3 +1,4 @@
+import { normalizeAdminListPage } from "@/lib/admin-list-page";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
@@ -34,18 +35,19 @@ const inquiryListGridClass =
 export default async function InquiriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; kind?: string; page?: string }>;
+  searchParams: Promise<{ status?: string; kind?: string; page?: string | string[] }>;
 }) {
   const auth = await authorizeCurrentAdmin("inquiries.manage");
   if (!auth.ok) redirect("/admin?forbidden=1");
   const query = await searchParams;
   const status = inquiryStatuses.includes(query.status as InquiryStatus) ? (query.status as InquiryStatus) : undefined;
   const kind = inquiryKinds.includes(query.kind as InquiryKind) ? (query.kind as InquiryKind) : undefined;
-  const page = Math.max(1, Number.parseInt(query.page ?? "1", 10) || 1);
+  const requestedPage = normalizeAdminListPage(query.page);
   const [data, counts] = await Promise.all([
-    listAdminInquiries({ status, kind, page, pageSize: 20 }),
+    listAdminInquiries({ status, kind, page: requestedPage, pageSize: 20 }),
     getAdminInquiryCounts(),
   ]);
+  const page = data.page;
   const totalPages = Math.max(1, Math.ceil(data.total / 20));
   const hasFilters = Boolean(kind || status);
   const filterFormKey = [kind ?? "", status ?? ""].join("|");
