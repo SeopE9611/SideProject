@@ -31,7 +31,7 @@ export function GalleryPageSkeleton() {
     <div className="section-layout" aria-busy="true"><p className="sr-only" role="status">활동사진을 불러오는 중입니다.</p><PublicHeaderSkeleton />
       <section className="mx-auto max-w-site px-page py-7 sm:px-page-wide sm:py-9" aria-hidden="true">
         <div className="gallery-list-toolbar border-b border-border pb-3"><Skeleton className="h-7 w-36" /><Skeleton className="h-5 w-28" /></div>
-        <div className="mt-6 grid grid-cols-1 gap-x-5 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }).map((_, index) => <div key={index}><Skeleton className="aspect-[4/3] w-full rounded-panel" /><div className="mt-4 space-y-3"><Skeleton className="h-4 w-2/3" /><Skeleton className="h-6 w-5/6" /><Skeleton className="h-4 w-full" /></div></div>)}</div>
+        <div className="gallery-collection">{Array.from({ length: 8 }).map((_, index) => <div key={index}><Skeleton className="aspect-[4/3] w-full rounded-panel" /><div className="mt-4 space-y-3"><Skeleton className="h-4 w-2/3" /><Skeleton className="h-6 w-5/6" /><Skeleton className="h-4 w-full" /></div></div>)}</div>
       </section>
     </div>
   );
