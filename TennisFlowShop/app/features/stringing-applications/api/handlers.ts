@@ -40,7 +40,9 @@ import {
   resolveHistoricalStringingItemPrice,
 } from "@/lib/orders/historical-order-item-price";
 import { revertConsumption } from "@/lib/passes.service";
-import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
+import { cancelNicePaymentByTid, getNicePaymentByTid } from "@/lib/payments/nice/server";
+import { tossPaymentSessions } from "@/lib/payments/toss/session";
+import { randomUUID } from "node:crypto";
 import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
 import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import {
@@ -553,6 +555,28 @@ function requiresStandaloneNiceCancellation(appDoc: Document): boolean {
     appDoc.paymentStatus === "결제완료";
 }
 
+function isStandaloneNiceCancelLocked(appDoc: Document): boolean {
+  const claim = appDoc.cancelRequest?.pgCancelClaim;
+  return ["processing", "needs_reconciliation", "pg_canceled"].includes(claim?.status) ||
+    Boolean(claim?.postAttemptedAt);
+}
+
+function standaloneNiceCancelConflict(message = "결제 취소 상태가 변경되었습니다. 최신 상태를 확인해주세요.") {
+  return NextResponse.json({ ok: false, errorCode: "NICE_CANCEL_STATE_CONFLICT", message }, { status: 409 });
+}
+
+function hasStandaloneNiceCancelEvidence(appDoc: Document): boolean {
+  const claim = appDoc.cancelRequest?.pgCancelClaim;
+  const sync = appDoc.paymentInfo?.niceSync;
+  return normalizePaymentProvider(appDoc.paymentInfo?.provider) === "nicepay" &&
+    claim?.status === "pg_canceled" && typeof claim.token === "string" &&
+    appDoc.paymentStatus === "결제취소" && appDoc.paymentInfo?.status === "canceled" &&
+    sync?.pgStatus === "canceled" && sync.tid === appDoc.paymentInfo?.tid &&
+    sync.originalOrderId === pickStandaloneStringingNiceOrderId(appDoc) &&
+    Number.isSafeInteger(sync.totalAmount) && sync.totalAmount > 0 &&
+    sync.totalAmount === Number(appDoc.totalPrice);
+}
+
 class StringingCancelWriteError extends Error {
   constructor(readonly response: Response) { super("STRINGING_CANCEL_WRITE_FAILED"); }
 }
@@ -561,7 +585,7 @@ function stringingCancellationSnapshot(expected: Document): Document {
   const snapshot: Document = { _id: expected._id };
   for (const key of [
     "status", "orderId", "rentalId", "paymentSource", "cancelRequest",
-    "paymentStatus", "paymentInfo", "packageApplied", "packagePassId",
+    "paymentStatus", "paymentInfo", "totalPrice", "servicePaid", "packageApplied", "packagePassId",
     "meta", "stockDeduction", "stockRestore", "stringDetails", "stringItems", "updatedAt",
   ]) snapshot[key] = expected[key] ?? null;
   return snapshot;
@@ -571,7 +595,8 @@ async function withStandaloneCancelTransaction<T>(
   db: Db, expected: Document, operation: (session: ClientSession) => Promise<T>,
 ): Promise<T> {
   if (!isStandaloneStringingApplication(expected) ||
-      !["draft", "검토 중", "접수완료"].includes(String(expected.status))) {
+      !["draft", "검토 중", "접수완료"].includes(String(expected.status)) ||
+      (isStandaloneNiceCancelLocked(expected) && !hasStandaloneNiceCancelEvidence(expected))) {
     throw new StringingCancelWriteError(NextResponse.json(
       { error: "현재 상태에서는 독립 신청서를 취소할 수 없습니다." }, { status: 409 },
     ));
@@ -591,151 +616,181 @@ async function withStandaloneCancelTransaction<T>(
     });
     if (result === undefined) throw new Error("STRINGING_CANCEL_TRANSACTION_FAILED");
     return result;
+  } catch (error) {
+    if (hasStandaloneNiceCancelEvidence(expected)) {
+      throw new StringingCancelWriteError(NextResponse.json({
+        ok: false, errorCode: "NICE_CANCEL_FINALIZATION_PENDING",
+        message: "PG 취소는 확인됐지만 내부 취소 후처리가 완료되지 않았습니다. 같은 관리자 취소 API에서 PG POST 없이 후처리를 다시 시도해주세요.",
+      }, { status: error instanceof StringingCancelWriteError ? error.response.status : 500 }));
+    }
+    throw error;
   } finally {
     await session.endSession();
   }
 }
 
 async function prepareStandaloneStringingCancellation(params: {
-  appDoc: any;
+  db: Db;
+  appDoc: Document;
   now: Date;
   adminUserId: string;
   mode: "request_approve" | "admin_direct";
   reason?: string;
 }) {
-  const { appDoc, now, mode } = params;
-  const paymentInfo = appDoc?.paymentInfo ?? {};
-  const tid = String(paymentInfo?.tid ?? "").trim();
-  const shouldCancelViaNice = requiresStandaloneNiceCancellation(appDoc);
-
-  const updatedCancelRequest = buildApprovedStringingCancelRequest(params);
-  const paymentUpdateFields: Record<string, unknown> = {
-    paymentStatus: "결제취소",
-    paymentInfo: {
-      ...(paymentInfo ?? {}),
-      status: "canceled",
-    },
-  };
-  let niceCancelMetadata: Record<string, unknown> = {
-    niceCancelAttempted: false,
-    niceCancelSucceeded: false,
-  };
+  const { db, now, mode } = params;
+  let appDoc = params.appDoc;
   let niceCancelSucceeded = false;
+  let niceCancelAttempted = false;
+  const isNice = normalizePaymentProvider(appDoc.paymentInfo?.provider) === "nicepay" &&
+    (requiresStandaloneNiceCancellation(appDoc) || isStandaloneNiceCancelLocked(appDoc) ||
+      Boolean(appDoc.cancelRequest?.pgCancelClaim));
 
-  if (shouldCancelViaNice) {
-    const clientKey = String(
-      process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
-    ).trim();
-    const secretKey = String(process.env.NICEPAY_SECRET_KEY ?? "").trim();
-
-    if (!clientKey || !secretKey) {
-      return {
-        ok: false as const,
-        response: NextResponse.json(
-          {
-            ok: false,
-            errorCode: "NICE_CANCEL_CONFIG_MISSING",
-            message:
-              "NICE 취소 설정이 누락되어 취소를 진행할 수 없습니다. 환경설정을 확인해 주세요.",
-          },
-          { status: 502 },
-        ),
-      };
+  if (isNice && !hasStandaloneNiceCancelEvidence(appDoc)) {
+    if (!isStandaloneStringingApplication(appDoc) ||
+        !["검토 중", "접수완료"].includes(String(appDoc.status)) ||
+        appDoc.cancelRequest?.pgCancelClaim?.status === "processing") {
+      return { ok: false as const, response: standaloneNiceCancelConflict("취소 처리 중이거나 자동 취소할 수 없는 상태입니다. 진행 중 선점은 자동 만료시키지 않습니다.") };
     }
-
+    const tid = String(appDoc.paymentInfo?.tid ?? "").trim();
     const niceOrderId = pickStandaloneStringingNiceOrderId(appDoc);
-    if (!niceOrderId) {
-      return {
-        ok: false as const,
-        response: NextResponse.json(
-          {
-            ok: false,
-            errorCode: "NICE_ORDER_ID_REQUIRED",
-            message: "NICE 취소에 필요한 주문번호(orderId)가 없어 자동 취소를 진행할 수 없습니다.",
-          },
-          { status: 400 },
-        ),
-      };
+    const amount = Number(appDoc.totalPrice);
+    if (!tid || !niceOrderId || !Number.isSafeInteger(amount) || amount <= 0) {
+      return { ok: false as const, response: standaloneNiceCancelConflict("원 결제 TID·주문번호·금액을 확인해야 합니다. 자동 취소하지 않았습니다.") };
+    }
+    const clientKey = String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
+    const secretKey = String(process.env.NICEPAY_SECRET_KEY ?? "").trim();
+    if (!clientKey || !secretKey) {
+      return { ok: false as const, response: NextResponse.json({ ok: false, errorCode: "NICE_CANCEL_CONFIG_MISSING", message: "NICE 취소 설정이 누락되어 취소를 진행할 수 없습니다." }, { status: 502 }) };
     }
 
-    try {
-      const cancelRaw = await cancelNicePaymentByTid({
-        tid,
-        orderId: niceOrderId,
-        reason:
-          mode === "request_approve"
-            ? "관리자 교체서비스 신청 취소 요청 승인 처리"
-            : "관리자 교체서비스 신청 직접 취소 처리",
-        clientKey,
-        secretKey,
-      });
-      const resultCode = String(cancelRaw.resultCode ?? cancelRaw.ResultCode ?? "").trim();
-      const resultMsg = String(cancelRaw.resultMsg ?? cancelRaw.ResultMsg ?? "").trim();
-      if (resultCode !== "0000") {
-        return {
-          ok: false as const,
-          response: NextResponse.json(
-            {
-              ok: false,
-              errorCode: "NICE_CANCEL_FAILED",
-              message:
-                resultMsg || "NICE 결제 취소가 완료되지 않아 신청 취소를 반영할 수 없습니다.",
-              data: { resultCode: resultCode || null, resultMsg: resultMsg || null },
-            },
-            { status: 400 },
-          ),
-        };
-      }
+    // Return이 신청서만 저장하고 아직 처리 중인 구간에서는 PG 단계에 진입하지 않는다.
+    const approval = await tossPaymentSessions(db).findOne({
+      provider: "nicepay", flowType: "stringing_application", niceOrderId,
+      applicationId: String(appDoc._id), mongoOrderId: String(appDoc._id),
+      paymentKey: tid, amount, status: "approved",
+    });
+    if (!approval || appDoc.servicePaid !== true) {
+      return { ok: false as const, response: standaloneNiceCancelConflict("결제 Return 완료 증거를 확인할 수 없습니다. 결제 세션과 PG 상태를 수동 확인해주세요.") };
+    }
 
-      const canceledAt =
-        String(cancelRaw.canceledAt ?? cancelRaw.cancelDate ?? cancelRaw.CancelDate ?? "").trim() ||
-        now.toISOString();
-      const pgStatus = String(cancelRaw.status ?? "canceled").trim() || "canceled";
-      paymentUpdateFields.paymentInfo = {
-        ...(paymentInfo ?? {}),
-        status: "canceled",
-        niceSync: {
-          ...(paymentInfo?.niceSync ?? {}),
-          lastSyncedAt: now.toISOString(),
-          source:
-            mode === "request_approve"
-              ? "stringing_cancel_approve"
-              : "stringing_admin_direct_cancel",
-          pgStatus,
-          resultCode: resultCode || "0000",
-          resultMsg: resultMsg || null,
-          canceledAt,
-        },
-      };
-      niceCancelSucceeded = true;
-      niceCancelMetadata = {
-        niceCancelAttempted: true,
-        niceCancelSucceeded: true,
-        niceCancelResultCode: resultCode || "0000",
-        refundMethod: "nicepay_cancelled",
-      };
-    } catch (error: any) {
-      const httpStatus = Number(error?.httpStatus ?? 0);
-      return {
-        ok: false as const,
-        response: NextResponse.json(
-          {
-            ok: false,
-            errorCode: "NICE_CANCEL_FAILED",
-            message: error?.resultMsg || error?.message || "NICE 결제 취소 중 오류가 발생했습니다.",
-          },
-          { status: httpStatus >= 400 && httpStatus < 500 ? 400 : 502 },
-        ),
-      };
+    const previousClaim = appDoc.cancelRequest?.pgCancelClaim;
+    const reconciliationOnly = previousClaim?.status === "needs_reconciliation" ||
+      Boolean(previousClaim?.postAttemptedAt);
+    const token = randomUUID();
+    const applications = db.collection("stringing_applications");
+    const claimed = await applications.updateOne(stringingCancellationSnapshot(appDoc), {
+      $set: { cancelRequest: {
+        ...(appDoc.cancelRequest ?? {}),
+        pgCancelClaim: { ...(previousClaim ?? {}), status: "processing", token, claimedAt: now, updatedAt: now },
+      } },
+    });
+    if (!claimed.matchedCount) return { ok: false as const, response: standaloneNiceCancelConflict() };
+    const ownedFilter = { _id: appDoc._id, "cancelRequest.pgCancelClaim.token": token };
+    let postMayHaveRun = false;
+    let cancelConfirmed = false;
+    let lookupStarted = false;
+    let lookupComplete = false;
+    const setPhase = async (status: "failed" | "needs_reconciliation", reason: string) => {
+      const saved = await applications.updateOne(ownedFilter, { $set: {
+        "cancelRequest.pgCancelClaim.status": status,
+        "cancelRequest.pgCancelClaim.updatedAt": new Date(),
+        "cancelRequest.pgCancelClaim.reason": reason,
+      } });
+      if (!saved.matchedCount) throw new Error("NICE_CANCEL_CLAIM_LOST");
+    };
+    try {
+      const current = await applications.findOne(ownedFilter);
+      if (!current) throw new Error("NICE_CANCEL_CLAIM_LOST");
+      appDoc = current;
+      lookupStarted = true;
+      const pgRaw = await getNicePaymentByTid({ tid, clientKey, secretKey });
+      lookupComplete = true;
+      const pgStatus = String(pgRaw.status ?? pgRaw.Status ?? "").trim().toLowerCase().replace("cancelled", "canceled");
+      const pgAmount = Number(pgRaw.amount ?? pgRaw.totalAmount);
+      const balance = pgRaw.balanceAmt === undefined || pgRaw.balanceAmt === "" ? NaN : Number(pgRaw.balanceAmt);
+      if (pgRaw.tid !== tid || pgRaw.orderId !== niceOrderId || pgAmount !== amount ||
+          !Number.isSafeInteger(balance) || balance < 0 ||
+          !["paid", "canceled"].includes(pgStatus) ||
+          (pgStatus === "canceled" ? balance !== 0 : balance !== amount)) {
+        await setPhase("needs_reconciliation", "transaction_identity_amount_or_state_unverified");
+        return { ok: false as const, response: standaloneNiceCancelConflict("PG 거래 식별·금액·잔액·전체 취소 여부를 확인해야 합니다. 부분 취소나 미확인 거래는 자동 처리하지 않습니다.") };
+      }
+      let successRaw = pgRaw;
+      if (pgStatus !== "canceled") {
+        if (reconciliationOnly) {
+          await setPhase("needs_reconciliation", "previous_cancel_result_unresolved");
+          return { ok: false as const, response: standaloneNiceCancelConflict("이전 취소 결과가 불확실합니다. 조회상 결제 완료여도 자동 재취소하지 않으므로 수동 재조정이 필요합니다.") };
+        }
+        // POST 시도 증거를 먼저 저장한다. 이후 장애는 자동 재POST로 복구하지 않는다.
+        const marked = await applications.updateOne(stringingCancellationSnapshot(appDoc), { $set: {
+          "cancelRequest.pgCancelClaim.postAttemptedAt": new Date(),
+        } });
+        if (!marked.matchedCount) throw new Error("NICE_CANCEL_CLAIM_LOST");
+        postMayHaveRun = true;
+        niceCancelAttempted = true;
+        successRaw = await cancelNicePaymentByTid({
+          tid, orderId: niceOrderId,
+          reason: mode === "request_approve" ? "관리자 교체서비스 신청 취소 요청 승인 처리" : "관리자 교체서비스 신청 직접 취소 처리",
+          clientKey, secretKey,
+        });
+        const resultCode = String(successRaw.resultCode ?? successRaw.ResultCode ?? "").trim();
+        const resultStatus = String(successRaw.status ?? successRaw.Status ?? "").trim().toLowerCase().replace("cancelled", "canceled");
+        if (resultCode !== "0000" || (resultStatus && resultStatus !== "canceled") ||
+            (successRaw.tid && successRaw.tid !== tid) ||
+            (successRaw.balanceAmt !== undefined && Number(successRaw.balanceAmt) !== 0)) {
+          await setPhase("needs_reconciliation", "cancel_response_requires_verification");
+          return { ok: false as const, response: NextResponse.json({ ok: false, errorCode: "NICE_CANCEL_NEEDS_RECONCILIATION", message: "NICE 취소 응답을 확인해야 합니다. 자동 재취소하지 않습니다." }, { status: 502 }) };
+        }
+      }
+      cancelConfirmed = true;
+      const latest = await applications.findOne(ownedFilter);
+      if (!latest || latest.paymentInfo?.tid !== tid || pickStandaloneStringingNiceOrderId(latest) !== niceOrderId) throw new Error("NICE_CANCEL_CLAIM_LOST");
+      const oldSync = latest.paymentInfo?.niceSync;
+      const sync = oldSync && typeof oldSync === "object" && !Array.isArray(oldSync) ? oldSync : {};
+      const persistedAt = new Date();
+      const persisted = await applications.updateOne({
+        ...ownedFilter, paymentInfo: latest.paymentInfo, cancelRequest: latest.cancelRequest,
+      }, { $set: {
+        paymentStatus: "결제취소",
+        paymentInfo: { ...latest.paymentInfo, status: "canceled", niceSync: {
+          ...sync, lastSyncedAt: persistedAt.toISOString(), source: "stringing_admin_cancel",
+          pgStatus: "canceled", tid, originalOrderId: niceOrderId, totalAmount: amount, cancelAmount: amount,
+          resultCode: String(successRaw.resultCode ?? successRaw.ResultCode ?? "0000"),
+          resultMsg: String(successRaw.resultMsg ?? successRaw.ResultMsg ?? ""),
+          canceledAt: String(successRaw.canceledAt ?? successRaw.cancelDate ?? persistedAt.toISOString()),
+        } },
+        "cancelRequest.pgCancelClaim.status": "pg_canceled",
+        "cancelRequest.pgCancelClaim.updatedAt": persistedAt,
+      } });
+      if (!persisted.matchedCount) throw new Error("NICE_CANCEL_EVIDENCE_SAVE_FAILED");
+      const confirmed = await applications.findOne(ownedFilter);
+      if (!confirmed || !hasStandaloneNiceCancelEvidence(confirmed)) throw new Error("NICE_CANCEL_EVIDENCE_SAVE_FAILED");
+      appDoc = confirmed;
+    } catch {
+      const reconciliation = postMayHaveRun || cancelConfirmed || reconciliationOnly;
+      try { await setPhase(reconciliation ? "needs_reconciliation" : "failed", reconciliation ? "cancel_outcome_or_evidence_unresolved" : "lookup_or_pre_cancel_failure"); }
+      catch { /* DB 장애 시 기존 processing/POST 시도 기록을 유지하며 자동 재선점하지 않는다. */ }
+      return { ok: false as const, response: NextResponse.json({
+        ok: false,
+        errorCode: reconciliation ? "NICE_CANCEL_NEEDS_RECONCILIATION" : lookupStarted && !lookupComplete ? "NICE_PAYMENT_LOOKUP_FAILED" : "NICE_CANCEL_FAILED",
+        message: reconciliation ? "취소 결과 또는 성공 증거 저장을 확인해야 합니다. PG 조회·수동 재조정이 필요하며 자동 재취소하지 않습니다." : "PG 취소 이전 단계에 실패했습니다. 거래 조회부터 다시 확인해주세요.",
+      }, { status: 502 }) };
     }
   }
-
+  if (isNice) {
+    if (!hasStandaloneNiceCancelEvidence(appDoc)) return { ok: false as const, response: standaloneNiceCancelConflict() };
+    niceCancelSucceeded = true;
+  }
   return {
     ok: true as const,
-    updatedCancelRequest,
-    paymentUpdateFields,
+    application: appDoc,
+    updatedCancelRequest: buildApprovedStringingCancelRequest({ ...params, appDoc }),
+    paymentUpdateFields: {
+      paymentStatus: "결제취소",
+      paymentInfo: { ...(appDoc.paymentInfo ?? {}), status: "canceled" },
+    },
     niceCancelSucceeded,
-    niceCancelMetadata,
+    niceCancelMetadata: { niceCancelAttempted, niceCancelSucceeded },
   };
 }
 
@@ -2080,6 +2135,11 @@ export async function handleUpdateApplicationStatus(
   const now = new Date();
   const wasCanceled = isCancelApplicationStatus(beforeAppDoc?.status);
   const willBeCanceled = isCancelApplicationStatus(status);
+  if (isStandaloneNiceCancelLocked(beforeAppDoc) ||
+      (willBeCanceled && requiresStandaloneNiceCancellation(beforeAppDoc))) {
+    return standaloneNiceCancelConflict("NICEPAY 취소 진행·재조정은 전용 관리자 취소 API에서 처리해주세요.");
+  }
+
 
   const finalize = async (session?: ClientSession) => {
     let gaugeRestore: any = {
@@ -2332,13 +2392,17 @@ export async function handleStringingCancelRequest(
       ...(refundAccount ? { refundAccount } : {}),
     };
 
-    await col.updateOne({ _id: new ObjectId(id) }, {
+    if (isStandaloneNiceCancelLocked(appDoc)) {
+      return standaloneNiceCancelConflict("PG 취소 진행·재조정 중에는 취소 요청을 변경할 수 없습니다.");
+    }
+    const saved = await col.updateOne(stringingCancellationSnapshot(appDoc), {
       $set: {
         cancelRequest: nextCancelRequest,
       },
       // history 타입이 any라서 push에 as any 한 번 감싸줌
       $push: { history: historyEntry as any },
     } as any);
+    if (!saved.matchedCount) return standaloneNiceCancelConflict();
 
     await sendAdminOperationalAlert({
       kind: "cancel_requested",
@@ -2427,7 +2491,7 @@ export async function handleStringingCancelApprove(
     const col = db.collection("stringing_applications");
     const _id = new ObjectId(id);
 
-    const appDoc: any = await col.findOne({ _id });
+    let appDoc: Document | null = await col.findOne({ _id });
     if (!appDoc) {
       return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
     }
@@ -2455,17 +2519,20 @@ export async function handleStringingCancelApprove(
 
     const now = new Date();
     const cancellation = await prepareStandaloneStringingCancellation({
+      db,
       appDoc,
       now,
       adminUserId: adminAuth.userId,
       mode: "request_approve",
     });
     if (!cancellation.ok) return cancellation.response;
+    appDoc = cancellation.application;
+    const finalizationApplication = appDoc;
 
     const finalize = async (session?: ClientSession) => {
-      const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now, session);
-      const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now, undefined, session);
-      const colorRestore = await restoreStringingColorStockIfNeeded(db, appDoc, now, undefined, session);
+      const variantRestore = await restoreStringingVariantStockIfNeeded(db, finalizationApplication, now, session);
+      const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, finalizationApplication, now, undefined, session);
+      const colorRestore = await restoreStringingColorStockIfNeeded(db, finalizationApplication, now, undefined, session);
       if (variantRestore.errorResponse) {
         if (session) throw new StringingCancelWriteError(variantRestore.errorResponse);
         return variantRestore.errorResponse;
@@ -2487,9 +2554,9 @@ export async function handleStringingCancelApprove(
       };
 
       // 패키지 사용분 복원 (패키지 사용 + passId가 있을 때만)
-      if (appDoc.packageApplied && appDoc.packagePassId) {
+      if (finalizationApplication.packageApplied && finalizationApplication.packagePassId) {
         try {
-          await revertConsumption(db, appDoc.packagePassId as ObjectId, _id, { session });
+          await revertConsumption(db, finalizationApplication.packagePassId as ObjectId, _id, { session });
         } catch (e) {
           if (session) throw e;
           // 패키지 복원 실패해도 취소 자체는 진행
@@ -2513,9 +2580,7 @@ export async function handleStringingCancelApprove(
 
       return { gaugeRestore, colorRestore };
     };
-    const finalized = requiresStandaloneNiceCancellation(appDoc)
-      ? await finalize()
-      : await withStandaloneCancelTransaction(db, appDoc, finalize);
+    const finalized = await withStandaloneCancelTransaction(db, appDoc, finalize);
     if (finalized instanceof Response) return finalized;
     const { gaugeRestore, colorRestore } = finalized;
 
@@ -2615,7 +2680,7 @@ export async function handleStringingAdminCancel(
     const col = db.collection("stringing_applications");
     const _id = new ObjectId(id);
 
-    const appDoc: any = await col.findOne({ _id });
+    let appDoc: Document | null = await col.findOne({ _id });
     if (!appDoc) {
       return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
     }
@@ -2662,6 +2727,7 @@ export async function handleStringingAdminCancel(
     const now = new Date();
     const refundContext = resolveAdminCancelRefundContext(appDoc);
     const cancellation = await prepareStandaloneStringingCancellation({
+      db,
       appDoc,
       now,
       adminUserId: adminAuth.userId,
@@ -2669,16 +2735,18 @@ export async function handleStringingAdminCancel(
       reason,
     });
     if (!cancellation.ok) return cancellation.response;
+    appDoc = cancellation.application;
+    const finalizationApplication = appDoc;
 
     const adminCancelRefundNote = cancellation.niceCancelSucceeded
       ? "NICEPAY 결제취소가 완료되었습니다."
       : refundContext.refundNote;
     const finalize = async (session?: ClientSession) => {
-      const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now, session);
-      const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now, undefined, session);
+      const variantRestore = await restoreStringingVariantStockIfNeeded(db, finalizationApplication, now, session);
+      const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, finalizationApplication, now, undefined, session);
       const colorRestore = await restoreStringingColorStockIfNeeded(
         db,
-        appDoc,
+        finalizationApplication,
         now,
         "admin_direct_cancel",
         session,
@@ -2696,9 +2764,9 @@ export async function handleStringingAdminCancel(
         return colorRestore.errorResponse;
       }
 
-      if (appDoc.packageApplied && appDoc.packagePassId) {
+      if (finalizationApplication.packageApplied && finalizationApplication.packagePassId) {
         try {
-          await revertConsumption(db, appDoc.packagePassId as ObjectId, _id, { session });
+          await revertConsumption(db, finalizationApplication.packagePassId as ObjectId, _id, { session });
         } catch (e) {
           if (session) throw e;
           console.error("[handleStringingAdminCancel] revertConsumption error", e);
@@ -2739,9 +2807,7 @@ export async function handleStringingAdminCancel(
 
       return { gaugeRestore, colorRestore };
     };
-    const finalized = requiresStandaloneNiceCancellation(appDoc)
-      ? await finalize()
-      : await withStandaloneCancelTransaction(db, appDoc, finalize);
+    const finalized = await withStandaloneCancelTransaction(db, appDoc, finalize);
     if (finalized instanceof Response) return finalized;
     const { gaugeRestore, colorRestore } = finalized;
 
@@ -2866,7 +2932,10 @@ export async function handleStringingCancelReject(
       description: `관리자가 신청 취소 요청을 거절했습니다.${descSuffix}`,
     };
 
-    await col.updateOne({ _id }, {
+    if (isStandaloneNiceCancelLocked(appDoc)) {
+      return standaloneNiceCancelConflict("PG 취소 진행·재조정 중에는 취소 요청을 변경할 수 없습니다.");
+    }
+    const saved = await col.updateOne(stringingCancellationSnapshot(appDoc), {
       $set: {
         "cancelRequest.status": "rejected",
         "cancelRequest.rejectedAt": now,
@@ -2874,6 +2943,7 @@ export async function handleStringingCancelReject(
       },
       $push: { history: historyEntry as any },
     } as any);
+    if (!saved.matchedCount) return standaloneNiceCancelConflict();
 
     await appendAdminAudit(
       db,
@@ -3489,10 +3559,14 @@ export async function handleApplicationCancelRequest(
     };
 
     // 9) DB 업데이트
-    await applications.updateOne({ _id }, {
+    if (isStandaloneNiceCancelLocked(existing)) {
+      return standaloneNiceCancelConflict("PG 취소 진행·재조정 중에는 취소 요청을 변경할 수 없습니다.");
+    }
+    const saved = await applications.updateOne(stringingCancellationSnapshot(existing), {
       $set: { cancelRequest },
       $push: { history: historyEntry },
     } as any);
+    if (!saved.matchedCount) return standaloneNiceCancelConflict();
 
     await sendAdminOperationalAlert({
       kind: "cancel_requested",
@@ -3611,10 +3685,14 @@ export async function handleApplicationCancelRequestWithdraw(
       description: "고객이 스트링 교체 서비스 신청 취소 요청을 철회했습니다.",
     };
 
-    await applications.updateOne({ _id }, {
+    if (isStandaloneNiceCancelLocked(existing)) {
+      return standaloneNiceCancelConflict("PG 취소 진행·재조정 중에는 취소 요청을 변경할 수 없습니다.");
+    }
+    const saved = await applications.updateOne(stringingCancellationSnapshot(existing), {
       $set: { cancelRequest: updatedCancelRequest },
       $push: { history: historyEntry },
     } as any);
+    if (!saved.matchedCount) return standaloneNiceCancelConflict();
 
     return NextResponse.json({ ok: true });
   } catch (err) {
@@ -3686,6 +3764,10 @@ export async function handleApplicationCancelApprove(
       return new NextResponse("현재는 취소 요청 상태가 아니어서 승인할 수 없습니다.", {
         status: 400,
       });
+    }
+
+    if (requiresStandaloneNiceCancellation(existing) || isStandaloneNiceCancelLocked(existing)) {
+      return standaloneNiceCancelConflict("NICEPAY 취소는 전용 신청 취소 승인 또는 관리자 직접 취소 API에서 처리해주세요.");
     }
 
     const now = new Date();
@@ -3845,10 +3927,14 @@ export async function handleApplicationCancelReject(
       description: `관리자가 신청 취소 요청을 거절했습니다.${reasonSuffix}`,
     };
 
-    await applications.updateOne({ _id }, {
+    if (isStandaloneNiceCancelLocked(existing)) {
+      return standaloneNiceCancelConflict("PG 취소 진행·재조정 중에는 취소 요청을 변경할 수 없습니다.");
+    }
+    const saved = await applications.updateOne(stringingCancellationSnapshot(existing), {
       $set: { cancelRequest: updatedCancelRequest },
       $push: { history: historyEntry },
     } as any);
+    if (!saved.matchedCount) return standaloneNiceCancelConflict();
 
     return NextResponse.json({ ok: true });
   } catch (err) {
