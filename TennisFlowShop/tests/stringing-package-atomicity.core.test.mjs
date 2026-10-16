@@ -19,15 +19,15 @@ function load(path, stubs = {}) {
   const { outputText } = ts.transpileModule(read(path), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   });
-  const module = { exports: {} };
+  const compiledModule = { exports: {} };
   vm.runInNewContext(`(function(require,module,exports){${outputText}\n})`, {
     Response, Request, URL, Date, console: { error() {}, warn() {}, log() {} },
     process: { env: { NICEPAY_CLIENT_KEY: "synthetic", NICEPAY_SECRET_KEY: "synthetic" } },
   })((id) => {
     assert.ok(Object.hasOwn(stubs, id), `unstubbed dependency: ${id}`);
     return stubs[id];
-  }, module, module.exports);
-  return module.exports;
+  }, compiledModule, compiledModule.exports);
+  return compiledModule.exports;
 }
 const clone = (v) => v instanceof ObjectId ? new ObjectId(v.toHexString())
   : v instanceof Date ? new Date(v) : Array.isArray(v) ? v.map(clone)
