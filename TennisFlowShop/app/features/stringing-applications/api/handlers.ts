@@ -61,7 +61,7 @@ import { getStringingServicePrice } from "@/lib/stringing-prices";
 import { isStringingCanceledStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
 import { ServicePassConsumption } from "@/lib/types/pass";
 import { HistoryItem, HistoryRecord } from "@/lib/types/stringing-application-db";
-import { ObjectId } from "mongodb";
+import { ObjectId, type ClientSession, type Db, type Document } from "mongodb";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -546,6 +546,56 @@ function buildApprovedStringingCancelRequest(params: {
   };
 }
 
+function requiresStandaloneNiceCancellation(appDoc: Document): boolean {
+  return isStandaloneStringingApplication(appDoc) &&
+    normalizePaymentProvider(appDoc.paymentInfo?.provider) === "nicepay" &&
+    Boolean(String(appDoc.paymentInfo?.tid ?? "").trim()) &&
+    appDoc.paymentStatus === "결제완료";
+}
+
+class StringingCancelWriteError extends Error {
+  constructor(readonly response: Response) { super("STRINGING_CANCEL_WRITE_FAILED"); }
+}
+
+function stringingCancellationSnapshot(expected: Document): Document {
+  const snapshot: Document = { _id: expected._id };
+  for (const key of [
+    "status", "orderId", "rentalId", "paymentSource", "cancelRequest",
+    "paymentStatus", "paymentInfo", "packageApplied", "packagePassId",
+    "meta", "stockDeduction", "stockRestore", "stringDetails", "stringItems", "updatedAt",
+  ]) snapshot[key] = expected[key] ?? null;
+  return snapshot;
+}
+
+async function withStandaloneCancelTransaction<T>(
+  db: Db, expected: Document, operation: (session: ClientSession) => Promise<T>,
+): Promise<T> {
+  if (!isStandaloneStringingApplication(expected) ||
+      !["draft", "검토 중", "접수완료"].includes(String(expected.status))) {
+    throw new StringingCancelWriteError(NextResponse.json(
+      { error: "현재 상태에서는 독립 신청서를 취소할 수 없습니다." }, { status: 409 },
+    ));
+  }
+  const session = db.client.startSession();
+  try {
+    const result = await session.withTransaction(async () => {
+      // Claim the same application before touching resources. A concurrent
+      // link, submission, cancellation or stock-marker write must conflict.
+      const claimed = await db.collection("stringing_applications").updateOne(
+        stringingCancellationSnapshot(expected), { $set: { status: "취소" } }, { session },
+      );
+      if (!claimed.matchedCount) throw new StringingCancelWriteError(NextResponse.json(
+        { error: "신청서가 변경되었습니다. 최신 상태를 확인해주세요." }, { status: 409 },
+      ));
+      return operation(session);
+    });
+    if (result === undefined) throw new Error("STRINGING_CANCEL_TRANSACTION_FAILED");
+    return result;
+  } finally {
+    await session.endSession();
+  }
+}
+
 async function prepareStandaloneStringingCancellation(params: {
   appDoc: any;
   now: Date;
@@ -555,13 +605,8 @@ async function prepareStandaloneStringingCancellation(params: {
 }) {
   const { appDoc, now, mode } = params;
   const paymentInfo = appDoc?.paymentInfo ?? {};
-  const normalizedProvider = normalizePaymentProvider(paymentInfo?.provider);
   const tid = String(paymentInfo?.tid ?? "").trim();
-  const shouldCancelViaNice =
-    isStandaloneStringingApplication(appDoc) &&
-    normalizedProvider === "nicepay" &&
-    Boolean(tid) &&
-    appDoc?.paymentStatus === "결제완료";
+  const shouldCancelViaNice = requiresStandaloneNiceCancellation(appDoc);
 
   const updatedCancelRequest = buildApprovedStringingCancelRequest(params);
   const paymentUpdateFields: Record<string, unknown> = {
@@ -895,7 +940,7 @@ function resolveVariantStockDeduction(
   return null;
 }
 
-async function restoreStringingVariantStockIfNeeded(db: any, appDoc: any, now: Date) {
+async function restoreStringingVariantStockIfNeeded(db: any, appDoc: any, now: Date, session?: ClientSession) {
   const stockDeduction = resolveVariantStockDeduction(appDoc);
   const mode = String(stockDeduction?.mode ?? "").trim();
   const alreadyRestored = Boolean(appDoc?.stockRestore?.variantStockRestoredAt);
@@ -920,6 +965,9 @@ async function restoreStringingVariantStockIfNeeded(db: any, appDoc: any, now: D
         ? appDoc.meta.selectedGauge.trim()
         : undefined;
   if (!selectedColor || !selectedGauge) {
+    if (session) throw new StringingCancelWriteError(NextResponse.json(
+      { error: "복원할 재고 옵션을 확인할 수 없습니다." }, { status: 409 },
+    ));
     return {
       restored: false,
       skippedReason: "missing_selection",
@@ -929,6 +977,9 @@ async function restoreStringingVariantStockIfNeeded(db: any, appDoc: any, now: D
 
   const stringProductObjectId = pickStringProductObjectIdFromApplicationDoc(appDoc);
   if (!stringProductObjectId) {
+    if (session) throw new StringingCancelWriteError(NextResponse.json(
+      { error: "복원할 상품을 확인할 수 없습니다." }, { status: 409 },
+    ));
     return {
       restored: false,
       skippedReason: "missing_product_id",
@@ -958,6 +1009,7 @@ async function restoreStringingVariantStockIfNeeded(db: any, appDoc: any, now: D
       },
     },
     {
+      session,
       arrayFilters: [
         {
           "variant.colorValue": selectedColor,
@@ -999,6 +1051,7 @@ async function restoreStringingGaugeStockIfNeeded(
   appDoc: any,
   now: Date,
   restoreReason = "cancel_approved",
+  session?: ClientSession,
 ) {
   if (resolveVariantStockDeduction(appDoc)?.mode === "variant") {
     return {
@@ -1014,6 +1067,11 @@ async function restoreStringingGaugeStockIfNeeded(
   const hasDeducted = Boolean(appDoc?.meta?.gaugeStockDeductedAt);
   const alreadyRestored = Boolean(appDoc?.meta?.gaugeStockRestoredAt);
 
+  if (session && hasDeducted && !alreadyRestored && !selectedGauge) {
+    throw new StringingCancelWriteError(NextResponse.json(
+      { error: "복원할 재고 옵션을 확인할 수 없습니다." }, { status: 409 },
+    ));
+  }
   if (!hasDeducted || alreadyRestored || !selectedGauge) {
     return {
       restored: false,
@@ -1031,6 +1089,9 @@ async function restoreStringingGaugeStockIfNeeded(
         selectedGauge,
       },
     );
+    if (session) throw new StringingCancelWriteError(NextResponse.json(
+      { error: "복원할 상품을 확인할 수 없습니다." }, { status: 409 },
+    ));
     return {
       restored: false,
       skippedReason: "missing_product_id",
@@ -1051,6 +1112,7 @@ async function restoreStringingGaugeStockIfNeeded(
         sold: -1,
       },
     },
+    { session },
   );
 
   if (!restoreResult.matchedCount || !restoreResult.modifiedCount) {
@@ -1083,6 +1145,7 @@ async function restoreStringingColorStockIfNeeded(
   appDoc: any,
   now: Date,
   restoreReason = "cancel_approved",
+  session?: ClientSession,
 ) {
   if (resolveVariantStockDeduction(appDoc)?.mode === "variant") {
     return {
@@ -1097,6 +1160,11 @@ async function restoreStringingColorStockIfNeeded(
       : undefined;
   const hasDeducted = Boolean(appDoc?.meta?.colorStockDeductedAt);
   const alreadyRestored = Boolean(appDoc?.meta?.colorStockRestoredAt);
+  if (session && hasDeducted && !alreadyRestored && !selectedColor) {
+    throw new StringingCancelWriteError(NextResponse.json(
+      { error: "복원할 재고 옵션을 확인할 수 없습니다." }, { status: 409 },
+    ));
+  }
   if (!hasDeducted || alreadyRestored || !selectedColor) {
     return {
       restored: false,
@@ -1107,6 +1175,9 @@ async function restoreStringingColorStockIfNeeded(
 
   const stringProductObjectId = pickStringProductObjectIdFromApplicationDoc(appDoc);
   if (!stringProductObjectId) {
+    if (session) throw new StringingCancelWriteError(NextResponse.json(
+      { error: "복원할 상품을 확인할 수 없습니다." }, { status: 409 },
+    ));
     return {
       restored: false,
       skippedReason: "missing_product_id",
@@ -1125,6 +1196,7 @@ async function restoreStringingColorStockIfNeeded(
         ? { "colorInventories.$.stock": 1 }
         : { "colorInventories.$.stock": 1, "inventory.stock": 1, sold: -1 },
     },
+    { session },
   );
   if (!restoreResult.matchedCount || !restoreResult.modifiedCount) {
     return {
@@ -2009,71 +2081,104 @@ export async function handleUpdateApplicationStatus(
   const wasCanceled = isCancelApplicationStatus(beforeAppDoc?.status);
   const willBeCanceled = isCancelApplicationStatus(status);
 
-  let gaugeRestore: any = {
-    restored: false,
-    skippedReason: "not_checked",
-    setFields: {} as Record<string, unknown>,
-  };
-  let variantRestore: any = {
-    restored: false,
-    skippedReason: "not_checked",
-    setFields: {} as Record<string, unknown>,
-  };
-  if (willBeCanceled && !wasCanceled) {
-    variantRestore = await restoreStringingVariantStockIfNeeded(db, beforeAppDoc, now);
-    if (variantRestore.errorResponse) {
-      return variantRestore.errorResponse;
+  const finalize = async (session?: ClientSession) => {
+    let gaugeRestore: any = {
+      restored: false,
+      skippedReason: "not_checked",
+      setFields: {} as Record<string, unknown>,
+    };
+    let variantRestore: any = {
+      restored: false,
+      skippedReason: "not_checked",
+      setFields: {} as Record<string, unknown>,
+    };
+    if (willBeCanceled && !wasCanceled) {
+      variantRestore = await restoreStringingVariantStockIfNeeded(db, beforeAppDoc, now, session);
+      if (variantRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(variantRestore.errorResponse);
+        return variantRestore.errorResponse;
+      }
+      gaugeRestore = await restoreStringingGaugeStockIfNeeded(
+        db,
+        beforeAppDoc,
+        now,
+        "status_changed_to_cancel",
+        session,
+      );
+      if (gaugeRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(gaugeRestore.errorResponse);
+        return gaugeRestore.errorResponse;
+      }
     }
-    gaugeRestore = await restoreStringingGaugeStockIfNeeded(
-      db,
-      beforeAppDoc,
-      now,
-      "status_changed_to_cancel",
-    );
-    if (gaugeRestore.errorResponse) {
-      return gaugeRestore.errorResponse;
-    }
-  }
 
-  // description 따로 준비
-  const description = `신청서 상태가 [${status}]로 변경되었습니다.`;
+    // description 따로 준비
+    const description = `신청서 상태가 [${status}]로 변경되었습니다.`;
 
-  // historyEntry 객체 구성
-  const historyEntry = {
-    status,
-    date: now,
-    description,
-  };
-
-  // 상태 + 이력 함께 업데이트
-  const colorRestore =
-    status === "취소"
-      ? await restoreStringingColorStockIfNeeded(db, beforeAppDoc, now, "status_changed_to_cancel")
-      : { setFields: {} };
-  if ((colorRestore as any).errorResponse) return (colorRestore as any).errorResponse;
-  const updateOps: any = {
-    $set: {
+    // historyEntry 객체 구성
+    const historyEntry = {
       status,
-      ...(variantRestore.setFields ?? {}),
-      ...(gaugeRestore.setFields ?? {}),
-      ...((colorRestore as any).setFields ?? {}),
-    },
-    $push: { history: { $each: [historyEntry] } },
+      date: now,
+      description,
+    };
+
+    // 상태 + 이력 함께 업데이트
+    const colorRestore =
+      status === "취소"
+        ? await restoreStringingColorStockIfNeeded(db, beforeAppDoc, now, "status_changed_to_cancel", session)
+        : { setFields: {} };
+    if ((colorRestore as any).errorResponse) {
+      if (session) throw new StringingCancelWriteError((colorRestore as any).errorResponse);
+      return (colorRestore as any).errorResponse;
+    }
+    if (session && beforeAppDoc.packageApplied && beforeAppDoc.packagePassId) {
+      await revertConsumption(db, beforeAppDoc.packagePassId, beforeAppDoc._id, { session });
+    }
+    const updateOps: any = {
+      $set: {
+        status,
+        ...(variantRestore.setFields ?? {}),
+        ...(gaugeRestore.setFields ?? {}),
+        ...((colorRestore as any).setFields ?? {}),
+      },
+      $push: { history: { $each: [historyEntry] } },
+    };
+
+    // draft가 아니면 TTL 필드 제거(삭제 대상에서 제외)
+    if (status !== "draft") {
+      updateOps.$unset = { expireAt: "" };
+    }
+
+    const result = await db
+      .collection("stringing_applications")
+      .updateOne(
+        session || requiresStandaloneNiceCancellation(beforeAppDoc)
+          ? { _id: new ObjectId(id) }
+          : stringingCancellationSnapshot(beforeAppDoc),
+        updateOps, { session },
+      );
+
+    // 신청서를 찾지 못했을 경우
+    if (result.matchedCount === 0) {
+      if (session) throw new Error("STRINGING_CANCEL_SAVE_FAILED");
+      if (await db.collection("stringing_applications").findOne({ _id: new ObjectId(id) })) {
+        return NextResponse.json({ error: "신청서가 변경되었습니다. 최신 상태를 확인해주세요." }, { status: 409 });
+      }
+      return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
+    }
+
+    return true;
   };
-
-  // draft가 아니면 TTL 필드 제거(삭제 대상에서 제외)
-  if (status !== "draft") {
-    updateOps.$unset = { expireAt: "" };
+  let finalized;
+  try {
+    finalized = willBeCanceled && !requiresStandaloneNiceCancellation(beforeAppDoc)
+      ? await withStandaloneCancelTransaction(db, beforeAppDoc, finalize)
+      : await finalize();
+  } catch (error) {
+    if (error instanceof StringingCancelWriteError) return error.response;
+    console.error("[handleUpdateApplicationStatus] cancellation transaction failed", error);
+    return NextResponse.json({ error: "신청서 취소 저장에 실패했습니다." }, { status: 500 });
   }
-
-  const result = await db
-    .collection("stringing_applications")
-    .updateOne({ _id: new ObjectId(id) }, updateOps);
-
-  // 신청서를 찾지 못했을 경우
-  if (result.matchedCount === 0) {
-    return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
-  }
+  if (finalized instanceof Response) return finalized;
 
   const appDoc = await db.collection("stringing_applications").findOne({ _id: new ObjectId(id) });
   if (!appDoc) {
@@ -2357,46 +2462,62 @@ export async function handleStringingCancelApprove(
     });
     if (!cancellation.ok) return cancellation.response;
 
-    const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now);
-    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
-    const colorRestore = await restoreStringingColorStockIfNeeded(db, appDoc, now);
-    if (variantRestore.errorResponse) {
-      return variantRestore.errorResponse;
-    }
-    if (gaugeRestore.errorResponse) {
-      return gaugeRestore.errorResponse;
-    }
-    if (colorRestore.errorResponse) return colorRestore.errorResponse;
-
-    // 히스토리 한 줄 구성
-    const historyEntry: HistoryRecord = {
-      status: "취소",
-      date: now,
-      description: "관리자가 신청 취소를 승인했습니다.",
-    };
-
-    // 패키지 사용분 복원 (패키지 사용 + passId가 있을 때만)
-    if (appDoc.packageApplied && appDoc.packagePassId) {
-      try {
-        await revertConsumption(db, appDoc.packagePassId as ObjectId, _id);
-      } catch (e) {
-        // 패키지 복원 실패해도 취소 자체는 진행
-        console.error("[handleStringingCancelApprove] revertConsumption error", e);
+    const finalize = async (session?: ClientSession) => {
+      const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now, session);
+      const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now, undefined, session);
+      const colorRestore = await restoreStringingColorStockIfNeeded(db, appDoc, now, undefined, session);
+      if (variantRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(variantRestore.errorResponse);
+        return variantRestore.errorResponse;
       }
-    }
+      if (gaugeRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(gaugeRestore.errorResponse);
+        return gaugeRestore.errorResponse;
+      }
+      if (colorRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(colorRestore.errorResponse);
+        return colorRestore.errorResponse;
+      }
 
-    // 신청 상태를 "취소"로 변경 + 결제/취소요청 상태 정리
-    await col.updateOne({ _id }, {
-      $set: {
+      // 히스토리 한 줄 구성
+      const historyEntry: HistoryRecord = {
         status: "취소",
-        cancelRequest: cancellation.updatedCancelRequest,
-        ...cancellation.paymentUpdateFields,
-        ...variantRestore.setFields,
-        ...gaugeRestore.setFields,
-        ...colorRestore.setFields,
-      },
-      $push: { history: historyEntry as any },
-    } as any);
+        date: now,
+        description: "관리자가 신청 취소를 승인했습니다.",
+      };
+
+      // 패키지 사용분 복원 (패키지 사용 + passId가 있을 때만)
+      if (appDoc.packageApplied && appDoc.packagePassId) {
+        try {
+          await revertConsumption(db, appDoc.packagePassId as ObjectId, _id, { session });
+        } catch (e) {
+          if (session) throw e;
+          // 패키지 복원 실패해도 취소 자체는 진행
+          console.error("[handleStringingCancelApprove] revertConsumption error", e);
+        }
+      }
+
+      // 신청 상태를 "취소"로 변경 + 결제/취소요청 상태 정리
+      const saved = await col.updateOne({ _id }, {
+        $set: {
+          status: "취소",
+          cancelRequest: cancellation.updatedCancelRequest,
+          ...cancellation.paymentUpdateFields,
+          ...variantRestore.setFields,
+          ...gaugeRestore.setFields,
+          ...colorRestore.setFields,
+        },
+        $push: { history: historyEntry as any },
+      } as any, { session });
+      if (session && !saved.matchedCount) throw new Error("STRINGING_CANCEL_SAVE_FAILED");
+
+      return { gaugeRestore, colorRestore };
+    };
+    const finalized = requiresStandaloneNiceCancellation(appDoc)
+      ? await finalize()
+      : await withStandaloneCancelTransaction(db, appDoc, finalize);
+    if (finalized instanceof Response) return finalized;
+    const { gaugeRestore, colorRestore } = finalized;
 
     await appendAdminAudit(
       db,
@@ -2455,6 +2576,7 @@ export async function handleStringingCancelApprove(
       colorStockRestore: colorRestore.restored ? "restored" : colorRestore.skippedReason,
     });
   } catch (error) {
+    if (error instanceof StringingCancelWriteError) return error.response;
     console.error("[handleStringingCancelApprove] error", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
@@ -2548,59 +2670,80 @@ export async function handleStringingAdminCancel(
     });
     if (!cancellation.ok) return cancellation.response;
 
-    const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now);
-    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
-    const colorRestore = await restoreStringingColorStockIfNeeded(
-      db,
-      appDoc,
-      now,
-      "admin_direct_cancel",
-    );
-    if (variantRestore.errorResponse) return variantRestore.errorResponse;
-    if (gaugeRestore.errorResponse) return gaugeRestore.errorResponse;
-    if (colorRestore.errorResponse) return colorRestore.errorResponse;
-
-    if (appDoc.packageApplied && appDoc.packagePassId) {
-      try {
-        await revertConsumption(db, appDoc.packagePassId as ObjectId, _id);
-      } catch (e) {
-        console.error("[handleStringingAdminCancel] revertConsumption error", e);
-      }
-    }
-
     const adminCancelRefundNote = cancellation.niceCancelSucceeded
       ? "NICEPAY 결제취소가 완료되었습니다."
       : refundContext.refundNote;
-    const historyEntry: HistoryRecord = {
-      status: "취소",
-      date: now,
-      description: `관리자가 직접 신청을 취소했습니다. 취소 사유: ${reason} ${adminCancelRefundNote}`,
-    };
+    const finalize = async (session?: ClientSession) => {
+      const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now, session);
+      const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now, undefined, session);
+      const colorRestore = await restoreStringingColorStockIfNeeded(
+        db,
+        appDoc,
+        now,
+        "admin_direct_cancel",
+        session,
+      );
+      if (variantRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(variantRestore.errorResponse);
+        return variantRestore.errorResponse;
+      }
+      if (gaugeRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(gaugeRestore.errorResponse);
+        return gaugeRestore.errorResponse;
+      }
+      if (colorRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(colorRestore.errorResponse);
+        return colorRestore.errorResponse;
+      }
 
-    await col.updateOne({ _id }, {
-      $set: {
+      if (appDoc.packageApplied && appDoc.packagePassId) {
+        try {
+          await revertConsumption(db, appDoc.packagePassId as ObjectId, _id, { session });
+        } catch (e) {
+          if (session) throw e;
+          console.error("[handleStringingAdminCancel] revertConsumption error", e);
+        }
+      }
+
+      const historyEntry: HistoryRecord = {
         status: "취소",
-        cancelRequest: cancellation.updatedCancelRequest,
-        ...cancellation.paymentUpdateFields,
-        adminCancel: {
-          reason,
-          canceledAt: now,
-          canceledBy: adminAuth.userId,
-          paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
-          paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
-          paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
-          refundRequired: cancellation.niceCancelSucceeded ? false : refundContext.refundRequired,
-          refundMethod: cancellation.niceCancelSucceeded
-            ? "nicepay_cancelled"
-            : refundContext.refundMethod,
-          refundNote: adminCancelRefundNote,
+        date: now,
+        description: `관리자가 직접 신청을 취소했습니다. 취소 사유: ${reason} ${adminCancelRefundNote}`,
+      };
+
+      const saved = await col.updateOne({ _id }, {
+        $set: {
+          status: "취소",
+          cancelRequest: cancellation.updatedCancelRequest,
+          ...cancellation.paymentUpdateFields,
+          adminCancel: {
+            reason,
+            canceledAt: now,
+            canceledBy: adminAuth.userId,
+            paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
+            paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
+            paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
+            refundRequired: cancellation.niceCancelSucceeded ? false : refundContext.refundRequired,
+            refundMethod: cancellation.niceCancelSucceeded
+              ? "nicepay_cancelled"
+              : refundContext.refundMethod,
+            refundNote: adminCancelRefundNote,
+          },
+          ...variantRestore.setFields,
+          ...gaugeRestore.setFields,
+          ...colorRestore.setFields,
         },
-        ...variantRestore.setFields,
-        ...gaugeRestore.setFields,
-        ...colorRestore.setFields,
-      },
-      $push: { history: historyEntry as any },
-    } as any);
+        $push: { history: historyEntry as any },
+      } as any, { session });
+      if (session && !saved.matchedCount) throw new Error("STRINGING_CANCEL_SAVE_FAILED");
+
+      return { gaugeRestore, colorRestore };
+    };
+    const finalized = requiresStandaloneNiceCancellation(appDoc)
+      ? await finalize()
+      : await withStandaloneCancelTransaction(db, appDoc, finalize);
+    if (finalized instanceof Response) return finalized;
+    const { gaugeRestore, colorRestore } = finalized;
 
     await appendAdminAudit(
       db,
@@ -2672,6 +2815,7 @@ export async function handleStringingAdminCancel(
       colorStockRestore: colorRestore.restored ? "restored" : colorRestore.skippedReason,
     });
   } catch (error) {
+    if (error instanceof StringingCancelWriteError) return error.response;
     console.error("[handleStringingAdminCancel] error", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
@@ -3528,6 +3672,10 @@ export async function handleApplicationCancelApprove(
     const demoMutationBlock = getPortfolioDemoAdminMutationBlock(req);
     if (demoMutationBlock) return demoMutationBlock;
 
+    if (!isStandaloneStringingApplication(existing)) {
+      return NextResponse.json({ error: "연결 주문/대여에서 취소를 처리해주세요." }, { status: 409 });
+    }
+
     // ── 비즈니스 룰 ──
     if (isStringingCanceledStatus(existing.status)) {
       return new NextResponse("이미 취소된 신청입니다.", { status: 400 });
@@ -3541,49 +3689,65 @@ export async function handleApplicationCancelApprove(
     }
 
     const now = new Date();
-    const variantRestore = await restoreStringingVariantStockIfNeeded(db, existing, now);
-    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, existing, now);
-    const colorRestore = await restoreStringingColorStockIfNeeded(db, existing, now);
-    if (variantRestore.errorResponse) {
-      return variantRestore.errorResponse;
-    }
-    if (gaugeRestore.errorResponse) {
-      return gaugeRestore.errorResponse;
-    }
-    if (colorRestore.errorResponse) return colorRestore.errorResponse;
-
-    const updatedCancelRequest = {
-      ...currentCancel,
-      status: "approved" as const,
-      handledAt: now,
-    };
-
-    const historyEntry: HistoryRecord = {
-      status: "취소승인",
-      date: now,
-      description: "관리자가 신청 취소 요청을 승인했습니다.",
-    };
-
-    await applications.updateOne({ _id }, {
-      $set: {
-        cancelRequest: updatedCancelRequest,
-        status: "취소", // 신청 자체 상태를 "취소"로 전환
-        ...variantRestore.setFields,
-        ...gaugeRestore.setFields,
-        ...colorRestore.setFields,
-      },
-      $push: { history: historyEntry },
-    } as any);
-
-    // ] 패키지 사용분 복원
-    if (existing.packageApplied && existing.packagePassId) {
-      try {
-        await revertConsumption(db, existing.packagePassId as ObjectId, _id);
-      } catch (err) {
-        console.error("[handleApplicationCancelApprove] revertConsumption error", err);
-        // 복원 실패해도 취소 자체는 유지
+    const finalize = async (session?: ClientSession) => {
+      const variantRestore = await restoreStringingVariantStockIfNeeded(db, existing, now, session);
+      const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, existing, now, undefined, session);
+      const colorRestore = await restoreStringingColorStockIfNeeded(db, existing, now, undefined, session);
+      if (variantRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(variantRestore.errorResponse);
+        return variantRestore.errorResponse;
       }
-    }
+      if (gaugeRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(gaugeRestore.errorResponse);
+        return gaugeRestore.errorResponse;
+      }
+      if (colorRestore.errorResponse) {
+        if (session) throw new StringingCancelWriteError(colorRestore.errorResponse);
+        return colorRestore.errorResponse;
+      }
+
+      const updatedCancelRequest = {
+        ...currentCancel,
+        status: "approved" as const,
+        handledAt: now,
+      };
+
+      const historyEntry: HistoryRecord = {
+        status: "취소승인",
+        date: now,
+        description: "관리자가 신청 취소 요청을 승인했습니다.",
+      };
+
+      const saved = await applications.updateOne({ _id }, {
+        $set: {
+          cancelRequest: updatedCancelRequest,
+          status: "취소", // 신청 자체 상태를 "취소"로 전환
+          ...variantRestore.setFields,
+          ...gaugeRestore.setFields,
+          ...colorRestore.setFields,
+        },
+        $push: { history: historyEntry },
+      } as any, { session });
+      if (session && !saved.matchedCount) throw new Error("STRINGING_CANCEL_SAVE_FAILED");
+
+      // ] 패키지 사용분 복원
+      if (existing.packageApplied && existing.packagePassId) {
+        try {
+          await revertConsumption(db, existing.packagePassId as ObjectId, _id, { session });
+        } catch (err) {
+          if (session) throw err;
+          console.error("[handleApplicationCancelApprove] revertConsumption error", err);
+          // 복원 실패해도 취소 자체는 유지
+        }
+      }
+
+      return { gaugeRestore, colorRestore };
+    };
+    const finalized = requiresStandaloneNiceCancellation(existing)
+      ? await finalize()
+      : await withStandaloneCancelTransaction(db, existing, finalize);
+    if (finalized instanceof Response) return finalized;
+    const { gaugeRestore, colorRestore } = finalized;
 
     return NextResponse.json({
       ok: true,
@@ -3591,6 +3755,7 @@ export async function handleApplicationCancelApprove(
       colorStockRestore: colorRestore.restored ? "restored" : colorRestore.skippedReason,
     });
   } catch (err) {
+    if (err instanceof StringingCancelWriteError) return err.response;
     console.error("POST /api/applications/stringing/[id]/cancel-approve 오류:", err);
     return new NextResponse("서버 오류가 발생했습니다.", { status: 500 });
   }
