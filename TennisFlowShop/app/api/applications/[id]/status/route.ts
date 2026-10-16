@@ -59,11 +59,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ message: "연결 주문의 통합 진행 단계에서 변경해주세요." }, { status: 409 });
     }
     // 해당 ID의 신청서 상태 업데이트
-    const result = await collection.updateOne({ _id: new ObjectId(id) }, { $set: { status } });
+    const result = await collection.updateOne({
+      _id: existing._id,
+      orderId: existing.orderId ?? null,
+      paymentSource: existing.paymentSource ?? null,
+      status: existing.status ?? null,
+      cancelRequest: existing.cancelRequest ?? null,
+    }, { $set: { status } });
 
     // 신청서가 존재하지 않을 경우
     if (result.matchedCount === 0) {
-      return new NextResponse("Application not found", { status: 404 });
+      const latest = await collection.findOne({ _id: existing._id }, { projection: { _id: 1 } });
+      if (!latest) return new NextResponse("Application not found", { status: 404 });
+      return NextResponse.json({ message: "신청서 상태 또는 연결 정보가 변경되었습니다. 최신 상태를 확인해주세요." }, { status: 409 });
     }
 
     // 성공 응답 반환

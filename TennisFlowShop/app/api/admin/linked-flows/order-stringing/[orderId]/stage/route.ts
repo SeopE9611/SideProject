@@ -217,7 +217,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
       }
 
       const appUpdateRes = await applications.updateOne(
-        { _id: (app as any)._id, status: app.status ?? null, cancelRequest: app.cancelRequest ?? null },
+        { _id: app._id, status: app.status ?? null, cancelRequest: app.cancelRequest ?? null },
         appUpdateOps as any,
         { session: mongoSession },
       );
