@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
+import { niceOrderWriteFilter, nicePaymentUpdatePipeline } from "@/lib/payments/nice/order-write-guard";
 import {
   extractNiceCardInfo,
   getNicePaymentByTid,
@@ -242,9 +243,8 @@ export async function syncNicePaymentByOrderId(orderId: string) {
 
     const nowIso = new Date().toISOString();
     const updateResult = await db.collection("orders").updateOne(
-      { _id: new ObjectId(orderId) },
-      {
-        $set: {
+      niceOrderWriteFilter(order, mapped.normalizedPgStatus),
+      nicePaymentUpdatePipeline({
           paymentStatus: mapped.nextPaymentStatus,
           "paymentInfo.status": mapped.nextPaymentInfoStatus,
           ...(nextCardDisplayName ? { "paymentInfo.cardDisplayName": nextCardDisplayName } : {}),
@@ -263,18 +263,15 @@ export async function syncNicePaymentByOrderId(orderId: string) {
                 },
               }
             : {}),
-          "paymentInfo.niceSync": {
-            lastSyncedAt: nowIso,
-            source: "manual_sync_api",
-            pgStatus: pgStatus || null,
-            resultCode: resultCode || "0000",
-            resultMsg: resultMsg || null,
-            canceledAt: canceledAt || null,
-            cancelAmount,
-          },
+          "paymentInfo.niceSync.lastSyncedAt": nowIso,
+          "paymentInfo.niceSync.source": "manual_sync_api",
+          "paymentInfo.niceSync.pgStatus": pgStatus || null,
+          "paymentInfo.niceSync.resultCode": resultCode || "0000",
+          "paymentInfo.niceSync.resultMsg": resultMsg || null,
+          "paymentInfo.niceSync.canceledAt": canceledAt || null,
+          "paymentInfo.niceSync.cancelAmount": cancelAmount,
           updatedAt: new Date(),
-        },
-      },
+      }),
     );
     console.info("[nicepay][sync]", {
       stage: "after_sync",
@@ -285,6 +282,14 @@ export async function syncNicePaymentByOrderId(orderId: string) {
       matchedCount: updateResult.matchedCount,
       modifiedCount: updateResult.modifiedCount,
     });
+
+    if (updateResult.matchedCount === 0) {
+      return NextResponse.json({
+        success: false,
+        code: "NICE_PAYMENT_STATE_CONFLICT",
+        error: "결제 또는 취소 상태가 변경되었거나 취소 처리 중입니다. 최신 상태를 확인한 후 다시 동기화해주세요.",
+      }, { status: 409 });
+    }
 
     return NextResponse.json({
       success: true,
