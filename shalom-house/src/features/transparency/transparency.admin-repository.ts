@@ -17,8 +17,7 @@ import {
 const PAGE_SIZE = 20;
 export const isValidAdminTransparencyDocumentId = (id: unknown): id is string =>
   typeof id === "string" && /^[a-f0-9]{24}$/.test(id) && ObjectId.isValid(id);
-export const normalizeAdminTransparencyPage = (value: unknown) =>
-  typeof value === "string" && /^\d+$/.test(value) ? Math.min(10000, Math.max(1, Number(value))) : 1;
+export { normalizeAdminListPage as normalizeAdminTransparencyPage } from "@/lib/admin-list-page";
 const nextDate = (expected: Date) => new Date(Math.max(Date.now(), expected.getTime() + 1));
 const metadata = (draft: ValidatedAdminTransparencyDraft) => ({ ...draft });
 async function transaction<T>(
@@ -187,20 +186,20 @@ export async function listAdminTransparencyDocuments(input: {
   const collection = (await getMongoDatabase()).collection<MongoTransparencyDocument>(
     TRANSPARENCY_DOCUMENT_COLLECTION_NAME,
   );
-  const [documents, total] = await Promise.all([
-    collection
-      .find(filter)
-      .sort({ updatedAt: -1, _id: -1 })
-      .skip((input.page - 1) * PAGE_SIZE)
-      .limit(PAGE_SIZE)
-      .toArray(),
-    collection.countDocuments(filter),
-  ]);
+  const total = await collection.countDocuments(filter);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const page = Math.min(input.page, totalPages);
+  const documents = await collection
+    .find(filter)
+    .sort({ updatedAt: -1, _id: -1 })
+    .skip((page - 1) * PAGE_SIZE)
+    .limit(PAGE_SIZE)
+    .toArray();
   return {
     items: documents.map(serialize),
-    page: input.page,
+    page,
     totalItems: total,
-    totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    totalPages,
   };
 }
 export async function updateAdminTransparencyDraft(input: {

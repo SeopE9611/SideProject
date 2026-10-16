@@ -1,3 +1,4 @@
+import { normalizeAdminListPage } from "@/lib/admin-list-page";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
@@ -31,16 +32,17 @@ const donorListGridClass =
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; type?: string; page?: string }>;
+  searchParams: Promise<{ status?: string; type?: string; page?: string | string[] }>;
 }) {
   const auth = await authorizeCurrentAdmin("donations.manage");
   if (!auth.ok) redirect("/admin?forbidden=1");
   const query = await searchParams;
   const status = donorStatuses.includes(query.status as DonorStatus) ? (query.status as DonorStatus) : undefined;
   const type = donorTypes.includes(query.type as DonorType) ? (query.type as DonorType) : undefined;
-  const page = Math.max(1, Number.parseInt(query.page ?? "1", 10) || 1);
+  const requestedPage = normalizeAdminListPage(query.page);
   const pageSize = 20;
-  const [data, counts] = await Promise.all([listAdminDonors({ status, type, page, pageSize }), getAdminDonorCounts()]);
+  const [data, counts] = await Promise.all([listAdminDonors({ status, type, page: requestedPage, pageSize }), getAdminDonorCounts()]);
+  const page = data.page;
   const totalPages = Math.max(1, Math.ceil(data.total / pageSize));
   const hasFilters = Boolean(type || status);
   const filterFormKey = [type ?? "", status ?? ""].join("|");

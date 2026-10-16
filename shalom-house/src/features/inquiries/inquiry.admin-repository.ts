@@ -86,9 +86,12 @@ export async function listAdminInquiries(input: {
     .toArray();
   const validDocuments = documents.filter(isValidStoredInquiryDocument);
   const total = validDocuments.length;
-  const items = validDocuments.slice((input.page - 1) * input.pageSize, input.page * input.pageSize);
+  const totalPages = Math.max(1, Math.ceil(total / input.pageSize));
+  const page = Math.min(input.page, totalPages);
+  const items = validDocuments.slice((page - 1) * input.pageSize, page * input.pageSize);
   return {
     total,
+    page,
     items: items.map((d) => ({
       id: d._id.toHexString(),
       reference: d.reference,

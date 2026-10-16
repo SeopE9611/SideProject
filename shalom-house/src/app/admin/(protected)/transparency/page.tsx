@@ -78,7 +78,13 @@ function buildTransparencyPageHref(
 export default async function AdminTransparencyPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | undefined>>;
+  searchParams: Promise<{
+    page?: string | string[];
+    category?: string;
+    privacyReviewStatus?: string;
+    finalDocumentStatus?: string;
+    publicationStatus?: string;
+  }>;
 }) {
   const admin = await getCurrentAdmin();
   const canCreate = Boolean(admin && hasAdminPermission(admin, "content.create"));
