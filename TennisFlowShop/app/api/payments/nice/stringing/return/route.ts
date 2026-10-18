@@ -1,4 +1,6 @@
 import clientPromise from "@/lib/mongodb";
+import { EXTERNALLY_CANCELED_PAYMENT_STATUS, EXTERNALLY_CANCELED_PAYMENT_INFO_STATUSES } from "@/lib/orders/cancel-finalization";
+import { ORDER_CANCELED_TERMINAL_VALUES, ORDER_REFUNDED_TERMINAL_VALUES, STRINGING_CANCELED_VALUES } from "@/lib/status/flow-status";
 import {
   approveNicePaymentByTid,
   cancelNicePaymentByTid,
@@ -10,7 +12,7 @@ import {
   tossPaymentSessions,
   type TossPaymentFailureStage,
 } from "@/lib/payments/toss/session";
-import { ObjectId } from "mongodb";
+import { ObjectId, type Document } from "mongodb";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -100,6 +102,7 @@ function approveCredentials() {
 async function handleNiceStringingReturn(req: Request) {
   const raw = await parsePayload(req);
   let safeApplicationId: string | null = null;
+  let recordApprovalFailure: ((code: string, message: string) => Promise<boolean>) | undefined;
   const authResultCode = pick(raw, "authResultCode", "AuthResultCode", "resultCode", "ResultCode");
   const authResultMsg = pick(raw, "authResultMsg", "AuthResultMsg", "resultMsg", "ResultMsg");
   const tid = pick(raw, "tid", "TID", "TxTid");
@@ -370,6 +373,22 @@ async function handleNiceStringingReturn(req: Request) {
       return redirect303(req, failUrl("APPROVE_FAILED", message, safeApplicationId));
     }
 
+    // 승인 성공 증거는 취소 충돌과 일반 내부 오류를 다른 코드로 보존한다.
+    recordApprovalFailure = async (code, message) => {
+      const saved = await sessions.updateOne({ _id: session._id, status: "processing" }, { $set: {
+        status: "approve_succeeded_order_failed",
+        failureStage: "create_order_after_approve",
+        failureCode: code,
+        failureMessage: message,
+        paymentKey: tid,
+        niceAuthRaw: raw,
+        niceApprovedRaw: approvedRaw,
+        confirmedPaymentSummary: { orderId, totalAmount: amount, approvedAt: now, method: pick(approvedRaw, "payMethod", "PayMethod") || "card" },
+        updatedAt: new Date(),
+      } });
+      return saved.matchedCount === 1;
+    };
+
     const tryAutoCancelAfterApprove = async (
       failureMessage: string,
       failureStage: TossPaymentFailureStage,
@@ -449,15 +468,56 @@ async function handleNiceStringingReturn(req: Request) {
     };
 
     const applicationId = String(session.applicationId ?? "");
+    const statusPattern = (values: readonly string[]) => new RegExp(
+      `^\\s*(?:${values.map((value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\s*$`, "i",
+    );
+    const applicationCanceled = statusPattern(STRINGING_CANCELED_VALUES);
+    const paymentCanceled = statusPattern([EXTERNALLY_CANCELED_PAYMENT_STATUS, ...ORDER_CANCELED_TERMINAL_VALUES, ...ORDER_REFUNDED_TERMINAL_VALUES]);
+    const pgCanceled = statusPattern(EXTERNALLY_CANCELED_PAYMENT_INFO_STATUSES);
+    const cancelRequestPending = statusPattern(["requested", "요청", "approved", "승인", "approved_pending_pg_cancel", "approved_pending_finalization"]);
+    const pgCancelStates = ["processing", "needs_reconciliation", "pg_canceled"];
+    const hasCancellationConflict = (application: Document | null): boolean => {
+      if (!application) return false;
+      const claim = application.cancelRequest?.pgCancelClaim;
+      return applicationCanceled.test(String(application.status ?? "")) ||
+        paymentCanceled.test(String(application.paymentStatus ?? "")) ||
+        pgCanceled.test(String(application.paymentInfo?.status ?? "")) ||
+        pgCanceled.test(String(application.paymentInfo?.niceSync?.pgStatus ?? "")) ||
+        cancelRequestPending.test(String(application.cancelRequest?.status ?? "")) ||
+        pgCancelStates.includes(claim?.status) ||
+        Boolean(claim?.postAttemptedAt);
+    };
+    const isAlreadyApplied = (application: Document | null): boolean =>
+      !!application && !hasCancellationConflict(application) && !application.orderId && !application.rentalId &&
+      !application.packageApplied && application.servicePaid === true &&
+      application.paymentStatus === "결제완료" && application.paymentInfo?.tid === tid &&
+      String(application.paymentInfo?.rawSummary?.orderId ?? application.paymentInfo?.orderId ?? "") === orderId &&
+      Number(application.totalPrice) === amount;
+    const recordCancellationConflict = async (reason: string) => {
+      const message = "결제 승인은 확인됐지만 신청 취소 처리와 충돌하여 결제 상태 확인이 필요합니다. 중복 결제하지 말고 관리자에게 확인을 요청해주세요.";
+      try {
+        if (!recordApprovalFailure || !await recordApprovalFailure("NICE_PAYMENT_STATE_CONFLICT", `${message} ${reason}`)) {
+          throw new Error("NICE_APPROVAL_EVIDENCE_NOT_SAVED");
+        }
+      } catch {
+        return redirect303(req, failUrl("NICE_PAYMENT_STATE_CONFLICT",
+          "결제 승인 후 처리 상태 기록을 확인하지 못했습니다. 결제 실패나 환불 완료로 판단하지 말고, 중복 결제·재시도 없이 관리자에게 결제 확인을 요청해주세요.", safeApplicationId));
+      }
+      return redirect303(req, failUrl("NICE_PAYMENT_STATE_CONFLICT", message, safeApplicationId));
+    };
     const application = ObjectId.isValid(applicationId)
       ? await db.collection("stringing_applications").findOne({ _id: new ObjectId(applicationId) })
       : null;
+    if (hasCancellationConflict(application)) {
+      return recordCancellationConflict("승인 후 신청서 조회에서 취소 요청·종단 상태·PG 선점을 확인했습니다.");
+    }
+    const alreadyApplied = isAlreadyApplied(application);
     if (
       !application ||
       application.orderId ||
       application.rentalId ||
       application.packageApplied ||
-      application.servicePaid ||
+      (application.servicePaid && !alreadyApplied) ||
       Number(application.totalPrice ?? 0) !== amount
     ) {
       await markOrderFailedAndCancel("결제 승인 후 신청 상태 검증에 실패했습니다.");
@@ -482,11 +542,22 @@ async function handleNiceStringingReturn(req: Request) {
         }
       : undefined;
     const easyPayProvider = extractNiceEasyPayProvider(approvedRaw);
-    const updateResult = await db.collection("stringing_applications").updateOne(
+    const updateResult = alreadyApplied ? null : await db.collection("stringing_applications").updateOne(
       {
         _id: application._id,
         servicePaid: { $ne: true },
         totalPrice: amount,
+        // 정상 진행 상태 변경은 허용하되 취소 불변식은 저장 시점에 검사한다.
+        status: { $not: applicationCanceled },
+        paymentStatus: { $not: paymentCanceled },
+        "paymentInfo.status": { $not: pgCanceled },
+        "paymentInfo.niceSync.pgStatus": { $not: pgCanceled },
+        "cancelRequest.status": { $not: cancelRequestPending },
+        "cancelRequest.pgCancelClaim.status": { $nin: pgCancelStates },
+        "cancelRequest.pgCancelClaim.postAttemptedAt": null,
+        orderId: { $in: [null, ""] },
+        rentalId: { $in: [null, ""] },
+        packageApplied: { $ne: true },
       },
       {
         $set: {
@@ -516,16 +587,22 @@ async function handleNiceStringingReturn(req: Request) {
       },
     );
 
-    if (!updateResult.modifiedCount) {
-      await markOrderFailedAndCancel("결제 승인 후 신청서 반영에 실패했습니다.");
-      return redirect303(
-        req,
-        failUrl("UPDATE_FAILED", "카드/간편결제 반영에 실패했습니다.", safeApplicationId),
-      );
+    if (updateResult && !updateResult.modifiedCount) {
+      const latest = await db.collection("stringing_applications").findOne({ _id: application._id });
+      if (hasCancellationConflict(latest)) {
+        return recordCancellationConflict("조건부 결제 저장이 거부됐으며 최신 신청서에서 취소 경합을 확인했습니다.");
+      }
+      if (!isAlreadyApplied(latest)) {
+        await markOrderFailedAndCancel("결제 승인 후 신청서 반영에 실패했습니다.");
+        return redirect303(
+          req,
+          failUrl("UPDATE_FAILED", "카드/간편결제 반영에 실패했습니다.", safeApplicationId),
+        );
+      }
     }
 
-    await sessions.updateOne(
-      { _id: session._id },
+    const savedSession = await sessions.updateOne(
+      { _id: session._id, status: "processing" },
       {
         $set: {
           status: "approved",
@@ -545,9 +622,19 @@ async function handleNiceStringingReturn(req: Request) {
         },
       },
     );
+    if (!savedSession.matchedCount) {
+      return redirect303(req, failUrl("PAYMENT_ERROR",
+        "결제 승인과 신청서 반영 후 세션 처리 기록을 확인하지 못했습니다. 중복 결제하지 말고 관리자에게 확인을 요청해주세요.", safeApplicationId));
+    }
 
     return redirect303(req, toSuccessUrl(applicationId));
   } catch (error: any) {
+    if (recordApprovalFailure) {
+      const message = "결제 승인 후 내부 처리 또는 기록 확인에 실패했습니다. 결제 실패·환불 완료로 판단하지 말고, 중복 결제 없이 관리자에게 결제 확인을 요청해주세요.";
+      try { await recordApprovalFailure("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", message); }
+      catch { /* 증거 저장까지 실패하면 processing을 자동 해제하거나 안전한 재시도를 안내하지 않는다. */ }
+      return redirect303(req, failUrl("PAYMENT_ERROR", message, safeApplicationId));
+    }
     return redirect303(
       req,
       failUrl(

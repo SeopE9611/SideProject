@@ -141,6 +141,7 @@ function model(seed) {
         }
         throw new Error("SYNTHETIC_RETRY_EXHAUSTED");
       }, async endSession() { assert.equal(session.local, null); } };
+    (m.sessions ??= []).push(session);
     return session;
   } };
   m.db = { client, collection }; client.db = () => m.db;
@@ -188,9 +189,24 @@ function handlers(m) {
     "@/lib/admin/portfolio-demo-readonly.server": { getPortfolioDemoAdminMutationBlock: () => null },
     "@/lib/status/flow-status": load("lib/status/flow-status.ts"),
     "@/lib/passes.service": passes,
+    "node:crypto": { randomUUID: () => "synthetic-cancel-token" },
+    "@/lib/payments/toss/session": { tossPaymentSessions: (db) => db.collection("toss_payment_sessions") },
     "@/lib/admin/appendAdminAudit": { appendAdminAudit: async () => { m.effects++; } },
     "@/lib/risk/recordCancelRefundSignal": { buildCancelRefundSubject: () => ({}), recordCancelRefundSignal: async () => { m.effects++; } },
-    "@/lib/payments/nice/server": { cancelNicePaymentByTid: async () => { m.pg++; return { resultCode: "0000" }; } },
+    "@/lib/payments/nice/server": {
+      getNicePaymentByTid: async ({ tid }) => {
+        assert.equal(tid, "synthetic-tid");
+        return { resultCode: "0000", status: "paid", tid, orderId: "synthetic-order", amount: "10000", balanceAmt: "10000" };
+      },
+      cancelNicePaymentByTid: async ({ tid, orderId }) => {
+        assert.equal(tid, "synthetic-tid"); assert.equal(orderId, "synthetic-order");
+        assert.equal(m.sessions?.some((session) => session.inTransaction()) ?? false, false);
+        assert.equal(m.data.stringing_applications[0].cancelRequest.pgCancelClaim.status, "processing");
+        assert.ok(m.data.stringing_applications[0].cancelRequest.pgCancelClaim.postAttemptedAt);
+        m.pg++;
+        return { resultCode: "0000", status: "canceled", tid: "synthetic-tid", balanceAmt: "0" };
+      },
+    },
   }));
 }
 function submit(m) {
@@ -455,11 +471,44 @@ test("required stock metadata missing aborts instead of recording a successful c
   assert.deepEqual(m.data, before); assert.equal(m.effects, 0);
 });
 test("NICE cancellation still occurs outside a transaction, once before DB finalization", async () => {
-  const m = model(seed()); const app = m.data.stringing_applications[0];
-  app.paymentInfo = { provider: "nicepay", tid: "synthetic-tid", orderId: "synthetic-order" };
-  m.hook = ({ name, update, options }) => {
-    if (name === "stringing_applications" && update) { assert.equal(options.session, undefined); assert.equal(m.pg, 1); }
-  };
-  assert.equal((await handlers(m).handleStringingCancelApprove(request(), context)).status, 200);
-  assert.equal(m.pg, 1);
+  for (const failFinalization of [false, true]) {
+    const m = model(seed()); const app = m.data.stringing_applications[0];
+    app.servicePaid = true; app.totalPrice = 10000;
+    app.packageApplied = false; app.packagePassId = null;
+    app.paymentInfo = { provider: "nicepay", tid: "synthetic-tid", orderId: "synthetic-order" };
+    m.data.toss_payment_sessions = [{
+      provider: "nicepay", flowType: "stringing_application", status: "approved",
+      niceOrderId: "synthetic-order", applicationId: String(appId), mongoOrderId: String(appId),
+      paymentKey: "synthetic-tid", amount: 10000,
+    }];
+    let evidenceSaved = false;
+    m.hook = ({ name, update, options }) => {
+      if (name !== "stringing_applications" || !update) return;
+      if (options.session) {
+        assert.equal(options.session.inTransaction(), true);
+        assert.equal(evidenceSaved, true);
+        assert.equal(m.data.stringing_applications[0].cancelRequest.pgCancelClaim.status, "pg_canceled");
+        assert.equal(m.pg, 1);
+      } else if (update.$set?.["cancelRequest.pgCancelClaim.status"] === "pg_canceled") {
+        assert.equal(m.pg, 1); assert.equal(m.commits, 0); evidenceSaved = true;
+      } else {
+        assert.equal(m.pg, 0);
+        if (update.$set?.cancelRequest) assert.equal(update.$set.cancelRequest.pgCancelClaim.token, "synthetic-cancel-token");
+      }
+    };
+    m.fail = (name, update) => failFinalization && name === "stringing_applications" && !!update.$push;
+    const response = await handlers(m).handleStringingCancelApprove(request(), context);
+    assert.equal(response.status, failFinalization ? 500 : 200);
+    assert.equal(m.pg, 1); assert.equal(evidenceSaved, true);
+    if (failFinalization) {
+      assert.equal((await response.json()).errorCode, "NICE_CANCEL_FINALIZATION_PENDING");
+      assert.equal(m.rollbacks, 1);
+      assert.equal(m.data.stringing_applications[0].status, "검토 중");
+      assert.equal(m.data.stringing_applications[0].paymentStatus, "결제취소");
+      assert.equal(m.data.stringing_applications[0].cancelRequest.pgCancelClaim.status, "pg_canceled");
+      m.fail = null;
+      assert.equal((await handlers(m).handleStringingCancelApprove(request(), context)).status, 200);
+      assert.equal(m.pg, 1, "finalization retry must reuse persisted PG evidence");
+    }
+  }
 });
