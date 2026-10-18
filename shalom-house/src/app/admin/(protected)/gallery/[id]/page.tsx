@@ -1,3 +1,4 @@
+import { getAdminListReturnHref } from "@/lib/admin-list-return";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type {
@@ -20,7 +21,7 @@ import { AdminGalleryPublicationStateForm } from "@/components/admin/admin-galle
 import { AdminGalleryConsentWithdrawalForm } from "@/components/admin/admin-gallery-consent-withdrawal-form";
 import { AdminGalleryArchiveForm } from "@/components/admin/admin-gallery-archive-form";
 import { listAdminGalleryAuditHistory } from "@/features/gallery/gallery.audit-repository";
-import { findAdminGalleryItemById } from "@/features/gallery/gallery.admin-repository";
+import { findAdminGalleryItemById, normalizeAdminGalleryPage } from "@/features/gallery/gallery.admin-repository";
 import { formatAdminDate } from "@/lib/format-admin-date";
 import {
   getGalleryApprovalStatusLabel,
@@ -49,7 +50,14 @@ const consentTone = {
   withdrawn: "danger",
 } satisfies Record<GalleryConsentStatus, SemanticStatusTone>;
 
-export default async function GalleryDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function GalleryDetail({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>;
+}) {
+  const backHref = getAdminListReturnHref("/admin/gallery", (await searchParams).returnTo, normalizeAdminGalleryPage);
   const { id } = await params,
     item = await findAdminGalleryItemById(id);
   if (!item) notFound();
@@ -92,7 +100,7 @@ export default async function GalleryDetail({ params }: { params: Promise<{ id: 
   return (
     <div className="admin-detail-layout">
       <AdminDetailHeader
-        backHref="/admin/gallery"
+        backHref={backHref}
         backLabel="활동사진 관리로 돌아가기"
         eyebrow={`활동사진 · ${item.category}`}
         title={item.title}

@@ -1,3 +1,4 @@
+import { getAdminListReturnHref } from "@/lib/admin-list-return";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type {
@@ -21,7 +22,7 @@ import { AdminTransparencyPublicationStateForm } from "@/components/admin/admin-
 import { AdminTransparencyReviewDecisionForm } from "@/components/admin/admin-transparency-review-decision-form";
 import { AdminTransparencyReviewForm } from "@/components/admin/admin-transparency-review-form";
 import { listAdminTransparencyAuditHistory } from "@/features/transparency/transparency.audit-repository";
-import { findAdminTransparencyDocumentById } from "@/features/transparency/transparency.admin-repository";
+import { findAdminTransparencyDocumentById, normalizeAdminTransparencyPage } from "@/features/transparency/transparency.admin-repository";
 import { formatAdminDate } from "@/lib/format-admin-date";
 import {
   transparencyApprovalStatusLabels,
@@ -54,7 +55,14 @@ const finalDocumentTone = {
   final: "success",
 } satisfies Record<TransparencyFinalDocumentStatus, SemanticStatusTone>;
 
-export default async function TransparencyDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TransparencyDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>;
+}) {
+  const backHref = getAdminListReturnHref("/admin/transparency", (await searchParams).returnTo, normalizeAdminTransparencyPage);
   const document = await findAdminTransparencyDocumentById((await params).id);
   if (!document) notFound();
   const admin = await getCurrentAdmin();
@@ -95,7 +103,7 @@ export default async function TransparencyDetailPage({ params }: { params: Promi
   return (
     <div className="admin-detail-layout">
       <AdminDetailHeader
-        backHref="/admin/transparency"
+        backHref={backHref}
         backLabel="자료공개 관리로 돌아가기"
         eyebrow={`자료공개 · ${transparencyCategoryLabels[document.category]}`}
         title={document.title}

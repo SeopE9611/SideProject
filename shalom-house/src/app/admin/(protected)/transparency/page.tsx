@@ -110,6 +110,7 @@ export default async function AdminTransparencyPage({
     filters.finalDocumentStatus ?? "",
     filters.publicationStatus ?? "",
   ].join("|");
+  const returnTo = buildTransparencyPageHref(result.page, filters);
   return (
     <div className="admin-list-layout">
       <AdminPageHeader
@@ -186,7 +187,7 @@ export default async function AdminTransparencyPage({
             <ul className="divide-y divide-border border-b border-border">
               {result.items.map((item) => (
                 <li key={item.id} className={`grid min-w-0 gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${"xl:grid-cols-[2fr_1.2fr_1fr_0.8fr_0.8fr_1fr]"}`}>
-                  <div className="min-w-0 md:col-span-2 xl:col-span-1"><Link href={`/admin/transparency/${item.id}`} className="text-safe-wrap text-heading font-bold underline-offset-4 hover:underline">{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{transparencyCategoryLabels[item.category]}</p></div>
+                  <div className="min-w-0 md:col-span-2 xl:col-span-1"><Link href={`/admin/transparency/${item.id}?${new URLSearchParams({ returnTo })}`} className="text-safe-wrap text-heading font-bold underline-offset-4 hover:underline">{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{transparencyCategoryLabels[item.category]}</p></div>
                   <p><strong className="text-small font-semibold xl:sr-only">기준 기간 / 문서일 </strong>{item.periodLabel} / {item.documentDate}</p>
                   <p><strong className="text-small font-semibold xl:sr-only">개인정보 검토 </strong><SemanticStatusBadge tone={privacyReviewTone[item.privacyReviewStatus]}>{transparencyPrivacyReviewStatusLabels[item.privacyReviewStatus]}</SemanticStatusBadge></p>
                   <p><strong className="text-small font-semibold xl:sr-only">최종본 </strong><SemanticStatusBadge tone={finalDocumentTone[item.finalDocumentStatus]}>{transparencyFinalDocumentStatusLabels[item.finalDocumentStatus]}</SemanticStatusBadge></p>
