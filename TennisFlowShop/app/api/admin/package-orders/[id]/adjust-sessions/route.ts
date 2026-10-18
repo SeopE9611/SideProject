@@ -24,6 +24,12 @@ type PassHistoryItem = {
   adminEmail?: string | null;
 };
 
+class AdjustmentError extends Error {
+  constructor(readonly status: number, message: string) {
+    super(message);
+  }
+}
+
 // 이제 상태 변경해보기.STEP 3: 결제 상태에 따라 동작 잠금(서버+UI)
 
 // body: { delta: number, clampZero?: boolean, reason?: string }
@@ -48,98 +54,112 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!Number.isFinite(delta) || delta === 0)
       return NextResponse.json({ error: "delta must be a non-zero number" }, { status: 400 });
 
-    const db = (await clientPromise).db();
+    const client = await clientPromise;
+    const db = client.db();
     const packageOrders = db.collection<PackageOrder>("packageOrders");
     const passes = db.collection<ServicePass & { history?: PassHistoryItem[] }>("service_passes");
 
     const _id = new ObjectId(id);
 
-    const passDoc = await passes.findOne({ orderId: _id });
-    if (!passDoc) {
-      return NextResponse.json({ error: "service pass not found for this order" }, { status: 404 });
-    }
+    const session = client.startSession();
+    const adjustment = await (async () => {
+      try {
+        return await session.withTransaction(async () => {
+          const passDoc = await passes.findOne({ orderId: _id }, { session });
+          if (!passDoc) throw new AdjustmentError(404, "service pass not found for this order");
 
-    const pkgOrder = await packageOrders.findOne({ _id });
-    if (!pkgOrder) {
-      return NextResponse.json({ error: "order not found" }, { status: 404 });
-    }
+          const pkgOrder = await packageOrders.findOne({ _id }, { session });
+          if (!pkgOrder) throw new AdjustmentError(404, "order not found");
 
-    const now = new Date();
-    const operationCapabilities = getAdminPackageOperationCapabilities({
-      paymentStatus: pkgOrder.paymentStatus,
-      hasIssuedPass: true,
-      passStatus: passDoc.status,
-      expiresAt: passDoc.expiresAt,
-      remainingCount: passDoc.remainingCount,
-      now,
-    });
-    if (!operationCapabilities.canAdjustSessions)
-      return NextResponse.json({ error: operationCapabilities.blockReasons[0] }, { status: 409 });
-
-    const prev = passDoc.remainingCount;
-    let next = prev + delta;
-    if (clampZero && next < 0) next = 0;
-
-    const nextStatus = isCountEnded(next)
-      ? "expired"
-      : shouldRestoreActive({
+          const now = new Date();
+          const operationCapabilities = getAdminPackageOperationCapabilities({
             paymentStatus: pkgOrder.paymentStatus,
+            hasIssuedPass: true,
             passStatus: passDoc.status,
-            remainingCount: next,
             expiresAt: passDoc.expiresAt,
+            remainingCount: passDoc.remainingCount,
             now,
-          })
-        ? "active"
-        : passDoc.status;
+          });
+          if (!operationCapabilities.canAdjustSessions)
+            throw new AdjustmentError(409, operationCapabilities.blockReasons[0]);
 
-    await passes.updateOne({ _id: passDoc._id }, {
-      $set: { remainingCount: next, updatedAt: now },
-      $push: {
-        history: {
-          $each: [
+          const prev = passDoc.remainingCount;
+          let next = prev + delta;
+          if (clampZero && next < 0) next = 0;
+
+          const nextStatus = isCountEnded(next)
+            ? "expired"
+            : shouldRestoreActive({
+                  paymentStatus: pkgOrder.paymentStatus,
+                  passStatus: passDoc.status,
+                  remainingCount: next,
+                  expiresAt: passDoc.expiresAt,
+                  now,
+                })
+              ? "active"
+              : passDoc.status;
+
+          // 동시 소비·복원과 쓰기 충돌이 발생하면 최신 스냅샷으로 재계산한다.
+          const passUpdate = await passes.updateOne({
+            _id: passDoc._id,
+            orderId: _id,
+            remainingCount: prev,
+            status: passDoc.status,
+            expiresAt: passDoc.expiresAt ?? null,
+          }, {
+            $set: { remainingCount: next, status: nextStatus, updatedAt: now },
+            $push: {
+              history: {
+                $each: [{
+                  _id: new OID(),
+                  type: "adjust_sessions",
+                  at: now,
+                  from: prev,
+                  to: next,
+                  delta,
+                  reason: reason || "",
+                  adminId: guard.admin._id,
+                  adminName: guard.admin.email ?? null,
+                  adminEmail: guard.admin.email ?? null,
+                } as PassHistoryItem],
+              },
+            },
+          } as UpdateFilter<ServicePass & { history: PassHistoryItem[] }>, { session });
+          if (!passUpdate.acknowledged || passUpdate.matchedCount !== 1 || passUpdate.modifiedCount !== 1) {
+            throw new AdjustmentError(409, "service pass changed; refresh and retry");
+          }
+
+          const orderUpdate = await packageOrders.updateOne(
+            { _id, paymentStatus: "결제완료" },
             {
-              _id: new OID(),
-              type: "adjust_sessions",
-              at: now,
-              from: prev,
-              to: next,
-              delta,
-              reason: reason || "",
-              adminId: guard.admin._id,
-              adminName: guard.admin.email ?? null,
-              adminEmail: guard.admin.email ?? null,
-            } as PassHistoryItem,
-          ],
-        },
-      },
-    } as UpdateFilter<ServicePass & { history: PassHistoryItem[] }>);
+              $push: {
+                history: {
+                  $each: [{
+                    status: "횟수조절",
+                    date: now,
+                    description: `남은횟수 ${prev} → ${next}${reason ? ` (${reason})` : ""}`,
+                  } satisfies PackageOrder["history"][number]],
+                },
+              },
+              $set: { updatedAt: now },
+            },
+            { session },
+          );
+          if (!orderUpdate.acknowledged || orderUpdate.matchedCount !== 1 || orderUpdate.modifiedCount !== 1) {
+            throw new AdjustmentError(409, "package order changed; refresh and retry");
+          }
 
-    if (nextStatus !== passDoc.status) {
-      await passes.updateOne(
-        { _id: passDoc._id },
-        { $set: { status: nextStatus, updatedAt: now } },
-      );
-    }
-
-    await packageOrders.updateOne(
-      { _id },
-      {
-        $push: {
-          history: {
-            $each: [
-              {
-                status: "횟수조절",
-                date: now,
-                description: `남은횟수 ${prev} → ${next}${reason ? ` (${reason})` : ""}`,
-              } satisfies PackageOrder["history"][number],
-            ],
-          },
-        },
-        $set: { updatedAt: now },
-      },
-    );
-
-    const freshPass = await passes.findOne({ _id: passDoc._id });
+          const freshPass = await passes.findOne({ _id: passDoc._id }, { session });
+          if (!freshPass) throw new AdjustmentError(409, "service pass changed; refresh and retry");
+          return { passDoc, pkgOrder, prev, next, nextStatus, freshPass };
+        });
+      } finally {
+        await session.endSession();
+      }
+    })();
+    if (!adjustment) throw new Error("PACKAGE_ADJUSTMENT_TRANSACTION_FAILED");
+    const { passDoc, pkgOrder, prev, next, nextStatus, freshPass } = adjustment;
+    // 감사 실패로 커밋된 조정을 실패 응답하여 같은 delta를 재적용하지 않게 한다.
     await appendAdminAudit(
       db,
       {
@@ -181,9 +201,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         },
       },
       req,
-    );
+    ).catch((auditError) => {
+      console.error("[package.sessions.adjust] committed adjustment audit failed", auditError);
+    });
     return NextResponse.json({ ok: true, pass: freshPass });
   } catch (e) {
+    if (e instanceof AdjustmentError) return NextResponse.json({ error: e.message }, { status: e.status });
     console.error("[POST /api/package-orders/:id/adjust-sessions] error", e);
     return NextResponse.json({ error: "internal error" }, { status: 500 });
   }
