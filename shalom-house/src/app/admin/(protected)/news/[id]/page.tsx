@@ -1,3 +1,5 @@
+import { getAdminListReturnHref } from "@/lib/admin-list-return";
+import { normalizeAdminNewsPage } from "@/features/news/news.pagination";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type { NewsPublicationStatus, NewsApprovalStatus } from "@/features/news/news.types";
@@ -60,7 +62,14 @@ function DateValue({ value }: { value: string | null }) {
   return value ? <time dateTime={value}>{dateFormatter.format(new Date(value))}</time> : <>게시일 미설정</>;
 }
 
-export default async function AdminNewsDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminNewsDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>;
+}) {
+  const backHref = getAdminListReturnHref("/admin/news", (await searchParams).returnTo, normalizeAdminNewsPage);
   const { id } = await params;
   const post = await findAdminNewsPostById(id);
   if (!post) notFound();
@@ -86,7 +95,7 @@ export default async function AdminNewsDetailPage({ params }: { params: Promise<
   return (
     <div className="admin-detail-layout">
       <AdminDetailHeader
-        backHref="/admin/news"
+        backHref={backHref}
         backLabel="소식 관리로 돌아가기"
         eyebrow={`소식 · ${getNewsCategoryLabel(post.category)}`}
         title={post.title}

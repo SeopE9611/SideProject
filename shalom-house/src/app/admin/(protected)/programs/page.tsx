@@ -81,6 +81,7 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
   });
   const hasFilters = Boolean(search || publicationStatus || approvalStatus);
   const filterFormKey = [search, publicationStatus ?? "", approvalStatus ?? ""].join("|");
+  const returnTo = href(result.page, filters, search);
   return (
     <div className="admin-list-layout">
       <AdminPageHeader
@@ -127,7 +128,7 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
                 <li key={item.id} className={`grid gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${adminProgramsDesktopGridClass}`}>
                   <div className="md:col-span-2 xl:col-span-1">
                     <Link
-                      href={`/admin/programs/${item.id}`}
+                      href={`/admin/programs/${item.id}?${new URLSearchParams({ returnTo })}`}
                       className="text-heading font-bold underline-offset-4 hover:underline"
                     >
                       {item.title}

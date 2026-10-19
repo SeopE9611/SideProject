@@ -85,6 +85,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
   const hasFilters = Boolean(q || category || publicationStatus || approvalStatus);
   const filterFormKey = [q, category ?? "", publicationStatus ?? "", approvalStatus ?? ""].join("|");
 
+  const returnTo = createAdminNewsPageHref(result.page, filters, q);
   return (
     <div className="admin-list-layout">
       <AdminPageHeader
@@ -195,7 +196,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
                       <p className="text-small font-semibold text-primary">{getNewsCategoryLabel(item.category)}</p>
                       <h3 className="mt-1 break-words text-heading font-bold">
                         <Link
-                          href={`/admin/news/${item.id}`}
+                          href={`/admin/news/${item.id}?${new URLSearchParams({ returnTo })}`}
                           className="underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
                         >
                           {item.title}

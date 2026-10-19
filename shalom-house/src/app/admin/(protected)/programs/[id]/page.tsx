@@ -1,3 +1,4 @@
+import { getAdminListReturnHref } from "@/lib/admin-list-return";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type { ProgramPublicationStatus, ProgramApprovalStatus } from "@/features/programs/program.types";
@@ -21,7 +22,7 @@ import { listAdminPublicGalleryCoverOptions } from "@/features/gallery/gallery.a
 import { findPublicGalleryCoverById } from "@/features/gallery/gallery.repository";
 import { ObjectId } from "mongodb";
 import { AdminProgramReviewRequestForm } from "@/components/admin/admin-program-review-request-form";
-import { findAdminProgramPostById } from "@/features/programs/program.admin-repository";
+import { findAdminProgramPostById, normalizeAdminProgramPage } from "@/features/programs/program.admin-repository";
 import { listAdminProgramAuditHistory } from "@/features/programs/program.audit-repository";
 import {
   getProgramApprovalStatusLabel,
@@ -60,7 +61,14 @@ function DateValue({ value }: { value: string | null }) {
   return value ? <time dateTime={value}>{dateFormatter.format(new Date(value))}</time> : <>게시일 미설정</>;
 }
 
-export default async function AdminProgramDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminProgramDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string | string[] }>;
+}) {
+  const backHref = getAdminListReturnHref("/admin/programs", (await searchParams).returnTo, normalizeAdminProgramPage);
   const { id } = await params;
   const post = await findAdminProgramPostById(id);
   if (!post) notFound();
@@ -86,7 +94,7 @@ export default async function AdminProgramDetailPage({ params }: { params: Promi
   return (
     <div className="admin-detail-layout">
       <AdminDetailHeader
-        backHref="/admin/programs"
+        backHref={backHref}
         backLabel="프로그램 관리로 돌아가기"
         eyebrow={`프로그램 · ${getProgramCategoryLabel(post.category)}`}
         title={post.title}
