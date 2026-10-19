@@ -17,7 +17,7 @@ import {
 } from "@/lib/risk/recordCancelRefundSignal";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "node:crypto";
-import { ClientSession, ObjectId } from "mongodb";
+import { ClientSession, ObjectId, type Db, type Document } from "mongodb";
 import { cookies } from "next/headers";
 import { getPortfolioDemoAdminMutationBlock } from "@/lib/admin/portfolio-demo-readonly.server";
 import { NextResponse } from "next/server";
@@ -107,6 +107,104 @@ class CancelFinalizationError extends Error {
   ) {
     super(message);
   }
+}
+
+async function restoreLinkedApplicationStockIfNeeded(
+  db: Db,
+  appDoc: Document,
+  now: Date,
+  session: ClientSession,
+): Promise<Record<string, unknown>> {
+  const mode = String(appDoc.stockDeduction?.mode ?? "").trim();
+  const setFields: Record<string, unknown> = {};
+  const reason = "order_cancel_approved_linked_application";
+  const hasGaugeDeducted = Boolean(appDoc.meta?.gaugeStockDeductedAt);
+  const restoreGauge = hasGaugeDeducted && !appDoc.meta?.gaugeStockRestoredAt;
+  const restoreColor = Boolean(appDoc.meta?.colorStockDeductedAt) && !appDoc.meta?.colorStockRestoredAt;
+  const selectedGauge = typeof appDoc.meta?.selectedGauge === "string" ? appDoc.meta.selectedGauge.trim() : "";
+  const selectedColor = typeof appDoc.meta?.selectedColor === "string" ? appDoc.meta.selectedColor.trim() : "";
+
+  if (mode === "variant") {
+    if (appDoc.stockRestore?.variantStockRestoredAt) return setFields;
+    // 과거에 게이지 등 일부만 복원된 조합은 자동 보정하지 않아 중복 복원을 막는다.
+    if (appDoc.meta?.gaugeStockRestoredAt || appDoc.meta?.colorStockRestoredAt) {
+      throw new CancelFinalizationError("VARIANT_STOCK_RESTORE_FAILED", "연결 신청서의 일부 재고 복원 기록을 확인해야 합니다.");
+    }
+    const color = typeof appDoc.stockDeduction?.colorValue === "string" && appDoc.stockDeduction.colorValue.trim()
+      ? appDoc.stockDeduction.colorValue.trim() : selectedColor;
+    const gauge = typeof appDoc.stockDeduction?.gaugeValue === "string" && appDoc.stockDeduction.gaugeValue.trim()
+      ? appDoc.stockDeduction.gaugeValue.trim() : selectedGauge;
+    const productId = pickStringProductObjectIdFromApplicationDoc(appDoc);
+    if (!productId || !color || !gauge) {
+      throw new CancelFinalizationError("VARIANT_STOCK_RESTORE_FAILED", "연결 신청서의 상품·조합 옵션을 확인할 수 없습니다.");
+    }
+    const restored = await db.collection("products").updateOne({
+      _id: productId,
+      sold: { $gte: 1 },
+      variantInventories: { $elemMatch: { colorValue: color, gaugeValue: gauge } },
+      "colorInventories.value": color,
+      "gaugeInventories.value": gauge,
+    }, {
+      $inc: {
+        "variantInventories.$[variant].stock": 1,
+        "colorInventories.$[color].stock": 1,
+        "gaugeInventories.$[gauge].stock": 1,
+        "inventory.stock": 1,
+        sold: -1,
+      },
+    }, {
+      session,
+      arrayFilters: [
+        { "variant.colorValue": color, "variant.gaugeValue": gauge },
+        { "color.value": color },
+        { "gauge.value": gauge },
+      ],
+    });
+    if (!restored.matchedCount || !restored.modifiedCount) {
+      throw new CancelFinalizationError("VARIANT_STOCK_RESTORE_FAILED", "연결 신청서의 조합 재고 복구에 실패했습니다.");
+    }
+    return {
+      "stockRestore.variantStockRestoredAt": now,
+      "stockRestore.variantStockRestoreReason": reason,
+    };
+  }
+
+  if (!restoreGauge && !restoreColor) return setFields;
+  if (mode) throw new CancelFinalizationError("LINKED_STOCK_RESTORE_FAILED", "연결 신청서의 재고 차감 유형을 확인해야 합니다.");
+  const productId = pickStringProductObjectIdFromApplicationDoc(appDoc);
+  if (!productId || (restoreGauge && !selectedGauge) || (restoreColor && !selectedColor)) {
+    throw new CancelFinalizationError("LINKED_STOCK_RESTORE_FAILED", "연결 신청서의 상품·재고 옵션을 확인할 수 없습니다.");
+  }
+  if (restoreGauge) {
+    const restored = await db.collection("products").updateOne({
+      _id: productId, sold: { $gte: 1 }, "gaugeInventories.value": selectedGauge,
+    }, { $inc: { "gaugeInventories.$.stock": 1, "inventory.stock": 1, sold: -1 } }, { session });
+    if (!restored.matchedCount || !restored.modifiedCount) {
+      throw new CancelFinalizationError("GAUGE_STOCK_RESTORE_FAILED", "연결 신청서의 게이지 재고 복구에 실패했습니다.");
+    }
+    setFields["meta.gaugeStockRestoredAt"] = now;
+    setFields["meta.gaugeStockRestoreReason"] = reason;
+  }
+  if (restoreColor) {
+    // 제출 시 게이지가 선택된 색상 차감은 색상만 줄인다. 게이지가 부모
+    // 주문에서 차감된 경우도 있으므로 신청서 게이지 마커만으로 판단하지 않는다.
+    const restoreGlobal = !selectedGauge && !hasGaugeDeducted;
+    const restored = await db.collection("products").updateOne({
+      _id: productId,
+      "colorInventories.value": selectedColor,
+      ...(restoreGlobal ? { sold: { $gte: 1 } } : {}),
+    }, {
+      $inc: restoreGlobal
+        ? { "colorInventories.$.stock": 1, "inventory.stock": 1, sold: -1 }
+        : { "colorInventories.$.stock": 1 },
+    }, { session });
+    if (!restored.matchedCount || !restored.modifiedCount) {
+      throw new CancelFinalizationError("COLOR_STOCK_RESTORE_FAILED", "연결 신청서의 색상 재고 복구에 실패했습니다.");
+    }
+    setFields["meta.colorStockRestoredAt"] = now;
+    setFields["meta.colorStockRestoreReason"] = reason;
+  }
+  return setFields;
 }
 
 async function restoreOrderVariantStockIfNeeded(
@@ -647,23 +745,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         if (appDoc.status === "취소") continue;
         if (appDoc.packageApplied && appDoc.packagePassId) await revertConsumption(db, appDoc.packagePassId, appDoc._id, { session });
         const appSet: Record<string, unknown> = { status: "취소", cancelRequest: { ...(appDoc.cancelRequest ?? {}), status: "approved", approvedAt: finalizedAt } };
-        const selectedGauge = typeof appDoc.meta?.selectedGauge === "string" ? appDoc.meta.selectedGauge.trim() : "";
-        if (appDoc.meta?.gaugeStockDeductedAt && !appDoc.meta?.gaugeStockRestoredAt) {
-          const productId = pickStringProductObjectIdFromApplicationDoc(appDoc);
-          if (!productId || !selectedGauge) throw new CancelFinalizationError("GAUGE_STOCK_RESTORE_FAILED", "연결 교체서비스의 스트링 재고 정보를 찾을 수 없습니다.");
-          const restored = await db.collection("products").updateOne({ _id: productId, sold: { $gte: 1 }, "gaugeInventories.value": selectedGauge }, { $inc: { "gaugeInventories.$.stock": 1, "inventory.stock": 1, sold: -1 } }, { session });
-          if (!restored.matchedCount || !restored.modifiedCount) throw new CancelFinalizationError("GAUGE_STOCK_RESTORE_FAILED", "주문 취소 중 스트링 게이지(굵기) 재고 복구에 실패했습니다.");
-          appSet["meta.gaugeStockRestoredAt"] = finalizedAt;
-          appSet["meta.gaugeStockRestoreReason"] = "order_cancel_approved_linked_application";
-        }
-        await appsCol.updateOne({ _id: appDoc._id }, { $set: appSet, $push: { history: { status: "취소", date: finalizedAt, description: "주문 취소 승인에 따라 신청도 함께 취소되었습니다." } } } as any, { session });
+        Object.assign(appSet, await restoreLinkedApplicationStockIfNeeded(db, appDoc, finalizedAt, session));
+        const appSaved = await appsCol.updateOne({ _id: appDoc._id }, { $set: appSet, $push: { history: { status: "취소", date: finalizedAt, description: "주문 취소 승인에 따라 신청도 함께 취소되었습니다." } } } as any, { session });
+        if (!appSaved.matchedCount || !appSaved.modifiedCount) throw new CancelFinalizationError("ORDER_CANCEL_CONFLICT", "연결 신청서 취소 저장에 실패했습니다.");
       }
 
       const currentReq = current.cancelRequest ?? {};
       const descriptionBase = currentReq.status === "requested" ? "고객의 취소 요청을 관리자 권한으로 승인했습니다." : "관리자가 직접 주문을 취소했습니다.";
       const descReason = reasonCode || reasonText ? ` 사유: ${reasonCode}${reasonText ? ` (${reasonText})` : ""}` : "";
       Object.assign(updateFields, { status: "취소", paymentStatus: "결제취소", cancelRequest: { ...currentReq, status: "approved", reasonCode, reasonText, requestedAt: currentReq.requestedAt ?? finalizedAt, processedAt: finalizedAt, processedByAdminId: user.sub }, cancelReason: reasonCode, cancelReasonDetail: reasonCode === "기타" ? reasonText : reasonText || undefined });
-      await orders.updateOne({ _id }, { $set: updateFields, $push: { history: { status: "취소", date: finalizedAt, description: `${descriptionBase}${descReason}` } } } as any, { session });
+      const orderSaved = await orders.updateOne({ _id }, { $set: updateFields, $push: { history: { status: "취소", date: finalizedAt, description: `${descriptionBase}${descReason}` } } } as any, { session });
+      if (!orderSaved.matchedCount || !orderSaved.modifiedCount) throw new CancelFinalizationError("ORDER_CANCEL_CONFLICT", "주문 취소 확정 저장에 실패했습니다.");
     });
   } catch (error: any) {
     const code = error instanceof CancelFinalizationError ? error.code : "ORDER_CANCEL_FINALIZATION_FAILED";
