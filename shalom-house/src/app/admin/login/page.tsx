@@ -32,7 +32,7 @@ export default async function AdminLoginPage({
           <div>
             <p className="text-xs font-bold tracking-[0.12em] text-sun-soft">SHALOM HOUSE</p>
             <h1 className="mt-4 text-[2.25rem] font-extrabold tracking-[-0.035em] sm:text-[2.75rem]">운영 관리</h1>
-            <p className="mt-5 max-w-sm text-body leading-8 text-primary-foreground/78">
+            <p className="text-safe-wrap mt-5 max-w-sm text-body leading-8 text-primary-foreground/78">
               샬롬의 집 공식 콘텐츠와 문의, 후원 업무를 관리하는 담당자 전용 화면입니다.
             </p>
           </div>
@@ -50,7 +50,7 @@ export default async function AdminLoginPage({
             ) : null}
             <p className="text-small font-bold text-accent">담당자 인증</p>
             <h2 className="mt-2 text-title font-extrabold tracking-[-0.025em]">관리자 로그인</h2>
-            <p className="mt-3 text-small text-muted-foreground">등록된 관리자 이메일과 비밀번호를 입력해 주세요.</p>
+            <p className="text-safe-wrap mt-3 text-small text-muted-foreground">등록된 관리자 이메일과 비밀번호를 입력해 주세요.</p>
           </div>
 
           <form

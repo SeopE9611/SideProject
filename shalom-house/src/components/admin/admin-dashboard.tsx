@@ -26,7 +26,7 @@ export function AdminDashboard({
       <header className="desk-welcome">
         <p>업무 홈</p>
         <h1>어떤 작업을 하시겠어요?</h1>
-        <p>작성할 콘텐츠를 고르거나 진행 중인 업무를 확인하세요.</p>
+        <p className="text-safe-wrap">작성할 콘텐츠를 고르거나 진행 중인 업무를 확인하세요.</p>
       </header>
       {preview ? (
         <section aria-labelledby="desk-pending" className="mb-8">
