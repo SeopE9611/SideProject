@@ -1,3 +1,4 @@
+import styles from "@/components/admin/admin-content-list.module.css";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type {
   GalleryPublicationStatus,
@@ -44,8 +45,6 @@ const consentTone = {
   withdrawn: "danger",
 } satisfies Record<GalleryConsentStatus, SemanticStatusTone>;
 
-const gridClass = "xl:grid-cols-[2fr_0.8fr_1fr_1fr_0.8fr_0.8fr_1fr]";
-
 function galleryPageHref(page: number, filters: {
   subjectPresence?: GallerySubjectPresence;
   consentStatus?: GalleryConsentStatus;
@@ -84,9 +83,9 @@ export default async function AdminGalleryPage({ searchParams }: { searchParams:
           <div className="flex flex-wrap gap-3 lg:col-span-3"><button className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground">필터 적용</button><Link href="/admin/gallery" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary">필터 초기화</Link></div>
         </form>
       </AdminFilterPanel>
-      <section aria-labelledby="gallery-list"><h2 id="gallery-list" className="sr-only">활동사진 목록</h2>
-        {result.items.length ? <><div className={`hidden gap-3 border-y border-border bg-surface-subtle px-4 py-3 text-small font-bold xl:grid ${gridClass}`}><span>활동사진</span><span>활동일</span><span>인물 상태</span><span>동의 상태</span><span>게시 상태</span><span>승인 상태</span><span>최근 수정</span></div>
-          <ul className="divide-y divide-border border-b border-border">{result.items.map((item) => <li key={item.id} className={`grid min-w-0 gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${gridClass}`}><div className="min-w-0 md:col-span-2 xl:col-span-1"><Link className="break-words text-heading font-bold underline-offset-4 hover:underline" href={`/admin/gallery/${item.id}?${new URLSearchParams({ returnTo })}`}>{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{item.category}</p></div><p><strong className="text-small font-semibold xl:sr-only">활동일 </strong>{item.activityDate}</p><p><strong className="text-small font-semibold xl:sr-only">인물 상태 </strong>{getGallerySubjectPresenceLabel(item.subjectPresence)}</p><p><strong className="text-small font-semibold xl:sr-only">동의 상태 </strong><SemanticStatusBadge tone={consentTone[item.consentStatus]}>{getGalleryConsentStatusLabel(item.consentStatus)}</SemanticStatusBadge></p><p><strong className="text-small font-semibold xl:sr-only">게시 상태 </strong><SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getGalleryPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge></p><p><strong className="text-small font-semibold xl:sr-only">승인 상태 </strong><SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getGalleryApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge></p><p><strong className="text-small font-semibold xl:sr-only">최근 수정 </strong><time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time></p></li>)}</ul></> :
+      <section className={styles.list} aria-labelledby="gallery-list"><h2 id="gallery-list" className="sr-only">활동사진 목록</h2>
+        {result.items.length ? <><div className={`${styles.header} ${styles.gallery}`}><span>활동사진</span><span>활동일</span><span>인물 상태</span><span>동의 상태</span><span>게시 상태</span><span>승인 상태</span><span>최근 수정</span></div>
+          <ul className="divide-y divide-border border-b border-border">{result.items.map((item) => <li key={item.id} className={`${styles.row} ${styles.gallery}`}><div className={styles.primary}><Link className="break-words text-[1.125rem] leading-[1.45] font-bold underline-offset-4 hover:underline" href={`/admin/gallery/${item.id}?${new URLSearchParams({ returnTo })}`}>{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{item.category}</p></div><p><strong className={styles.label}>활동일 </strong><time dateTime={item.activityDate}>{item.activityDate.replaceAll("-", ".")}</time></p><p><strong className={styles.label}>인물 상태 </strong>{getGallerySubjectPresenceLabel(item.subjectPresence)}</p><p><strong className={styles.label}>동의 상태 </strong><SemanticStatusBadge tone={consentTone[item.consentStatus]}>{getGalleryConsentStatusLabel(item.consentStatus)}</SemanticStatusBadge></p><p><strong className={styles.label}>게시 상태 </strong><SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getGalleryPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge></p><p><strong className={styles.label}>승인 상태 </strong><SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getGalleryApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge></p><p><strong className={styles.label}>최근 수정 </strong><time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time></p></li>)}</ul></> :
           <EmptyState
             title={hasFilters ? "선택한 조건에 맞는 활동사진이 없습니다." : "등록된 활동사진이 없습니다."}
             actions={

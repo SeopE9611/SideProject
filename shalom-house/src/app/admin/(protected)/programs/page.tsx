@@ -1,3 +1,4 @@
+import styles from "@/components/admin/admin-content-list.module.css";
 import { ADMIN_TITLE_SEARCH_MAX_LENGTH, normalizeAdminTitleSearch } from "@/lib/admin-title-search";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type { ProgramPublicationStatus, ProgramApprovalStatus } from "@/features/programs/program.types";
@@ -33,11 +34,10 @@ const approvalTone = {
   rejected: "danger",
 } satisfies Record<ProgramApprovalStatus, SemanticStatusTone>;
 
-const adminProgramsDesktopGridClass = "xl:grid-cols-[2fr_1fr_0.6fr_0.8fr_0.8fr_1fr_0.7fr]";
 const date = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
-  month: "long",
-  day: "numeric",
+  month: "2-digit",
+  day: "2-digit",
   timeZone: "UTC",
 });
 type Params = {
@@ -106,14 +106,14 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
           <div className="flex flex-wrap gap-3 sm:col-span-2"><button type="submit" className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">검색·필터 적용</button><Link href="/admin/programs" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary">필터 초기화</Link></div>
         </form>
       </AdminFilterPanel>
-      <section aria-labelledby="program-list">
+      <section className={styles.list} aria-labelledby="program-list">
         <h2 id="program-list" className="sr-only">
           프로그램 목록
         </h2>
         {result.items.length ? (
           <>
             <div
-              className={`hidden gap-3 border-y border-border bg-surface-subtle px-4 py-3 text-small font-bold xl:grid ${adminProgramsDesktopGridClass}`}
+              className={`${styles.header} ${styles.programs}`}
             >
               <span>프로그램</span>
               <span>운영 상태</span>
@@ -125,38 +125,38 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
             </div>
             <ul className="divide-y divide-border border-b border-border">
               {result.items.map((item) => (
-                <li key={item.id} className={`grid gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${adminProgramsDesktopGridClass}`}>
-                  <div className="md:col-span-2 xl:col-span-1">
+                <li key={item.id} className={`${styles.row} ${styles.programs}`}>
+                  <div className={styles.primary}>
                     <Link
                       href={`/admin/programs/${item.id}?${new URLSearchParams({ returnTo })}`}
-                      className="text-heading font-bold underline-offset-4 hover:underline"
+                      className="text-[1.125rem] leading-[1.45] font-bold underline-offset-4 hover:underline"
                     >
                       {item.title}
                     </Link>
                     <p className="text-small text-muted-foreground">{item.category}</p>
                   </div>
                   <p>
-                    <strong className="xl:sr-only">운영 상태 </strong>
+                    <strong className={styles.label}>운영 상태 </strong>
                     {item.operationStatusLabel ?? "미입력"}
                   </p>
                   <p>
-                    <strong className="xl:sr-only">정렬 순서 </strong>
+                    <strong className={styles.label}>정렬 순서 </strong>
                     {item.sortOrder}
                   </p>
                   <p>
-                    <strong className="xl:sr-only">게시 상태 </strong>
+                    <strong className={styles.label}>게시 상태 </strong>
                     <SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getProgramPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge>
                   </p>
                   <p>
-                    <strong className="xl:sr-only">승인 상태 </strong>
+                    <strong className={styles.label}>승인 상태 </strong>
                     <SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getProgramApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge>
                   </p>
                   <p>
-                    <strong className="xl:sr-only">최근 수정 </strong>
-                    <time dateTime={item.updatedAt}>{date.format(new Date(item.updatedAt))}</time>
+                    <strong className={styles.label}>최근 수정 </strong>
+                    <time dateTime={item.updatedAt}>{date.formatToParts(new Date(item.updatedAt)).filter(({ type }) => ["year", "month", "day"].includes(type)).map(({ value }) => value).join(".")}</time>
                   </p>
                   <p>
-                    <strong className="xl:sr-only">공개 여부 </strong>
+                    <strong className={styles.label}>공개 여부 </strong>
                     <SemanticStatusBadge tone={item.isPubliclyVisible ? "success" : "neutral"}>{item.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>
                   </p>
                 </li>
