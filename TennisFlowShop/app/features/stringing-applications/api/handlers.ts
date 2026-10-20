@@ -1,6 +1,7 @@
 import { orderCancelSnapshot, isOrderCancellationInFlight, OrderCancelConflict } from "@/lib/orders/cancel-write-guard";
 import { saveStringingParentOrder, submitStringingApplicationCore } from "@/app/features/stringing-applications/api/submit-core";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { guardVisitReservation } from "@/app/features/stringing-applications/lib/visitReservationGuard";
 import { getCustomerTransactionPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 import {
   buildSlotSummaryForDate,
@@ -1805,7 +1806,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
   }
 }
 
-// ================= PATCH (관리자용 수정) =================
+// ================= PATCH (기존 소유권 가드를 통과한 수정) =================
 export async function handlePatchStringingApplication(req: Request, id: string) {
   try {
     const client = await clientPromise;
@@ -1820,7 +1821,58 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
     const app = await db.collection("stringing_applications").findOne({ _id: new ObjectId(id) });
     if (!app) return NextResponse.json({ error: "Application not found" }, { status: 404 });
 
-    const appDoc = app as NonNullable<typeof app>;
+    const isVisit = normalizeCollection(app.collectionMethod ?? app.shippingInfo?.collectionMethod) === "visit";
+    const protectReservationFields = stringDetails?.desiredDateTime !== undefined || Array.isArray(stringDetails?.stringTypes);
+    const protectVisit = isVisit && protectReservationFields;
+    const snapshot: Document = {
+      _id: app._id, status: app.status ?? null, cancelRequest: app.cancelRequest ?? null,
+      collectionMethod: app.collectionMethod ?? null,
+      "shippingInfo.collectionMethod": app.shippingInfo?.collectionMethod ?? null,
+      stringDetails: app.stringDetails ?? null, stringItems: app.stringItems ?? null,
+      visitSlotCount: app.visitSlotCount ?? null, visitDurationMinutes: app.visitDurationMinutes ?? null,
+      updatedAt: app.updatedAt ?? null,
+    };
+    const patch = async (session?: ClientSession) => {
+    const appDoc = session
+      ? await db.collection("stringing_applications").findOne(snapshot, { session })
+      : app;
+    if (!appDoc) throw Object.assign(new Error("신청서가 변경되었습니다. 최신 상태를 확인해주세요."), { status: 409 });
+    let slotCount = 1;
+    if (protectVisit) {
+      if (isStringingCanceledStatus(appDoc.status) || isStandaloneNiceCancelLocked(appDoc) ||
+          ![undefined, null, "none", "rejected"].includes(appDoc.cancelRequest?.status)) {
+        throw Object.assign(new Error("취소 처리 중이거나 취소된 신청서의 예약은 변경할 수 없습니다."), { status: 409 });
+      }
+      if (appDoc.visitSlotCount != null) {
+        if (typeof appDoc.visitSlotCount !== "number" || !Number.isFinite(appDoc.visitSlotCount)) {
+          throw Object.assign(new Error("기존 예약 슬롯 수를 확인해야 합니다."), { status: 409 });
+        }
+        slotCount = Math.max(1, Math.floor(appDoc.visitSlotCount));
+      }
+      if (Array.isArray(stringDetails?.stringTypes)) {
+        const lines = appDoc.stringDetails?.lines;
+        const types = appDoc.stringDetails?.stringTypes;
+        let beforeCount: number;
+        let afterCount: number;
+        if (Array.isArray(lines) && lines.length > 0) {
+          if (lines.some((line: unknown) => !line || typeof line !== "object" || !("stringProductId" in line) || typeof line.stringProductId !== "string" || !line.stringProductId)) {
+            throw Object.assign(new Error("기존 예약의 스트링 구성을 확인해야 합니다."), { status: 409 });
+          }
+          // 제출과 동일하게 저장된 lines가 우선이며 PATCH는 lines를 변경하지 않는다.
+          beforeCount = afterCount = lines.length;
+        } else {
+          if ((lines != null && !Array.isArray(lines)) || !Array.isArray(types) || types.some((value: unknown) => typeof value !== "string") ||
+              stringDetails.stringTypes.some((value: unknown) => typeof value !== "string")) {
+            throw Object.assign(new Error("기존 예약의 스트링 구성을 확인해야 합니다."), { status: 409 });
+          }
+          beforeCount = Math.max(1, types.filter(Boolean).length);
+          afterCount = Math.max(1, stringDetails.stringTypes.filter(Boolean).length);
+        }
+        if (beforeCount !== slotCount || afterCount !== slotCount) {
+          throw Object.assign(new Error("예약 슬롯 수가 달라지는 스트링 구성 변경은 처리할 수 없습니다."), { status: 409 });
+        }
+      }
+    }
 
     const setFields: any = {};
     const pushHistory: any[] = [];
@@ -1891,12 +1943,21 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 
       // 날짜/시간
       if (hasTimeChange) {
-        const [date, time] = String(stringDetails.desiredDateTime ?? "").split("T");
-        if (date && time) {
-          setFields["stringDetails.preferredDate"] = date;
-          setFields["stringDetails.preferredTime"] = time;
-          setFields.desiredDateTime = stringDetails.desiredDateTime;
+        const parsed = typeof stringDetails.desiredDateTime === "string"
+          ? /^(\d{4}-\d{2}-\d{2})T([01]\d|2[0-3]):([0-5]\d)(?::00(?:\.000)?)?$/.exec(stringDetails.desiredDateTime) : null;
+        const date = parsed?.[1] ?? "";
+        const time = parsed ? `${parsed[2]}:${parsed[3]}` : "";
+        const calendarDate = new Date(`${date}T00:00:00.000Z`);
+        if (!parsed || !Number.isFinite(calendarDate.getTime()) || calendarDate.toISOString().slice(0, 10) !== date) {
+          throw Object.assign(new Error("올바른 예약 날짜와 시간을 입력해주세요."), { status: 400 });
         }
+        if (protectVisit && (date !== appDoc.stringDetails?.preferredDate || time !== appDoc.stringDetails?.preferredTime)) {
+          const reservation = await guardVisitReservation({ db, date, time, slotCount, session, excludeApplicationId: appDoc._id });
+          setFields.visitDurationMinutes = reservation.durationMinutes;
+        }
+        setFields["stringDetails.preferredDate"] = date;
+        setFields["stringDetails.preferredTime"] = time;
+        setFields.desiredDateTime = stringDetails.desiredDateTime;
       }
 
       // 스트링 타입 & 커스텀 이름
@@ -2003,10 +2064,14 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
     // 실제 업데이트
     const result = await db
       .collection("stringing_applications")
-      .updateOne({ _id: new ObjectId(id) }, {
+      .updateOne(protectReservationFields ? snapshot : { _id: new ObjectId(id) }, {
         $set: setFields,
         $push: { history: { $each: pushHistory } },
-      } as any);
+      } as any, { session });
+
+    if (protectReservationFields && (!result.acknowledged || result.matchedCount !== 1 || result.modifiedCount !== 1)) {
+      throw Object.assign(new Error("신청서가 변경되었습니다. 최신 상태를 확인해주세요."), { status: 409 });
+    }
 
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "Application not found" }, { status: 404 });
@@ -2017,7 +2082,7 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
       const ordersColl = db.collection("orders");
       const order = await ordersColl.findOne({
         _id: new ObjectId(appDoc.orderId),
-      });
+      }, { session });
       if (order) {
         // 고객 정보 동기화
         if (setFields.customer) {
@@ -2040,7 +2105,7 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
                 description: "스트링 신청서에서 고객 정보를 동기화했습니다.",
               },
             },
-          } as any);
+          } as any, { session });
         }
 
         // 입금자명(depositor) 동기화 (스트링 신청서에서 변경된 경우)
@@ -2054,12 +2119,22 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
                 description: "스트링 신청서에서 입금자명을 동기화했습니다.",
               },
             },
-          } as any);
+          } as any, { session });
         }
       }
     }
 
     return NextResponse.json({ success: true });
+    };
+    if (!protectVisit) return await patch();
+    const session = client.startSession();
+    try {
+      const response = await session.withTransaction(() => patch(session));
+      if (!response) throw Object.assign(new Error("예약 변경을 완료할 수 없습니다."), { status: 409 });
+      return response;
+    } finally {
+      await session.endSession();
+    }
   } catch (e: any) {
     if (e?.status) {
       return NextResponse.json({ error: e.message ?? "요청 처리 실패" }, { status: e.status });
