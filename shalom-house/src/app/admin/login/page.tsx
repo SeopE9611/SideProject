@@ -36,7 +36,7 @@ export default async function AdminLoginPage({
               샬롬의 집 공식 콘텐츠와 문의, 후원 업무를 관리하는 담당자 전용 화면입니다.
             </p>
           </div>
-          <p className="mt-10 border-t border-primary-foreground/20 pt-5 text-small text-primary-foreground/66">
+          <p className="text-safe-wrap mt-10 border-t border-primary-foreground/20 pt-5 text-small text-primary-foreground/66">
             계정 정보는 다른 사람과 공유하지 마세요.
           </p>
         </section>
