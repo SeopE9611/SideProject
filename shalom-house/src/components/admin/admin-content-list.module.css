@@ -17,15 +17,11 @@
 
 .row > * {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .primary {
   grid-column: 1 / -1;
-}
-
-.primary a {
-  overflow-wrap: anywhere;
 }
 
 .row > :not(.primary) {

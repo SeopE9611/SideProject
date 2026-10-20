@@ -71,7 +71,7 @@ export default async function AdminGalleryPage({ searchParams }: { searchParams:
 
   const returnTo = galleryPageHref(result.page, { subjectPresence, consentStatus, publicationStatus });
   return (
-    <div className="admin-list-layout">
+    <div className="admin-list-layout text-safe-wrap">
       <AdminPageHeader title="활동사진 관리" description="비공개 초안과 인물·홈페이지 공개 동의 상태를 관리합니다."
         actions={canCreate ? <Link href="/admin/gallery/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground">새 활동사진 초안</Link> : undefined}
       />

@@ -83,7 +83,7 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
   const filterFormKey = [search, publicationStatus ?? "", approvalStatus ?? ""].join("|");
   const returnTo = href(result.page, filters, search);
   return (
-    <div className="admin-list-layout">
+    <div className="admin-list-layout text-safe-wrap">
       <AdminPageHeader
         title="프로그램 관리"
         description="프로그램의 작성, 검토, 승인과 공개 상태를 관리합니다."

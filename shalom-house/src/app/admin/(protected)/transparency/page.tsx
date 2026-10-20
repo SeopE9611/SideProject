@@ -113,7 +113,7 @@ export default async function AdminTransparencyPage({
   ].join("|");
   const returnTo = buildTransparencyPageHref(result.page, filters);
   return (
-    <div className="admin-list-layout">
+    <div className="admin-list-layout text-safe-wrap">
       <AdminPageHeader
         title="자료공개 관리"
         description="PDF 비공개 초안과 검토 상태를 관리합니다."

@@ -87,7 +87,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
 
   const returnTo = createAdminNewsPageHref(result.page, filters, q);
   return (
-    <div className="admin-list-layout">
+    <div className="admin-list-layout text-safe-wrap">
       <AdminPageHeader
         title="소식 관리"
         description="공지사항과 활동 소식의 게시 상태와 승인 상태를 확인합니다."
