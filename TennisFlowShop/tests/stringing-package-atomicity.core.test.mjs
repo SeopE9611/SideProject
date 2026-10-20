@@ -113,12 +113,13 @@ function model(seed) {
       const existed = !!doc;
       if (!doc && options.upsert) { doc = { _id: filter._id }; docs.push(doc); }
       if (!doc) return { matchedCount: 0, modifiedCount: 0, acknowledged: true };
+      const before = clone(doc);
       for (const [kind, fields] of Object.entries(update)) {
         if (kind === "$setOnInsert" && existed) continue;
         for (const [path, value] of Object.entries(fields)) mutate(doc, path, value, kind, filter, options);
       }
       if (!options.session) m.version++;
-      return { matchedCount: existed ? 1 : 0, modifiedCount: 1, acknowledged: true };
+      return { matchedCount: existed ? 1 : 0, modifiedCount: existed && !equal(before, doc) ? 1 : 0, acknowledged: true };
     },
     async findOneAndUpdate(filter, update, options) {
       const result = await collection(name).updateOne(filter, update, options);
@@ -213,6 +214,10 @@ function submit(m) {
   const path = "app/features/stringing-applications/api/submit-core.ts";
   return load(path, stubImports(path, {
     mongodb: { ObjectId },
+    "@/lib/orders/cancel-write-guard": load("lib/orders/cancel-write-guard.ts", {
+      "@/lib/orders/cancel-finalization": load("lib/orders/cancel-finalization.ts"),
+      "@/lib/status/flow-status": load("lib/status/flow-status.ts"),
+    }),
     "@/app/features/stringing-applications/lib/collection": { normalizeCollection: (v) => v },
     "@/app/features/stringing-applications/lib/package-pricing": load("app/features/stringing-applications/lib/package-pricing.ts"),
     "@/app/features/stringing-applications/lib/slotEngine": { loadStringingSettings: async () => ({}), resolveDaySchedule: () => ({ interval: 30 }) },

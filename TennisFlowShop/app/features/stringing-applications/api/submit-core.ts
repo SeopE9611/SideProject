@@ -19,6 +19,33 @@ import { createPortfolioDemoInteractionMeta, shouldPreservePortfolioDemoInventor
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import { guardVisitReservation } from "@/app/features/stringing-applications/lib/visitReservationGuard";
+import { isOrderCancellationInFlight, orderCancelSnapshot, OrderCancelConflict } from "@/lib/orders/cancel-write-guard";
+
+// 생성·재사용·제출과 주문 취소가 같은 부모 문서에 실제 쓰기를 수행하게 한다.
+export async function saveStringingParentOrder(
+  db: Db,
+  order: Document,
+  session: ClientSession,
+  linkage: { isStringServiceApplied?: boolean; stringingApplicationId?: string } = {},
+): Promise<void> {
+  if (isOrderCancellationInFlight(order)) {
+    throw Object.assign(new OrderCancelConflict("취소 처리 중이거나 종료된 주문에는 신청할 수 없습니다."), { status: 409 });
+  }
+  const previousTime = order.updatedAt instanceof Date ? order.updatedAt.getTime()
+    : typeof order.updatedAt === "string" ? Date.parse(order.updatedAt) : NaN;
+  const updatedAt = new Date(Math.max(Date.now(), Number.isFinite(previousTime) ? previousTime + 1 : 0));
+  if (!Number.isFinite(updatedAt.getTime())) {
+    throw Object.assign(new OrderCancelConflict("주문의 수정 시각을 확인해야 합니다."), { status: 409 });
+  }
+  const saved = await db.collection("orders").updateOne({
+    ...orderCancelSnapshot(order), updatedAt: order.updatedAt ?? null,
+  }, {
+    $set: { ...linkage, updatedAt: typeof order.updatedAt === "string" ? updatedAt.toISOString() : updatedAt },
+  }, { session });
+  if (!saved.acknowledged || saved.matchedCount !== 1 || saved.modifiedCount !== 1) {
+    throw Object.assign(new OrderCancelConflict(), { status: 409 });
+  }
+}
 
 export type StringingApplicationInput = {
   applicationId?: string;
@@ -288,10 +315,14 @@ export async function submitStringingApplicationCore({
     }
   }
 
+  let parentOrder: Document | null = null;
   if (orderObjectId) {
     const order = await db
       .collection("orders")
-      .findOne({ _id: orderObjectId }, { projection: { _id: 1, userId: 1, guest: 1 }, session });
+      .findOne({ _id: orderObjectId }, { projection: {
+        _id: 1, userId: 1, guest: 1, status: 1, paymentStatus: 1,
+        paymentInfo: 1, paymentNiceSync: 1, cancelRequest: 1, shippingInfo: 1, updatedAt: 1,
+      }, session });
     if (!order) {
       throw Object.assign(new Error("접근할 수 없는 주문입니다."), {
         status: 403,
@@ -307,6 +338,10 @@ export async function submitStringingApplicationCore({
         status: 403,
       });
     }
+    if (isOrderCancellationInFlight(order)) {
+      throw Object.assign(new OrderCancelConflict("취소 처리 중이거나 종료된 주문에는 신청할 수 없습니다."), { status: 409 });
+    }
+    parentOrder = order;
   }
 
   if (rentalObjectId) {
@@ -912,17 +947,11 @@ export async function submitStringingApplicationCore({
     throw Object.assign(new Error("신청서 저장 실패"), { status: 500 });
   }
 
-  if (orderObjectId) {
-    await db.collection("orders").updateOne(
-      { _id: orderObjectId },
-      {
-        $set: {
-          isStringServiceApplied: true,
-          stringingApplicationId: String(targetId),
-        },
-      },
-      { session },
-    );
+  if (parentOrder) {
+    await saveStringingParentOrder(db, parentOrder, session, {
+      isStringServiceApplied: true,
+      stringingApplicationId: String(targetId),
+    });
   }
 
   if (rentalObjectId) {

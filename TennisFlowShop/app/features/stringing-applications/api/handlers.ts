@@ -1,5 +1,5 @@
 import { orderCancelSnapshot, isOrderCancellationInFlight, OrderCancelConflict } from "@/lib/orders/cancel-write-guard";
-import { submitStringingApplicationCore } from "@/app/features/stringing-applications/api/submit-core";
+import { saveStringingParentOrder, submitStringingApplicationCore } from "@/app/features/stringing-applications/api/submit-core";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { getCustomerTransactionPaymentStatusLabel } from "@/app/mypage/_lib/flow-display";
 import {
@@ -4200,9 +4200,12 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     const userId = payload?.sub ?? null;
     const isAdmin = payload?.role === "admin";
 
-    // 주문 조회 (이후 권한 판단에서 'order'를 사용하므로 반드시 먼저 조회)
+    const session = db.client.startSession();
+    try {
+      const response = await session.withTransaction(async () => {
+    // 주문·초안 조회와 부모 쓰기를 같은 트랜잭션에서 처리한다.
     const ordersCol = db.collection("orders");
-    const order = await ordersCol.findOne({ _id: new ObjectId(orderId) });
+    const order = await ordersCol.findOne({ _id: new ObjectId(orderId) }, { session });
     if (!order) {
       return new Response(JSON.stringify({ message: "주문을 찾을 수 없습니다." }), { status: 404 });
     }
@@ -4231,6 +4234,10 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       if (demoMutationBlock) return demoMutationBlock;
     }
 
+    if (isOrderCancellationInFlight(order)) {
+      throw new OrderCancelConflict("취소 처리 중이거나 종료된 주문에는 신청할 수 없습니다.");
+    }
+
     // 서비스 대상 확인: withStringService / isStringServiceApplied 둘 다 허용
     const withString =
       Boolean(order?.shippingInfo?.withStringService) || Boolean(order?.isStringServiceApplied);
@@ -4240,27 +4247,32 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       });
     }
 
+    // 초안 조회 전에 부모를 실제 갱신하여 동시 생성·취소와 쓰기 충돌을 만든다.
+    await saveStringingParentOrder(db, order, session);
+
     const appsCol = db.collection("stringing_applications");
 
     // 이미 진행중(draft/received) 있으면 재사용
     const existing = await appsCol.findOne({
       orderId: { $in: [order._id, String(order._id)] }, // ObjectId와 string 모두 매칭
       status: { $in: INPROGRESS_STATUSES },
-    });
+    }, { session });
 
     const link = `/services/apply?orderId=${orderId}`;
     if (existing) {
       // 초안이면 expireAt 24h 연장 (사용자가 계속 작업 중인 경우 자동 연장)
       if (existing.status === "draft") {
-        await appsCol.updateOne(
-          { _id: existing._id },
+        const extended = await appsCol.updateOne(
+          { _id: existing._id, status: "draft" },
           {
             $set: {
               expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
               updatedAt: new Date().toISOString(),
             },
           },
+          { session },
         );
+        if (!extended.matchedCount) throw new OrderCancelConflict();
       }
       return new Response(
         JSON.stringify({
@@ -4346,30 +4358,8 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       ],
     };
 
-    let result;
-    try {
-      result = await appsCol.insertOne(doc);
-    } catch (err: any) {
-      if (err?.code === 11000) {
-        // 레이스 시 재조회해서 재사용으로 응답
-        const reused = await appsCol.findOne(
-          { orderId: String(order._id), status: { $in: INPROGRESS_STATUSES } },
-          { projection: { _id: 1 } },
-        );
-        if (reused) {
-          return new Response(
-            JSON.stringify({
-              applicationId: String(reused._id),
-              orderId,
-              link,
-              reused: true,
-            }),
-            { status: 200 },
-          );
-        }
-      }
-      throw err;
-    }
+    const result = await appsCol.insertOne(doc, { session });
+    if (!result.acknowledged) throw new OrderCancelConflict();
 
     return new Response(
       JSON.stringify({
@@ -4380,7 +4370,16 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       }),
       { status: 201 },
     );
+      });
+      if (!response) throw new OrderCancelConflict();
+      return response;
+    } finally {
+      await session.endSession();
+    }
   } catch (e) {
+    if (e instanceof OrderCancelConflict || (e instanceof Error && "code" in e && e.code === 11000)) {
+      return NextResponse.json({ message: "주문 또는 신청서가 변경되었습니다. 최신 상태를 확인해주세요." }, { status: 409 });
+    }
     console.error("[stringing drafts] error:", e);
     return new Response(JSON.stringify({ message: "서버 오류" }), {
       status: 500,
