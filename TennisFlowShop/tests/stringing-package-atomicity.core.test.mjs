@@ -51,7 +51,7 @@ function matches(doc, filter) {
         assert.fail(`unsupported filter ${op}`);
       });
     }
-    return value === null ? actual == null : Array.isArray(actual) ? actual.some((v) => equal(v, value)) : equal(actual, value);
+    return value === null ? actual == null : Array.isArray(actual) && !Array.isArray(value) ? actual.some((v) => equal(v, value)) : equal(actual, value);
   });
 }
 function mutate(doc, path, value, kind, filter, options) {
@@ -184,6 +184,16 @@ function handlers(m) {
   const path = "app/features/stringing-applications/api/handlers.ts";
   return load(path, stubImports(path, {
     mongodb: { ObjectId }, "next/server": { NextResponse: Response },
+    "@/lib/orders/cancel-write-guard": load("lib/orders/cancel-write-guard.ts", {
+      "@/lib/orders/cancel-finalization": load("lib/orders/cancel-finalization.ts"),
+      "@/lib/status/flow-status": load("lib/status/flow-status.ts"),
+    }),
+    "@/app/features/stringing-applications/lib/collection": { normalizeCollection: (v) => v },
+    "@/lib/search-email": { normalizeEmailForSearch: (v) => v?.toLowerCase() ?? "" },
+    "@/app/features/stringing-applications/lib/visitReservationGuard": { guardVisitReservation: async (p) => {
+      assert.ok(p.session.inTransaction()); assert.equal(String(p.excludeApplicationId), String(appId));
+      m.slots.push(p); return { durationMinutes: 30 * p.slotCount };
+    } },
     "next/headers": { cookies: async () => ({ get: () => ({ value: "synthetic" }) }) },
     "@/lib/mongodb": { getDb: async () => m.db, default: Promise.resolve(m.db.client) },
     "@/lib/auth.utils": { verifyAccessToken: () => ({ sub: String(userId), role: "admin" }) },
@@ -516,4 +526,72 @@ test("NICE cancellation still occurs outside a transaction, once before DB final
       assert.equal(m.pg, 1, "finalization retry must reuse persisted PG evidence");
     }
   }
+});
+
+// PATCH policy: execute the real handler with the existing offline model.
+function patchModel() {
+  const data = seed(false);
+  Object.assign(data.stringing_applications[0], {
+    status: "접수완료", collectionMethod: "visit", visitSlotCount: 1,
+    totalPrice: 10000, stringItems: [{ productId: String(productId), quantity: 1 }],
+    stringDetails: { preferredDate: "2099-01-01", preferredTime: "10:00", stringItems: [{ id: String(productId) }] },
+  });
+  return model(data);
+}
+const patchRequest = (body) => new Request("https://synthetic.invalid/application", { method: "PATCH", body: JSON.stringify(body) });
+const forbiddenPatches = [
+  { stringDetails: { stringTypes: [String(productId)] } },
+  { stringDetails: { stringTypes: [] } },
+  { stringDetails: { customStringName: null } },
+  { stringDetails: { racketType: "changed" } },
+  { stringItems: [] }, { totalPrice: 1 },
+  { stringDetails: { stringItems: [] } },
+  { stringDetails: { totalPrice: 1 } },
+];
+for (const [index, body] of forbiddenPatches.entries()) {
+  for (const isAdmin of [false, true]) test(`PATCH forbidden field ${index}, admin=${isAdmin}`, async () => {
+    const m = patchModel(), before = clone(m.data);
+    const response = await handlers(m).handlePatchStringingApplication(patchRequest(body), String(appId), { isAdmin });
+    assert.equal(response.status, isAdmin ? 409 : 403);
+    assert.deepEqual(m.data, before); assert.equal(m.commits, 0); assert.equal(m.pg, 0);
+  });
+}
+for (const body of [{ name: "changed", totalPrice: 1 }, { stringDetails: { requirements: "changed", unknown: true } }]) {
+  test(`PATCH mixed or unknown fields reject atomically: ${JSON.stringify(body)}`, async () => {
+    const m = patchModel(), before = clone(m.data);
+    const response = await handlers(m).handlePatchStringingApplication(patchRequest(body), String(appId), { isAdmin: false });
+    assert.equal(response.status, 403); assert.deepEqual(m.data, before); assert.equal(m.commits, 0);
+  });
+}
+for (const isAdmin of [false, true]) test(`PATCH ordinary fields preserved, admin=${isAdmin}`, async () => {
+  const m = patchModel(), before = clone(m.data);
+  const response = await handlers(m).handlePatchStringingApplication(patchRequest({ name: "changed", depositor: "payer", stringDetails: { requirements: "note" } }), String(appId), { isAdmin });
+  assert.equal(response.status, 200);
+  const app = m.data.stringing_applications[0];
+  assert.equal(app.customer.name, "changed"); assert.equal(app.shippingInfo.depositor, "payer"); assert.equal(app.stringDetails.requirements, "note");
+  assert.equal(app.history.length, 3); assert.equal(app.totalPrice, before.stringing_applications[0].totalPrice);
+  assert.deepEqual(m.data.products, before.products); assert.deepEqual(m.data.service_passes, before.service_passes);
+});
+test("PATCH time-only preserves financial and stock evidence", async () => {
+  const m = patchModel(), before = clone(m.data);
+  const response = await handlers(m).handlePatchStringingApplication(patchRequest({ stringDetails: { desiredDateTime: "2099-01-02T11:00" } }), String(appId), { isAdmin: false });
+  assert.equal(response.status, 200); assert.equal(m.slots.length, 1);
+  const app = m.data.stringing_applications[0], old = before.stringing_applications[0];
+  assert.equal(app.stringDetails.preferredTime, "11:00");
+  for (const key of ["totalPrice", "stringItems", "meta", "packageApplied", "packagePassId", "paymentInfo", "paymentStatus"]) assert.deepEqual(app[key], old[key]);
+  assert.deepEqual(app.stringDetails.stringItems, old.stringDetails.stringItems);
+  for (const key of ["products", "service_passes", "service_pass_consumptions", "orders"]) assert.deepEqual(m.data[key], before[key]);
+});
+for (const state of [
+  { status: "취소" }, { status: "교체완료" }, { paymentStatus: "refunded" },
+  { cancelRequest: { status: "requested" } },
+  { cancelRequest: { status: "none", pgCancelClaim: { status: "processing" } } },
+  { orderId, parentCancel: true },
+]) test(`PATCH rejects terminal or cancellation state: ${JSON.stringify(state)}`, async () => {
+  const m = patchModel(); const { parentCancel, ...fields } = state;
+  Object.assign(m.data.stringing_applications[0], fields);
+  if (parentCancel) m.data.orders[0].cancelRequest = { status: "requested" };
+  const before = clone(m.data);
+  const response = await handlers(m).handlePatchStringingApplication(patchRequest({ name: "changed" }), String(appId), { isAdmin: false });
+  assert.equal(response.status, 409); assert.deepEqual(m.data, before);
 });
