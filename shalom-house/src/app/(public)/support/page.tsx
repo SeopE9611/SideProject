@@ -72,7 +72,7 @@ export default async function SupportPage() {
         </section>
 
         <div className="mt-10 grid items-start gap-8 lg:grid-cols-12 lg:gap-12">
-          <section aria-labelledby="support-other-heading" className="min-w-0 lg:col-span-7">
+          <section aria-labelledby="support-other-heading" className="min-w-0 min-[1200px]:col-span-7">
             <h2 id="support-other-heading" className="text-heading font-bold">
               목적별 문의
             </h2>
@@ -103,7 +103,7 @@ export default async function SupportPage() {
           </section>
           <aside
             aria-labelledby="support-contact-heading"
-            className="min-w-0 rounded-panel bg-accent-soft p-6 sm:p-8 lg:col-span-5"
+            className="min-w-0 rounded-panel bg-accent-soft p-6 sm:p-8 min-[1200px]:col-span-5"
           >
             <p className="text-small font-bold text-accent">대표 문의</p>
             <h2 id="support-contact-heading" className="mt-2 text-heading font-bold">
