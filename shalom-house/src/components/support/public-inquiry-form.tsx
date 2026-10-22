@@ -58,14 +58,14 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
   }
   const error = (key: string, id = `${key}-error`) =>
     errors[key] ? (
-      <p id={id} role="alert" className="mt-1 text-small text-danger">
+      <p id={id} role="alert" className="text-safe-wrap mt-1 text-small text-danger">
         {errors[key]}
       </p>
     ) : null;
   const described = (key: string) => (errors[key] ? `${key}-error` : undefined);
   return (
     <form onSubmit={submit} aria-busy={busy} className="mt-6 space-y-6 border-t border-border pt-6">
-      <p className="text-small text-muted-foreground">
+      <p className="text-safe-wrap text-small text-muted-foreground">
         필수 항목을 입력해 주세요. <span className="font-bold text-foreground">(필수)</span>로 표시된 항목은 반드시
         입력해야 합니다.
       </p>
@@ -105,7 +105,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
             aria-invalid={errors.name ? true : undefined}
             aria-describedby={joinDescriptionIds("inquiry-name-help", described("name"))}
           />
-          <p id="inquiry-name-help" className="mt-1 text-small text-muted-foreground">
+          <p id="inquiry-name-help" className="text-safe-wrap mt-1 text-small text-muted-foreground">
             1~80자
           </p>
           {error("name")}
@@ -116,7 +116,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
         aria-describedby={joinDescriptionIds("inquiry-contact-help", errors.contact && "inquiry-contact-error")}
       >
         <legend className="font-bold">연락처 (필수)</legend>
-        <p id="inquiry-contact-help" className="mt-2 text-small text-muted-foreground">
+        <p id="inquiry-contact-help" className="text-safe-wrap mt-2 text-small text-muted-foreground">
           전화번호 또는 이메일 중 하나 이상 입력해 주세요.
         </p>
         <div className="mt-4 grid gap-5 sm:grid-cols-2">
@@ -169,7 +169,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
           aria-invalid={errors.message ? true : undefined}
           aria-describedby={joinDescriptionIds("inquiry-message-help", described("message"))}
         />
-        <p id="inquiry-message-help" className="mt-1 text-small text-muted-foreground">
+        <p id="inquiry-message-help" className="text-safe-wrap mt-1 text-small text-muted-foreground">
           10~2000자
         </p>
         {error("message")}
@@ -179,7 +179,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
         <input id="inquiry-website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
       <div className="rounded-control bg-surface-subtle p-5 text-small">
-        <dl className="space-y-2">
+        <dl className="text-safe-wrap space-y-2">
           <div>
             <dt className="font-bold">수집 목적</dt>
             <dd>문의 확인, 담당자 연락과 처리 결과 관리</dd>
@@ -201,7 +201,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
             </dd>
           </div>
         </dl>
-        <p className="mt-4 font-bold">
+        <p className="text-safe-wrap mt-4 font-bold">
           주민등록번호, 계좌·카드번호, 건강·장애 정보와 입소자 개인정보는 입력하지 마세요.
           <br />
           후원금 영수증 발급에 추가 정보가 필요한 경우 담당자가 별도로 안내합니다.
@@ -219,7 +219,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
             aria-describedby={errors.privacyConsent ? "inquiry-privacy-consent-error" : undefined}
             className="mt-1 size-5 shrink-0 accent-accent"
           />
-          <span>위 개인정보 수집·이용 내용을 확인했으며 이에 동의합니다. (필수)</span>
+          <span className="text-safe-wrap">위 개인정보 수집·이용 내용을 확인했으며 이에 동의합니다. (필수)</span>
         </label>
         {error("privacyConsent", "inquiry-privacy-consent-error")}
       </div>
@@ -230,7 +230,7 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
       >
         {busy ? "접수 중…" : "문의 접수"}
       </button>
-      <p aria-live="polite" className="whitespace-pre-wrap font-semibold">
+      <p aria-live="polite" className="text-safe-wrap whitespace-pre-wrap font-semibold">
         {result}
       </p>
     </form>

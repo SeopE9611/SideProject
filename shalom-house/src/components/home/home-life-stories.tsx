@@ -51,10 +51,10 @@ export function HomeLifeStories({ items }: { items: readonly HomeLifeStory[] }) 
   return (
     <div className="life-filmstrip-carousel">
       <div className="life-filmstrip-toolbar">
-        <p className="life-filmstrip-help life-filmstrip-help-fine">
+        <p className="text-safe-wrap min-w-0 life-filmstrip-help life-filmstrip-help-fine">
           마우스로 좌우로 드래그하거나 화살표 버튼을 사용해 보세요.
         </p>
-        <p className="life-filmstrip-help life-filmstrip-help-coarse">
+        <p className="text-safe-wrap min-w-0 life-filmstrip-help life-filmstrip-help-coarse">
           사진을 좌우로 밀어 더 많은 생활 기록을 확인해 보세요.
         </p>
         <div className="life-filmstrip-controls">

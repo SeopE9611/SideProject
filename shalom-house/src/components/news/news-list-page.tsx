@@ -162,7 +162,7 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             ) : null}
           </div>
           {hasFixture ? (
-            <aside className="border-b border-border py-4 text-small text-muted-foreground">
+            <aside className="text-safe-wrap border-b border-border py-4 text-small text-muted-foreground">
               미리보기 · 아래 예시 소식은 레이아웃 검증용입니다.
             </aside>
           ) : null}

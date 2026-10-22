@@ -57,7 +57,7 @@ export function HomeJournal({
         </div>
         <div>
           {[...notices, ...activities].some((post) => post.isDemo) ? (
-            <p className="text-small text-muted-foreground">미리보기 · 테스트 소식입니다.</p>
+            <p className="text-safe-wrap text-small text-muted-foreground">미리보기 · 테스트 소식입니다.</p>
           ) : null}
           <ul>
             {latestPosts.map((post) => (

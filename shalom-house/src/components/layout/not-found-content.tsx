@@ -11,7 +11,7 @@ export function NotFoundContent() {
           <h1 id="not-found-heading" className="mt-3 text-title font-bold text-foreground">
             페이지를 찾을 수 없습니다
           </h1>
-          <p className="mt-6 text-body text-muted-foreground">
+          <p className="text-safe-wrap mt-6 text-body text-muted-foreground">
             요청하신 주소의 페이지가 없거나 이동되었습니다. {siteConfig.name} 홈으로 돌아가 주요 정보를 다시 확인해
             주세요.
           </p>

@@ -64,7 +64,7 @@ export default function PublicLayout({
       {isVisualFixtureEnabled() ? (
         <aside
           aria-label="로컬 테스트 안내"
-          className="border-b border-border bg-warning-soft px-page py-3 text-small text-warning sm:px-page-wide"
+          className="text-safe-wrap border-b border-border bg-warning-soft px-page py-3 text-small text-warning sm:px-page-wide"
         >
           <div className="mx-auto max-w-site">
             로컬 화면 테스트 · 아래 예시 콘텐츠와 이미지는 실제 기관 자료가 아닙니다.
