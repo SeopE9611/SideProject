@@ -26,12 +26,12 @@ export function AdminDashboard({
       <header className="desk-welcome">
         <p>업무 홈</p>
         <h1>어떤 작업을 하시겠어요?</h1>
-        <p>작성할 콘텐츠를 고르거나 진행 중인 업무를 확인하세요.</p>
+        <p className="text-safe-wrap">작성할 콘텐츠를 고르거나 진행 중인 업무를 확인하세요.</p>
       </header>
       {preview ? (
         <section aria-labelledby="desk-pending" className="mb-8">
           <div className="desk-section-title"><h2 id="desk-pending">처리 대기 현황</h2></div>
-          <p className="py-4 text-small text-muted-foreground">디자인 미리보기에서는 운영 현황을 조회하지 않습니다.</p>
+          <p className="text-safe-wrap py-4 text-small text-muted-foreground">디자인 미리보기에서는 운영 현황을 조회하지 않습니다.</p>
         </section>
       ) : pendingSummaries.length > 0 ? (
         <section aria-labelledby="desk-pending" className="mb-8">
@@ -65,7 +65,7 @@ export function AdminDashboard({
               <li key={task.href}>
                 <Link href={route(task.href)}>
                   <strong>{task.title}</strong>
-                  <span>{task.description}</span>
+                  <span className="text-safe-wrap">{task.description}</span>
                   <span aria-hidden="true">↗</span>
                 </Link>
                 {canCreate ? (
@@ -84,7 +84,7 @@ export function AdminDashboard({
               <strong>
                 {task.title} <span aria-hidden="true">↗</span>
               </strong>
-              <span>{task.description}</span>
+              <span className="text-safe-wrap">{task.description}</span>
             </Link>
           ))}
         </aside>
