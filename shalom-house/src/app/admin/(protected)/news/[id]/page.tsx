@@ -1,3 +1,4 @@
+import { AdminContentDetailLayout } from "@/components/admin/admin-content-detail-layout";
 import { getAdminListReturnHref } from "@/lib/admin-list-return";
 import { normalizeAdminNewsPage } from "@/features/news/news.pagination";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
@@ -93,66 +94,70 @@ export default async function AdminNewsDetailPage({
   const isArchived = post.publicationStatus === "archived" && post.approvalStatus === "approved";
 
   return (
-    <div className="admin-detail-layout">
-      <AdminDetailHeader
-        backHref={backHref}
-        backLabel="소식 관리로 돌아가기"
-        eyebrow={`소식 · ${getNewsCategoryLabel(post.category)}`}
-        title={post.title}
-        actions={
-          <>
-            {post.isEditable && canUpdate ? (
-              <Link
-                href={`/admin/news/${post.id}/edit`}
-                className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                게시물 수정
-              </Link>
-            ) : null}
-            {post.isPubliclyVisible ? (
-              <Link
-                href={`/news/${post.slug}`}
-                className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                공개 페이지 보기
-              </Link>
-            ) : null}
-          </>
-        }
-      />
-
-      <AdminStatusSummary
-        items={[
-          { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[post.publicationStatus]}>{getNewsPublicationStatusLabel(post.publicationStatus)}</SemanticStatusBadge> },
-          { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[post.approvalStatus]}>{getNewsApprovalStatusLabel(post.approvalStatus)}</SemanticStatusBadge> },
-          { label: "공개 여부", value: <SemanticStatusBadge tone={post.isPubliclyVisible ? "success" : "neutral"}>{post.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
-          { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
-        ]}
-      />
-
-      <AdminSectionNavigation
-        items={[
-          { id: "admin-news-management-heading", label: "관리 정보" },
-          { id: "admin-news-content-heading", label: "내용" },
-          { id: "news-media-heading", label: "미디어 관리" },
-          ...(post.canDirectPublish && canDirectPublish
-            ? [{ id: "admin-news-direct-publish-heading", label: "바로 게시" }]
-            : []),
-          ...(post.canRequestReview && canRequestReview
-            ? [{ id: "admin-news-request-review-heading", label: isRejectedDraft ? "재검토 요청" : "검토 요청" }]
-            : []),
-          ...(post.canDecideReview && canDecideReview
-            ? [{ id: "admin-news-decide-review-heading", label: "검토 결과 처리" }]
-            : []),
-          ...(post.canPublish && canPublish ? [{ id: "admin-news-publish-heading", label: "게시" }] : []),
-          ...(post.canManagePublicationState && canPublish
-            ? [{ id: "admin-news-publication-state-heading", label: "게시 상태 변경" }]
-            : []),
-          ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
-          { id: "admin-audit-history-heading", label: "수정 이력" },
-        ]}
-      />
-
+    <AdminContentDetailLayout
+      header={
+        <AdminDetailHeader
+          backHref={backHref}
+          backLabel="소식 관리로 돌아가기"
+          eyebrow={`소식 · ${getNewsCategoryLabel(post.category)}`}
+          title={post.title}
+          actions={
+            <>
+              {post.isEditable && canUpdate ? (
+                <Link
+                  href={`/admin/news/${post.id}/edit`}
+                  className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  게시물 수정
+                </Link>
+              ) : null}
+              {post.isPubliclyVisible ? (
+                <Link
+                  href={`/news/${post.slug}`}
+                  className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  공개 페이지 보기
+                </Link>
+              ) : null}
+            </>
+          }
+        />
+      }
+      summary={
+        <AdminStatusSummary
+          items={[
+            { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[post.publicationStatus]}>{getNewsPublicationStatusLabel(post.publicationStatus)}</SemanticStatusBadge> },
+            { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[post.approvalStatus]}>{getNewsApprovalStatusLabel(post.approvalStatus)}</SemanticStatusBadge> },
+            { label: "공개 여부", value: <SemanticStatusBadge tone={post.isPubliclyVisible ? "success" : "neutral"}>{post.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
+            { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
+          ]}
+        />
+      }
+      navigation={
+        <AdminSectionNavigation
+          items={[
+            { id: "admin-news-content-heading", label: "내용" },
+            { id: "news-media-heading", label: "미디어 관리" },
+            ...(post.canDirectPublish && canDirectPublish
+              ? [{ id: "admin-news-direct-publish-heading", label: "바로 게시" }]
+              : []),
+            ...(post.canRequestReview && canRequestReview
+              ? [{ id: "admin-news-request-review-heading", label: isRejectedDraft ? "재검토 요청" : "검토 요청" }]
+              : []),
+            ...(post.canDecideReview && canDecideReview
+              ? [{ id: "admin-news-decide-review-heading", label: "검토 결과 처리" }]
+              : []),
+            ...(post.canPublish && canPublish ? [{ id: "admin-news-publish-heading", label: "게시" }] : []),
+            ...(post.canManagePublicationState && canPublish
+              ? [{ id: "admin-news-publication-state-heading", label: "게시 상태 변경" }]
+              : []),
+            { id: "admin-news-management-heading", label: "관리 정보" },
+            ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
+            { id: "admin-audit-history-heading", label: "수정 이력" },
+          ]}
+        />
+      }
+    >
       {!post.isEditable ? (
         <aside className="admin-notice">
           {isPendingReview ? (
@@ -196,30 +201,6 @@ export default async function AdminNewsDetailPage({
           <p className="mt-2 text-small text-muted-foreground">내용을 수정한 뒤 다시 검토를 요청할 수 있습니다.</p>
         </aside>
       ) : null}
-
-      <section aria-labelledby="admin-news-management-heading" className="admin-section">
-        <h2 id="admin-news-management-heading" className="text-heading font-bold">
-          관리 정보
-        </h2>
-        <dl className="mt-5 grid gap-5 sm:grid-cols-2">
-          <div className="min-w-0">
-            <dt className="text-small font-semibold text-muted-foreground">slug</dt>
-            <dd className="mt-1 break-all">{post.slug}</dd>
-          </div>
-          <div>
-            <dt className="text-small font-semibold text-muted-foreground">게시일</dt>
-            <dd className="mt-1">
-              <DateValue value={post.publishedAt} />
-            </dd>
-          </div>
-          <div>
-            <dt className="text-small font-semibold text-muted-foreground">생성일</dt>
-            <dd className="mt-1">
-              <DateValue value={post.createdAt} />
-            </dd>
-          </div>
-        </dl>
-      </section>
 
       <section aria-labelledby="admin-news-content-heading" className="space-y-6">
         <h2 id="admin-news-content-heading" className="text-heading font-bold">
@@ -370,6 +351,32 @@ export default async function AdminNewsDetailPage({
           <AdminNewsPublicationStateForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </AdminWorkflowPanel>
       ) : null}
+
+      <section aria-labelledby="admin-news-management-heading" className="admin-section">
+        <h2 id="admin-news-management-heading" className="text-heading font-bold">관리 정보</h2>
+        <dl className="mt-5 grid gap-5 sm:grid-cols-2">
+          <div>
+            <dt className="text-small font-semibold text-muted-foreground">게시일</dt>
+            <dd className="mt-1"><DateValue value={post.publishedAt} /></dd>
+          </div>
+
+        </dl>
+        <details className="mt-5 border-t border-border pt-4">
+          <summary className="min-h-11 font-semibold">주소·작성 정보</summary>
+          <dl className="mt-4 grid gap-5 sm:grid-cols-2">
+            <div className="min-w-0">
+              <dt className="text-small font-semibold text-muted-foreground">공개 주소 식별자</dt>
+              <dd className="mt-1 break-all">{post.slug}</dd>
+            </div>
+
+            <div>
+              <dt className="text-small font-semibold text-muted-foreground">작성일</dt>
+              <dd className="mt-1"><DateValue value={post.createdAt} /></dd>
+            </div>
+          </dl>
+        </details>
+      </section>
+
       {canDelete ? (
         <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5">
           <h2 id="delete-content-heading" className="text-heading font-bold">
@@ -383,7 +390,8 @@ export default async function AdminNewsDetailPage({
           />
         </section>
       ) : null}
+
       <AdminAuditHistory items={auditHistory} />
-    </div>
+    </AdminContentDetailLayout>
   );
 }
