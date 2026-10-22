@@ -184,19 +184,26 @@ export default function StringInfoEditForm({
         payload.stringDetails.desiredDateTime = `${date}T${time}`;
       }
       if (enableStrings) {
-        payload.stringDetails.stringTypes = stringTypes;
-        payload.stringDetails.customStringName = customStringType || null;
+        const currentTypes = [...stringTypes].sort();
+        if (currentTypes.length !== baseline.stringTypes.length || currentTypes.some((value, index) => value !== baseline.stringTypes[index])) {
+          payload.stringDetails.stringTypes = stringTypes;
+        }
+        if ((customStringType ?? "") !== baseline.customStringName) payload.stringDetails.customStringName = customStringType || null;
       }
-      if (enableRacket) {
+      if (enableRacket && (racketType ?? "") !== baseline.racketType) {
         payload.stringDetails.racketType = racketType;
       }
+      if (Object.keys(payload.stringDetails).length === 0) { setIsSubmitting(false); onDone(); return; }
       const res = await fetch(`/api/applications/stringing/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("네트워크 오류");
+      if (!res.ok) {
+        const failure = await res.json().catch(() => null);
+        throw new Error(typeof failure?.error === "string" ? failure.error : "수정에 실패했습니다.");
+      }
       showSuccessToast("스트링 정보가 수정되었습니다.");
       mutateData();
       mutateHistory();
@@ -205,7 +212,7 @@ export default function StringInfoEditForm({
     } catch (err) {
       console.error(err);
       setIsSubmitting(false);
-      showErrorToast("수정에 실패했습니다.");
+      showErrorToast(err instanceof Error ? err.message : "수정에 실패했습니다.");
     }
   };
 
