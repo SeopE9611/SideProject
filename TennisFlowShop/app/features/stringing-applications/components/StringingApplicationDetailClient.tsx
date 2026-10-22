@@ -2819,7 +2819,7 @@ export default function StringingApplicationDetailClient({
                         onClick={() => setIsStringModalOpen(true)}
                         className={cn("min-h-11 w-full border-border hover:bg-muted bp-sm:w-auto", isAdmin && "!w-auto")}
                       >
-                        스트링 정보 수정
+                        희망 날짜·시간 수정
                       </Button>
                     </CardFooter>
                   )}
@@ -2828,8 +2828,13 @@ export default function StringingApplicationDetailClient({
                     <DialogTrigger asChild></DialogTrigger>
                     <DialogContent className="max-w-lg">
                       <DialogTitle className="text-ui-section-title font-semibold mb-4">
-                        신청 스트링 정보 수정
+                        희망 날짜·시간 수정
                       </DialogTitle>
+                      {isAdmin && (
+                        <p className="mb-4 text-sm text-muted-foreground">
+                          결제 및 재고 정합성 보호를 위해 스트링·라켓 구성 변경은 이 화면에서 지원하지 않습니다.
+                        </p>
+                      )}
                       <StringInfoEditForm
                         tone={isAdmin ? "admin" : "user"}
                         id={data.id}
@@ -2846,12 +2851,8 @@ export default function StringingApplicationDetailClient({
                         onDone={() => setIsStringModalOpen(false)}
                         mutateData={mutate}
                         mutateHistory={() => historyMutateRef.current?.()}
-                        /** 필드 제한: 관리자 전체, 일반 사용자는 desiredDateTime만 */
-                        fields={
-                          isAdmin
-                            ? ["desiredDateTime", "stringType", "racketType"]
-                            : ["desiredDateTime"]
-                        }
+                        /** 구성·금액 변경은 서버 정책에 따라 제공하지 않는다. */
+                        fields={["desiredDateTime"]}
                       />
                       <DialogClose asChild>
                         <Button
