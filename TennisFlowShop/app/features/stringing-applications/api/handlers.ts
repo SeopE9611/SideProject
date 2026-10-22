@@ -44,7 +44,7 @@ import { revertConsumption } from "@/lib/passes.service";
 import { cancelNicePaymentByTid, getNicePaymentByTid } from "@/lib/payments/nice/server";
 import { tossPaymentSessions } from "@/lib/payments/toss/session";
 import { randomUUID } from "node:crypto";
-import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
+import { calcStringingMountingFeeByProductId } from "@/lib/pricing";
 import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import {
   buildCancelRefundSubject,
@@ -60,7 +60,6 @@ import {
   isValidTrackingNumberLength,
   normalizeTrackingNumber,
 } from "@/lib/shipping/tracking-number";
-import { getStringingServicePrice } from "@/lib/stringing-prices";
 import { isStringingCanceledStatus, isStringingCompletedStatus } from "@/lib/status/flow-status";
 import { ServicePassConsumption } from "@/lib/types/pass";
 import { HistoryItem, HistoryRecord } from "@/lib/types/stringing-application-db";
@@ -1807,12 +1806,42 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 }
 
 // ================= PATCH (기존 소유권 가드를 통과한 수정) =================
-export async function handlePatchStringingApplication(req: Request, id: string) {
+export async function handlePatchStringingApplication(req: Request, id: string, auth: { isAdmin: boolean } = { isAdmin: false }) {
   try {
     const client = await clientPromise;
     const db = await getDb();
-    const { name, email, phone, address, addressDetail, postalCode, depositor, stringDetails } =
-      await req.json();
+    const body: unknown = await req.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "올바른 수정 정보를 입력해주세요." }, { status: 400 });
+    }
+    const input = body as Record<string, unknown>;
+    const ordinaryFields = ["name", "email", "phone", "address", "addressDetail", "postalCode", "depositor", "stringDetails"];
+    const financialFields = ["stringItems", "totalPrice"];
+    for (const key of Object.keys(input)) {
+      if (financialFields.includes(key)) {
+        return NextResponse.json({ error: auth.isAdmin ? "이 API에서는 안전한 구성·금액 변경을 지원하지 않습니다." : "수정 권한이 없는 필드입니다." }, { status: auth.isAdmin ? 409 : 403 });
+      }
+      if (!ordinaryFields.includes(key)) return NextResponse.json({ error: "수정 권한이 없는 필드입니다." }, { status: 403 });
+      if (key !== "stringDetails" && typeof input[key] !== "string") return NextResponse.json({ error: "수정 항목은 문자열이어야 합니다." }, { status: 400 });
+    }
+    if ("stringDetails" in input) {
+      const details = input.stringDetails;
+      if (!details || typeof details !== "object" || Array.isArray(details)) return NextResponse.json({ error: "스트링 수정 정보 형식이 올바르지 않습니다." }, { status: 400 });
+      for (const key of Object.keys(details)) {
+        if (["stringTypes", "customStringName", "racketType", "stringItems", "totalPrice", "lines"].includes(key)) {
+          // 결제 준비와 공유하는 선점 없이 금액·장착 구성을 변경하지 않는다.
+          return NextResponse.json({ error: auth.isAdmin ? "이 API에서는 안전한 구성·금액 변경을 지원하지 않습니다." : "수정 권한이 없는 필드입니다." }, { status: auth.isAdmin ? 409 : 403 });
+        }
+        if (!["desiredDateTime", "requirements"].includes(key)) return NextResponse.json({ error: "수정 권한이 없는 필드입니다." }, { status: 403 });
+        if (typeof (details as Record<string, unknown>)[key] !== "string") return NextResponse.json({ error: "예약 시간과 요청사항은 문자열이어야 합니다." }, { status: 400 });
+      }
+    }
+    if (!Object.keys(input).some((key) => key !== "stringDetails") &&
+        (!input.stringDetails || Object.keys(input.stringDetails).length === 0)) {
+      return NextResponse.json({ error: "수정할 항목이 없습니다." }, { status: 400 });
+    }
+    const { name, email, phone, address, addressDetail, postalCode, depositor } = input as Record<string, string | undefined>;
+    const stringDetails = input.stringDetails as { desiredDateTime?: string; requirements?: string } | undefined;
 
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid application ID" }, { status: 400 });
@@ -1822,7 +1851,7 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
     if (!app) return NextResponse.json({ error: "Application not found" }, { status: 404 });
 
     const isVisit = normalizeCollection(app.collectionMethod ?? app.shippingInfo?.collectionMethod) === "visit";
-    const protectReservationFields = stringDetails?.desiredDateTime !== undefined || Array.isArray(stringDetails?.stringTypes);
+    const protectReservationFields = stringDetails?.desiredDateTime !== undefined;
     const protectVisit = isVisit && protectReservationFields;
     const snapshot: Document = {
       _id: app._id, status: app.status ?? null, cancelRequest: app.cancelRequest ?? null,
@@ -1831,12 +1860,38 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
       stringDetails: app.stringDetails ?? null, stringItems: app.stringItems ?? null,
       visitSlotCount: app.visitSlotCount ?? null, visitDurationMinutes: app.visitDurationMinutes ?? null,
       updatedAt: app.updatedAt ?? null,
+      paymentStatus: app.paymentStatus ?? null, paymentInfo: app.paymentInfo ?? null,
+      servicePaid: app.servicePaid ?? null, packageApplied: app.packageApplied ?? null,
+      orderId: app.orderId ?? null, rentalId: app.rentalId ?? null,
+      customer: app.customer ?? null, shippingInfo: app.shippingInfo ?? null,
     };
-    const patch = async (session?: ClientSession) => {
-    const appDoc = session
-      ? await db.collection("stringing_applications").findOne(snapshot, { session })
-      : app;
+    const patch = async (session: ClientSession) => {
+    const appDoc = await db.collection("stringing_applications").findOne(snapshot, { session });
     if (!appDoc) throw Object.assign(new Error("신청서가 변경되었습니다. 최신 상태를 확인해주세요."), { status: 409 });
+    if (!auth.isAdmin) {
+      const canceling = (document: Document) => isOrderCancellationInFlight(document) || isStandaloneNiceCancelLocked(document) ||
+        ![undefined, null, "none", "rejected"].includes(document.cancelRequest?.status) ||
+        /취소|환불|cancel|refund/i.test(String(document.paymentStatus ?? "") + " " + String(document.paymentInfo?.status ?? ""));
+      if (!(INPROGRESS_STATUSES as readonly string[]).includes(String(appDoc.status ?? "")) || canceling(appDoc)) {
+        throw Object.assign(new Error("현재 신청 상태에서는 수정할 수 없습니다."), { status: 409 });
+      }
+      // 부모의 취소 선점도 같은 트랜잭션의 실제 부모 쓰기와 충돌하게 한다.
+      const parentId = appDoc.orderId ?? appDoc.rentalId;
+      if (parentId) {
+        if (!ObjectId.isValid(String(parentId)) || (appDoc.orderId && appDoc.rentalId)) throw Object.assign(new Error("연결 정보를 확인해야 합니다."), { status: 409 });
+        const parents = db.collection(appDoc.orderId ? "orders" : "rental_orders");
+        const parent = await parents.findOne({ _id: new ObjectId(String(parentId)) }, { session });
+        if (!parent || canceling(parent)) throw Object.assign(new Error("취소 처리 중인 연결 신청서는 수정할 수 없습니다."), { status: 409 });
+        const previousTime = parent.updatedAt instanceof Date ? parent.updatedAt.getTime()
+          : typeof parent.updatedAt === "string" ? Date.parse(parent.updatedAt) : NaN;
+        const updatedAt = new Date(Math.max(Date.now(), Number.isFinite(previousTime) ? previousTime + 1 : 0));
+        if (!Number.isFinite(updatedAt.getTime())) throw Object.assign(new Error("연결 문서의 수정 시각을 확인해야 합니다."), { status: 409 });
+        const savedParent = await parents.updateOne({ ...orderCancelSnapshot(parent), updatedAt: parent.updatedAt ?? null }, {
+          $set: { updatedAt: typeof parent.updatedAt === "string" ? updatedAt.toISOString() : updatedAt },
+        }, { session });
+        if (!savedParent.acknowledged || savedParent.matchedCount !== 1 || savedParent.modifiedCount !== 1) throw Object.assign(new Error("연결 상태가 변경되었습니다."), { status: 409 });
+      }
+    }
     let slotCount = 1;
     if (protectVisit) {
       if (isStringingCanceledStatus(appDoc.status) || isStandaloneNiceCancelLocked(appDoc) ||
@@ -1849,50 +1904,11 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
         }
         slotCount = Math.max(1, Math.floor(appDoc.visitSlotCount));
       }
-      if (Array.isArray(stringDetails?.stringTypes)) {
-        const lines = appDoc.stringDetails?.lines;
-        const types = appDoc.stringDetails?.stringTypes;
-        let beforeCount: number;
-        let afterCount: number;
-        if (Array.isArray(lines) && lines.length > 0) {
-          if (lines.some((line: unknown) => !line || typeof line !== "object" || !("stringProductId" in line) || typeof line.stringProductId !== "string" || !line.stringProductId)) {
-            throw Object.assign(new Error("기존 예약의 스트링 구성을 확인해야 합니다."), { status: 409 });
-          }
-          // 제출과 동일하게 저장된 lines가 우선이며 PATCH는 lines를 변경하지 않는다.
-          beforeCount = afterCount = lines.length;
-        } else {
-          if ((lines != null && !Array.isArray(lines)) || !Array.isArray(types) || types.some((value: unknown) => typeof value !== "string") ||
-              stringDetails.stringTypes.some((value: unknown) => typeof value !== "string")) {
-            throw Object.assign(new Error("기존 예약의 스트링 구성을 확인해야 합니다."), { status: 409 });
-          }
-          beforeCount = Math.max(1, types.filter(Boolean).length);
-          afterCount = Math.max(1, stringDetails.stringTypes.filter(Boolean).length);
-        }
-        if (beforeCount !== slotCount || afterCount !== slotCount) {
-          throw Object.assign(new Error("예약 슬롯 수가 달라지는 스트링 구성 변경은 처리할 수 없습니다."), { status: 409 });
-        }
-      }
+
     }
 
     const setFields: any = {};
     const pushHistory: any[] = [];
-
-    const updatePayload = {
-      name,
-      email,
-      phone,
-      address,
-      addressDetail,
-      postalCode,
-      depositor,
-      stringDetails,
-    };
-    const updatedTypes: string[] = (updatePayload?.stringDetails?.stringTypes ??
-      app.stringDetails?.stringTypes ??
-      []) as string[];
-
-    // const recalculated = await calcStringingTotal(db, updatedTypes);
-    // setFields.totalPrice = recalculated;
 
     // 고객정보 변경
     if (name || email || phone || address || addressDetail || postalCode) {
@@ -1937,9 +1953,6 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
     if (stringDetails) {
       //  스트링 관련 필드 변경 감지
       hasTimeChange = typeof stringDetails.desiredDateTime !== "undefined";
-      const hasTypesChange = Array.isArray(stringDetails.stringTypes);
-      const hasCustomNameChange = "customStringName" in stringDetails;
-      const hasRacketChange = typeof stringDetails.racketType !== "undefined";
 
       // 날짜/시간
       if (hasTimeChange) {
@@ -1960,87 +1973,7 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
         setFields.desiredDateTime = stringDetails.desiredDateTime;
       }
 
-      // 스트링 타입 & 커스텀 이름
-      if (hasTypesChange) {
-        const prevTypes: string[] = Array.isArray(appDoc?.stringDetails?.stringTypes)
-          ? appDoc.stringDetails.stringTypes
-          : []; //
-        const types: string[] = Array.isArray(stringDetails.stringTypes)
-          ? stringDetails.stringTypes
-          : prevTypes;
-        setFields["stringDetails.stringTypes"] = types;
-        setFields["stringDetails.customStringName"] = stringDetails.customStringName ?? null;
-      }
-
-      // 라켓 종류
-      if (hasRacketChange) {
-        setFields["stringDetails.racketType"] = stringDetails.racketType;
-      }
-
-      // stringItems 재계산
-      if (hasTimeChange || hasTypesChange || hasCustomNameChange) {
-        const typesForItems: string[] = Array.isArray(stringDetails?.stringTypes)
-          ? stringDetails.stringTypes
-          : Array.isArray(appDoc?.stringDetails?.stringTypes)
-            ? appDoc.stringDetails.stringTypes
-            : [];
-        const newItems = await Promise.all(
-          typesForItems.map(async (prodId: any) => {
-            if (prodId === "custom") {
-              return {
-                id: "custom",
-                name:
-                  stringDetails?.customStringName?.trim() ||
-                  appDoc?.stringDetails?.customStringName ||
-                  "커스텀 스트링",
-                price: getStringingServicePrice("custom", true), //   커스텀도 price 포함
-                quantity: 1, //
-              };
-            }
-            const mountingFee = await calcStringingMountingFeeByProductId(db, prodId);
-            const prod = await db
-              .collection("products")
-              .findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
-            return {
-              id: prodId,
-              name: prod?.name ?? "알 수 없는 상품",
-              price: mountingFee,
-              quantity: 1, //
-            };
-          }),
-        );
-        // stringDetails.stringItems는 "표시용" 형태({id,name})로 유지 (POST/GET과 shape 통일)
-        setFields["stringDetails.stringItems"] = newItems.map((it) => ({
-          id: it.id,
-          name: it.name,
-        }));
-
-        //  GET의 1순위 표준 필드(app.stringItems)도 함께 갱신
-        // - POST(handleSubmitStringingApplication)에서 저장하는 구조와 동일하게 맞춤
-        setFields.stringItems = newItems.map((it) => ({
-          productId: it.id,
-          name: it.name,
-          quantity: typeof it.quantity === "number" ? it.quantity : 1,
-          mountingFee: it.price,
-        }));
-
-        // 스트링 요금(newItems) 합산하여 totalPrice 자동 설정
-        // 유틸 기준으로 최종 금액 1회 확정
-        if (hasTypesChange || hasCustomNameChange) {
-          const typesForTotal: string[] = Array.isArray(setFields["stringDetails.stringTypes"])
-            ? setFields["stringDetails.stringTypes"]
-            : (appDoc.stringDetails?.stringTypes ?? []);
-
-          const recalculated = await calcStringingTotal(db, typesForTotal);
-          setFields.totalPrice = recalculated;
-          pushHistory.push({
-            status: "결제 금액 자동 업데이트",
-            date: new Date(),
-            description: `결제 금액을 ${recalculated.toLocaleString()}원으로 업데이트했습니다. (정산 유틸)`,
-          });
-        }
-      }
-      if (hasTimeChange || hasTypesChange || hasCustomNameChange || hasRacketChange) {
+      if (hasTimeChange) {
         pushHistory.push({
           status: "스트링 정보 수정",
           date: new Date(),
@@ -2061,20 +1994,18 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
       }
     }
 
+    if (Object.keys(setFields).length === 0 && pushHistory.length === 0) return NextResponse.json({ success: true });
+
     // 실제 업데이트
     const result = await db
       .collection("stringing_applications")
-      .updateOne(protectReservationFields ? snapshot : { _id: new ObjectId(id) }, {
+      .updateOne(snapshot, {
         $set: setFields,
         $push: { history: { $each: pushHistory } },
       } as any, { session });
 
-    if (protectReservationFields && (!result.acknowledged || result.matchedCount !== 1 || result.modifiedCount !== 1)) {
+    if (!result.acknowledged || result.matchedCount !== 1 || result.modifiedCount !== 1) {
       throw Object.assign(new Error("신청서가 변경되었습니다. 최신 상태를 확인해주세요."), { status: 409 });
-    }
-
-    if (result.matchedCount === 0) {
-      return NextResponse.json({ error: "Application not found" }, { status: 404 });
     }
 
     // 동기화: 연결된 일반 주문서가 있으면 고객 정보 / 입금자명 반영
@@ -2126,7 +2057,6 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 
     return NextResponse.json({ success: true });
     };
-    if (!protectVisit) return await patch();
     const session = client.startSession();
     try {
       const response = await session.withTransaction(() => patch(session));
