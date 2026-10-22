@@ -1,3 +1,4 @@
+import { AdminContentDetailLayout } from "@/components/admin/admin-content-detail-layout";
 import { getAdminListReturnHref } from "@/lib/admin-list-return";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
@@ -73,7 +74,17 @@ export default async function GalleryDetail({
     contentId: item.id,
   });
   const details: [[string, string | number | null], ...Array<[string, string | number | null]>] = [
-    ["슬러그", item.slug],
+    ["공개 주소 식별자", item.slug],
+    ["파일 저장소", item.media.bucket],
+    ["파일 저장 경로", item.media.objectPath],
+    ["파일 형식", item.media.mimeType],
+    ["용량", `${item.media.byteSize.toLocaleString()} bytes`],
+    ["이미지 크기", `${item.media.width}×${item.media.height}`],
+    ["원본 파일명", item.media.originalFileName],
+    ["파일 확인값 (SHA-256)", `${item.media.sha256.slice(0, 12)}…`],
+    ["작성일", item.createdAt],
+  ];
+  const visibilityDetails: Array<[string, string | null]> = [
     ["분류", item.category],
     ["활동일", item.activityDate],
     ["인물 상태", getGallerySubjectPresenceLabel(item.subjectPresence)],
@@ -81,14 +92,6 @@ export default async function GalleryDetail({
     ["동의 참조 코드", item.consentReferenceCode],
     ["게시 시작일", item.displayStartOn],
     ["게시 종료일", item.displayEndOn],
-    ["bucket", item.media.bucket],
-    ["object path", item.media.objectPath],
-    ["MIME", item.media.mimeType],
-    ["용량", `${item.media.byteSize.toLocaleString()} bytes`],
-    ["이미지 크기", `${item.media.width}×${item.media.height}`],
-    ["원본 파일명", item.media.originalFileName],
-    ["SHA-256", `${item.media.sha256.slice(0, 12)}…`],
-    ["생성일", item.createdAt],
   ];
   const editable = item.isEditable && canUpdate;
   const hasWorkflowActions =
@@ -98,60 +101,68 @@ export default async function GalleryDetail({
     (item.canManagePublicationState && canPublish) ||
     (item.canWithdrawConsent && canWithdrawConsent);
   return (
-    <div className="admin-detail-layout">
-      <AdminDetailHeader
-        backHref={backHref}
-        backLabel="활동사진 관리로 돌아가기"
-        eyebrow={`활동사진 · ${item.category}`}
-        title={item.title}
-        actions={
-          <>
-            {editable ? (
-              <Link
-                href={`/admin/gallery/${id}/edit`}
-                className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                메타데이터 수정
-              </Link>
-            ) : null}
-            {item.isPubliclyVisible ? (
-              <Link
-                href={`/life/gallery/${item.slug}`}
-                className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                공개 상세 보기
-              </Link>
-            ) : null}
-          </>
-        }
-      />
-      <AdminStatusSummary
-        items={[
-          { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getGalleryPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge> },
-          { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getGalleryApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge> },
-          { label: "공개 여부", value: <SemanticStatusBadge tone={item.isPubliclyVisible ? "success" : "neutral"}>{item.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
-          { label: "동의 상태", value: <SemanticStatusBadge tone={consentTone[item.consentStatus]}>{getGalleryConsentStatusLabel(item.consentStatus)}</SemanticStatusBadge> },
-          {
-            label: "최근 수정",
-            value: <time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time>,
-          },
-        ]}
-      />
-      <AdminSectionNavigation
-        items={[
-          { id: "admin-status-summary-heading", label: "현재 상태" },
-          { id: "admin-gallery-preview-heading", label: "비공개 미리보기" },
-          { id: "admin-gallery-description-heading", label: "설명과 대체 텍스트" },
-          { id: "admin-gallery-details-heading", label: "상세 정보" },
-          ...(hasWorkflowActions ? [{ id: "admin-gallery-workflow-heading", label: "검토·게시·동의 작업" }] : []),
-          ...(item.isArchivable && canArchive ? [{ id: "admin-gallery-archive", label: "보관" }] : []),
-          ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
-          { id: "admin-audit-history-heading", label: "수정 이력" },
-        ]}
-      />
+    <AdminContentDetailLayout
+      header={
+        <AdminDetailHeader
+          backHref={backHref}
+          backLabel="활동사진 관리로 돌아가기"
+          eyebrow={`활동사진 · ${item.category}`}
+          title={item.title}
+          actions={
+            <>
+              {editable ? (
+                <Link
+                  href={`/admin/gallery/${id}/edit`}
+                  className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  사진 정보 수정
+                </Link>
+              ) : null}
+              {item.isPubliclyVisible ? (
+                <Link
+                  href={`/life/gallery/${item.slug}`}
+                  className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  공개 상세 보기
+                </Link>
+              ) : null}
+            </>
+          }
+        />
+      }
+      summary={
+        <AdminStatusSummary
+          items={[
+            { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getGalleryPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge> },
+            { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getGalleryApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge> },
+            { label: "공개 여부", value: <SemanticStatusBadge tone={item.isPubliclyVisible ? "success" : "neutral"}>{item.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
+            { label: "동의 상태", value: <SemanticStatusBadge tone={consentTone[item.consentStatus]}>{getGalleryConsentStatusLabel(item.consentStatus)}</SemanticStatusBadge> },
+            {
+              label: "최근 수정",
+              value: <time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time>,
+            },
+          ]}
+        />
+      }
+      navigation={
+        <AdminSectionNavigation
+          items={[
+            { id: "admin-status-summary-heading", label: "현재 상태" },
+            { id: "admin-gallery-preview-heading", label: "사진 미리보기" },
+            { id: "admin-gallery-description-heading", label: "설명과 대체 텍스트" },
+            { id: "admin-gallery-consent-heading", label: "활동·공개 동의 정보" },
+            ...(hasWorkflowActions ? [{ id: "admin-gallery-workflow-heading", label: "검토·게시·동의 작업" }] : []),
+            ...(item.isArchivable && canArchive ? [{ id: "admin-gallery-archive", label: "보관" }] : []),
+            { id: "admin-gallery-details-heading", label: "파일·작성 정보" },
+            ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
+            { id: "admin-audit-history-heading", label: "수정 이력" },
+          ]}
+        />
+      }
+    >
       <section aria-labelledby="admin-gallery-preview-heading">
         <h2 id="admin-gallery-preview-heading" className="text-heading font-bold">
-          비공개 미리보기
+          사진 미리보기
         </h2>
         <img
           src={`/api/admin/gallery/${id}/media`}
@@ -159,6 +170,7 @@ export default async function GalleryDetail({
           className="mt-3 h-auto max-h-[36rem] max-w-full rounded-card object-contain"
         />
       </section>
+
       <section aria-labelledby="admin-gallery-description-heading">
         <h2 id="admin-gallery-description-heading" className="text-heading font-bold">
           설명과 대체 텍스트
@@ -168,19 +180,19 @@ export default async function GalleryDetail({
           <strong>대체 텍스트:</strong> {item.altText}
         </p>
       </section>
-      <section aria-labelledby="admin-gallery-details-heading">
-        <h2 id="admin-gallery-details-heading" className="text-heading font-bold">
-          상세 정보
-        </h2>
+
+      <section aria-labelledby="admin-gallery-consent-heading">
+        <h2 id="admin-gallery-consent-heading" className="text-heading font-bold">활동·공개 동의 정보</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-          {details.map(([label, value]) => (
+          {visibilityDetails.map(([label, value]) => (
             <div key={label} className="min-w-0">
               <dt className="font-semibold">{label}</dt>
-              <dd className="break-all">{value ?? "미입력"}</dd>
+              <dd className="mt-1 break-words">{value ?? "미입력"}</dd>
             </div>
           ))}
         </dl>
       </section>
+
       {hasWorkflowActions ? (
         <section aria-labelledby="admin-gallery-workflow-heading" className="grid gap-5">
           <h2 id="admin-gallery-workflow-heading" className="text-heading font-bold">
@@ -203,11 +215,27 @@ export default async function GalleryDetail({
           ) : null}
         </section>
       ) : null}
+
       {item.isArchivable && canArchive ? (
         <div id="admin-gallery-archive" tabIndex={-1}>
           <AdminGalleryArchiveForm id={id} expectedUpdatedAt={item.updatedAt} />
         </div>
       ) : null}
+
+      <details aria-labelledby="admin-gallery-details-heading">
+        <summary id="admin-gallery-details-heading" className="min-h-11 font-semibold">
+          파일·작성 정보
+        </summary>
+        <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+          {details.map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <dt className="font-semibold">{label}</dt>
+              <dd className="break-all">{value ?? "미입력"}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
+
       {canDelete ? (
         <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5">
           <h2 id="delete-content-heading" className="text-heading font-bold">
@@ -221,7 +249,8 @@ export default async function GalleryDetail({
           />
         </section>
       ) : null}
+
       <AdminAuditHistory items={auditHistory} />
-    </div>
+    </AdminContentDetailLayout>
   );
 }

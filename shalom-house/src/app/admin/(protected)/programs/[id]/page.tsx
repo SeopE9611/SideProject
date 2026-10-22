@@ -1,3 +1,4 @@
+import { AdminContentDetailLayout } from "@/components/admin/admin-content-detail-layout";
 import { getAdminListReturnHref } from "@/lib/admin-list-return";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
@@ -92,66 +93,70 @@ export default async function AdminProgramDetailPage({
   const isArchived = post.publicationStatus === "archived" && post.approvalStatus === "approved";
 
   return (
-    <div className="admin-detail-layout">
-      <AdminDetailHeader
-        backHref={backHref}
-        backLabel="프로그램 관리로 돌아가기"
-        eyebrow={`프로그램 · ${getProgramCategoryLabel(post.category)}`}
-        title={post.title}
-        actions={
-          <>
-            {post.isEditable && canUpdate ? (
-              <Link
-                href={`/admin/programs/${post.id}/edit`}
-                className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                프로그램 수정
-              </Link>
-            ) : null}
-            {post.isPubliclyVisible ? (
-              <Link
-                href={`/life/programs/${post.slug}`}
-                className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                공개 페이지 보기
-              </Link>
-            ) : null}
-          </>
-        }
-      />
-
-      <AdminStatusSummary
-        items={[
-          { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[post.publicationStatus]}>{getProgramPublicationStatusLabel(post.publicationStatus)}</SemanticStatusBadge> },
-          { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[post.approvalStatus]}>{getProgramApprovalStatusLabel(post.approvalStatus)}</SemanticStatusBadge> },
-          { label: "공개 여부", value: <SemanticStatusBadge tone={post.isPubliclyVisible ? "success" : "neutral"}>{post.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
-          { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
-        ]}
-      />
-
-      <AdminSectionNavigation
-        items={[
-          { id: "admin-program-management-heading", label: "관리 정보" },
-          { id: "admin-program-content-heading", label: "내용" },
-          { id: "program-media-heading", label: "미디어 관리" },
-          ...(post.canDirectPublish && canDirectPublish
-            ? [{ id: "admin-program-direct-publish-heading", label: "바로 게시" }]
-            : []),
-          ...(post.canRequestReview && canRequestReview
-            ? [{ id: "admin-program-request-review-heading", label: isRejectedDraft ? "재검토 요청" : "검토 요청" }]
-            : []),
-          ...(post.canDecideReview && canDecideReview
-            ? [{ id: "admin-program-decide-review-heading", label: "검토 결과 처리" }]
-            : []),
-          ...(post.canPublish && canPublish ? [{ id: "admin-program-publish-heading", label: "게시" }] : []),
-          ...(post.canManagePublicationState && canPublish
-            ? [{ id: "admin-program-publication-state-heading", label: "게시 상태 변경" }]
-            : []),
-          ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
-          { id: "admin-audit-history-heading", label: "수정 이력" },
-        ]}
-      />
-
+    <AdminContentDetailLayout
+      header={
+        <AdminDetailHeader
+          backHref={backHref}
+          backLabel="프로그램 관리로 돌아가기"
+          eyebrow={`프로그램 · ${getProgramCategoryLabel(post.category)}`}
+          title={post.title}
+          actions={
+            <>
+              {post.isEditable && canUpdate ? (
+                <Link
+                  href={`/admin/programs/${post.id}/edit`}
+                  className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  프로그램 수정
+                </Link>
+              ) : null}
+              {post.isPubliclyVisible ? (
+                <Link
+                  href={`/life/programs/${post.slug}`}
+                  className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+                >
+                  공개 페이지 보기
+                </Link>
+              ) : null}
+            </>
+          }
+        />
+      }
+      summary={
+        <AdminStatusSummary
+          items={[
+            { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[post.publicationStatus]}>{getProgramPublicationStatusLabel(post.publicationStatus)}</SemanticStatusBadge> },
+            { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[post.approvalStatus]}>{getProgramApprovalStatusLabel(post.approvalStatus)}</SemanticStatusBadge> },
+            { label: "공개 여부", value: <SemanticStatusBadge tone={post.isPubliclyVisible ? "success" : "neutral"}>{post.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
+            { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
+          ]}
+        />
+      }
+      navigation={
+        <AdminSectionNavigation
+          items={[
+            { id: "admin-program-content-heading", label: "내용" },
+            { id: "program-media-heading", label: "미디어 관리" },
+            ...(post.canDirectPublish && canDirectPublish
+              ? [{ id: "admin-program-direct-publish-heading", label: "바로 게시" }]
+              : []),
+            ...(post.canRequestReview && canRequestReview
+              ? [{ id: "admin-program-request-review-heading", label: isRejectedDraft ? "재검토 요청" : "검토 요청" }]
+              : []),
+            ...(post.canDecideReview && canDecideReview
+              ? [{ id: "admin-program-decide-review-heading", label: "검토 결과 처리" }]
+              : []),
+            ...(post.canPublish && canPublish ? [{ id: "admin-program-publish-heading", label: "게시" }] : []),
+            ...(post.canManagePublicationState && canPublish
+              ? [{ id: "admin-program-publication-state-heading", label: "게시 상태 변경" }]
+              : []),
+            { id: "admin-program-management-heading", label: "관리 정보" },
+            ...(canDelete ? [{ id: "delete-content-heading", label: "콘텐츠 삭제" }] : []),
+            { id: "admin-audit-history-heading", label: "수정 이력" },
+          ]}
+        />
+      }
+    >
       {!post.isEditable ? (
         <aside className="admin-notice">
           {isPendingReview ? (
@@ -196,30 +201,6 @@ export default async function AdminProgramDetailPage({
         </aside>
       ) : null}
 
-      <section aria-labelledby="admin-program-management-heading" className="admin-section">
-        <h2 id="admin-program-management-heading" className="text-heading font-bold">
-          관리 정보
-        </h2>
-        <dl className="mt-5 grid gap-5 sm:grid-cols-2">
-          <div className="min-w-0">
-            <dt className="text-small font-semibold text-muted-foreground">slug</dt>
-            <dd className="mt-1 break-all">{post.slug}</dd>
-          </div>
-          <div>
-            <dt className="text-small font-semibold text-muted-foreground">게시일</dt>
-            <dd className="mt-1">
-              <DateValue value={post.publishedAt} />
-            </dd>
-          </div>
-          <div>
-            <dt className="text-small font-semibold text-muted-foreground">생성일</dt>
-            <dd className="mt-1">
-              <DateValue value={post.createdAt} />
-            </dd>
-          </div>
-        </dl>
-      </section>
-
       <section aria-labelledby="admin-program-content-heading" className="space-y-6">
         <h2 id="admin-program-content-heading" className="text-heading font-bold">
           내용
@@ -227,14 +208,6 @@ export default async function AdminProgramDetailPage({
         <div>
           <h3 className="font-bold">목적</h3>
           <p className="mt-2 whitespace-pre-wrap break-words">{post.purpose}</p>
-        </div>
-        <div>
-          <h3 className="font-bold">운영 상태</h3>
-          <p className="mt-2">{post.operationStatusLabel ?? "미입력"}</p>
-        </div>
-        <div>
-          <h3 className="font-bold">정렬 순서</h3>
-          <p className="mt-2">{post.sortOrder}</p>
         </div>
         <div>
           <h3 className="font-bold">요약</h3>
@@ -381,6 +354,38 @@ export default async function AdminProgramDetailPage({
           <AdminProgramPublicationStateForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
         </AdminWorkflowPanel>
       ) : null}
+
+      <section aria-labelledby="admin-program-management-heading" className="admin-section">
+        <h2 id="admin-program-management-heading" className="text-heading font-bold">관리 정보</h2>
+        <dl className="mt-5 grid gap-5 sm:grid-cols-2">
+          <div>
+            <dt className="text-small font-semibold text-muted-foreground">게시일</dt>
+            <dd className="mt-1"><DateValue value={post.publishedAt} /></dd>
+          </div>
+          <div>
+            <dt className="text-small font-semibold text-muted-foreground">운영 상태</dt>
+            <dd className="mt-1">{post.operationStatusLabel ?? "미입력"}</dd>
+          </div>
+        </dl>
+        <details className="mt-5 border-t border-border pt-4">
+          <summary className="min-h-11 font-semibold">주소·작성 정보</summary>
+          <dl className="mt-4 grid gap-5 sm:grid-cols-2">
+            <div className="min-w-0">
+              <dt className="text-small font-semibold text-muted-foreground">공개 주소 식별자</dt>
+              <dd className="mt-1 break-all">{post.slug}</dd>
+            </div>
+            <div>
+              <dt className="text-small font-semibold text-muted-foreground">목록 표시 순서</dt>
+              <dd className="mt-1">{post.sortOrder}</dd>
+            </div>
+            <div>
+              <dt className="text-small font-semibold text-muted-foreground">작성일</dt>
+              <dd className="mt-1"><DateValue value={post.createdAt} /></dd>
+            </div>
+          </dl>
+        </details>
+      </section>
+
       {canDelete ? (
         <section aria-labelledby="delete-content-heading" className="rounded-card border-2 border-foreground p-5">
           <h2 id="delete-content-heading" className="text-heading font-bold">
@@ -394,7 +399,8 @@ export default async function AdminProgramDetailPage({
           />
         </section>
       ) : null}
+
       <AdminAuditHistory items={auditHistory} />
-    </div>
+    </AdminContentDetailLayout>
   );
 }
