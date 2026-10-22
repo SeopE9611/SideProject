@@ -30,5 +30,5 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     if (demoMutationBlock) return demoMutationBlock;
   }
 
-  return handlePatchStringingApplication(req, id);
+  return handlePatchStringingApplication(req, id, { isAdmin: auth.isAdmin });
 }
