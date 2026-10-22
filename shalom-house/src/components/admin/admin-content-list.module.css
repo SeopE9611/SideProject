@@ -1,0 +1,104 @@
+.list {
+  container-type: inline-size;
+}
+
+.header {
+  display: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.row > * {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.primary {
+  grid-column: 1 / -1;
+}
+
+.row > :not(.primary) {
+  display: grid;
+  grid-template-columns: minmax(0, 7rem) minmax(0, 1fr);
+  gap: 0.25rem 0.5rem;
+  align-items: start;
+}
+
+.row > :not(.primary) > :not(.label) {
+  grid-column: 2;
+  min-width: 0;
+  margin-top: 0;
+  justify-self: start;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.row time {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+@container (min-width: 28rem) {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .row > :not(.primary) {
+    display: block;
+  }
+}
+
+@container (min-width: 52rem) {
+  .news {
+    grid-template-columns: minmax(0, 1fr) 5rem 6rem 5rem 6rem 6rem;
+  }
+
+  .programs {
+    grid-template-columns: minmax(0, 1fr) 5rem 3.5rem 5rem 6rem 6rem 5rem;
+  }
+
+  .gallery {
+    grid-template-columns: minmax(0, 1fr) 6rem 5rem 6rem 5rem 6rem 6rem;
+  }
+
+  .transparency {
+    grid-template-columns: minmax(0, 1fr) 9rem 6rem 5rem 5rem 6rem;
+  }
+
+  .header {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-block: 1px solid var(--color-border);
+    background: var(--color-surface-subtle);
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  .primary {
+    grid-column: auto;
+  }
+
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

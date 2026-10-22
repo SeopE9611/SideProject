@@ -1,3 +1,4 @@
+import styles from "@/components/admin/admin-content-list.module.css";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type {
   TransparencyPublicationStatus,
@@ -112,7 +113,7 @@ export default async function AdminTransparencyPage({
   ].join("|");
   const returnTo = buildTransparencyPageHref(result.page, filters);
   return (
-    <div className="admin-list-layout">
+    <div className="admin-list-layout text-safe-wrap">
       <AdminPageHeader
         title="자료공개 관리"
         description="PDF 비공개 초안과 검토 상태를 관리합니다."
@@ -177,22 +178,22 @@ export default async function AdminTransparencyPage({
         <div className="flex flex-wrap gap-3 lg:col-span-4"><button className="min-h-11 rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground">필터 적용</button><Link href="/admin/transparency" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-5 py-2 font-semibold text-primary">필터 초기화</Link></div>
       </form>
       </AdminFilterPanel>
-      <section aria-labelledby="transparency-list">
+      <section className={styles.list} aria-labelledby="transparency-list">
         <h2 id="transparency-list" className="sr-only">자료공개 목록</h2>
         {result.items.length ? (
           <>
-            <div className={`hidden gap-3 border-y border-border bg-surface-subtle px-4 py-3 text-small font-bold xl:grid ${"xl:grid-cols-[2fr_1.2fr_1fr_0.8fr_0.8fr_1fr]"}`}>
+            <div className={`${styles.header} ${styles.transparency}`}>
               <span>자료</span><span>기준 기간 / 문서일</span><span>개인정보 검토</span><span>최종본</span><span>게시 상태</span><span>최근 수정</span>
             </div>
             <ul className="divide-y divide-border border-b border-border">
               {result.items.map((item) => (
-                <li key={item.id} className={`grid min-w-0 gap-3 px-4 py-4 md:grid-cols-2 xl:grid ${"xl:grid-cols-[2fr_1.2fr_1fr_0.8fr_0.8fr_1fr]"}`}>
-                  <div className="min-w-0 md:col-span-2 xl:col-span-1"><Link href={`/admin/transparency/${item.id}?${new URLSearchParams({ returnTo })}`} className="text-safe-wrap text-heading font-bold underline-offset-4 hover:underline">{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{transparencyCategoryLabels[item.category]}</p></div>
-                  <p><strong className="text-small font-semibold xl:sr-only">기준 기간 / 문서일 </strong>{item.periodLabel} / {item.documentDate}</p>
-                  <p><strong className="text-small font-semibold xl:sr-only">개인정보 검토 </strong><SemanticStatusBadge tone={privacyReviewTone[item.privacyReviewStatus]}>{transparencyPrivacyReviewStatusLabels[item.privacyReviewStatus]}</SemanticStatusBadge></p>
-                  <p><strong className="text-small font-semibold xl:sr-only">최종본 </strong><SemanticStatusBadge tone={finalDocumentTone[item.finalDocumentStatus]}>{transparencyFinalDocumentStatusLabels[item.finalDocumentStatus]}</SemanticStatusBadge></p>
-                  <p><strong className="text-small font-semibold xl:sr-only">게시 상태 </strong><SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{transparencyPublicationStatusLabels[item.publicationStatus]}</SemanticStatusBadge></p>
-                  <p><strong className="text-small font-semibold xl:sr-only">최근 수정 </strong><time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time></p>
+                <li key={item.id} className={`${styles.row} ${styles.transparency}`}>
+                  <div className={styles.primary}><Link href={`/admin/transparency/${item.id}?${new URLSearchParams({ returnTo })}`} className="text-safe-wrap text-[1.125rem] leading-[1.45] font-bold underline-offset-4 hover:underline">{item.title}</Link><p className="mt-1 text-small text-muted-foreground">{transparencyCategoryLabels[item.category]}</p></div>
+                  <p><strong className={styles.label}>기준 기간 / 문서일 </strong><span className="block">{item.periodLabel}</span><time dateTime={item.documentDate}>{item.documentDate.replaceAll("-", ".")}</time></p>
+                  <p><strong className={styles.label}>개인정보 검토 </strong><SemanticStatusBadge tone={privacyReviewTone[item.privacyReviewStatus]}>{transparencyPrivacyReviewStatusLabels[item.privacyReviewStatus]}</SemanticStatusBadge></p>
+                  <p><strong className={styles.label}>최종본 </strong><SemanticStatusBadge tone={finalDocumentTone[item.finalDocumentStatus]}>{transparencyFinalDocumentStatusLabels[item.finalDocumentStatus]}</SemanticStatusBadge></p>
+                  <p><strong className={styles.label}>게시 상태 </strong><SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{transparencyPublicationStatusLabels[item.publicationStatus]}</SemanticStatusBadge></p>
+                  <p><strong className={styles.label}>최근 수정 </strong><time dateTime={item.updatedAt}>{formatAdminDate(item.updatedAt)}</time></p>
                 </li>
               ))}
             </ul>

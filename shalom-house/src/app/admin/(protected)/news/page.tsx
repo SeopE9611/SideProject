@@ -1,3 +1,4 @@
+import styles from "@/components/admin/admin-content-list.module.css";
 import { ADMIN_TITLE_SEARCH_MAX_LENGTH, normalizeAdminTitleSearch } from "@/lib/admin-title-search";
 import { SemanticStatusBadge, type SemanticStatusTone } from "@/components/ui/semantic-status-badge";
 import type { NewsPublicationStatus, NewsApprovalStatus } from "@/features/news/news.types";
@@ -42,18 +43,17 @@ type AdminNewsSearchParams = {
   created?: string | string[];
 };
 
-const adminNewsDesktopGridClass =
-  "xl:grid-cols-[minmax(0,2.4fr)_minmax(0,0.75fr)_minmax(0,0.75fr)_minmax(0,0.65fr)_minmax(0,0.9fr)_minmax(0,0.9fr)]";
-
 const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
   year: "numeric",
-  month: "long",
-  day: "numeric",
+  month: "2-digit",
+  day: "2-digit",
   timeZone: "UTC",
 });
 
 function formatDate(value: string): string {
-  return dateFormatter.format(new Date(value));
+  return dateFormatter.formatToParts(new Date(value))
+    .filter(({ type }) => ["year", "month", "day"].includes(type))
+    .map(({ value: part }) => part).join(".");
 }
 
 function createAdminNewsPageHref(page: number, filters: AdminNewsListFilters, q: string): string {
@@ -87,7 +87,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
 
   const returnTo = createAdminNewsPageHref(result.page, filters, q);
   return (
-    <div className="admin-list-layout">
+    <div className="admin-list-layout text-safe-wrap">
       <AdminPageHeader
         title="소식 관리"
         description="공지사항과 활동 소식의 게시 상태와 승인 상태를 확인합니다."
@@ -170,14 +170,14 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
         </form>
       </AdminFilterPanel>
 
-      <section aria-labelledby="admin-news-list-heading">
+      <section className={styles.list} aria-labelledby="admin-news-list-heading">
         <h2 id="admin-news-list-heading" className="sr-only">
           뉴스 게시물 목록
         </h2>
         {result.items.length > 0 ? (
           <>
             <div
-              className={`hidden gap-4 border-y border-border bg-surface-subtle px-4 py-3 text-small font-bold xl:grid ${adminNewsDesktopGridClass}`}
+              className={`${styles.header} ${styles.news}`}
             >
               <span>소식</span>
               <span>게시 상태</span>
@@ -190,11 +190,11 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
               {result.items.map((item) => (
                 <li key={item.id}>
                   <article
-                    className={`grid min-w-0 gap-3 px-4 py-4 md:grid-cols-2 xl:items-start xl:gap-4 ${adminNewsDesktopGridClass}`}
+                    className={`${styles.row} ${styles.news}`}
                   >
-                    <div className="min-w-0 md:col-span-2 xl:col-span-1">
+                    <div className={styles.primary}>
                       <p className="text-small font-semibold text-primary">{getNewsCategoryLabel(item.category)}</p>
-                      <h3 className="mt-1 break-words text-heading font-bold">
+                      <h3 className="mt-1 break-words text-[1.125rem] leading-[1.45] font-bold">
                         <Link
                           href={`/admin/news/${item.id}?${new URLSearchParams({ returnTo })}`}
                           className="underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
@@ -206,34 +206,34 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
                       <p className="mt-1 break-all text-small text-muted-foreground">slug: {item.slug}</p>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-small font-semibold xl:hidden">게시 상태</p>
-                      <p className="mt-1 break-words xl:mt-0">
+                      <p className={styles.label}>게시 상태</p>
+                      <p className="mt-1 break-words">
                         <SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getNewsPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge>
                       </p>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-small font-semibold xl:hidden">승인 상태</p>
-                      <p className="mt-1 break-words xl:mt-0"><SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getNewsApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge></p>
+                      <p className={styles.label}>승인 상태</p>
+                      <p className="mt-1 break-words"><SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getNewsApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge></p>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-small font-semibold xl:hidden">공개 여부</p>
-                      <p className="mt-1 break-words font-semibold xl:mt-0">
+                      <p className={styles.label}>공개 여부</p>
+                      <p className="mt-1 break-words font-semibold">
                         <SemanticStatusBadge tone={item.isPubliclyVisible ? "success" : "neutral"}>{item.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>
                       </p>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-small font-semibold xl:hidden">게시일</p>
+                      <p className={styles.label}>게시일</p>
                       {item.publishedAt ? (
-                        <time className="mt-1 block break-words xl:mt-0" dateTime={item.publishedAt}>
+                        <time className="mt-1 block break-words" dateTime={item.publishedAt}>
                           {formatDate(item.publishedAt)}
                         </time>
                       ) : (
-                        <p className="mt-1 break-words xl:mt-0">게시일 미설정</p>
+                        <p className="mt-1 break-words">게시일 미설정</p>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-small font-semibold xl:hidden">최근 수정</p>
-                      <time className="mt-1 block break-words xl:mt-0" dateTime={item.updatedAt}>
+                      <p className={styles.label}>최근 수정</p>
+                      <time className="mt-1 block break-words" dateTime={item.updatedAt}>
                         {formatDate(item.updatedAt)}
                       </time>
                     </div>
