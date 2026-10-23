@@ -229,6 +229,7 @@ export default async function AdminProgramDetailPage({
         programId={post.id}
         expectedUpdatedAt={post.updatedAt}
         editable={post.isEditable && canUpdate}
+        readOnlyReason={post.isEditable ? "permission" : "state"}
         currentCover={
           post.coverGalleryItemId
             ? {
