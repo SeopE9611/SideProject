@@ -186,7 +186,7 @@ export function AdminGalleryDraftForm(props: Props) {
             className={`min-h-11 ${controlClass}`}
           />
           <p id="gallery-image-help" className="text-small text-muted-foreground">
-            선택한 사진은 WebP 파일로 자동 변환됩니다. 지원 형식: JPEG, PNG, WebP · 긴 변 최대 1920px
+            JPEG, PNG, WebP 사진을 선택할 수 있습니다. 선택한 사진은 WebP로 변환되며, 변환된 사진의 긴 변은 최대 1920px입니다.
           </p>
           <p id="gallery-image-status" role="status" className="text-small text-muted-foreground">
             {status}

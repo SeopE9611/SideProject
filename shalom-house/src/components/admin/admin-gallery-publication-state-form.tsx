@@ -8,7 +8,7 @@ export function AdminGalleryPublicationStateForm(p: { id: string; expectedUpdate
       {...p}
       endpoint="publication"
       label="게시 중단"
-      description="업로드한 원본 파일은 삭제하지 않고 홈페이지 공개만 즉시 중단합니다."
+      description="게시를 중단하면 홈페이지에서 사진이 보이지 않게 되지만, 서버에 저장된 사진 파일은 삭제되지 않습니다."
       confirmationField="confirmed"
       extra={{ action: "unpublish" }}
     />

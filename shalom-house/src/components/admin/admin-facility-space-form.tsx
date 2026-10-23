@@ -287,7 +287,7 @@ export function AdminFacilitySpaceForm({
         ) : mode === "edit" ? <p className="text-small text-muted-foreground">등록된 공간 사진이 없습니다.</p> : null}
         <label className="font-semibold" htmlFor="space-image">{currentMedia ? "새 사진 선택" : "사진 선택"}</label>
         <input ref={fileInputRef} id="space-image" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => void chooseImage(e.target.files?.[0])} className={controlClass} />
-        <p className="text-small text-muted-foreground">선택한 사진은 WebP 파일로 자동 변환됩니다. 지원 형식: JPEG, PNG, WebP · 긴 변 최대 1920px</p>
+        <p className="text-small text-muted-foreground">JPEG, PNG, WebP 사진을 선택할 수 있습니다. 선택한 사진은 WebP로 변환되며, 변환된 사진의 긴 변은 최대 1920px입니다.</p>
         {converted ? <><dl className="text-small"><dt>원본 파일명</dt><dd className="break-all">{converted.originalName}</dd><dt>원본 용량</dt><dd>{formatAdminFileSize(converted.originalSize)}</dd><dt>변환 결과</dt><dd>{formatAdminFileSize(converted.blob.size)} · {converted.width}×{converted.height}</dd></dl>{preview ? <>
           {/* eslint-disable-next-line @next/next/no-img-element -- Client-only Blob URL preview is not suitable for Next/Image optimization. */}
           <img src={preview} alt={altText} className="aspect-[3/2] w-full max-w-2xl rounded-card object-cover" />
