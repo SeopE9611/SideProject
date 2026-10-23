@@ -149,7 +149,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
             className={`min-h-11 ${controlClass}`}
           />
           <span id={`${name}-help`} className="sr-only">
-            {label}을 입력해 주세요.
+            {label}{name === "slug" ? "를" : "을"} 입력해 주세요.
           </span>
           {errors[name] ? (
             <p id={`${name}-error`} role="alert" className="text-small font-semibold text-danger">
