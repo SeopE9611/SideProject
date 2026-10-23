@@ -1,3 +1,4 @@
+import { formatAdminFileSize } from "@/lib/admin-file-size";
 import { AdminContentDetailLayout } from "@/components/admin/admin-content-detail-layout";
 import { getAdminListReturnHref } from "@/lib/admin-list-return";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
@@ -201,7 +202,7 @@ export default async function TransparencyDetailPage({
           <dt>원본 파일명</dt>
           <dd className="text-safe-wrap break-all">{document.file.originalFileName}</dd>
           <dt>파일 크기</dt>
-          <dd>{document.file.byteSize.toLocaleString()} bytes</dd>
+          <dd>{formatAdminFileSize(document.file.byteSize)}</dd>
         </dl>
       </section>
 

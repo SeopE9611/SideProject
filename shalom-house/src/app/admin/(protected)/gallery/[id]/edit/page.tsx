@@ -17,12 +17,12 @@ export default async function EditGallery({ params }: { params: Promise<{ id: st
         backHref={`/admin/gallery/${id}`}
         backLabel="활동사진 상세로 돌아가기"
         eyebrow="활동사진 · 수정"
-        title="활동사진 메타데이터 수정"
+        title="활동사진 정보 수정"
       />
       {editable ? (
         <section aria-labelledby="admin-gallery-edit-form-heading">
           <h2 id="admin-gallery-edit-form-heading" className="sr-only">
-            활동사진 메타데이터 수정
+            활동사진 정보 수정
           </h2>
           <AdminGalleryDraftForm
             mode="edit"

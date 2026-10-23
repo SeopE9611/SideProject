@@ -40,7 +40,7 @@ export function AdminTransparencyArchiveForm({ id, expectedUpdatedAt }: { id: st
     }
   }
   return (
-    <AdminWorkflowPanel title="초안 보관" description="보관하면 수정할 수 없습니다. Supabase Storage 원본은 유지됩니다." tone="danger">
+    <AdminWorkflowPanel title="초안 보관" description="보관하면 수정할 수 없습니다. 원본 PDF 파일은 삭제되지 않습니다." tone="danger">
     <form onSubmit={submit} aria-busy={busy} className="mt-5 max-w-3xl space-y-5">
       <label className="flex items-start gap-3 font-semibold">
         <input
