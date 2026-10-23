@@ -59,7 +59,7 @@ export function AdminTransparencyPublicationStateForm({
     }
   }
   return (
-    <AdminWorkflowPanel title="게시 중단" description="게시를 중단하면 공개 목록과 공개 PDF 경로에서 즉시 제외됩니다. Storage 원본은 유지됩니다.">
+    <AdminWorkflowPanel title="게시 중단" description="게시를 중단하면 홈페이지의 목록과 PDF 다운로드가 즉시 비공개로 전환됩니다. 원본 PDF 파일은 삭제되지 않습니다.">
     <form onSubmit={submit} aria-busy={isBusy} className="mt-5 max-w-3xl space-y-5">
       <label htmlFor="transparency-publication-state-confirmed" className="flex items-start gap-3 font-semibold">
         <input id="transparency-publication-state-confirmed" name="transitionConfirmed" type="checkbox" required className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" />

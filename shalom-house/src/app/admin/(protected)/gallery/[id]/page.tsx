@@ -1,3 +1,4 @@
+import { formatAdminFileSize } from "@/lib/admin-file-size";
 import { AdminContentDetailLayout } from "@/components/admin/admin-content-detail-layout";
 import { getAdminListReturnHref } from "@/lib/admin-list-return";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
@@ -78,7 +79,7 @@ export default async function GalleryDetail({
     ["파일 저장소", item.media.bucket],
     ["파일 저장 경로", item.media.objectPath],
     ["파일 형식", item.media.mimeType],
-    ["용량", `${item.media.byteSize.toLocaleString()} bytes`],
+    ["파일 크기", formatAdminFileSize(item.media.byteSize)],
     ["이미지 크기", `${item.media.width}×${item.media.height}`],
     ["원본 파일명", item.media.originalFileName],
     ["파일 확인값 (SHA-256)", `${item.media.sha256.slice(0, 12)}…`],

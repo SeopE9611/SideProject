@@ -15,7 +15,7 @@ export default async function NewTransparencyPage() {
         backLabel="자료공개 관리로 돌아가기"
         eyebrow="자료공개 · 작성"
         title="자료공개 초안 작성"
-        description="PDF는 private bucket에 저장되며 즉시 공개되지 않습니다."
+        description="PDF는 비공개로 저장되며 업로드만으로 홈페이지에 공개되지 않습니다."
       />
       <AdminFormGuidance title="업로드 전 확인">
         <p>

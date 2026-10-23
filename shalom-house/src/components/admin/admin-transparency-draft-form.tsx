@@ -1,4 +1,5 @@
 "use client";
+import { formatAdminFileSize } from "@/lib/admin-file-size";
 import Link from "next/link";
 import { AdminStickyFormActions } from "./admin-sticky-form-actions";
 import { useState, type FormEvent } from "react";
@@ -25,7 +26,7 @@ type TransparencyFormResponse = {
   fieldErrors?: Record<string, string>;
 };
 const fields = [
-  ["slug", "슬러그"],
+  ["slug", "공개 주소 식별자"],
   ["title", "제목"],
   ["periodLabel", "기준 기간"],
   ["documentDate", "문서일"],
@@ -115,7 +116,7 @@ export function AdminTransparencyDraftForm({ mode, id, initial }: Props) {
             className={`min-h-11 ${controlClass}`}
           />
           <p id="document-help" className="text-small text-muted-foreground">
-            PDF만 허용하며 최대 3MB입니다. {file ? `선택: ${file.name} (${file.size.toLocaleString()} bytes)` : ""}
+            PDF만 허용하며 최대 3MB입니다. {file ? `선택: ${file.name} (${formatAdminFileSize(file.size)})` : ""}
           </p>
           {errors.document ? (
             <p id="document-error" role="alert" className="text-small font-semibold text-danger">

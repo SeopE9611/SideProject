@@ -1,3 +1,4 @@
+import { formatAdminFileSize } from "@/lib/admin-file-size";
 import Image from "next/image";
 
 type AdminContentMediaSummaryProps = {
@@ -68,7 +69,7 @@ export function AdminContentMediaSummary({
                 </div>
                 <div>
                   <dt className="text-small text-muted-foreground">파일 크기</dt>
-                  <dd>{currentAttachment.byteSize.toLocaleString()} bytes</dd>
+                  <dd>{formatAdminFileSize(currentAttachment.byteSize)}</dd>
                 </div>
               </dl>
               <a

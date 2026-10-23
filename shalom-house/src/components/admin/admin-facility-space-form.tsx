@@ -1,4 +1,5 @@
 "use client";
+import { formatAdminFileSize } from "@/lib/admin-file-size";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -286,8 +287,8 @@ export function AdminFacilitySpaceForm({
         ) : mode === "edit" ? <p className="text-small text-muted-foreground">등록된 공간 사진이 없습니다.</p> : null}
         <label className="font-semibold" htmlFor="space-image">{currentMedia ? "새 사진 선택" : "사진 선택"}</label>
         <input ref={fileInputRef} id="space-image" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => void chooseImage(e.target.files?.[0])} className={controlClass} />
-        <p className="text-small text-muted-foreground">JPEG, PNG, WebP 원본을 선택하면 긴 변 1920px 이하, quality 0.82 WebP로 변환합니다.</p>
-        {converted ? <><dl className="text-small"><dt>원본 파일명</dt><dd className="break-all">{converted.originalName}</dd><dt>원본 용량</dt><dd>{converted.originalSize.toLocaleString()} bytes</dd><dt>변환 결과</dt><dd>{converted.blob.size.toLocaleString()} bytes · {converted.width}×{converted.height}</dd></dl>{preview ? <>
+        <p className="text-small text-muted-foreground">선택한 사진은 WebP 파일로 자동 변환됩니다. 지원 형식: JPEG, PNG, WebP · 긴 변 최대 1920px</p>
+        {converted ? <><dl className="text-small"><dt>원본 파일명</dt><dd className="break-all">{converted.originalName}</dd><dt>원본 용량</dt><dd>{formatAdminFileSize(converted.originalSize)}</dd><dt>변환 결과</dt><dd>{formatAdminFileSize(converted.blob.size)} · {converted.width}×{converted.height}</dd></dl>{preview ? <>
           {/* eslint-disable-next-line @next/next/no-img-element -- Client-only Blob URL preview is not suitable for Next/Image optimization. */}
           <img src={preview} alt={altText} className="aspect-[3/2] w-full max-w-2xl rounded-card object-cover" />
         </> : null}<button type="button" onClick={cancelImageSelection} className="w-fit min-h-11 rounded-control border border-border-strong px-4 py-2 font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">선택 취소</button><label className="font-semibold" htmlFor="space-alt-text">대체 텍스트 <span className="text-danger">*</span></label><textarea id="space-alt-text" required={mode === "create"} maxLength={300} rows={3} value={altText} onChange={(e) => setAltText(e.target.value)} className={controlClass} /><p className="text-small text-muted-foreground">공간 사진에서 실제로 보이는 구조와 쓰임을 간결하게 설명해 주세요.</p><label className="flex items-start gap-3 border-l-4 border-warning bg-warning-soft p-4"><input type="checkbox" required={mode === "create"} checked={mediaConfirmed} onChange={(e) => setMediaConfirmed(e.target.checked)} className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring" /><span className="text-small leading-relaxed">사진에 인물, 이름표, 문서, 연락처, 차량번호, 건강·장애 정보와 상세 출입·보안 정보가 보이지 않음을 확인했습니다.</span></label>{mode === "edit" ? <button type="button" disabled={mediaBusy} onClick={() => void saveMedia()} className="w-fit min-h-11 rounded-control bg-primary px-5 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60">{currentMedia ? "사진 교체" : "사진 저장"}</button> : null}</> : null}

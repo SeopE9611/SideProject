@@ -1,4 +1,5 @@
 "use client";
+import { formatAdminFileSize } from "@/lib/admin-file-size";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { AdminStickyFormActions } from "./admin-sticky-form-actions";
@@ -47,7 +48,7 @@ const empty: Values = {
   displayEndOn: "",
 };
 const fields: [keyof Values, string, string][] = [
-  ["slug", "슬러그", "text"],
+  ["slug", "공개 주소 식별자", "text"],
   ["title", "제목", "text"],
   ["category", "분류", "text"],
   ["activityDate", "활동일", "date"],
@@ -185,7 +186,7 @@ export function AdminGalleryDraftForm(props: Props) {
             className={`min-h-11 ${controlClass}`}
           />
           <p id="gallery-image-help" className="text-small text-muted-foreground">
-            JPEG, PNG, WebP 원본을 선택하면 긴 변 1920px 이하, quality 0.82 WebP로 변환합니다.
+            선택한 사진은 WebP 파일로 자동 변환됩니다. 지원 형식: JPEG, PNG, WebP · 긴 변 최대 1920px
           </p>
           <p id="gallery-image-status" role="status" className="text-small text-muted-foreground">
             {status}
@@ -205,10 +206,10 @@ export function AdminGalleryDraftForm(props: Props) {
               <dt>원본 파일명</dt>
               <dd className="break-all">{converted.originalName}</dd>
               <dt>원본 용량</dt>
-              <dd>{converted.originalSize.toLocaleString()} bytes</dd>
+              <dd>{formatAdminFileSize(converted.originalSize)}</dd>
               <dt>변환 결과</dt>
               <dd>
-                {converted.blob.size.toLocaleString()} bytes · {converted.width}×{converted.height}
+                {formatAdminFileSize(converted.blob.size)} · {converted.width}×{converted.height}
               </dd>
             </dl>
           ) : null}
