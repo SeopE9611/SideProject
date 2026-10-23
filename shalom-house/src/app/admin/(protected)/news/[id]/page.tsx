@@ -226,6 +226,7 @@ export default async function AdminNewsDetailPage({
         newsId={post.id}
         expectedUpdatedAt={post.updatedAt}
         editable={post.isEditable && canUpdate}
+        readOnlyReason={post.isEditable ? "permission" : "state"}
         currentCover={
           post.coverGalleryItemId
             ? {

@@ -1,10 +1,12 @@
 "use client";
 import { FormEvent, useState } from "react";
+import { AdminContentMediaSummary } from "./admin-content-media-summary";
 import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 export type AdminProgramMediaFormProps = {
   programId: string;
   expectedUpdatedAt: string;
   editable: boolean;
+  readOnlyReason: "state" | "permission";
   currentCover: { id: string; title: string; altText: string; mediaUrl: string; publiclyAvailable: boolean } | null;
   coverOptions: readonly { id: string; title: string; activityDate: string; altText: string; mediaUrl: string }[];
   currentAttachment: { label: string; originalFileName: string; byteSize: number; downloadUrl: string } | null;
@@ -35,6 +37,20 @@ function responseError(response: Response, body: ResponseBody) {
   return body.error && messages[body.error] ? messages[body.error] : "요청을 처리하지 못했습니다. 다시 시도해 주세요.";
 }
 export function AdminProgramMediaForm(props: AdminProgramMediaFormProps) {
+  if (!props.editable) {
+    return (
+      <AdminContentMediaSummary
+        headingId="program-media-heading"
+        readOnlyReason={props.readOnlyReason}
+        currentCover={props.currentCover}
+        currentAttachment={props.currentAttachment}
+      />
+    );
+  }
+  return <EditableAdminProgramMediaForm {...props} />;
+}
+
+function EditableAdminProgramMediaForm(props: AdminProgramMediaFormProps) {
   const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const expectedRedirect = `/admin/programs/${props.programId}?mediaUpdated=1`;
   const [coverId, setCoverId] = useState(props.currentCover?.id ?? "");
