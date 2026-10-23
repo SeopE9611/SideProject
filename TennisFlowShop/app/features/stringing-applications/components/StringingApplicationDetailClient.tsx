@@ -3687,7 +3687,11 @@ export default function StringingApplicationDetailClient({
                                   : "-"}
                               </p>
                               <p className="text-ui-label text-foreground/75">
-                                운송장 번호는 발급되지 않는 배송 방식입니다.
+                                {isCourierShipping
+                                  ? "완성 라켓 운송장 미등록"
+                                  : normalizeOrderShippingMethod(shippingMethod)
+                                    ? "운송장 번호는 발급되지 않는 배송 방식입니다."
+                                    : "완성 라켓 배송 방식 확인이 필요합니다."}
                               </p>
                             </>
                           )}
