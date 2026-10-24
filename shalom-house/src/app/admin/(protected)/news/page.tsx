@@ -203,7 +203,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
                         </Link>
                       </h3>
                       <p className="mt-1 break-words text-small text-muted-foreground">{item.summary}</p>
-                      <p className="mt-1 break-all text-small text-muted-foreground">slug: {item.slug}</p>
+                      <p className="mt-1 break-all text-small text-muted-foreground">공개 주소 식별자: {item.slug}</p>
                     </div>
                     <div className="min-w-0">
                       <p className={styles.label}>게시 상태</p>

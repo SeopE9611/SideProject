@@ -1,3 +1,4 @@
+import { AdminGalleryStateGuidance } from "@/components/admin/admin-gallery-state-guidance";
 import { formatAdminFileSize } from "@/lib/admin-file-size";
 import { AdminContentDetailLayout } from "@/components/admin/admin-content-detail-layout";
 import { getAdminListReturnHref } from "@/lib/admin-list-return";
@@ -161,6 +162,13 @@ export default async function GalleryDetail({
         />
       }
     >
+      <AdminGalleryStateGuidance
+        state={item}
+        canUpdate={canUpdate}
+        canPublish={canPublish}
+        canDecideReview={canDecideReview}
+      />
+
       <section aria-labelledby="admin-gallery-preview-heading">
         <h2 id="admin-gallery-preview-heading" className="text-heading font-bold">
           사진 미리보기

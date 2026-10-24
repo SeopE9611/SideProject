@@ -29,7 +29,7 @@ const fieldErrorIds: Record<AdminNewsDraftField, string> = {
 function FieldError({ field, errors }: { field: AdminNewsDraftField; errors: AdminNewsDraftFieldErrors }) {
   return errors[field] ? (
     <p id={fieldErrorIds[field]} className="text-small font-semibold text-danger">
-      {errors[field]}
+      {field === "slug" ? errors[field]?.replaceAll("슬러그", "공개 주소 식별자") : errors[field]}
     </p>
   ) : null;
 }
@@ -228,7 +228,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
 
       <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="admin-news-slug" className="font-semibold">
-          슬러그 <span className="text-danger">*</span>
+          공개 주소 식별자 <span className="text-danger">*</span>
         </label>
         <input
           id="admin-news-slug"
@@ -246,9 +246,9 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
           className={`min-h-11 ${controlClass}`}
         />
         <p id="admin-news-slug-help" className="text-small text-muted-foreground">
-          영문 소문자, 숫자와 하이픈만 사용할 수 있습니다.
+          공개 주소의 마지막 부분입니다. 영문 소문자, 숫자와 하이픈(-)으로 입력해 주세요.
           <br />
-          공개 주소는 /news/입력한-슬러그 형태가 됩니다.
+          예를 들어 house-news를 입력하면 /news/house-news 주소로 연결됩니다.
           <br />
           {PUBLIC_NEWS_RESERVED_SLUGS.join(", ")}는 분류 페이지 주소이므로 사용할 수 없습니다.
         </p>
