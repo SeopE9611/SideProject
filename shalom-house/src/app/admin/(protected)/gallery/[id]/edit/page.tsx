@@ -1,3 +1,4 @@
+import { AdminGalleryStateGuidance } from "@/components/admin/admin-gallery-state-guidance";
 import { hasAdminPermission } from "@/features/admin-auth/admin-authorization";
 import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import { notFound, redirect } from "next/navigation";
@@ -45,7 +46,13 @@ export default async function EditGallery({ params }: { params: Promise<{ id: st
           />
         </section>
       ) : (
-        <p className="rounded-card border p-5">현재 상태에서는 수정할 수 없습니다.</p>
+        <AdminGalleryStateGuidance
+          state={item}
+          canUpdate={hasAdminPermission(admin, "content.update")}
+          canPublish={hasAdminPermission(admin, "content.publish")}
+          canDecideReview={hasAdminPermission(admin, "content.decide_review")}
+          detailHref={`/admin/gallery/${id}`}
+        />
       )}
     </div>
   );

@@ -36,7 +36,7 @@ export type AdminProgramDraftFormProps =
     };
 const fields = [
   ["category", "분류", "input"],
-  ["slug", "슬러그", "input"],
+  ["slug", "공개 주소 식별자", "input"],
   ["title", "제목", "input"],
   ["summary", "요약", "textarea"],
   ["purpose", "목적", "textarea"],
@@ -138,7 +138,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
       {fields.map(([name, label, kind]) => {
         const help =
           name === "slug"
-            ? "영문 소문자, 숫자와 하이픈만 사용할 수 있습니다. 공개 주소는 /life/programs/입력한-슬러그 형태가 됩니다."
+            ? "공개 주소의 마지막 부분입니다. 영문 소문자, 숫자와 하이픈(-)으로 입력해 주세요. 예를 들어 daily-life를 입력하면 /life/programs/daily-life 주소로 연결됩니다."
             : name === "body"
               ? "빈 줄을 기준으로 문단을 구분합니다."
               : name === "operationStatusLabel"
@@ -203,7 +203,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
             ) : null}
             {error ? (
               <p id={`${id}-error`} className="text-small font-semibold text-danger">
-                {error}
+                {name === "slug" ? error.replaceAll("슬러그", "공개 주소 식별자") : error}
               </p>
             ) : null}
           </div>
