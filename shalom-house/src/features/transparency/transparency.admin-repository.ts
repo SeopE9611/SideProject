@@ -156,7 +156,7 @@ export async function findAdminTransparencyDocumentById(id: string) {
             : document.publicationStatus === "draft"
               ? "초안 작성 중"
               : document.publicationStatus === "review" && document.approvalStatus === "approved"
-                ? "게시 중단됨"
+                ? "승인 완료 · 현재 미게시"
                 : "현재 공개되지 않음";
   return {
     ...serialize(document),
