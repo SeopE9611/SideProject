@@ -1,3 +1,4 @@
+import { formatAdminDate } from "@/lib/format-admin-date";
 import { AdminContentDetailLayout } from "@/components/admin/admin-content-detail-layout";
 import { getAdminListReturnHref } from "@/lib/admin-list-return";
 import { AdminSectionNavigation } from "@/components/admin/admin-section-navigation";
@@ -49,17 +50,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "UTC",
-});
-
 function DateValue({ value }: { value: string | null }) {
-  return value ? <time dateTime={value}>{dateFormatter.format(new Date(value))}</time> : <>게시일 미설정</>;
+  return value ? <time dateTime={value}>{formatAdminDate(value)}</time> : <>게시일 미설정</>;
 }
 
 export default async function AdminProgramDetailPage({
