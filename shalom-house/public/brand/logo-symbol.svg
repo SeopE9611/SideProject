@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>샬롬의집 G 로고 - 파비콘</title>
+  <desc>집과 물결을 결합한 샬롬의집 G 버전 파비콘</desc>
+
+  <g id="house" fill="none" stroke="#17384D" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M42 152 L42 84 L128 28 L214 84 L214 152"/>
+  </g>
+  <g id="window" fill="#17384D">
+    <rect x="112" y="92" width="16" height="16" rx="3"/>
+    <rect x="132" y="92" width="16" height="16" rx="3"/>
+    <rect x="112" y="112" width="16" height="16" rx="3"/>
+    <rect x="132" y="112" width="16" height="16" rx="3"/>
+  </g>
+  <g id="wave" fill="none" stroke="#087E83" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 196 C66 156, 126 156, 176 176 C198 184, 220 184, 238 170"/>
+  </g>
+</svg>
