@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { findPublicSeoRoute } from "./public-routes";
 import { getMetadataBase, getSearchVerification, isSearchIndexingEnabled } from "./site-url";
 
-const name = "샬롬의 집";
-const defaultImage = { url: "/api/social-image", alt: "샬롬의 집 장애인거주시설 공식 홈페이지", width: 1200, height: 630 };
+const name = "샬롬의집";
+const defaultImage = { url: "/api/social-image", alt: "샬롬의집 장애인거주시설 공식 홈페이지", width: 1200, height: 630 };
 export function createRootMetadata(): Metadata {
   const indexing = isSearchIndexingEnabled();
   const verified = indexing ? getSearchVerification() : { google: undefined, naver: undefined };
   return { metadataBase: getMetadataBase(), title: { default: name, template: `%s | ${name}` },
+    icons: { icon: [{ url: "/brand/logo-symbol.svg", type: "image/svg+xml", sizes: "any" }] },
     description: findPublicSeoRoute("/").description, applicationName: name, creator: name, publisher: name,
     robots: { index: indexing, follow: indexing }, verification: indexing ? {
       ...(verified.google ? { google: verified.google } : {}),
