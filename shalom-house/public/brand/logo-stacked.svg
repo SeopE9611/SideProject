@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="860" viewBox="0 0 860 860" role="img" aria-labelledby="logo-stacked-title logo-stacked-desc">
+  <title id="logo-stacked-title">샬롬의집 세로형 로고</title>
+  <desc id="logo-stacked-desc">투명 배경에 남색 집과 창문, 청록색 물결 아래로 남색 샬롬의집 글자를 가운데 정렬한 로고. 글자는 편집 가능한 텍스트이며 표시 환경의 Pretendard 글꼴에 의존합니다.</desc>
+  <g transform="translate(140,70)">
+    <path d="M90 262 L90 132 L270 20 L450 132 L450 262" fill="none" stroke="#17384D" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <g fill="#17384D">
+      <rect x="240" y="132" width="34" height="34" rx="7"/>
+      <rect x="286" y="132" width="34" height="34" rx="7"/>
+      <rect x="240" y="178" width="34" height="34" rx="7"/>
+      <rect x="286" y="178" width="34" height="34" rx="7"/>
+    </g>
+    <path d="M22 370 C128 280, 275 278, 386 320 C478 355, 575 350, 664 292" fill="none" stroke="#087E83" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="430" y="740" text-anchor="middle" fill="#17384D" font-family="Pretendard Variable, Pretendard, Noto Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif" font-size="122" font-weight="800" letter-spacing="-4">샬롬의집</text>
+</svg>
