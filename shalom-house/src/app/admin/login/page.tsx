@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
   title: "관리자 로그인",
@@ -30,10 +32,10 @@ export default async function AdminLoginPage({
       <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-panel border border-border bg-surface lg:grid-cols-[0.9fr_1.1fr]">
         <section className="bg-primary px-7 py-9 text-primary-foreground sm:px-10 sm:py-12 lg:flex lg:flex-col lg:justify-between lg:px-12">
           <div>
-            <p className="text-xs font-bold tracking-[0.12em] text-sun-soft">SHALOM HOUSE</p>
+            <Image src="/brand/logo-footer.svg" width={1400} height={360} alt={siteConfig.name} className="h-auto w-70 max-w-full" />
             <h1 className="mt-4 text-[2.25rem] font-extrabold tracking-[-0.035em] sm:text-[2.75rem]">운영 관리</h1>
             <p className="text-safe-wrap mt-5 max-w-sm text-body leading-8 text-primary-foreground/78">
-              샬롬의 집 공식 콘텐츠와 문의, 후원 업무를 관리하는 담당자 전용 화면입니다.
+              {siteConfig.name} 공식 콘텐츠와 문의, 후원 업무를 관리하는 담당자 전용 화면입니다.
             </p>
           </div>
           <p className="text-safe-wrap mt-10 border-t border-primary-foreground/20 pt-5 text-small text-primary-foreground/66">
@@ -110,7 +112,7 @@ export default async function AdminLoginPage({
             href="/"
             className="mt-7 inline-flex min-h-11 items-center font-bold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           >
-            ← 샬롬의 집 홈페이지로 돌아가기
+            ← {siteConfig.name} 홈페이지로 돌아가기
           </Link>
         </section>
       </div>

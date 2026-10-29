@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AdminNavigation, type AdminNavigationPermissions } from "./admin-navigation";
+import { siteConfig } from "@/config/site";
 import { SkipLink } from "@/components/layout/skip-link";
 
 export function AdminWorkbench({
@@ -19,8 +21,9 @@ export function AdminWorkbench({
       <SkipLink />
       <div className="workbench-frame">
         <header className="workbench-top">
-          <Link href={preview ? "/design-preview/admin" : "/admin"}>
-            샬롬의 집 <span>운영 관리</span>
+          <Link href={preview ? "/design-preview/admin" : "/admin"} aria-label={siteConfig.name + " 운영 관리"}>
+            <Image src="/brand/logo-header.svg" width={1400} height={360} alt="" className="workbench-logo" />
+            <span>운영 관리</span>
           </Link>
           <div>
             <span>{operator}</span>

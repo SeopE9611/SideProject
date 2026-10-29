@@ -1,7 +1,9 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { siteConfig } from "@/config/site";
 
 export type AdminNavigationPermissions = {
   canRestore?: boolean;
@@ -70,9 +72,9 @@ export function AdminNavigation({
         <Link
           className="workbench-monogram"
           href={preview ? "/design-preview/admin" : "/admin"}
-          aria-label="샬롬의 집 관리 홈"
+          aria-label={siteConfig.name + " 관리 홈"}
         >
-          샬롬
+          <Image src="/brand/logo-symbol.svg" width={256} height={256} alt="" />
         </Link>
         {groups.map((item) => (
           <button

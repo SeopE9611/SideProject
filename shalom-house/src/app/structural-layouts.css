@@ -417,6 +417,9 @@
   grid-row: 1/3;
   font-size: 2rem;
 }
+.journal-participate :focus-visible {
+  outline-color: var(--color-on-dark);
+}
 .journal-participate a:hover {
   color: var(--color-brand-highlight);
 }
@@ -547,6 +550,7 @@
   outline-offset: 3px;
 }
 .home-cover-note .cover-link:focus-visible {
+  outline-color: var(--color-on-dark);
   background: #ffffff1a;
 }
 
@@ -691,7 +695,7 @@
   bottom: 0;
   width: 6.5rem;
   z-index: 40;
-  background: #21372d;
+  background: var(--color-brand-dark);
   color: white;
   display: flex;
   flex-direction: column;
@@ -704,6 +708,15 @@
   text-align: center;
   padding: 0.5rem 0 1.75rem;
 }
+.workbench-monogram img {
+  display: block;
+  width: 3rem;
+  height: auto;
+  margin-inline: auto;
+  padding: 0.25rem;
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
 .workbench-rail button {
   display: flex;
   align-items: center;
@@ -713,19 +726,22 @@
   padding: 0.75rem 0.25rem;
   border-radius: 0.5rem;
   font-size: 0.8rem;
-  color: #d3ddd6;
+  color: var(--color-primary-foreground);
 }
 .workbench-rail button > span {
   font-size: 1.6rem;
   line-height: 1;
 }
 .workbench-rail button[aria-pressed="true"] {
-  background: #e2ebd9;
-  color: #21372d;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
 }
-.workbench-rail button:hover {
+.workbench-rail button:not([aria-pressed="true"]):hover {
   background: #ffffff20;
   color: white;
+}
+.workbench-rail button[aria-pressed="true"]:hover {
+  background: var(--color-accent-soft);
 }
 .workbench-rail :focus-visible {
   outline-color: white;
@@ -741,8 +757,18 @@
   border-bottom: 1px solid var(--color-border);
 }
 .workbench-top > a {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
   font-size: 1.1rem;
   font-weight: 700;
+}
+.workbench-logo {
+  display: block;
+  width: 10.5rem;
+  max-width: 100%;
+  height: auto;
 }
 .workbench-top > a span {
   font-size: 0.8rem;
