@@ -1,15 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="360" viewBox="0 0 1400 360" role="img" aria-labelledby="logo-footer-title logo-footer-desc">
-  <title id="logo-footer-title">샬롬의집 가로형 푸터 로고</title>
-  <desc id="logo-footer-desc">투명 배경에 흰색 집과 창문, 청록색 물결, 흰색 샬롬의집 글자를 배치한 어두운 배경용 로고. 글자는 편집 가능한 텍스트이며 표시 환경의 Pretendard 글꼴에 의존합니다.</desc>
-  <g transform="translate(35,28)">
-    <path d="M58 192 L58 104 L180 22 L302 104 L302 192" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
-    <g fill="#FFFFFF">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="360" viewBox="0 0 1400 360">
+  <title>샬롬의집 G 로고 - 푸터용</title>
+  <desc>어두운 배경용 밝은 로고 처리의 샬롬의집 G 버전 푸터 로고</desc>
+
+  <g id="logo-mark" transform="translate(35,28)">
+    <g id="house" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M58 192 L58 104 L180 22 L302 104 L302 192"/>
+    </g>
+    <g id="window" fill="#FFFFFF">
       <rect x="148" y="98" width="26" height="26" rx="6"/>
       <rect x="186" y="98" width="26" height="26" rx="6"/>
       <rect x="148" y="136" width="26" height="26" rx="6"/>
       <rect x="186" y="136" width="26" height="26" rx="6"/>
     </g>
-    <path d="M8 250 C92 180, 208 178, 292 212 C366 242, 448 240, 522 188" fill="none" stroke="#087E83" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+    <g id="wave" fill="none" stroke="#087E83" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 250 C92 180, 208 178, 292 212 C366 242, 448 240, 522 188"/>
+    </g>
   </g>
-  <text x="570" y="233" fill="#FFFFFF" font-family="Pretendard Variable, Pretendard, Noto Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif" font-size="146" font-weight="800" letter-spacing="-5">샬롬의집</text>
+
+  <text id="wordmark" x="570" y="233"
+        fill="#FFFFFF"
+        font-family="Pretendard Variable, Pretendard, Noto Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif"
+        font-size="146" font-weight="800" letter-spacing="-5">샬롬의집</text>
 </svg>
