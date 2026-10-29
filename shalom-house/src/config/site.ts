@@ -1,6 +1,6 @@
 export const siteConfig = {
-  name: "샬롬의 집",
-  description: "지체 및 지적 장애인이 함께 생활하는 장애인거주시설 샬롬의 집 공식 홈페이지",
+  name: "샬롬의집",
+  description: "지체 및 지적 장애인이 함께 생활하는 장애인거주시설 샬롬의집 공식 홈페이지",
   address: "서울특별시 강서구 방화대로7가길 11",
   phone: "02-2662-2488",
   instagram: "https://www.instagram.com/seoul_shalom_house/",
@@ -13,7 +13,7 @@ export const siteConfig = {
       children: [
         {
           label: "시설개요",
-          description: "샬롬의 집 기본 정보",
+          description: "샬롬의집 기본 정보",
           href: "/about",
         },
         {

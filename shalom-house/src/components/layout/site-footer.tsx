@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
@@ -39,8 +40,9 @@ export async function SiteFooter() {
           <Link
             className="inline-flex min-h-11 items-center text-3xl font-semibold tracking-tight hover:underline focus-visible:outline-2 focus-visible:outline-surface"
             href="/"
+            aria-label={siteConfig.name + " 홈"}
           >
-            {siteConfig.name}
+            <Image src="/brand/logo-footer.svg" width={1400} height={360} alt="" className="site-footer-logo" />
           </Link>
           <div>
             <address className="text-safe-wrap text-small leading-7 not-italic text-primary-foreground/80">
