@@ -17,6 +17,7 @@ const relatedLinks = [
   { label: "인사말", href: "/about/greeting" },
   { label: "함께하는 사람들", href: "/about/people" },
   { label: "생활공간", href: "/about/spaces" },
+  { label: "로고 소개", href: "/about/identity" },
   { label: "자료공개", href: "/transparency" },
 ];
 
