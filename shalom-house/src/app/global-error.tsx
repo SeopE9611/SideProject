@@ -18,7 +18,7 @@ export default function GlobalError({
   return (
     <html lang="ko">
       <head>
-        <title>서비스 오류 | 샬롬의 집</title>
+        <title>서비스 오류 | 샬롬의집</title>
         <style>{`
           :root {
             --color-background: #ffffff;
@@ -28,12 +28,12 @@ export default function GlobalError({
             --color-muted-foreground: #657066;
             --color-border: #dfe3d9;
             --color-border-strong: #838d81;
-            --color-primary: #244b3c;
-            --color-primary-hover: #193b2e;
+            --color-primary: #17384d;
+            --color-primary-hover: #102b3c;
             --color-primary-foreground: #ffffff;
             --color-danger: #a23b3b;
             --color-danger-soft: #fbecec;
-            --color-focus-ring: #496b42;
+            --color-focus-ring: #066b70;
           }
           * { box-sizing: border-box; }
           body { margin: 0; min-height: 100vh; background: var(--color-background); color: var(--color-foreground); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; line-height: 1.6; }

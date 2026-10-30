@@ -13,7 +13,7 @@ export function HomeHeroMedia({ images }: { images: HeroImage[] }) {
   const image = images[index];
   if (!image) return null;
   return (
-    <div className="home-photo" role="region" aria-roledescription="캐러셀" aria-label="샬롬의 집 활동사진">
+    <div className="home-photo" role="region" aria-roledescription="캐러셀" aria-label="샬롬의집 활동사진">
       <figure id={id}>
         <div className="home-photo-frame">
           {failed[image.src] ? (

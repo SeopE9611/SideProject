@@ -270,7 +270,7 @@ export default async function DesignPreview({
     <header className="site-header">
       <div className="site-header-inner">
         <Link href="/design-preview" className="site-wordmark">
-          샬롬의 집
+          샬롬의집
         </Link>
         <nav className="flex flex-wrap gap-6" aria-label="검토 메뉴">
           <Link href="/about">시설소개</Link>

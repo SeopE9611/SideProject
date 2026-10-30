@@ -5,13 +5,13 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SkipLink } from "@/components/layout/skip-link";
 import { JsonLd } from "@/features/seo/json-ld";
 import { createDynamicPublicMetadata } from "@/features/seo/metadata";
-import { getSiteOrigin } from "@/features/seo/site-url";
+import { createAbsolutePublicUrl, getSiteOrigin } from "@/features/seo/site-url";
 
 export const metadata: Metadata = (() => {
   const value = createDynamicPublicMetadata({
     path: "/",
-    title: "샬롬의 집",
-    description: "지체 및 지적 장애인이 함께 생활하는 장애인거주시설 샬롬의 집 공식 홈페이지",
+    title: "샬롬의집",
+    description: "지체 및 지적 장애인이 함께 생활하는 장애인거주시설 샬롬의집 공식 홈페이지",
     type: "website",
   });
   return {
@@ -34,9 +34,10 @@ export default function PublicLayout({
           "@context": "https://schema.org",
           "@type": "Organization",
           "@id": `${getSiteOrigin()}/#organization`,
-          name: "샬롬의 집",
+          name: "샬롬의집",
           description: "지체 및 지적 장애인이 함께 생활하는 장애인거주시설",
           url: getSiteOrigin(),
+          logo: createAbsolutePublicUrl("/brand/logo-header.svg"),
           telephone: "02-2662-2488",
           address: {
             "@type": "PostalAddress",
@@ -53,7 +54,7 @@ export default function PublicLayout({
         data={{
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "샬롬의 집",
+          name: "샬롬의집",
           url: getSiteOrigin(),
           inLanguage: "ko-KR",
           publisher: { "@id": `${getSiteOrigin()}/#organization` },

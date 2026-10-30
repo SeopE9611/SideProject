@@ -132,7 +132,7 @@ export function HomeJournal({
         <div className="journal-about-title">
           <p>시설소개</p>
           <h2 id="about-home-heading">
-            샬롬의 집을
+            샬롬의집을
             <br />
             소개합니다
           </h2>

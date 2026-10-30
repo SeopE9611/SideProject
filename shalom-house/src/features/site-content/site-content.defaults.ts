@@ -8,7 +8,7 @@ import type {
 } from "./site-content.types";
 
 export const defaultFacilityOverviewContent: FacilityOverviewContent = {
-  pageDescription: "샬롬의 집은 지체 및 지적 장애인이 함께 생활하는 장애인거주시설입니다.",
+  pageDescription: "샬롬의집은 지체 및 지적 장애인이 함께 생활하는 장애인거주시설입니다.",
   facts: [
     { label: "시설 유형", value: "장애인거주시설" },
     { label: "생활", value: "지체 및 지적 장애인이 함께 생활합니다" },
@@ -33,7 +33,7 @@ export const defaultFacilityOverviewContent: FacilityOverviewContent = {
   ],
   scenesEyebrow: "생활의 모습",
   scenesTitle: "집 안과 밖에서 이어지는 일상",
-  scenesDescription: "특별한 행사만이 아니라 매일 반복되는 생활과 관계가 샬롬의 집을 이루는 가장 중요한 모습입니다.",
+  scenesDescription: "특별한 행사만이 아니라 매일 반복되는 생활과 관계가 샬롬의집을 이루는 가장 중요한 모습입니다.",
   scenes: [
     {
       label: "일상",
@@ -78,7 +78,7 @@ export const defaultGreetingContent: GreetingContent = {
 };
 
 export const defaultContactInformationContent: ContactInformationContent = {
-  directionsPageDescription: "샬롬의 집 방문에 필요한 주소와 연락처를 안내합니다.",
+  directionsPageDescription: "샬롬의집 방문에 필요한 주소와 연락처를 안내합니다.",
   address: siteConfig.address,
   phone: siteConfig.phone,
   visitInquiryTitle: "방문 전 문의",
