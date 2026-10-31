@@ -48,9 +48,11 @@ export default async function GalleryPage() {
                 <span className="text-base font-medium text-muted-foreground">{items.length}건</span>
               ) : null}
             </h2>
-            <Link className="institution-link text-small" href="/news/activities">
-              활동소식 보기
-            </Link>
+            {items === null ? (
+              <Link className="institution-link text-small" href="/news/activities">
+                활동소식 보기
+              </Link>
+            ) : null}
           </div>
         )}
         {items === null ? (
