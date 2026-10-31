@@ -28,6 +28,11 @@ export const siteConfig = {
         },
         { label: "생활공간", description: "공간 안내", href: "/about/spaces" },
         {
+          label: "로고 소개",
+          description: "샬롬의집 공식 로고와 색상",
+          href: "/about/identity",
+        },
+        {
           label: "찾아오시는 길",
           description: "주소와 방문 문의",
           href: "/about/directions",
