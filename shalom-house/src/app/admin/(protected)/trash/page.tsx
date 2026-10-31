@@ -42,8 +42,8 @@ export default async function AdminTrashPage({
         description="삭제된 콘텐츠를 확인하고 필요한 항목을 안전한 초안 상태로 복구합니다."
       />
 
-      <AdminFormGuidance title="복구 전 확인" description="복구된 콘텐츠는 이전 공개 상태로 바로 돌아가지 않습니다.">
-        <p>복구하면 게시 상태와 승인 상태가 초기화되며 초안부터 다시 검토해야 합니다.</p>
+      <AdminFormGuidance title="복구 전 확인">
+        <p>복구할 항목을 확인한 뒤 각 항목의 필수 확인 절차를 진행해 주세요.</p>
       </AdminFormGuidance>
 
       <section aria-labelledby="trash-domain-filter-heading">

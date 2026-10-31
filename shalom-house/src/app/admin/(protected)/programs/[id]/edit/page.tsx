@@ -32,8 +32,7 @@ export default async function AdminProgramEditPage({ params }: { params: Promise
         title="프로그램 수정"
         description={
           <>
-            현재 게시 상태는 {getProgramPublicationStatusLabel(post.publicationStatus)}이며, 저장 후에도 자동 공개되지
-            않습니다.
+            현재 게시 상태는 {getProgramPublicationStatusLabel(post.publicationStatus)}입니다.
           </>
         }
       />
