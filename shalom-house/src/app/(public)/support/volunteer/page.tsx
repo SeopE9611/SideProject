@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 const steps = [
   { title: "문의 남기기", description: "온라인 문의에서 자원봉사 문의를 선택하거나 대표 전화로 연락해 주세요." },
-  { title: "일정과 활동 확인", description: "참여 가능 여부, 일정과 활동 범위는 담당자 확인이 필요합니다." },
+  { title: "일정과 활동 확인", description: "안내받은 일정과 활동 내용을 확인하고 궁금한 점을 정리해 주세요." },
   { title: "방문 준비", description: "방문 전 준비사항과 찾아오는 길을 확인해 주세요." },
 ];
 
@@ -34,7 +34,7 @@ export default async function VolunteerPage() {
             참여 문의 순서
           </h2>
           <p className="text-safe-wrap mt-5 border-l-4 border-accent bg-surface-subtle px-5 py-4 text-small leading-7">
-            문의 접수 후 실제 참여 가능 일정과 활동 범위는 담당자 확인을 거쳐 확정됩니다.
+            실제 참여 가능 여부와 일정·활동 범위는 문의 접수 후 담당자 확인을 거쳐 확정됩니다.
           </p>
           <ol className="mt-6 border-t border-border">
             {steps.map((step, index) => (
