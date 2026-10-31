@@ -160,9 +160,11 @@ export default async function LifePage() {
                 <h2 id="life-news-heading" className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">
                   최근 활동 소식
                 </h2>
-                <Link className="institution-link text-small" href="/news/activities">
-                  활동소식 전체보기
-                </Link>
+                {posts.length > 0 ? (
+                  <Link className="institution-link text-small" href="/news/activities">
+                    활동소식 전체보기
+                  </Link>
+                ) : null}
               </div>
               {posts.some((post) => post.isDemo) ? (
                 <p className="border-b border-border py-3 text-small text-muted-foreground">
@@ -249,18 +251,20 @@ export default async function LifePage() {
                 </Link>
               </section>
               <nav aria-label="생활 관련 안내" className="mt-5 border-t border-accent/20 pt-4">
-                <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-small">
-                  <li>
-                    <Link className="institution-link" href="/life/gallery">
-                      활동사진 전체보기
-                    </Link>
-                  </li>
-                  <li className="inline-flex items-center gap-2 before:text-muted-foreground before:content-['·']">
+                <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-small [&>li+li]:before:text-muted-foreground [&>li+li]:before:content-['·']">
+                  {galleryResult.status === "fulfilled" && galleries.length === 0 ? (
+                    <li className="inline-flex items-center gap-2">
+                      <Link className="institution-link" href="/life/gallery">
+                        활동사진 전체보기
+                      </Link>
+                    </li>
+                  ) : null}
+                  <li className="inline-flex items-center gap-2">
                     <Link className="institution-link" href="/about/spaces">
                       생활공간 안내
                     </Link>
                   </li>
-                  <li className="inline-flex items-center gap-2 before:text-muted-foreground before:content-['·']">
+                  <li className="inline-flex items-center gap-2">
                     <Link className="institution-link" href="/support/contact">
                       문의하기
                     </Link>

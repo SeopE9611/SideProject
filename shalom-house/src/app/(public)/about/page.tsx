@@ -13,14 +13,6 @@ export const metadata = createPublicPageMetadata("/about");
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const relatedLinks = [
-  { label: "인사말", href: "/about/greeting" },
-  { label: "함께하는 사람들", href: "/about/people" },
-  { label: "생활공간", href: "/about/spaces" },
-  { label: "로고 소개", href: "/about/identity" },
-  { label: "자료공개", href: "/transparency" },
-];
-
 export default async function AboutPage() {
   const [content, contact] = await Promise.all([getPublicFacilityOverview(), getPublicContactInformation()]);
   return (
@@ -105,39 +97,31 @@ export default async function AboutPage() {
                 ))}
               </ul>
             </section>
-            <details className="border-y border-border">
-              <summary className="text-safe-wrap min-h-12 cursor-pointer py-3 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-                {content.policyEyebrow}
-              </summary>
-              <div className="pb-5">
-                <h2 className="text-safe-wrap font-medium">{content.policyTitle}</h2>
-                <ul className="mt-4 space-y-4">
-                  {content.policyItems.map((item, index) => (
-                    <li key={index}>
-                      <h3 className="font-semibold">{item.title}</h3>
-                      <p className="text-safe-wrap mt-1 text-small leading-7 text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </details>
+            <div>
+              <details className="border-y border-border">
+                <summary className="text-safe-wrap min-h-12 cursor-pointer py-3 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+                  {content.policyEyebrow}
+                </summary>
+                <div className="pb-5">
+                  <h2 className="text-safe-wrap font-medium">{content.policyTitle}</h2>
+                  <ul className="mt-4 space-y-4">
+                    {content.policyItems.map((item, index) => (
+                      <li key={index}>
+                        <h3 className="font-semibold">{item.title}</h3>
+                        <p className="text-safe-wrap mt-1 text-small leading-7 text-muted-foreground">
+                          {item.description}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </details>
+              <Link className="institution-link mt-3" href="/transparency">
+                자료공개 보기 <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
           <aside aria-label="시설 안내와 방문 문의" className="min-w-0 lg:col-span-4">
-            <nav aria-label="시설 관련 안내" className="rounded-panel bg-primary-soft p-6 sm:p-7">
-              <h2 className="text-heading font-bold">관련 안내</h2>
-              <ul className="mt-3 divide-y divide-border">
-                {relatedLinks.map((item) => (
-                  <li key={item.href}>
-                    <Link className="institution-link flex w-full justify-between py-3" href={item.href}>
-                      {item.label}
-                      <span aria-hidden="true">→</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
             <section aria-labelledby="about-contact-heading" className="mt-8 px-1">
               <h2 id="about-contact-heading" className="text-heading font-bold">
                 {contact.visitInquiryTitle}
