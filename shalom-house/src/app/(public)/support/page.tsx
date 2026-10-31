@@ -41,12 +41,11 @@ export default async function SupportPage() {
       <div className="mx-auto max-w-site px-page py-9 sm:px-page-wide sm:py-12">
         <section aria-labelledby="participation-heading">
           <div className="max-w-3xl">
-            <p className="text-small font-bold text-accent">참여 유형</p>
             <h2
               id="participation-heading"
               className="text-safe-wrap mt-2 text-[1.625rem] font-bold tracking-[-0.025em] sm:text-[1.75rem]"
             >
-              필요한 안내를 먼저 선택해 주세요
+              참여 안내
             </h2>
           </div>
           <ul className="mt-6 grid gap-5 lg:grid-cols-2">

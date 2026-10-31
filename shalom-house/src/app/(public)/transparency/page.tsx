@@ -116,7 +116,7 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
                 </p>
               ) : null}
             </div>
-            {hasFilter ? (
+            {hasFilter && (documents === null || filtered.length > 0) ? (
               <Link className="institution-link text-small" href="/transparency">
                 조건 초기화
               </Link>

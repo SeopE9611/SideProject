@@ -183,18 +183,14 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
             <EmptyState
               title={
                 fixedCategory === "notice"
-                  ? "공지사항을 준비하고 있습니다."
+                  ? "현재 공개된 공지사항이 없습니다."
                   : fixedCategory === "activity"
-                    ? "활동소식을 준비하고 있습니다."
-                    : "전체 게시물을 준비하고 있습니다."
+                    ? "현재 공개된 활동소식이 없습니다."
+                    : "현재 공개된 소식이 없습니다."
               }
               description={
                 <p className="text-safe-wrap mt-3 text-muted-foreground">
-                  {fixedCategory === "notice"
-                    ? "공개된 공지사항이 아직 없습니다."
-                    : fixedCategory === "activity"
-                      ? "공개된 활동소식이 아직 없습니다."
-                      : "공개된 게시물이 아직 없습니다."}
+                  문의가 필요하면 문의 페이지를 이용하거나 홈에서 다른 안내를 확인해 주세요.
                 </p>
               }
               actions={
