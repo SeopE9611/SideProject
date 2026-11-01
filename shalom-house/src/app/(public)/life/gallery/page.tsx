@@ -27,7 +27,7 @@ export default async function GalleryPage() {
         eyebrow="생활·프로그램"
         title="활동사진"
         description="활동의 날짜와 이야기를 사진으로 전합니다."
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "생활·프로그램", href: "/life" }, { label: "활동사진" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "생활·활동", href: "/life" }, { label: "활동사진" }]}
       />
       <section
         aria-labelledby="gallery-list-heading"

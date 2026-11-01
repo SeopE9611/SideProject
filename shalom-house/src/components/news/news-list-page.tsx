@@ -80,8 +80,8 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
         description={description}
         breadcrumbs={[
           { label: "홈", href: "/" },
-          ...(basePath !== "/news" ? [{ label: "소식", href: "/news" }] : []),
-          { label: title },
+          ...(basePath !== "/news" ? [{ label: "소식·자료", href: "/news" }] : []),
+          { label: basePath === "/news" ? "소식·자료" : title },
         ]}
       />
 

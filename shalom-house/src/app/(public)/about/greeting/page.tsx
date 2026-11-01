@@ -23,7 +23,7 @@ export default async function GreetingPage() {
         eyebrow="시설소개"
         title="인사말"
         description={greeting?.pageDescription ?? "시설 운영 책임자의 인사말을 전합니다."}
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "시설소개", href: "/about" }, { label: "인사말" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개", href: "/about" }, { label: "인사말" }]}
         adminAction={<PublicAdminEditLink href="/admin/site-content/greeting" />}
       />
       <div className="mx-auto max-w-site px-page py-9 sm:px-page-wide sm:py-12">

@@ -46,7 +46,7 @@ export default async function TransparencyPage({ searchParams }: { searchParams:
         eyebrow="소식"
         title="자료공개"
         description="운영 보고, 예산·결산, 후원금 자료를 분류와 기준 기간별로 확인합니다."
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "소식", href: "/news" }, { label: "자료공개" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "소식·자료", href: "/news" }, { label: "자료공개" }]}
       />
       <div className="mx-auto max-w-site px-page py-9 sm:px-page-wide sm:py-12">
         <form
