@@ -264,6 +264,20 @@
   padding: 4.5rem 2rem 4rem;
   align-self: center;
 }
+.hero.heroWithoutImage {
+  grid-template-columns: minmax(0, 1fr);
+}
+.heroWithoutImage .heroCopy {
+  width: 100%;
+  max-width: 60rem;
+  margin-inline: auto;
+  padding-block: 2.5rem;
+  text-align: center;
+}
+.heroWithoutImage .heroDescription {
+  max-width: 42rem;
+  margin-inline: auto;
+}
 .heroCopy h1 {
   font-size: clamp(2.75rem, 4.4vw, 4.25rem);
   line-height: 1.24;
@@ -486,6 +500,12 @@
   color: var(--teal);
   text-align: right;
 }
+.documentToggle::before {
+  content: "+";
+}
+.documentRow[open] .documentToggle::before {
+  content: "−";
+}
 .documentRow > p {
   padding: 0 0 1.4rem 6.75rem;
   max-width: 55rem;
@@ -579,19 +599,26 @@
   padding: 3.5rem 0;
   max-width: 55rem;
 }
+.pageIntro.supportIntro {
+  padding-block: 2.25rem;
+}
+.supportIntro h1 {
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+}
 .aboutIntro {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
-  gap: 5rem;
+  gap: 3.5rem;
   align-items: center;
-  padding-block: 3.5rem;
+  padding-block: 2.5rem;
 }
-.aboutIntro .small {
+.aboutIntro .testLabel {
   margin-top: 1rem;
 }
 .aboutMark {
   background: var(--cream);
-  padding: 1rem 2.5rem;
+  max-width: 18rem;
+  padding: 0.75rem 1.5rem;
 }
 .aboutMark img {
   width: 100%;
@@ -654,11 +681,11 @@
 }
 .direction {
   background: var(--cream);
-  padding: 3rem;
+  padding: 2rem;
 }
 .direction > p:not(.eyebrow) {
   max-width: 38rem;
-  margin-block: 1.5rem;
+  margin-block: 1rem;
 }
 .peopleSpaces {
   display: grid;
@@ -697,7 +724,7 @@
   margin-top: 1rem;
 }
 .participation {
-  padding-block: 4rem;
+  padding-block: 2.5rem;
 }
 .participationGrid {
   display: grid;
@@ -705,7 +732,7 @@
 }
 .participationGrid > article {
   min-width: 0;
-  padding: 2.5rem;
+  padding: 1.75rem;
   background: var(--cream);
 }
 .participationGrid > article + article {
@@ -724,7 +751,7 @@
   margin-top: 1.25rem;
 }
 .participationBody {
-  margin-block: 2rem;
+  margin-block: 1.25rem;
 }
 .participationBody h4 {
   font-weight: 650;
@@ -735,7 +762,7 @@
   margin-block: 1rem;
 }
 .participationGrid article > .textLink {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 .inquiries {
   display: grid;
@@ -947,7 +974,7 @@
     gap: 2.5rem;
   }
   .aboutMark {
-    max-width: 25rem;
+    max-width: 18rem;
     width: 100%;
   }
   .spaceFigure {
@@ -970,7 +997,7 @@
     padding-left: 0;
   }
   .participationGrid > article {
-    padding: 2rem;
+    padding: 1.5rem;
   }
 }
 @media (max-width: 599px) {
@@ -1101,10 +1128,10 @@
     padding-block: 2.5rem;
   }
   .aboutIntro {
-    padding-block: 2rem;
+    padding-block: 1.5rem;
   }
   .aboutMark {
-    max-width: 18rem;
+    max-width: 14rem;
     justify-self: center;
   }
   .localNavigation {
@@ -1127,7 +1154,7 @@
     max-width: 22rem;
   }
   .participation {
-    padding-block: 2.5rem;
+    padding-block: 1.75rem;
   }
   .participationGrid {
     grid-template-columns: 1fr;

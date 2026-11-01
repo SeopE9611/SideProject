@@ -67,7 +67,7 @@ export default async function DesignPreview({
   searchParams,
 }: {
   params: Promise<{ screen?: string[] }>;
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; hero?: string | string[] }>;
 }) {
   // Separate presentation-only route. No auth service, repository, storage or mutation API is used.
   if (process.env.VERCEL_ENV !== "preview" && process.env.NODE_ENV !== "development") notFound();
@@ -79,7 +79,13 @@ export default async function DesignPreview({
       !["home", "about", "support", "news"].includes(page) ||
       screen[1] === "home"
     ) notFound();
-    return <RedesignPreview screen={page as "home" | "about" | "support" | "news"} />;
+    const previewQuery = await searchParams;
+    return (
+      <RedesignPreview
+        screen={page as "home" | "about" | "support" | "news"}
+        showHeroImage={previewQuery.hero !== "none"}
+      />
+    );
   }
   const query = await searchParams;
   const reviewBar = (

@@ -44,7 +44,9 @@ function Documents() {
               </span>
               <span className={styles.documentTitle}>{document.title}</span>
               <span>{document.periodLabel}</span>
-              <span className={styles.fileType}>PDF · 정보 보기 +</span>
+              <span className={styles.fileType}>
+                PDF · 정보 보기 <span className={styles.documentToggle} aria-hidden="true" />
+              </span>
             </summary>
             <p>{document.summary} 이 시안에서는 파일 다운로드를 제공하지 않습니다.</p>
           </details>
@@ -97,13 +99,11 @@ function Participation({ full = false }: { full?: boolean }) {
                 <li>후원 관련 문의 경로</li>
                 <li>영수증·내역 확인 안내</li>
               </ul>
-              <p className={styles.small}>
-                위 항목은 콘텐츠 구성안입니다. 계좌·후원 방식·사용처·영수증 절차는 공식 자료 확인 전 제공하지 않습니다.
-              </p>
+              <p className={styles.small}>계좌·후원 방식·사용처·영수증 절차는 미확정입니다.</p>
             </div>
           )}
           <TextLink href={full ? "#donation-inquiry" : `${base}/support#donation`}>
-            {full ? "후원 문의 화면 위치 보기" : "후원 안내 살펴보기"}
+            {full ? "후원 문의 안내 보기" : "후원 안내 살펴보기"}
           </TextLink>
         </article>
         <article id="volunteer">
@@ -118,13 +118,11 @@ function Participation({ full = false }: { full?: boolean }) {
                 <li>일정·활동 범위 확인</li>
                 <li>방문 전 준비와 개인정보 안내</li>
               </ul>
-              <p className={styles.small}>
-                활동·일정은 미확정입니다. 문의만으로 참여가 자동 확정되는 안내나 접수 기능은 제공하지 않습니다.
-              </p>
+              <p className={styles.small}>활동·일정은 미확정이며, 문의만으로 참여가 확정되지 않습니다.</p>
             </div>
           )}
           <TextLink href={full ? "#volunteer-inquiry" : `${base}/support#volunteer`}>
-            {full ? "봉사 문의 화면 위치 보기" : "자원봉사 안내 살펴보기"}
+            {full ? "봉사 문의 안내 보기" : "자원봉사 안내 살펴보기"}
           </TextLink>
         </article>
       </div>
@@ -150,10 +148,13 @@ function Admission() {
   );
 }
 
-function Home() {
+function Home({ showHeroImage }: { showHeroImage: boolean }) {
   return (
     <>
-      <section className={styles.hero} aria-labelledby="redesign-home-heading">
+      <section
+        className={`${styles.hero} ${showHeroImage ? "" : styles.heroWithoutImage}`}
+        aria-labelledby="redesign-home-heading"
+      >
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>샬롬의집 · 새로운 홈페이지 구성안</p>
           <h1 id="redesign-home-heading">
@@ -171,15 +172,17 @@ function Home() {
           </Link>
           <span className={styles.copyNote}>정보구조 검토용 문구 · 기관 공식 슬로건 아님</span>
         </div>
-        <figure className={styles.heroFigure}>
-          <Image
-            src={samplePhoto}
-            alt="붓과 수채화 종이를 배치한 AI 생성 디자인 예시. 실제 기관·활동 사진이 아닙니다."
-            sizes="(min-width: 1200px) 52vw, 100vw"
-            preload
-          />
-          <figcaption>AI 생성 디자인 예시 · 실제 기관 사진 아님</figcaption>
-        </figure>
+        {showHeroImage && (
+          <figure className={styles.heroFigure}>
+            <Image
+              src={samplePhoto}
+              alt="붓과 수채화 종이를 배치한 AI 생성 디자인 예시. 실제 기관·활동 사진이 아닙니다."
+              sizes="(min-width: 1200px) 52vw, 100vw"
+              preload
+            />
+            <figcaption>AI 생성 디자인 예시 · 실제 기관 사진 아님</figcaption>
+          </figure>
+        )}
       </section>
       <nav className={styles.quickLinks} aria-label="방문 목적별 빠른 안내">
         <Link href="#admission">
@@ -210,12 +213,12 @@ function Home() {
             그리고 일상의 기록
           </h2>
           <p className={styles.lead}>기관의 지원을 설명하는 안내와 실제 활동을 전하는 기록을 구분합니다.</p>
-          <TextLink href={`${base}/about#spaces`}>생활공간 안내 위치 보기</TextLink>
+          <TextLink href={`${base}/about#spaces`}>생활공간 안내 보기</TextLink>
         </div>
         <div className={styles.lifeContent}>
           <div className={styles.roleRow}>
             <h3>거주와 일상생활 지원</h3>
-            <p>실제 지원 범위를 담을 영역입니다. 세부 서비스는 기관의 확인 후 작성합니다.</p>
+            <p>세부 지원 내용은 공식 확인이 필요합니다.</p>
           </div>
           <div className={styles.roleRow}>
             <h3>상담과 지역사회 참여</h3>
@@ -273,11 +276,7 @@ function Home() {
         <div>
           <p className={styles.eyebrow}>후원과 자원봉사</p>
           <h2 id="redesign-home-participation-heading">관심에서 참여로</h2>
-          <p>
-            안내를 읽는 행동과 문의하는 행동을 구분합니다.
-            <br />
-            아래는 문의 동선의 위치를 확인하는 링크입니다.
-          </p>
+          <p>후원과 자원봉사에 관한 문의 안내를 확인하세요.</p>
         </div>
         <div className={styles.participationActions}>
           <TextLink href={`${base}/support#donation-inquiry`}>후원 문의 안내</TextLink>
@@ -305,9 +304,7 @@ function About() {
           <p className={styles.lead}>
             거주와 일상생활 지원을 바탕으로 상담, 후원, 자원봉사와 지역사회를 연결하는 기관의 역할을 안내합니다.
           </p>
-          <p className={styles.small}>
-            사용자가 설명한 기관 역할을 토대로 구성한 디자인 문구입니다. 세부 운영 방침은 공식 확인이 필요합니다.
-          </p>
+          <span className={styles.testLabel}>기관소개 문구 · 설계 예시</span>
         </div>
         <figure className={styles.aboutMark}>
           <Image src="/brand/logo-stacked.svg" width={860} height={860} alt="샬롬의집 공식 세로형 로고" unoptimized />
@@ -330,11 +327,7 @@ function About() {
           </h2>
         </div>
         <div>
-          <p className={styles.lead}>기관을 소개하는 문장과 서로 다른 사실을 담은 정보를 함께 배치합니다.</p>
-          <p>
-            시설 유형과 생활 설명을 같은 내용의 카드로 반복하지 않습니다. 운영 주체·공식 기본 현황·연혁은 확인된 자료가
-            있을 때만 추가합니다.
-          </p>
+          <p>운영 주체·공식 기본 현황·연혁은 공식 확인이 필요합니다.</p>
           <dl className={styles.facts}>
             <div>
               <dt>공식 기관명</dt>
@@ -349,12 +342,8 @@ function About() {
       </section>
       <section id="direction" className={styles.direction}>
         <p className={styles.eyebrow}>운영 방향 표시 예시</p>
-        <h2>
-          운영 정보와 생활 안내를
-          <br />
-          각각의 내용에 맞게
-        </h2>
-        <p>이 영역은 공식 운영 방향을 담을 본문 위치입니다. 승인되지 않은 미션·비전·기관 철학은 작성하지 않았습니다.</p>
+        <h2>운영 정보와 생활 안내를 각각의 내용에 맞게</h2>
+        <p>미션·비전·기관 철학은 미확정입니다.</p>
         <span className={styles.testLabel}>공식 자료 확인 필요</span>
       </section>
       <section id="people" className={styles.peopleSpaces} aria-labelledby="redesign-people-heading">
@@ -366,14 +355,11 @@ function About() {
           </h2>
           <div className={styles.roleRow}>
             <h3>함께하는 사람들</h3>
-            <p>직원의 역할·담당 업무를 소개할 위치입니다. 실제 직원 이름과 인물 사진은 사용하지 않았습니다.</p>
+            <p>직원 역할·담당 업무는 공식 확인이 필요합니다. 실제 직원 이름과 인물 사진은 사용하지 않았습니다.</p>
           </div>
           <div id="spaces" className={styles.roleRow}>
             <h3>생활공간</h3>
-            <p>
-              공개 가능한 공간 설명과 승인 사진을 배치할 위치입니다. 오른쪽 이미지는 공간 사진이 아닌 도형 테스트
-              자산입니다.
-            </p>
+            <p>공간 안내는 미확정입니다. 도형 테스트 이미지는 실제 생활공간이 아닙니다.</p>
           </div>
           <TextLink href={`${base}#life`}>생활·지원 시안 보기</TextLink>
         </div>
@@ -402,7 +388,7 @@ function About() {
 function Support() {
   return (
     <>
-      <div className={styles.pageIntro}>
+      <div className={`${styles.pageIntro} ${styles.supportIntro}`}>
         <p className={styles.eyebrow}>후원·봉사</p>
         <h1>
           함께하는 방법을
@@ -425,17 +411,16 @@ function Support() {
             <br />
             목적에 맞게
           </h2>
-          <p>입력·접수 기능이 없는 화면 구성 예시입니다.</p>
         </div>
         <div className={styles.inquiryChoices}>
           <div id="donation-inquiry">
             <h3>후원 문의</h3>
-            <p>후원 방법 문의와 영수증·내역 문의를 구분할 자리입니다.</p>
+            <p>후원 방법과 영수증·내역에 관한 문의 안내입니다.</p>
             <span className={styles.testLabel}>시안 · 접수 기능 없음</span>
           </div>
           <div id="volunteer-inquiry">
             <h3>자원봉사 문의</h3>
-            <p>활동 가능 여부·일정·범위를 담당자와 확인할 자리입니다.</p>
+            <p>활동 가능 여부·일정·범위에 관한 문의 안내입니다.</p>
             <span className={styles.testLabel}>시안 · 접수 기능 없음</span>
           </div>
         </div>
@@ -446,7 +431,7 @@ function Support() {
   );
 }
 
-export function RedesignPreview({ screen }: { screen: RedesignScreen }) {
+export function RedesignPreview({ screen, showHeroImage = true }: { screen: RedesignScreen; showHeroImage?: boolean }) {
   return (
     <div className={styles.preview}>
       <a className={styles.skipLink} href="#redesign-main">
@@ -471,7 +456,7 @@ export function RedesignPreview({ screen }: { screen: RedesignScreen }) {
           </nav>
         )}
         {screen === "home" ? (
-          <Home />
+          <Home showHeroImage={showHeroImage} />
         ) : screen === "about" ? (
           <About />
         ) : screen === "support" ? (
