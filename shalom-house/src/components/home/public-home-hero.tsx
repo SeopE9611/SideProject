@@ -20,7 +20,6 @@ export function PublicHomeHero({
   return (
     <section className={`${styles.hero} ${hasImage ? "" : styles.heroWithoutImage}`} aria-labelledby="home-heading">
       <div className={styles.heroCopy}>
-        <p className={styles.eyebrow}>기관소개</p>
         <h1 id="home-heading">{siteName}</h1>
         <p className={styles.heroDescription}>{description}</p>
         <Link href="/about" className={styles.primaryButton}>
