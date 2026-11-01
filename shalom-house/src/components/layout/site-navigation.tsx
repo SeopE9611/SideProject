@@ -7,7 +7,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { siteConfig } from "@/config/site";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
-const DESKTOP_MEDIA_QUERY = "(min-width: 64rem)";
+const DESKTOP_MEDIA_QUERY = "(min-width: 1200px)";
 
 function isCurrentSection(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -117,7 +117,7 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
         }
       }}
     >
-      <nav aria-label="주요 메뉴" className="hidden lg:block">
+      <nav aria-label="주요 메뉴" className="hidden min-[1200px]:block">
         <ul className="flex items-center gap-1 xl:gap-4">
           {siteConfig.mainNavigation.map((item, index) => {
             const hasChildren = item.children.length > 0;
@@ -232,7 +232,7 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
         aria-controls={mobileMenuId}
         aria-expanded={isMobileOpen}
         aria-label={isMobileOpen ? "주요 메뉴 닫기" : "주요 메뉴 열기"}
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-border-strong bg-surface px-3 text-small font-bold text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring lg:hidden"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-border-strong bg-surface px-3 text-small font-bold text-foreground transition-colors duration-[var(--motion-duration-fast)] ease-standard hover:bg-primary-soft hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring min-[1200px]:hidden"
         onClick={() => setIsMobileOpen((current) => !current)}
       >
         {isMobileOpen ? (
@@ -270,7 +270,7 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
       <nav
         id={mobileMenuId}
         aria-label="모바일 주요 메뉴"
-        className="absolute inset-x-0 top-full max-h-[calc(100dvh-5rem)] overflow-y-auto border-b border-border-strong bg-surface shadow-nav lg:hidden"
+        className="absolute inset-x-0 top-full max-h-[calc(100dvh-5rem)] overflow-y-auto border-b border-border-strong bg-surface shadow-nav min-[1200px]:hidden"
         hidden={!isMobileOpen}
       >
         <ul className="mx-auto w-full max-w-site divide-y divide-border px-page py-2 sm:px-page-wide">
