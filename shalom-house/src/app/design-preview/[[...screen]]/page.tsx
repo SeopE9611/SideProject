@@ -11,6 +11,7 @@ import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
 import { AdminStatusSummary } from "@/components/admin/admin-status-summary";
 import { AdminWorkflowPanel } from "@/components/admin/admin-workflow-panel";
 import { HomeJournal } from "@/components/home/home-journal";
+import { RedesignPreview } from "@/components/design-preview/redesign-preview";
 import { ContentDetailHeader } from "@/components/layout/content-detail-header";
 import {
   defaultFacilityOverviewContent as facilityOverviewFixture,
@@ -66,11 +67,26 @@ export default async function DesignPreview({
   searchParams,
 }: {
   params: Promise<{ screen?: string[] }>;
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; hero?: string | string[] }>;
 }) {
   // Separate presentation-only route. No auth service, repository, storage or mutation API is used.
   if (process.env.VERCEL_ENV !== "preview" && process.env.NODE_ENV !== "development") notFound();
   const screen = (await params).screen ?? [];
+  if (screen[0] === "redesign") {
+    const page = screen[1] ?? "home";
+    if (
+      screen.length > 2 ||
+      !["home", "about", "support", "news"].includes(page) ||
+      screen[1] === "home"
+    ) notFound();
+    const previewQuery = await searchParams;
+    return (
+      <RedesignPreview
+        screen={page as "home" | "about" | "support" | "news"}
+        showHeroImage={previewQuery.hero !== "none"}
+      />
+    );
+  }
   const query = await searchParams;
   const reviewBar = (
     <aside className="design-review-bar">
