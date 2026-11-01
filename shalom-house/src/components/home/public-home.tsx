@@ -61,26 +61,6 @@ export function PublicHome({
         description={overview.pageDescription}
         image={heroImage}
       />
-      <nav className={styles.quickLinks} aria-label="방문 목적별 빠른 안내">
-        <Link href="/#admission">
-          <span>입소·이용에 관한 연락 안내</span>
-          <strong>
-            입소·이용 안내 <span aria-hidden="true">↗</span>
-          </strong>
-        </Link>
-        <Link href="/support/donation">
-          <span>후원을 알아보시나요?</span>
-          <strong>
-            후원 안내 <span aria-hidden="true">↗</span>
-          </strong>
-        </Link>
-        <Link href="/support/volunteer">
-          <span>참여하고 싶으신가요?</span>
-          <strong>
-            자원봉사 안내 <span aria-hidden="true">↗</span>
-          </strong>
-        </Link>
-      </nav>
       <section className={styles.life} aria-labelledby="home-life-heading">
         <div>
           <p className={styles.eyebrow}>생활·활동</p>
