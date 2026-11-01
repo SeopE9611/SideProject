@@ -21,7 +21,7 @@ export default function IdentityPage() {
         eyebrow="시설소개"
         title="로고 소개"
         description={`${siteConfig.name}의 공식 로고와 실제 사용된 색상을 소개합니다.`}
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "시설소개", href: "/about" }, { label: "로고 소개" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개", href: "/about" }, { label: "로고 소개" }]}
       />
       <div className="min-w-0 space-y-10 sm:space-y-12">
         <section aria-labelledby="identity-name-heading">

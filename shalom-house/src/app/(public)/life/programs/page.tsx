@@ -25,7 +25,7 @@ export default async function ProgramsPage() {
         eyebrow="생활·프로그램"
         title="프로그램"
         description="프로그램의 목적, 활동 내용과 운영 상태를 확인합니다."
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "생활·프로그램", href: "/life" }, { label: "프로그램" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "생활·활동", href: "/life" }, { label: "프로그램" }]}
       />
       <section
         aria-labelledby="program-list-heading"

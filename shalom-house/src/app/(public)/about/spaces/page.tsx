@@ -23,7 +23,7 @@ export default async function SpacesPage() {
         eyebrow="시설소개"
         title="생활공간"
         description="시설의 공간과 쓰임을 안내합니다."
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "시설소개", href: "/about" }, { label: "생활공간" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개", href: "/about" }, { label: "생활공간" }]}
         adminAction={<PublicAdminEditLink href="/admin/site-content/spaces" />}
       />
       <section aria-labelledby="spaces-heading" className="mx-auto max-w-site px-page py-9 sm:px-page-wide sm:py-12">

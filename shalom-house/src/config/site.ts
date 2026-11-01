@@ -6,13 +6,13 @@ export const siteConfig = {
   instagram: "https://www.instagram.com/seoul_shalom_house/",
   mainNavigation: [
     {
-      label: "시설소개",
+      label: "기관소개",
       description: "시설의 기본 정보와 운영 방향",
       href: "/about",
       emphasis: false,
       children: [
         {
-          label: "시설개요",
+          label: "기관개요",
           description: "샬롬의집 기본 정보",
           href: "/about",
         },
@@ -40,12 +40,12 @@ export const siteConfig = {
       ],
     },
     {
-      label: "생활·프로그램",
+      label: "생활·활동",
       description: "일상생활, 프로그램과 공개 승인된 활동 기록",
       href: "/life",
       emphasis: false,
       children: [
-        { label: "생활이야기", description: "일상과 활동 기록", href: "/life" },
+        { label: "생활·지원 안내", description: "일상과 활동 기록", href: "/life" },
         {
           label: "프로그램",
           description: "프로그램 분류와 안내",
@@ -59,36 +59,20 @@ export const siteConfig = {
       ],
     },
     {
-      label: "소식",
-      description: "공지사항, 활동소식과 공개자료",
-      href: "/news",
+      label: "입소·이용",
+      description: "입소·이용 관련 일반 연락 안내",
+      href: "/#admission",
       emphasis: false,
-      children: [
-        {
-          label: "공지사항",
-          description: "시설 공지 안내",
-          href: "/news/notices",
-        },
-        {
-          label: "활동소식",
-          description: "공개된 활동 기록",
-          href: "/news/activities",
-        },
-        {
-          label: "자료공개",
-          description: "운영 및 후원 공개자료",
-          href: "/transparency",
-        },
-      ],
+      children: [],
     },
     {
-      label: "함께하기",
+      label: "후원·봉사",
       description: "후원, 자원봉사와 참여 문의",
       href: "/support",
       emphasis: true,
       children: [
         {
-          label: "후원하기",
+          label: "후원 안내",
           description: "후원 절차 확인",
           href: "/support/donation",
         },
@@ -102,6 +86,18 @@ export const siteConfig = {
           description: "연락 경로 안내",
           href: "/support/contact",
         },
+      ],
+    },
+    {
+      label: "소식·자료",
+      description: "공지사항, 활동소식과 운영 공개자료",
+      href: "/news",
+      emphasis: false,
+      children: [
+        { label: "전체 소식", description: "공지와 활동소식", href: "/news" },
+        { label: "공지사항", description: "시설 공지 안내", href: "/news/notices" },
+        { label: "활동소식", description: "공개된 활동 기록", href: "/news/activities" },
+        { label: "운영 자료공개", description: "운영 및 후원 공개자료", href: "/transparency" },
       ],
     },
   ],

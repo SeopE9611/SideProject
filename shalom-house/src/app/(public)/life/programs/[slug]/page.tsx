@@ -74,7 +74,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
           "@type": "BreadcrumbList",
           itemListElement: [
             ["홈", "/"],
-            ["생활·프로그램", "/life"],
+            ["생활·활동", "/life"],
             ["프로그램", "/life/programs"],
             [program.title, `/life/programs/${slug}`],
           ].map(([name, path], index) => ({

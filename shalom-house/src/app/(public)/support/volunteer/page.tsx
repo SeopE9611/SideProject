@@ -25,7 +25,7 @@ export default async function VolunteerPage() {
         eyebrow="함께하기"
         title="자원봉사"
         description="참여 문의부터 일정 확인과 방문 준비까지 안내합니다."
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "함께하기", href: "/support" }, { label: "자원봉사" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "후원·봉사", href: "/support" }, { label: "자원봉사" }]}
       />
       <div className="mx-auto grid max-w-site items-start gap-9 px-page py-9 sm:px-page-wide sm:py-12 lg:grid-cols-12 lg:gap-12">
         <section aria-labelledby="volunteer-steps-heading" className="min-w-0 lg:col-span-8">

@@ -1,6 +1,4 @@
-import { HomeJournal } from "@/components/home/home-journal";
-
-import { isVisualFixtureEnabled, visualHomeImage } from "@/content/fixtures/visual.fixture";
+import { PublicHome } from "@/components/home/public-home";
 import { findPublicGalleryItems } from "@/features/gallery/gallery.repository";
 import { getNewsRepository } from "@/features/news/news.repository";
 import { getProgramRepository } from "@/features/programs/program.repository";
@@ -34,20 +32,21 @@ export default async function Home() {
     activitiesResult.status === "fulfilled"
       ? activitiesResult.value.items.filter((post) => isPreview || !post.isDemo)
       : [];
-  const galleryItems = galleryResult.status === "fulfilled" ? galleryResult.value.slice(0, 4) : [];
+  const photos = galleryResult.status === "fulfilled" ? galleryResult.value.slice(0, 4) : [];
+  const heroPhoto = photos.find((photo) => photo.width >= photo.height) ?? photos[0];
+  const galleryItems = photos.filter((photo) => photo.slug !== heroPhoto?.slug);
   const programs = programsResult.status === "fulfilled" ? programsResult.value.slice(0, 3) : [];
   const documents = transparencyResult.status === "fulfilled" ? transparencyResult.value.slice(0, 3) : [];
-  const visualFixtureEnabled = isVisualFixtureEnabled();
-  const heroImages = visualFixtureEnabled
-    ? [visualHomeImage]
-    : galleryItems.map((photo) => ({
-        src: `/api/gallery/${photo.slug}/media`,
-        alt: photo.altText,
-        width: photo.width,
-        height: photo.height,
-        caption: photo.title,
-        href: `/life/gallery/${photo.slug}`,
-      }));
+  const heroImage = heroPhoto
+    ? {
+        src: `/api/gallery/${heroPhoto.slug}/media`,
+        alt: heroPhoto.altText,
+        width: heroPhoto.width,
+        height: heroPhoto.height,
+        caption: heroPhoto.title,
+        href: `/life/gallery/${heroPhoto.slug}`,
+      }
+    : undefined;
 
   if (noticesResult.status === "rejected") console.error("홈 공지사항 조회 실패");
   if (activitiesResult.status === "rejected") console.error("홈 활동소식 조회 실패");
@@ -56,10 +55,11 @@ export default async function Home() {
   if (transparencyResult.status === "rejected") console.error("홈 자료공개 조회 실패");
 
   return (
-    <HomeJournal
+    <PublicHome
       overview={overview}
       contact={contact}
-      heroImages={heroImages}
+      heroImage={heroImage}
+      hasPublishedPhotos={photos.length > 0}
       notices={notices}
       activities={activities}
       galleryItems={galleryItems}

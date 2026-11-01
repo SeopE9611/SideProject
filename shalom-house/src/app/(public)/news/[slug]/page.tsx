@@ -94,7 +94,7 @@ export default async function NewsPostPage({ params, searchParams }: NewsPostPag
           "@type": "BreadcrumbList",
           itemListElement: [
             ["홈", "/"],
-            ["소식", "/news"],
+            ["소식·자료", "/news"],
             [post.title, `/news/${slug}`],
           ].map(([name, path], index) => ({
             "@type": "ListItem",

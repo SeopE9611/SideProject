@@ -23,7 +23,7 @@ export default async function PeoplePage() {
         eyebrow="시설소개"
         title="함께하는 사람들"
         description="직원의 역할과 담당 업무를 소개합니다."
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "시설소개", href: "/about" }, { label: "함께하는 사람들" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개", href: "/about" }, { label: "함께하는 사람들" }]}
         adminAction={<PublicAdminEditLink href="/admin/site-content/people" />}
       />
       <section aria-labelledby="staff-heading" className="mx-auto max-w-site px-page py-9 sm:px-page-wide sm:py-12">

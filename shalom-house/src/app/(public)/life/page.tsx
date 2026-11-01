@@ -85,7 +85,7 @@ export default async function LifePage() {
         eyebrow="생활·프로그램"
         title="생활이야기"
         description="샬롬의집의 활동 소식과 사진 기록을 모아 전합니다."
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "생활·프로그램" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "생활·활동" }]}
       />
       <div className="mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-10">
         {galleries.length > 0 ? (

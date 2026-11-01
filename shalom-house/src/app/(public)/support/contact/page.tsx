@@ -25,7 +25,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
         eyebrow="함께하기"
         title="문의하기"
         description={contact.contactPageDescription}
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "함께하기", href: "/support" }, { label: "문의하기" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "후원·봉사", href: "/support" }, { label: "문의하기" }]}
         adminAction={<PublicAdminEditLink href="/admin/site-content/contact-information" />}
       />
       <div className="mx-auto grid max-w-site items-start gap-9 px-page py-9 sm:px-page-wide sm:py-12 lg:grid-cols-12 lg:gap-12">
