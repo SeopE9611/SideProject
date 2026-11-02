@@ -4,6 +4,9 @@
   --paper: var(--color-paper);
   --line: var(--color-border);
   --muted: var(--color-muted-foreground);
+  --radius-hero: 1.5rem;
+  --radius-card: 1rem;
+  --radius-button: .6875rem;
   --gutter: clamp(1.25rem, 3vw, 2rem);
   color: var(--color-foreground);
   background: var(--color-surface);
@@ -235,6 +238,12 @@
 }
 .introBand {
   background: var(--paper);
+  padding-top: 1.25rem;
+}
+.heroFrame {
+  max-width: 80rem;
+  padding-inline: var(--gutter);
+  margin-inline: auto;
 }
 .hero {
   padding-block: clamp(2.5rem, 5vw, 4rem);
@@ -263,6 +272,7 @@
   padding: 0.7rem 1.2rem;
   font-weight: 650;
   line-height: 1.6;
+  border-radius: var(--radius-button);
 }
 .primaryButton {
   color: white;
@@ -309,6 +319,7 @@
   gap: 1rem;
   min-height: 5rem;
   padding: 0.75rem 1rem;
+  border-radius: var(--radius-card);
   color: var(--ink);
 }
 .purposeNavigation a:hover {
@@ -377,6 +388,7 @@
   flex-direction: column;
   height: 100%;
   padding: 1rem;
+  border-radius: var(--radius-card);
   color: var(--ink);
 }
 .programList a:hover {
@@ -428,6 +440,7 @@
 .recordRow {
   display: block;
   padding: 1.25rem 1rem;
+  border-radius: .5rem;
   color: var(--ink);
 }
 .recordRow:hover {
@@ -741,42 +754,63 @@
 }
 
 /* Photo carousel: a shared grid track reserves the longest slide's height. */
-.carousel { position: relative; isolation: isolate; background: var(--ink); color: white; }
+.carousel { position: relative; isolation: isolate; overflow: clip; border-radius: var(--radius-hero); background: var(--ink); color: white; }
 .slides { display: grid; }
 .slide { grid-area: 1 / 1; min-width: 0; position: relative; opacity: 0; pointer-events: none; transition: opacity 550ms ease; }
 .slideActive { opacity: 1; pointer-events: auto; z-index: 1; }
 .slideImage { object-fit: cover; }
 .heroShade { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(15 41 56 / 97%) 0%, rgb(15 41 56 / 94%) 36%, rgb(23 56 77 / 72%) 55%, rgb(23 56 77 / 12%) 80%, transparent); }
-.slideContent { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 38rem; padding-block: 5rem 10rem; }
+.slideContent { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 35rem; padding-block: 5rem 12rem; }
 .carousel .heroCopy { max-width: 36rem; }
 .carousel :is(h1, h2) { color: white; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.2; font-weight: 750; }
 .carousel .heroDescription { font-size: clamp(1.125rem, 1.7vw, 1.4rem); margin-block: 1.5rem 2rem; }
-.heroButton { display: inline-flex; align-items: center; gap: 2rem; min-height: 3rem; padding: .8rem 1.25rem; background: var(--paper); color: var(--ink); font-weight: 650; }
+.heroButton { display: inline-flex; align-items: center; gap: 2rem; min-height: 3rem; padding: .8rem 1.25rem; background: var(--paper); color: var(--ink); font-weight: 650; border-radius: var(--radius-button); }
 .heroButton:hover { background: white; }
-.heroCaption { position: absolute; bottom: 1.25rem; left: var(--gutter); right: var(--gutter); width: fit-content; max-width: calc(100% - 2 * var(--gutter)); padding: .3rem .6rem; background: rgb(15 41 56 / 95%); font-size: .75rem; }
-.heroControls { position: absolute; inset-inline: 0; bottom: 4.25rem; z-index: 3; display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; pointer-events: none; }
-.heroControls > * { pointer-events: auto; }
-.heroControls button { min-height: 2.75rem; min-width: 2.75rem; padding: .5rem .75rem; border: 1px solid rgb(255 255 255 / 65%); background: var(--ink); color: white; line-height: 1.5; }
+.heroPrimaryAction { position: absolute; left: var(--gutter); bottom: 5rem; z-index: 3; }
+.heroCaption { position: absolute; bottom: 1.25rem; left: var(--gutter); right: var(--gutter); width: fit-content; max-width: calc(100% - 2 * var(--gutter)); padding: .3rem .6rem; background: rgb(15 41 56 / 95%); border-radius: .375rem; font-size: .75rem; }
+.heroControls {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 5rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: .125rem;
+  padding: .25rem;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 999px;
+  background: rgb(15 41 56 / 94%);
+  color: white;
+}
+.heroControls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  border-radius: 50%;
+  color: white;
+  line-height: 1;
+}
 .heroControls button:hover:not(:disabled) { background: var(--accent); }
 .heroControls button:disabled { cursor: default; }
-.slideNumber { min-width: 4rem; text-align: center; font-variant-numeric: tabular-nums; background: var(--ink); }
-.rotationNote { font-size: .75rem; background: var(--ink); padding: .25rem .5rem; }
+.rotationToggle { order: 1; }
+.slideNumber { min-width: 3.75rem; text-align: center; font-size: .8125rem; font-variant-numeric: tabular-nums; }
 .preview .carousel :is(a,button):focus-visible, .preview .contactBand a:focus-visible { outline-color: white; }
 .screenReaderOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .lifeSection { padding-block: clamp(3.5rem, 7vw, 6rem); }
 .lifeSection .sectionHeading { margin-bottom: 2.5rem; align-items: baseline; }
-.lifeSection h2 { font-size: clamp(2rem, 3.8vw, 3rem); }
-.lifeGrid { grid-template-columns: .85fr 1.4fr; gap: clamp(2rem, 6vw, 5rem); }
-.lifeIntroduction { font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.8; }
+.lifeGrid { grid-template-columns: .45fr 1.55fr; gap: clamp(2rem, 6vw, 5rem); }
+.lifeIntroduction h3 { font-size: 1.25rem; }
 .programArea { padding-top: .5rem; }
 .programList { gap: 1.5rem; }
-.programList a { padding: 1rem 0; }
+.programList a { padding: 1.25rem; }
 .programList h4 { font-size: 1.25rem; }
 .listHeading { color: var(--accent); font-weight: 650; }
 .updates { padding-block: clamp(3rem, 6vw, 5rem); border-top: 1px solid var(--line); }
 .updates .sectionHeading { border-bottom: 2px solid var(--ink); margin-bottom: .5rem; padding-bottom: 1rem; }
 .contactBand { background: var(--ink); color: white; padding-block: clamp(3rem, 6vw, 5rem); }
-.preview .contactBand h2 { color: white; font-size: clamp(2rem, 3vw, 2.5rem); }
+.preview .contactBand h2 { color: white; }
 .contactBand .description, .contactBand .note { color: var(--paper); }
 .contactBand .phone, .contactBand .moreLink { color: white; }
 .contactBand .phone:hover, .contactBand .moreLink:hover { background: var(--color-primary-hover); }
@@ -787,14 +821,41 @@
   .heroShade { background: linear-gradient(90deg, rgb(15 41 56 / 97%) 0%, rgb(15 41 56 / 94%) 48%, rgb(23 56 77 / 65%) 80%, rgb(23 56 77 / 20%)); }
 }
 @media (max-width: 599px) {
-  .slideContent { min-height: 39rem; padding-block: 9rem 12rem; }
+  .slideContent { min-height: 39rem; padding-block: 7rem 16rem; }
   .heroShade { background: linear-gradient(0deg, rgb(15 41 56 / 98%) 0%, rgb(15 41 56 / 94%) 70%, rgb(23 56 77 / 45%) 90%, rgb(23 56 77 / 15%)); }
   .slideImage { object-position: 65% top !important; }
   .carousel .heroDescription { font-size: 1.125rem; }
-  .heroControls { bottom: 4.75rem; }
-  .rotationNote { flex-basis: 100%; width: fit-content; }
+  .heroControls { bottom: 4.5rem; }
+  .heroPrimaryAction { bottom: 9rem; }
   .heroCaption { bottom: 1rem; }
   .lifeSection .sectionHeading { margin-bottom: 1.5rem; }
   .programList { gap: .5rem; }
 }
-@media (prefers-reduced-motion: reduce) { .slide { transition: none; } }
+/* Shared interaction language: cards lift, text links move only their arrow. */
+.preview :is(.primaryButton, .secondaryButton, .heroButton, .purposeNavigation a, .programList a, .moreLink, .recordRow, .heroControls button) {
+  transition: transform 200ms ease, background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+.preview :is(.moreLink, .recordRow, .primaryButton, .secondaryButton, .heroButton) span[aria-hidden="true"],
+.recordRow .rowAction > span {
+  display: inline-block;
+  transition: transform 200ms ease;
+}
+@media (hover: hover) {
+  .purposeNavigation a:hover, .programList a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgb(23 56 77 / 7%);
+  }
+  .preview :is(.primaryButton, .secondaryButton, .heroButton):hover { transform: translateY(-1px); }
+  .moreLink:hover > span, .recordRow:hover .rowAction > span { transform: translateX(3px); }
+}
+.moreLink:focus-visible > span, .recordRow:focus-visible .rowAction > span { transform: translateX(3px); }
+.recordRow:hover { background: var(--color-surface-subtle); }
+@media (min-width: 600px) and (max-width: 899px) {
+  .heroPrimaryAction { bottom: 8.5rem; }
+  .slideContent { padding-bottom: 14rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preview *, .preview *::before, .preview *::after { transition: none !important; animation: none !important; }
+  .preview :is(a,button):hover, .preview :is(a,button):focus-visible,
+  .preview :is(a:hover,a:focus-visible) span { transform: none; }
+}

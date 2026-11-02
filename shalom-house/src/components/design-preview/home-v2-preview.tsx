@@ -91,11 +91,13 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
   return (
     <>
       <div className={styles.introBand}>
-        <HomeV2Hero
-          photo={photo}
-          introduction={overview.pageDescription}
-          lifeDescription={overview.principlesDescription}
-        />
+        <div className={styles.heroFrame}>
+          <HomeV2Hero
+            photo={photo}
+            introduction={overview.pageDescription}
+            principles={overview.principles}
+          />
+        </div>
         <div className={styles.container}>
           <nav className={styles.purposeNavigation} aria-label="방문 목적별 안내">
             <Link href={`${base}/admission`}>
@@ -129,9 +131,11 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
             <MoreLink href="/life">생활·활동 보기</MoreLink>
           </div>
           <div className={styles.lifeGrid}>
-            <p className={styles.lifeIntroduction}>{overview.principlesDescription}</p>
+            <div className={styles.lifeIntroduction}>
+              <h3>프로그램</h3>
+              <p className={styles.note}>고정 테스트 데이터 · 실제 운영 기록 아님</p>
+            </div>
             <div className={styles.programArea}>
-              <h3 className={styles.listHeading}>프로그램</h3>
               {programs.length > 0 ? (
                 <ul className={styles.programList}>
                   {programs.map((program) => (
