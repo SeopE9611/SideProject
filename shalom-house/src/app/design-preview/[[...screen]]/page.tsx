@@ -11,6 +11,7 @@ import { AdminFilterPanel } from "@/components/admin/admin-filter-panel";
 import { AdminStatusSummary } from "@/components/admin/admin-status-summary";
 import { AdminWorkflowPanel } from "@/components/admin/admin-workflow-panel";
 import { HomeJournal } from "@/components/home/home-journal";
+import { HomeV2Preview } from "@/components/design-preview/home-v2-preview";
 import { ContentDetailHeader } from "@/components/layout/content-detail-header";
 import {
   defaultFacilityOverviewContent as facilityOverviewFixture,
@@ -66,12 +67,15 @@ export default async function DesignPreview({
   searchParams,
 }: {
   params: Promise<{ screen?: string[] }>;
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; photo?: string | string[]; data?: string | string[] }>;
 }) {
   // Separate presentation-only route. No auth service, repository, storage or mutation API is used.
   if (process.env.VERCEL_ENV !== "preview" && process.env.NODE_ENV !== "development") notFound();
   const screen = (await params).screen ?? [];
   const query = await searchParams;
+  if (screen[0] === "home-v2") {
+    return <HomeV2Preview screen={screen.slice(1)} photo={query.photo === "sample"} empty={query.data === "empty"} />;
+  }
   const reviewBar = (
     <aside className="design-review-bar">
       <span>디자인 검토용 테스트 화면 · 실제 기관 자료 아님 · 저장 기능 없음</span>
