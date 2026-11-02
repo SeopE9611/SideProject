@@ -74,48 +74,57 @@ export function HomeV2Hero({ photo, introduction, principles }: {
       onFocusCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setPaused(true);
       }}>
-      <div className={styles.heroControls} role="group" aria-label="슬라이드 제어">
-        <button type="button" className={styles.rotationToggle} disabled={!motionAllowed}
-          aria-label={playing ? "슬라이드 자동 전환 일시정지" : "슬라이드 자동 전환 재생"}
-          aria-describedby="v2-rotation-status"
-          onPointerDown={() => { pointerWasPlaying.current = playing; }}
-          onPointerCancel={() => { pointerWasPlaying.current = null; }}
-          onBlur={() => { pointerWasPlaying.current = null; }}
-          onKeyDown={() => { pointerWasPlaying.current = null; }}
-          onClick={() => {
-            setPaused(pointerWasPlaying.current === null ? !paused : pointerWasPlaying.current);
-            pointerWasPlaying.current = null;
-          }}><svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
-            {playing ? <path d="M5 4h3v12H5zm7 0h3v12h-3z" /> : <path d="M6 3l11 7-11 7z" />}
-          </svg></button>
-        <button type="button" aria-label="이전 슬라이드" onClick={() => move(-1)}><span aria-hidden="true">←</span></button>
-        <span className={styles.slideNumber} aria-hidden="true">{String(current + 1).padStart(2, "0")} / 03</span>
-        <button type="button" aria-label="다음 슬라이드" onClick={() => move(1)}><span aria-hidden="true">→</span></button>
-      </div>
       <span id="v2-rotation-status" className={styles.screenReaderOnly}>
         {!motionAllowed ? "모션 제한 · 자동 전환 안 함" : paused ? "자동 전환 정지" : hovered ? "마우스 머무는 동안 일시 정지" : !visible ? "페이지 비활성 동안 일시 정지" : "7.5초마다 자동 전환"}
       </span>
       <h1 className={styles.screenReaderOnly}>샬롬의집</h1>
+      <div className={styles.heroImages}>
+        {slides.map((slide, index) => (
+          <div key={slide.title} className={`${styles.heroImage} ${index === current ? styles.slideActive : ""}`}
+            aria-hidden={index !== current}>
+            <Image className={styles.slideImage} src={slide.image} alt={slide.alt} fill sizes="100vw"
+              preload={index === 0} style={{ objectPosition: slide.position }} />
+            <div className={styles.heroShade} aria-hidden="true" />
+          </div>
+        ))}
+      </div>
       <div className={styles.slides} aria-live="off">
         {slides.map((slide, index) => (
           <div key={slide.title} className={`${styles.slide} ${index === current ? styles.slideActive : ""}`}
             role="group" aria-roledescription="슬라이드" aria-label={`${index + 1} / 3, ${slide.title}`}
             aria-hidden={index !== current} inert={index !== current}>
-            <Image className={styles.slideImage} src={slide.image} alt={slide.alt} fill sizes="100vw"
-              preload={index === 0} style={{ objectPosition: slide.position }} />
-            <div className={styles.heroShade} aria-hidden="true" />
             <div className={`${styles.container} ${styles.slideContent}`}>
               <div className={styles.heroCopy}>
                 <h2>{slide.title}</h2>
                 <p className={styles.heroDescription}>{slide.description}</p>
               </div>
-              <p className={styles.heroCaption}>{slide.label}</p>
             </div>
           </div>
         ))}
       </div>
-      <div className={styles.heroPrimaryAction}>
-        <Link className={styles.heroButton} href="/about">샬롬의집 알아보기 <span aria-hidden="true">↗</span></Link>
+      <div className={`${styles.container} ${styles.heroFooter}`}>
+        <div className={styles.heroPrimaryAction}>
+          <Link className={styles.heroButton} href="/about">샬롬의집 알아보기 <span aria-hidden="true">↗</span></Link>
+        </div>
+        <div className={styles.heroControls} role="group" aria-label="슬라이드 제어">
+          <button type="button" aria-label="이전 슬라이드" onClick={() => move(-1)}><span aria-hidden="true">←</span></button>
+          <span className={styles.slideNumber} aria-hidden="true">{String(current + 1).padStart(2, "0")} / 03</span>
+          <button type="button" aria-label="다음 슬라이드" onClick={() => move(1)}><span aria-hidden="true">→</span></button>
+          <button type="button" disabled={!motionAllowed}
+            aria-label={playing ? "슬라이드 자동 전환 일시정지" : "슬라이드 자동 전환 재생"}
+            aria-describedby="v2-rotation-status"
+            onPointerDown={() => { pointerWasPlaying.current = playing; }}
+            onPointerCancel={() => { pointerWasPlaying.current = null; }}
+            onBlur={() => { pointerWasPlaying.current = null; }}
+            onKeyDown={() => { pointerWasPlaying.current = null; }}
+            onClick={() => {
+              setPaused(pointerWasPlaying.current === null ? !paused : pointerWasPlaying.current);
+              pointerWasPlaying.current = null;
+            }}><svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+              {playing ? <path d="M5 4h3v12H5zm7 0h3v12h-3z" /> : <path d="M6 3l11 7-11 7z" />}
+            </svg></button>
+        </div>
+        <p className={styles.heroCaption}>{slides[current].label}</p>
       </div>
       <p className={styles.screenReaderOnly} role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
     </section>

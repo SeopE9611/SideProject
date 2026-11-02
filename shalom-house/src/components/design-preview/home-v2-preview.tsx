@@ -91,13 +91,11 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
   return (
     <>
       <div className={styles.introBand}>
-        <div className={styles.heroFrame}>
-          <HomeV2Hero
-            photo={photo}
-            introduction={overview.pageDescription}
-            principles={overview.principles}
-          />
-        </div>
+        <HomeV2Hero
+          photo={photo}
+          introduction={overview.pageDescription}
+          principles={overview.principles}
+        />
         <div className={styles.container}>
           <nav className={styles.purposeNavigation} aria-label="방문 목적별 안내">
             <Link href={`${base}/admission`}>
@@ -130,31 +128,26 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
             <h2 id="v2-life-heading">생활과 활동</h2>
             <MoreLink href="/life">생활·활동 보기</MoreLink>
           </div>
-          <div className={styles.lifeGrid}>
-            <div className={styles.lifeIntroduction}>
-              <h3>프로그램</h3>
-              <p className={styles.note}>고정 테스트 데이터 · 실제 운영 기록 아님</p>
-            </div>
-            <div className={styles.programArea}>
-              {programs.length > 0 ? (
-                <ul className={styles.programList}>
-                  {programs.map((program) => (
-                    <li key={program.slug}>
-                      <Link href={`${base}/programs/${program.slug}`}>
-                        <span className={styles.meta}>{program.category}</span>
-                        <h4>{program.title}</h4>
-                        <p>{program.summary}</p>
-                        <span className={styles.rowAction}>
-                          내용 보기 <Arrow />
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className={styles.empty}>현재 표시할 프로그램이 없습니다.</p>
-              )}
-            </div>
+          <p className={styles.programNote}>프로그램 · 고정 테스트 데이터 · 실제 운영 기록 아님</p>
+          <div className={styles.programArea}>
+            {programs.length > 0 ? (
+              <ul className={styles.programList}>
+                {programs.map((program) => (
+                  <li key={program.slug}>
+                    <Link href={`${base}/programs/${program.slug}`}>
+                      <span className={styles.meta}>{program.category}</span>
+                      <h3>{program.title}</h3>
+                      <p>{program.summary}</p>
+                      <span className={styles.rowAction}>
+                        내용 보기 <Arrow />
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className={styles.empty}>현재 표시할 프로그램이 없습니다.</p>
+            )}
           </div>
         </section>
         <section className={`${styles.section} ${styles.updates}`} aria-label="최근 소식과 운영 자료">

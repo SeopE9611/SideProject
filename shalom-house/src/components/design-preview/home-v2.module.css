@@ -57,7 +57,7 @@
 .headerInner,
 .reviewInner {
   width: 100%;
-  max-width: 80rem;
+  max-width: 88rem;
   padding-inline: var(--gutter);
   margin-inline: auto;
 }
@@ -238,12 +238,6 @@
 }
 .introBand {
   background: var(--paper);
-  padding-top: 1.25rem;
-}
-.heroFrame {
-  max-width: 80rem;
-  padding-inline: var(--gutter);
-  margin-inline: auto;
 }
 .hero {
   padding-block: clamp(2.5rem, 5vw, 4rem);
@@ -309,21 +303,22 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
-  padding-block: 1rem 1.5rem;
-  border-top: 1px solid var(--line);
+  padding-block: 1.25rem;
 }
 .purposeNavigation a {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: 5rem;
-  padding: 0.75rem 1rem;
+  min-height: 6rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--line);
+  background: var(--color-surface);
   border-radius: var(--radius-card);
   color: var(--ink);
 }
 .purposeNavigation a:hover {
-  background: var(--color-surface);
+  background: var(--color-primary-soft);
 }
 .purposeNavigation strong {
   display: block;
@@ -359,42 +354,31 @@
 .sectionHeading > a {
   flex-shrink: 0;
 }
-.lifeGrid {
-  display: grid;
-  grid-template-columns: 0.85fr 1.5fr;
-  align-items: start;
-  gap: 3rem;
-}
-.lifeIntroduction {
-  font-size: 1.1875rem;
-  line-height: 1.9;
-  max-width: 40rem;
-}
-.programArea {
-  min-width: 0;
-}
-.listHeading {
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
-}
+.programArea { min-width: 0; }
+.programNote { color: var(--muted); font-size: .8125rem; margin-bottom: 1rem; }
 .programList {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   list-style: none;
-  gap: 0.5rem;
+  gap: 1.5rem;
 }
 .programList a {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 1rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border: 1px solid var(--line);
   border-radius: var(--radius-card);
   color: var(--ink);
 }
+.programList li:first-child a { background: var(--paper); }
+.programList li:first-child h3 { font-size: clamp(1.5rem, 2.5vw, 2rem); }
+.programList li:only-child { grid-column: 1 / -1; }
+.programList li:only-child a { max-width: none; }
 .programList a:hover {
   background: var(--color-primary-soft);
 }
-.programList h4 {
+.programList h3 {
   font-size: 1.0625rem;
   margin-top: 0.5rem;
 }
@@ -637,7 +621,6 @@
   .headerContact {
     margin-top: 0.75rem;
   }
-  .lifeGrid,
   .contactGrid {
     gap: 2rem;
   }
@@ -646,16 +629,10 @@
   }
 }
 @media (max-width: 899px) {
-  .lifeGrid {
-    grid-template-columns: 1fr;
-  }
   .programList {
     gap: 1rem;
   }
-  .updates {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-  }
+
 }
 @media (max-width: 599px) {
   .reviewInner {
@@ -716,10 +693,9 @@
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
-  .programList a,
-  .recordRow {
-    padding-inline: 0.5rem;
-  }
+  .recordRow { padding-inline: .5rem; }
+  .programList a { padding: 1.25rem; }
+  .updates { grid-template-columns: 1fr; gap: 2.5rem; }
   .contactGrid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
@@ -754,25 +730,39 @@
 }
 
 /* Photo carousel: a shared grid track reserves the longest slide's height. */
-.carousel { position: relative; isolation: isolate; overflow: clip; border-radius: var(--radius-hero); background: var(--ink); color: white; }
-.slides { display: grid; }
+.carousel { position: relative; isolation: isolate;  background: var(--ink); color: white; }
+.heroImages { position: absolute; inset: 0; pointer-events: none; }
+.heroImage { position: absolute; inset: 0; opacity: 0; transition: opacity 550ms ease; }
+.slides { display: grid; position: relative; z-index: 2; }
 .slide { grid-area: 1 / 1; min-width: 0; position: relative; opacity: 0; pointer-events: none; transition: opacity 550ms ease; }
 .slideActive { opacity: 1; pointer-events: auto; z-index: 1; }
 .slideImage { object-fit: cover; }
 .heroShade { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(15 41 56 / 97%) 0%, rgb(15 41 56 / 94%) 36%, rgb(23 56 77 / 72%) 55%, rgb(23 56 77 / 12%) 80%, transparent); }
-.slideContent { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 35rem; padding-block: 5rem 12rem; }
+.slideContent { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 25rem; padding-block: clamp(3rem, 6vw, 5rem) 2rem; }
 .carousel .heroCopy { max-width: 36rem; }
 .carousel :is(h1, h2) { color: white; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.2; font-weight: 750; }
 .carousel .heroDescription { font-size: clamp(1.125rem, 1.7vw, 1.4rem); margin-block: 1.5rem 2rem; }
 .heroButton { display: inline-flex; align-items: center; gap: 2rem; min-height: 3rem; padding: .8rem 1.25rem; background: var(--paper); color: var(--ink); font-weight: 650; border-radius: var(--radius-button); }
 .heroButton:hover { background: white; }
-.heroPrimaryAction { position: absolute; left: var(--gutter); bottom: 5rem; z-index: 3; }
-.heroCaption { position: absolute; bottom: 1.25rem; left: var(--gutter); right: var(--gutter); width: fit-content; max-width: calc(100% - 2 * var(--gutter)); padding: .3rem .6rem; background: rgb(15 41 56 / 95%); border-radius: .375rem; font-size: .75rem; }
-.heroControls {
-  position: absolute;
-  right: var(--gutter);
-  bottom: 5rem;
+.heroFooter {
+  position: relative;
   z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.25rem 2rem;
+  padding-bottom: 1.5rem;
+}
+.heroPrimaryAction { min-width: 0; }
+.heroCaption {
+  grid-column: 1 / -1;
+  width: fit-content;
+  padding: .3rem .6rem;
+  background: rgb(15 41 56 / 95%);
+  border-radius: .375rem;
+  font-size: .75rem;
+}
+.heroControls {
   display: flex;
   align-items: center;
   gap: .125rem;
@@ -794,20 +784,12 @@
 }
 .heroControls button:hover:not(:disabled) { background: var(--accent); }
 .heroControls button:disabled { cursor: default; }
-.rotationToggle { order: 1; }
 .slideNumber { min-width: 3.75rem; text-align: center; font-size: .8125rem; font-variant-numeric: tabular-nums; }
 .preview .carousel :is(a,button):focus-visible, .preview .contactBand a:focus-visible { outline-color: white; }
 .screenReaderOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.lifeSection { padding-block: clamp(3.5rem, 7vw, 6rem); }
-.lifeSection .sectionHeading { margin-bottom: 2.5rem; align-items: baseline; }
-.lifeGrid { grid-template-columns: .45fr 1.55fr; gap: clamp(2rem, 6vw, 5rem); }
-.lifeIntroduction h3 { font-size: 1.25rem; }
-.programArea { padding-top: .5rem; }
-.programList { gap: 1.5rem; }
-.programList a { padding: 1.25rem; }
-.programList h4 { font-size: 1.25rem; }
-.listHeading { color: var(--accent); font-weight: 650; }
-.updates { padding-block: clamp(3rem, 6vw, 5rem); border-top: 1px solid var(--line); }
+.lifeSection { padding-block: clamp(2.5rem, 5vw, 4rem); }
+.lifeSection .sectionHeading { margin-bottom: 1rem; align-items: baseline; }
+.updates { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(2rem, 4vw, 3.5rem); padding-block: clamp(2.5rem, 5vw, 4rem); border-top: 1px solid var(--line); }
 .updates .sectionHeading { border-bottom: 2px solid var(--ink); margin-bottom: .5rem; padding-bottom: 1rem; }
 .contactBand { background: var(--ink); color: white; padding-block: clamp(3rem, 6vw, 5rem); }
 .preview .contactBand h2 { color: white; }
@@ -816,18 +798,18 @@
 .contactBand .phone:hover, .contactBand .moreLink:hover { background: var(--color-primary-hover); }
 .contactBand .phone { font-size: clamp(1.75rem, 3vw, 2.5rem); }
 @media (max-width: 899px) {
-  .lifeGrid { grid-template-columns: 1fr; gap: 2rem; }
   .carousel .heroCopy { max-width: 32rem; }
   .heroShade { background: linear-gradient(90deg, rgb(15 41 56 / 97%) 0%, rgb(15 41 56 / 94%) 48%, rgb(23 56 77 / 65%) 80%, rgb(23 56 77 / 20%)); }
 }
 @media (max-width: 599px) {
-  .slideContent { min-height: 39rem; padding-block: 7rem 16rem; }
+  .slideContent { min-height: 24rem; padding-block: 5rem 1.5rem; }
+  .heroFooter { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+  .heroControls { justify-self: end; }
+  .heroCaption { min-height: calc(3.6em + .6rem); }
+  .updates { grid-template-columns: 1fr; }
   .heroShade { background: linear-gradient(0deg, rgb(15 41 56 / 98%) 0%, rgb(15 41 56 / 94%) 70%, rgb(23 56 77 / 45%) 90%, rgb(23 56 77 / 15%)); }
   .slideImage { object-position: 65% top !important; }
   .carousel .heroDescription { font-size: 1.125rem; }
-  .heroControls { bottom: 4.5rem; }
-  .heroPrimaryAction { bottom: 9rem; }
-  .heroCaption { bottom: 1rem; }
   .lifeSection .sectionHeading { margin-bottom: 1.5rem; }
   .programList { gap: .5rem; }
 }
@@ -850,10 +832,6 @@
 }
 .moreLink:focus-visible > span, .recordRow:focus-visible .rowAction > span { transform: translateX(3px); }
 .recordRow:hover { background: var(--color-surface-subtle); }
-@media (min-width: 600px) and (max-width: 899px) {
-  .heroPrimaryAction { bottom: 8.5rem; }
-  .slideContent { padding-bottom: 14rem; }
-}
 @media (prefers-reduced-motion: reduce) {
   .preview *, .preview *::before, .preview *::after { transition: none !important; animation: none !important; }
   .preview :is(a,button):hover, .preview :is(a,button):focus-visible,
