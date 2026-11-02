@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublishedFixtureNewsPosts } from "@/content/fixtures/news.fixture";
 import { visualProgramFixtures, visualDocumentFixtures } from "@/content/fixtures/visual.fixture";
-import samplePhoto from "@/content/fixtures/assets/home-still-life.png";
+import { HomeV2Hero } from "./home-v2-hero";
 import {
   defaultFacilityOverviewContent as overview,
   defaultContactInformationContent as contact,
@@ -59,8 +59,8 @@ function ReviewControls({ photo, empty }: { photo: boolean; empty: boolean }) {
 
 function Contact() {
   return (
-    <section className={styles.section} aria-labelledby="v2-contact-heading">
-      <div className={styles.contactGrid}>
+    <section className={styles.contactBand} aria-labelledby="v2-contact-heading">
+      <div className={`${styles.container} ${styles.contactGrid}`}>
         <div>
           <h2 id="v2-contact-heading">문의와 방문</h2>
           <p className={styles.description}>{contact.visitInquiryDescription}</p>
@@ -91,27 +91,12 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
   return (
     <>
       <div className={styles.introBand}>
+        <HomeV2Hero
+          photo={photo}
+          introduction={overview.pageDescription}
+          lifeDescription={overview.principlesDescription}
+        />
         <div className={styles.container}>
-          <section className={`${styles.hero} ${photo ? styles.heroWithPhoto : ""}`} aria-labelledby="v2-home-heading">
-            <div className={styles.heroCopy}>
-              <h1 id="v2-home-heading">샬롬의집</h1>
-              <p className={styles.heroDescription}>{overview.pageDescription}</p>
-              <Link className={styles.primaryButton} href="/about">
-                샬롬의집 알아보기 <Arrow />
-              </Link>
-            </div>
-            {photo && (
-              <figure className={styles.heroPhoto}>
-                <Image
-                  src={samplePhoto}
-                  alt="붓과 수채화 종이를 배치한 AI 생성 테스트 이미지. 실제 시설·활동사진이 아닙니다."
-                  sizes="(min-width: 1200px) 45vw, 100vw"
-                  preload
-                />
-                <figcaption>AI 생성 테스트 이미지 · 실제 기관 사진 아님</figcaption>
-              </figure>
-            )}
-          </section>
           <nav className={styles.purposeNavigation} aria-label="방문 목적별 안내">
             <Link href={`${base}/admission`}>
               <div>
@@ -138,7 +123,7 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
         </div>
       </div>
       <div className={styles.container}>
-        <section className={styles.section} aria-labelledby="v2-life-heading">
+        <section className={`${styles.section} ${styles.lifeSection}`} aria-labelledby="v2-life-heading">
           <div className={styles.sectionHeading}>
             <h2 id="v2-life-heading">생활과 활동</h2>
             <MoreLink href="/life">생활·활동 보기</MoreLink>
@@ -224,8 +209,8 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
             )}
           </div>
         </section>
-        <Contact />
       </div>
+      <Contact />
     </>
   );
 }

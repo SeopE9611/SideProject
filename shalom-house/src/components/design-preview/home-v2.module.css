@@ -253,24 +253,6 @@
   margin-block: 1.5rem 2rem;
   word-break: keep-all;
 }
-.heroWithPhoto {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  align-items: center;
-  gap: 3rem;
-}
-.heroPhoto {
-  min-width: 0;
-}
-.heroPhoto img {
-  width: 100%;
-  height: auto;
-}
-.heroPhoto figcaption {
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--muted);
-}
 .primaryButton,
 .secondaryButton {
   display: inline-flex;
@@ -642,9 +624,6 @@
   .headerContact {
     margin-top: 0.75rem;
   }
-  .heroWithPhoto {
-    gap: 2rem;
-  }
   .lifeGrid,
   .contactGrid {
     gap: 2rem;
@@ -654,12 +633,6 @@
   }
 }
 @media (max-width: 899px) {
-  .heroWithPhoto {
-    grid-template-columns: 1fr;
-  }
-  .heroPhoto {
-    max-width: 42rem;
-  }
   .lifeGrid {
     grid-template-columns: 1fr;
   }
@@ -766,3 +739,62 @@
     gap: 0.25rem;
   }
 }
+
+/* Photo carousel: a shared grid track reserves the longest slide's height. */
+.carousel { position: relative; isolation: isolate; background: var(--ink); color: white; }
+.slides { display: grid; }
+.slide { grid-area: 1 / 1; min-width: 0; position: relative; opacity: 0; pointer-events: none; transition: opacity 550ms ease; }
+.slideActive { opacity: 1; pointer-events: auto; z-index: 1; }
+.slideImage { object-fit: cover; }
+.heroShade { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(15 41 56 / 97%) 0%, rgb(15 41 56 / 94%) 36%, rgb(23 56 77 / 72%) 55%, rgb(23 56 77 / 12%) 80%, transparent); }
+.slideContent { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 38rem; padding-block: 5rem 10rem; }
+.carousel .heroCopy { max-width: 36rem; }
+.carousel :is(h1, h2) { color: white; font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.2; font-weight: 750; }
+.carousel .heroDescription { font-size: clamp(1.125rem, 1.7vw, 1.4rem); margin-block: 1.5rem 2rem; }
+.heroButton { display: inline-flex; align-items: center; gap: 2rem; min-height: 3rem; padding: .8rem 1.25rem; background: var(--paper); color: var(--ink); font-weight: 650; }
+.heroButton:hover { background: white; }
+.heroCaption { position: absolute; bottom: 1.25rem; left: var(--gutter); right: var(--gutter); width: fit-content; max-width: calc(100% - 2 * var(--gutter)); padding: .3rem .6rem; background: rgb(15 41 56 / 95%); font-size: .75rem; }
+.heroControls { position: absolute; inset-inline: 0; bottom: 4.25rem; z-index: 3; display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; pointer-events: none; }
+.heroControls > * { pointer-events: auto; }
+.heroControls button { min-height: 2.75rem; min-width: 2.75rem; padding: .5rem .75rem; border: 1px solid rgb(255 255 255 / 65%); background: var(--ink); color: white; line-height: 1.5; }
+.heroControls button:hover:not(:disabled) { background: var(--accent); }
+.heroControls button:disabled { cursor: default; }
+.slideNumber { min-width: 4rem; text-align: center; font-variant-numeric: tabular-nums; background: var(--ink); }
+.rotationNote { font-size: .75rem; background: var(--ink); padding: .25rem .5rem; }
+.preview .carousel :is(a,button):focus-visible, .preview .contactBand a:focus-visible { outline-color: white; }
+.screenReaderOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.lifeSection { padding-block: clamp(3.5rem, 7vw, 6rem); }
+.lifeSection .sectionHeading { margin-bottom: 2.5rem; align-items: baseline; }
+.lifeSection h2 { font-size: clamp(2rem, 3.8vw, 3rem); }
+.lifeGrid { grid-template-columns: .85fr 1.4fr; gap: clamp(2rem, 6vw, 5rem); }
+.lifeIntroduction { font-size: clamp(1.25rem, 2vw, 1.6rem); line-height: 1.8; }
+.programArea { padding-top: .5rem; }
+.programList { gap: 1.5rem; }
+.programList a { padding: 1rem 0; }
+.programList h4 { font-size: 1.25rem; }
+.listHeading { color: var(--accent); font-weight: 650; }
+.updates { padding-block: clamp(3rem, 6vw, 5rem); border-top: 1px solid var(--line); }
+.updates .sectionHeading { border-bottom: 2px solid var(--ink); margin-bottom: .5rem; padding-bottom: 1rem; }
+.contactBand { background: var(--ink); color: white; padding-block: clamp(3rem, 6vw, 5rem); }
+.preview .contactBand h2 { color: white; font-size: clamp(2rem, 3vw, 2.5rem); }
+.contactBand .description, .contactBand .note { color: var(--paper); }
+.contactBand .phone, .contactBand .moreLink { color: white; }
+.contactBand .phone:hover, .contactBand .moreLink:hover { background: var(--color-primary-hover); }
+.contactBand .phone { font-size: clamp(1.75rem, 3vw, 2.5rem); }
+@media (max-width: 899px) {
+  .lifeGrid { grid-template-columns: 1fr; gap: 2rem; }
+  .carousel .heroCopy { max-width: 32rem; }
+  .heroShade { background: linear-gradient(90deg, rgb(15 41 56 / 97%) 0%, rgb(15 41 56 / 94%) 48%, rgb(23 56 77 / 65%) 80%, rgb(23 56 77 / 20%)); }
+}
+@media (max-width: 599px) {
+  .slideContent { min-height: 39rem; padding-block: 9rem 12rem; }
+  .heroShade { background: linear-gradient(0deg, rgb(15 41 56 / 98%) 0%, rgb(15 41 56 / 94%) 70%, rgb(23 56 77 / 45%) 90%, rgb(23 56 77 / 15%)); }
+  .slideImage { object-position: 65% top !important; }
+  .carousel .heroDescription { font-size: 1.125rem; }
+  .heroControls { bottom: 4.75rem; }
+  .rotationNote { flex-basis: 100%; width: fit-content; }
+  .heroCaption { bottom: 1rem; }
+  .lifeSection .sectionHeading { margin-bottom: 1.5rem; }
+  .programList { gap: .5rem; }
+}
+@media (prefers-reduced-motion: reduce) { .slide { transition: none; } }

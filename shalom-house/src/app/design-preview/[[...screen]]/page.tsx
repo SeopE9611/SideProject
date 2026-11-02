@@ -74,7 +74,7 @@ export default async function DesignPreview({
   const screen = (await params).screen ?? [];
   const query = await searchParams;
   if (screen[0] === "home-v2") {
-    return <HomeV2Preview screen={screen.slice(1)} photo={query.photo === "sample"} empty={query.data === "empty"} />;
+    return <HomeV2Preview screen={screen.slice(1)} photo={query.photo !== "none"} empty={query.data === "empty"} />;
   }
   const reviewBar = (
     <aside className="design-review-bar">
