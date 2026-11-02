@@ -59,7 +59,7 @@ export function HomeV2Hero({ photo, introduction, principles }: {
   }
 
   if (!photo) return (
-    <section className={`${styles.container} ${styles.hero}`} aria-labelledby="v2-home-heading">
+    <section className={`${styles.container} ${styles.hero} ${styles.textHero}`} aria-labelledby="v2-home-heading">
       <div className={styles.heroCopy}>
         <h1 id="v2-home-heading">샬롬의집</h1>
         <p className={styles.heroDescription}>{introduction}</p>

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import programSample from "@/content/fixtures/assets/landscape.webp";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublishedFixtureNewsPosts } from "@/content/fixtures/news.fixture";
@@ -132,18 +133,31 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
           <div className={styles.programArea}>
             {programs.length > 0 ? (
               <ul className={styles.programList}>
-                {programs.map((program) => (
-                  <li key={program.slug}>
-                    <Link href={`${base}/programs/${program.slug}`}>
-                      <span className={styles.meta}>{program.category}</span>
-                      <h3>{program.title}</h3>
-                      <p>{program.summary}</p>
-                      <span className={styles.rowAction}>
-                        내용 보기 <Arrow />
-                      </span>
-                    </Link>
-                  </li>
-                ))}
+                {programs.map((program) => {
+                  // The fixture API is development-only; reuse its exact static asset in this isolated Preview.
+                  const cover = program.coverImage;
+                  const previewImage = cover?.src === "/api/gallery/fixture-landscape/media" ? programSample : null;
+                  return (
+                    <li key={program.slug}>
+                      <Link href={`${base}/programs/${program.slug}`}
+                        className={previewImage ? styles.programWithImage : undefined}>
+                        {previewImage && cover && (
+                          <figure className={styles.programImage}>
+                            <Image src={previewImage} alt={cover.altText} width={cover.width} height={cover.height}
+                              sizes="(min-width: 600px) 224px, 100vw" unoptimized />
+                            <figcaption>도형 테스트 이미지 · 실제 기관 사진 아님</figcaption>
+                          </figure>
+                        )}
+                        <div className={styles.programText}>
+                          <span className={styles.meta}>{program.category}</span>
+                          <h3>{program.title}</h3>
+                          <p>{program.summary}</p>
+                          <span className={styles.rowAction}>내용 보기 <Arrow /></span>
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p className={styles.empty}>현재 표시할 프로그램이 없습니다.</p>
@@ -166,9 +180,7 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
                         <time dateTime={post.publishedAt}>{formatPublicDate(post.publishedAt)}</time>
                       </div>
                       <h3>{post.title}</h3>
-                      <span className={styles.rowAction}>
-                        읽어보기 <Arrow />
-                      </span>
+                      <span className={styles.recordArrow}><Arrow /></span>
                     </Link>
                   </li>
                 ))}
@@ -194,9 +206,7 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
                         </span>
                       </div>
                       <h3>{document.title}</h3>
-                      <span className={styles.rowAction}>
-                        자료 설명 <Arrow />
-                      </span>
+                      <span className={styles.recordArrow}><Arrow /></span>
                     </Link>
                   </li>
                 ))}

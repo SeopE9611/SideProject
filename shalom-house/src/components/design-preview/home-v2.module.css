@@ -356,37 +356,27 @@
 }
 .programArea { min-width: 0; }
 .programNote { color: var(--muted); font-size: .8125rem; margin-bottom: 1rem; }
-.programList {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  list-style: none;
-  gap: 1.5rem;
-}
+.programList { list-style: none; }
+.programList li + li { border-top: 1px solid var(--line); }
 .programList a {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
+  display: block;
+  padding: 1.25rem .75rem;
+  border-radius: .5rem;
   color: var(--ink);
 }
-.programList li:first-child a { background: var(--paper); }
-.programList li:first-child h3 { font-size: clamp(1.5rem, 2.5vw, 2rem); }
-.programList li:only-child { grid-column: 1 / -1; }
-.programList li:only-child a { max-width: none; }
-.programList a:hover {
-  background: var(--color-primary-soft);
+.programList a:hover { background: var(--color-primary-soft); }
+.programList a.programWithImage {
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  align-items: start;
+  gap: 1.5rem;
 }
-.programList h3 {
-  font-size: 1.0625rem;
-  margin-top: 0.5rem;
-}
-.programList p {
-  font-size: 0.875rem;
-  color: var(--muted);
-  margin-block: 0.75rem 1rem;
-}
+.programImage { min-width: 0; }
+.programImage img { display: block; width: 100%; height: auto; border-radius: .75rem; }
+.programImage figcaption { color: var(--muted); font-size: .75rem; margin-top: .4rem; }
+.programText { min-width: 0; }
+.programList h3 { font-size: 1.125rem; margin-top: .4rem; }
+.programList p { max-width: 70ch; font-size: .9375rem; color: var(--muted); margin-block: .5rem .75rem; }
 .meta {
   display: flex;
   align-items: baseline;
@@ -403,10 +393,6 @@
   font-size: 0.8125rem;
   font-weight: 650;
 }
-.programList .rowAction {
-  margin-top: auto;
-  padding-top: 0.5rem;
-}
 .updates {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -422,17 +408,24 @@
   border-top: 1px solid var(--line);
 }
 .recordRow {
-  display: block;
-  padding: 1.25rem 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .35rem 1rem;
+  min-height: 2.75rem;
+  padding: 1rem .75rem;
   border-radius: .5rem;
   color: var(--ink);
 }
+.recordRow > .meta { grid-column: 1; }
+.recordRow h3 { grid-column: 1; }
+.recordArrow { grid-column: 2; grid-row: 1 / 3; color: var(--accent); }
 .recordRow:hover {
   background: var(--color-primary-soft);
 }
 .recordRow h3 {
   font-size: 1.125rem;
-  margin-block: 0.5rem 0.75rem;
+  margin: 0;
 }
 .empty {
   color: var(--muted);
@@ -628,12 +621,6 @@
     gap: 2rem;
   }
 }
-@media (max-width: 899px) {
-  .programList {
-    gap: 1rem;
-  }
-
-}
 @media (max-width: 599px) {
   .reviewInner {
     padding-block: 0.5rem;
@@ -689,12 +676,10 @@
     gap: 0.5rem;
     padding-inline: 0.35rem;
   }
-  .programList {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
+  .programList a.programWithImage { grid-template-columns: 1fr; gap: 1rem; }
+  .programImage { max-width: 22rem; }
   .recordRow { padding-inline: .5rem; }
-  .programList a { padding: 1.25rem; }
+  .programList a { padding: 1rem .5rem; }
   .updates { grid-template-columns: 1fr; gap: 2.5rem; }
   .contactGrid {
     grid-template-columns: 1fr;
@@ -811,29 +796,34 @@
   .slideImage { object-position: 65% top !important; }
   .carousel .heroDescription { font-size: 1.125rem; }
   .lifeSection .sectionHeading { margin-bottom: 1.5rem; }
-  .programList { gap: .5rem; }
 }
 /* Shared interaction language: cards lift, text links move only their arrow. */
 .preview :is(.primaryButton, .secondaryButton, .heroButton, .purposeNavigation a, .programList a, .moreLink, .recordRow, .heroControls button) {
   transition: transform 200ms ease, background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
 }
 .preview :is(.moreLink, .recordRow, .primaryButton, .secondaryButton, .heroButton) span[aria-hidden="true"],
-.recordRow .rowAction > span {
+.recordArrow > span {
   display: inline-block;
   transition: transform 200ms ease;
 }
 @media (hover: hover) {
-  .purposeNavigation a:hover, .programList a:hover {
+  .purposeNavigation a:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 14px rgb(23 56 77 / 7%);
   }
   .preview :is(.primaryButton, .secondaryButton, .heroButton):hover { transform: translateY(-1px); }
-  .moreLink:hover > span, .recordRow:hover .rowAction > span { transform: translateX(3px); }
+  .moreLink:hover > span, .recordRow:hover .recordArrow > span { transform: translateX(3px); }
 }
-.moreLink:focus-visible > span, .recordRow:focus-visible .rowAction > span { transform: translateX(3px); }
+.moreLink:focus-visible > span, .recordRow:focus-visible .recordArrow > span { transform: translateX(3px); }
 .recordRow:hover { background: var(--color-surface-subtle); }
 @media (prefers-reduced-motion: reduce) {
   .preview *, .preview *::before, .preview *::after { transition: none !important; animation: none !important; }
   .preview :is(a,button):hover, .preview :is(a,button):focus-visible,
   .preview :is(a:hover,a:focus-visible) span { transform: none !important; }
 }
+
+/* A complete text-only introduction, independent of the photo carousel. */
+.textHero { padding-block: clamp(2rem, 4vw, 3rem); text-align: center; }
+.textHero .heroCopy { max-width: 48rem; margin-inline: auto; }
+.textHero h1 { font-size: clamp(2.5rem, 5vw, 3.75rem); }
+.textHero .heroDescription { max-width: 38rem; margin: 1rem auto 1.5rem; font-size: clamp(1.125rem, 2vw, 1.4rem); }
