@@ -6,7 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { siteConfig } from "@/config/site";
 import styles from "./home-v2.module.css";
 
-export function HomeV2Navigation({ admission }: { admission: boolean }) {
+export function HomeV2Navigation({ admission, previewQuery = "" }: { admission: boolean; previewQuery?: string }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const boundary = useRef<HTMLElement>(null);
@@ -58,7 +58,7 @@ export function HomeV2Navigation({ admission }: { admission: boolean }) {
     >
       <div className={styles.headerInner}>
         <Link
-          href="/design-preview/home-v2"
+          href={`/design-preview/home-v2${previewQuery}`}
           className={styles.logo}
           aria-label="샬롬의집 메인 V2 시안 홈"
           onClick={close}
@@ -86,7 +86,7 @@ export function HomeV2Navigation({ admission }: { admission: boolean }) {
           <ul className={styles.navGroups}>
             {siteConfig.mainNavigation.map((item, index) => {
               const isAdmission = item.href === "/#admission";
-              const href = isAdmission ? "/design-preview/home-v2/admission" : item.href;
+              const href = isAdmission ? `/design-preview/home-v2/admission${previewQuery}` : item.href;
               const expanded = openGroup === item.href;
               return (
                 <li

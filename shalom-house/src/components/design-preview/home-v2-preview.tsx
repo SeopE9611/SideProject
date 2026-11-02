@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublishedFixtureNewsPosts } from "@/content/fixtures/news.fixture";
 import { visualProgramFixtures, visualDocumentFixtures } from "@/content/fixtures/visual.fixture";
+import { realisticHeroSlides, realisticPrograms, realisticNews, realisticDocuments } from "./home-v2-realistic";
 import { HomeV2Hero } from "./home-v2-hero";
 import {
   defaultFacilityOverviewContent as overview,
@@ -30,11 +31,18 @@ function MoreLink({ href, children }: { href: string; children: React.ReactNode 
   );
 }
 
-function ReviewControls({ photo, empty }: { photo: boolean; empty: boolean }) {
+function ReviewControls({ photo, empty, realistic }: { photo: boolean; empty: boolean; realistic: boolean }) {
   return (
     <details className={styles.reviewControls}>
       <summary>사진·데이터 상태 비교</summary>
       <form action={base} method="get">
+        <label>
+          콘텐츠 모드
+          <select name="content" defaultValue={realistic ? "realistic" : "test"}>
+            <option value="test">기존 테스트 콘텐츠</option>
+            <option value="realistic">현실형 가상 콘텐츠 · AI 이미지</option>
+          </select>
+        </label>
         <label>
           대표 사진
           <select name="photo" defaultValue={photo ? "sample" : "none"}>
@@ -85,10 +93,10 @@ function Contact() {
   );
 }
 
-function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
-  const posts = empty ? [] : news.slice(0, 3);
-  const programs = empty ? [] : visualProgramFixtures;
-  const documents = empty ? [] : visualDocumentFixtures.slice(0, 2);
+function Home({ photo, empty, realistic, query }: { photo: boolean; empty: boolean; realistic: boolean; query: string }) {
+  const posts = empty ? [] : (realistic ? realisticNews : news).slice(0, 3);
+  const programs = empty ? [] : realistic ? realisticPrograms : visualProgramFixtures;
+  const documents = empty ? [] : (realistic ? realisticDocuments : visualDocumentFixtures).slice(0, 2);
   return (
     <>
       <div className={styles.introBand}>
@@ -96,10 +104,11 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
           photo={photo}
           introduction={overview.pageDescription}
           principles={overview.principles}
+          slidesOverride={realistic ? realisticHeroSlides : undefined}
         />
         <div className={styles.container}>
           <nav className={styles.purposeNavigation} aria-label="방문 목적별 안내">
-            <Link href={`${base}/admission`}>
+            <Link href={`${base}/admission${query}`}>
               <div>
                 <strong>입소·이용 문의</strong>
                 <span>일반 연락 경로를 확인합니다</span>
@@ -129,29 +138,30 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
             <h2 id="v2-life-heading">생활과 활동</h2>
             <MoreLink href="/life">생활·활동 보기</MoreLink>
           </div>
-          <p className={styles.programNote}>프로그램 · 고정 테스트 데이터 · 실제 운영 기록 아님</p>
+          <p className={styles.programNote}>{realistic ? "프로그램 · 가상 시안 · 실제 운영 프로그램 아님" : "프로그램 · 고정 테스트 데이터 · 실제 운영 기록 아님"}</p>
           <div className={styles.programArea}>
             {programs.length > 0 ? (
               <ul className={styles.programList}>
                 {programs.map((program) => {
                   // The fixture API is development-only; reuse its exact static asset in this isolated Preview.
                   const cover = program.coverImage;
-                  const previewImage = cover?.src === "/api/gallery/fixture-landscape/media" ? programSample : null;
+                  const previewImage = realistic ? cover?.src ?? null : cover?.src === "/api/gallery/fixture-landscape/media" ? programSample : null;
                   return (
                     <li key={program.slug}>
-                      <Link href={`${base}/programs/${program.slug}`}
+                      <Link href={`${base}/programs/${program.slug}${query}`}
                         className={previewImage ? styles.programWithImage : undefined}>
                         {previewImage && cover && (
                           <figure className={styles.programImage}>
                             <Image src={previewImage} alt={cover.altText} width={cover.width} height={cover.height}
                               sizes="(min-width: 600px) 224px, 100vw" unoptimized />
-                            <figcaption>도형 테스트 이미지 · 실제 기관 사진 아님</figcaption>
+                            <figcaption>{realistic ? "AI 생성 이미지 · 실제 샬롬의집 사진 아님" : "도형 테스트 이미지 · 실제 기관 사진 아님"}</figcaption>
                           </figure>
                         )}
                         <div className={styles.programText}>
                           <span className={styles.meta}>{program.category}</span>
                           <h3>{program.title}</h3>
                           <p>{program.summary}</p>
+                          {realistic && <span className={styles.meta}>가상 시안 · 실제 운영 프로그램 아님</span>}
                           <span className={styles.rowAction}>내용 보기 <Arrow /></span>
                         </div>
                       </Link>
@@ -174,10 +184,11 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
               <ul className={styles.recordList}>
                 {posts.map((post) => (
                   <li key={post.id}>
-                    <Link href={`${base}/news/${post.slug}`} className={styles.recordRow}>
+                    <Link href={`${base}/news/${post.slug}${query}`} className={styles.recordRow}>
                       <div className={styles.meta}>
                         <span>{post.category === "notice" ? "공지사항" : "활동소식"}</span>
-                        <time dateTime={post.publishedAt}>{formatPublicDate(post.publishedAt)}</time>
+                        <time dateTime={post.publishedAt}>{realistic && "예시 게시일 "}{formatPublicDate(post.publishedAt)}</time>
+                        {realistic && <span>가상 시안 · 실제 게시물 아님</span>}
                       </div>
                       <h3>{post.title}</h3>
                       <span className={styles.recordArrow}><Arrow /></span>
@@ -198,12 +209,13 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
               <ul className={styles.recordList}>
                 {documents.map((document) => (
                   <li key={document.slug}>
-                    <Link href={`${base}/documents/${document.slug}`} className={styles.recordRow}>
+                    <Link href={`${base}/documents/${document.slug}${query}`} className={styles.recordRow}>
                       <div className={styles.meta}>
                         <span>{transparencyCategoryLabels[document.category]}</span>
                         <span>
                           {document.periodLabel} · {document.fileType}
                         </span>
+                        {realistic && <span>가상 시안 · 실제 운영·회계자료 아님</span>}
                       </div>
                       <h3>{document.title}</h3>
                       <span className={styles.recordArrow}><Arrow /></span>
@@ -222,11 +234,11 @@ function Home({ photo, empty }: { photo: boolean; empty: boolean }) {
   );
 }
 
-function Admission() {
+function Admission({ query }: { query: string }) {
   return (
     <article className={`${styles.container} ${styles.detail}`}>
       <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-        <Link href={base}>메인 V2 시안</Link>
+        <Link href={`${base}${query}`}>메인 V2 시안</Link>
         <span aria-hidden="true">/</span>
         <span aria-current="page">입소·이용</span>
       </nav>
@@ -255,28 +267,29 @@ function Admission() {
   );
 }
 
-function FixtureDetail({ screen }: { screen: string[] }) {
+function FixtureDetail({ screen, realistic, query }: { screen: string[]; realistic: boolean; query: string }) {
   const [kind, slug] = screen;
-  const post = kind === "news" ? news.find((item) => item.slug === slug) : undefined;
-  const program = kind === "programs" ? visualProgramFixtures.find((item) => item.slug === slug) : undefined;
-  const document = kind === "documents" ? visualDocumentFixtures.find((item) => item.slug === slug) : undefined;
+  const post = kind === "news" ? (realistic ? realisticNews : news).find((item) => item.slug === slug) : undefined;
+  const program = kind === "programs" ? (realistic ? realisticPrograms : visualProgramFixtures).find((item) => item.slug === slug) : undefined;
+  const document = kind === "documents" ? (realistic ? realisticDocuments : visualDocumentFixtures).find((item) => item.slug === slug) : undefined;
   const item = post ?? program ?? document;
   if (screen.length !== 2 || !item) notFound();
   const label = post ? "소식 예시" : program ? "프로그램 예시" : "자료 예시";
   return (
     <article className={`${styles.container} ${styles.detail}`}>
       <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-        <Link href={base}>메인 V2 시안</Link>
+        <Link href={`${base}${query}`}>메인 V2 시안</Link>
         <span aria-hidden="true">/</span>
         <span aria-current="page">{label}</span>
       </nav>
       <div className={styles.readingWidth}>
-        <p className={styles.status}>고정 테스트 데이터 · 실제 기관 기록 아님</p>
+        <p className={styles.status}>{realistic ? (post ? "가상 시안 · 실제 게시물 아님" : program ? "가상 시안 · 실제 운영 프로그램 아님" : "가상 시안 · 실제 운영·회계자료 아님") : "고정 테스트 데이터 · 실제 기관 기록 아님"}</p>
         <h1>{item.title}</h1>
+        {realistic && (post || program) && <p className={styles.meta}>{post ? (post.category === "notice" ? "공지사항" : "활동소식") : program?.category}</p>}
         <p className={styles.description}>{item.summary}</p>
         {post && (
           <>
-            <time dateTime={post.publishedAt}>{formatPublicDate(post.publishedAt)}</time>
+            <time dateTime={post.publishedAt}>{realistic && "예시 게시일 "}{formatPublicDate(post.publishedAt)}</time>
             {post.body.map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
             ))}
@@ -284,6 +297,13 @@ function FixtureDetail({ screen }: { screen: string[] }) {
         )}
         {program && (
           <>
+            {realistic && program.coverImage && (
+              <figure className={styles.programImage}>
+                <Image src={program.coverImage.src} alt={program.coverImage.altText}
+                  width={program.coverImage.width} height={program.coverImage.height} unoptimized />
+                <figcaption>AI 생성 이미지 · 실제 샬롬의집 사진 아님</figcaption>
+              </figure>
+            )}
             <h2>목적</h2>
             <p>{program.purpose}</p>
             {program.body.map((paragraph, index) => (
@@ -311,7 +331,7 @@ function FixtureDetail({ screen }: { screen: string[] }) {
           </>
         )}
         <div className={styles.actions}>
-          <Link href={base} className={styles.secondaryButton}>
+          <Link href={`${base}${query}`} className={styles.secondaryButton}>
             시안 홈으로 돌아가기 <Arrow />
           </Link>
         </div>
@@ -320,7 +340,10 @@ function FixtureDetail({ screen }: { screen: string[] }) {
   );
 }
 
-export function HomeV2Preview({ screen, photo, empty }: { screen: string[]; photo: boolean; empty: boolean }) {
+export function HomeV2Preview({ screen, photo, empty, realistic = false }: {
+  screen: string[]; photo: boolean; empty: boolean; realistic?: boolean;
+}) {
+  const query = realistic ? `?content=realistic&photo=${photo ? "sample" : "none"}&data=${empty ? "empty" : "filled"}` : "";
   const home = screen.length === 0;
   const admission = screen.length === 1 && screen[0] === "admission";
   if (!home && !admission && (screen.length !== 2 || !["news", "programs", "documents"].includes(screen[0])))
@@ -333,21 +356,21 @@ export function HomeV2Preview({ screen, photo, empty }: { screen: string[]; phot
       <aside className={styles.reviewBar}>
         <div className={styles.reviewInner}>
           <span>
-            <strong>메인 V2 시안</strong> · 고정 예시 콘텐츠 · 저장 기능 없음
+            <strong>메인 V2 시안</strong> · {realistic ? "현실형 가상 콘텐츠 · AI 이미지 · 실제 기관 기록 아님" : "고정 예시 콘텐츠"} · 저장 기능 없음
           </span>
           <Link href="/design-preview">
             기존 시안 보기 <Arrow />
           </Link>
         </div>
       </aside>
-      <HomeV2Navigation key={screen.join("/")} admission={admission} />
+      <HomeV2Navigation key={screen.join("/")} admission={admission} previewQuery={query} />
       {home && (
         <div className={styles.container}>
-          <ReviewControls photo={photo} empty={empty} />
+          <ReviewControls photo={photo} empty={empty} realistic={realistic} />
         </div>
       )}
       <main id="home-v2-main" tabIndex={-1}>
-        {home ? <Home photo={photo} empty={empty} /> : admission ? <Admission /> : <FixtureDetail screen={screen} />}
+        {home ? <Home photo={photo} empty={empty} realistic={realistic} query={query} /> : admission ? <Admission query={query} /> : <FixtureDetail screen={screen} realistic={realistic} query={query} />}
       </main>
       <footer className={styles.footer}>
         <div className={styles.container}>

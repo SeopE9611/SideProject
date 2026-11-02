@@ -6,12 +6,14 @@ import { useEffect, useRef, useState } from "react";
 import stillLife from "@/content/fixtures/assets/home-still-life.png";
 import landscape from "@/content/fixtures/assets/landscape.webp";
 import square from "@/content/fixtures/assets/square.webp";
+import type { HomeV2Slide } from "./home-v2-realistic";
 import styles from "./home-v2.module.css";
 
-export function HomeV2Hero({ photo, introduction, principles }: {
+export function HomeV2Hero({ photo, introduction, principles, slidesOverride }: {
+  slidesOverride?: readonly HomeV2Slide[];
   photo: boolean; introduction: string; principles: readonly { title: string; description: string }[];
 }) {
-  const slides = [
+  const slides = slidesOverride ?? [
     { title: "샬롬의집", description: introduction, image: stillLife,
       alt: "붓과 수채화 종이를 배치한 AI 생성 테스트 이미지. 실제 시설·활동사진이 아닙니다.", label: "AI 생성 테스트 이미지 · 실제 기관 사진 아님", position: "65% center" },
     { title: principles[0].title, description: principles[0].description, image: landscape,

@@ -67,14 +67,14 @@ export default async function DesignPreview({
   searchParams,
 }: {
   params: Promise<{ screen?: string[] }>;
-  searchParams: Promise<{ status?: string; photo?: string | string[]; data?: string | string[] }>;
+  searchParams: Promise<{ status?: string; content?: string | string[]; photo?: string | string[]; data?: string | string[] }>;
 }) {
   // Separate presentation-only route. No auth service, repository, storage or mutation API is used.
   if (process.env.VERCEL_ENV !== "preview" && process.env.NODE_ENV !== "development") notFound();
   const screen = (await params).screen ?? [];
   const query = await searchParams;
   if (screen[0] === "home-v2") {
-    return <HomeV2Preview screen={screen.slice(1)} photo={query.photo !== "none"} empty={query.data === "empty"} />;
+    return <HomeV2Preview screen={screen.slice(1)} photo={query.photo !== "none"} empty={query.data === "empty"} realistic={query.content === "realistic"} />;
   }
   const reviewBar = (
     <aside className="design-review-bar">
