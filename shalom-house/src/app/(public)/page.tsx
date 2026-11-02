@@ -1,4 +1,4 @@
-import { PublicHome } from "@/components/home/public-home";
+import { PublicHomeV2 } from "@/components/home/public-home-v2";
 import { findPublicGalleryItems } from "@/features/gallery/gallery.repository";
 import { getNewsRepository } from "@/features/news/news.repository";
 import { getProgramRepository } from "@/features/programs/program.repository";
@@ -55,7 +55,7 @@ export default async function Home() {
   if (transparencyResult.status === "rejected") console.error("홈 자료공개 조회 실패");
 
   return (
-    <PublicHome
+    <PublicHomeV2
       overview={overview}
       contact={contact}
       heroImage={heroImage}
