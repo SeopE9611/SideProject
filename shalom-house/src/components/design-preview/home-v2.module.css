@@ -857,5 +857,5 @@
 @media (prefers-reduced-motion: reduce) {
   .preview *, .preview *::before, .preview *::after { transition: none !important; animation: none !important; }
   .preview :is(a,button):hover, .preview :is(a,button):focus-visible,
-  .preview :is(a:hover,a:focus-visible) span { transform: none; }
+  .preview :is(a:hover,a:focus-visible) span { transform: none !important; }
 }
