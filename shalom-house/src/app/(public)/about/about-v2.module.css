@@ -1,0 +1,74 @@
+.page {
+  width: 100%;
+  max-width: 88rem;
+  margin-inline: auto;
+  padding: clamp(2rem, 4vw, 4rem) clamp(1.25rem, 3vw, 2rem) clamp(3.5rem, 6vw, 6rem);
+  color: var(--color-foreground);
+  overflow-wrap: anywhere;
+}
+.page h2, .page h3 { color: var(--color-primary); letter-spacing: -.025em; word-break: keep-all; }
+.page h2 { font-size: clamp(1.625rem, 2.7vw, 2.25rem); line-height: 1.35; font-weight: 750; }
+.page h3 { font-size: clamp(1.125rem, 1.65vw, 1.375rem); line-height: 1.45; font-weight: 700; }
+.page :is(a, summary):focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }
+.kicker { font-size: .875rem; font-weight: 700; color: var(--color-accent); margin-bottom: .625rem; }
+.sectionLead { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 1rem 2rem; }
+.sectionHint { max-width: 29rem; font-size: .9375rem; color: var(--color-muted-foreground); line-height: 1.7; }
+.factGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.75rem; }
+.fact { min-width: 0; border: 1px solid var(--color-border); background: var(--color-paper); border-radius: 1rem; padding: clamp(1.25rem, 2.5vw, 2rem); }
+.fact dt { color: var(--color-muted-foreground); font-size: .875rem; font-weight: 600; }
+.fact dd { color: var(--color-primary); font-size: clamp(1.125rem, 1.65vw, 1.375rem); font-weight: 750; line-height: 1.5; margin-top: .875rem; word-break: keep-all; }
+.principles { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.4fr); gap: clamp(2rem, 5vw, 5rem); margin-top: clamp(3.5rem, 6vw, 6.5rem); padding-block: clamp(2.75rem, 5vw, 4.5rem); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.principleIntro { max-width: 30rem; }
+.introDescription { margin-top: 1.25rem; color: var(--color-muted-foreground); font-size: 1.0625rem; line-height: 1.85; word-break: keep-all; }
+.principleList { list-style: none; margin: 0; padding: 0; }
+.principleList li { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.2fr); align-items: start; gap: 1rem 1.5rem; padding-block: 1.375rem; border-top: 1px solid var(--color-border); }
+.principleList li:first-child { border-top: 0; padding-top: .25rem; }
+.principleList p { color: var(--color-muted-foreground); font-size: .9375rem; line-height: 1.85; word-break: keep-all; }
+.scenes { margin-top: clamp(3.5rem, 6vw, 6.5rem); }
+.scenesDescription { color: var(--color-muted-foreground); line-height: 1.8; max-width: 48rem; margin-top: 1.25rem; }
+.sceneGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; list-style: none; margin-top: 2rem; padding: 0; }
+.sceneGrid li { min-width: 0; border-top: 2px solid var(--color-primary); background: var(--color-surface-subtle); padding: 1.5rem 1.25rem 1.75rem; }
+.sceneLabel { color: var(--color-accent); font-size: .8125rem; font-weight: 700; margin-bottom: 1.25rem; }
+.sceneGrid h3 + p { margin-top: .75rem; color: var(--color-muted-foreground); font-size: .9375rem; line-height: 1.85; word-break: keep-all; }
+.inlineLink { color: var(--color-accent); text-decoration: none; font-size: .875rem; font-weight: 700; display: inline-flex; align-items: center; gap: .75rem; min-height: 2.75rem; padding: .35rem .55rem; border-radius: .5rem; }
+.inlineLink:hover { background: var(--color-accent-soft); }
+.closingGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(1.5rem, 3.5vw, 3rem); align-items: stretch; margin-top: clamp(3.5rem, 6vw, 6.5rem); }
+.policy { min-width: 0; padding-top: 1rem; border-top: 1px solid var(--color-border); }
+.policy details { border-bottom: 1px solid var(--color-border); }
+.policy summary { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 3.5rem; padding: 1rem .375rem; font-size: 1.125rem; font-weight: 700; color: var(--color-primary); cursor: pointer; list-style: none; }
+.policy summary::-webkit-details-marker { display: none; }
+.policy details[open] summary span { transform: rotate(45deg); }
+.policy summary span { color: var(--color-accent); transition: transform 180ms ease; }
+.policyContent { padding: .5rem .375rem 1.75rem; }
+.policyContent h2 { font-size: 1.125rem; }
+.policyContent ul { margin-top: 1rem; display: grid; gap: 1.5rem; list-style: none; padding: 0; }
+.policyContent h3 { font-size: 1rem; }
+.policyContent p { margin-top: .375rem; color: var(--color-muted-foreground); font-size: .9375rem; line-height: 1.8; }
+.policy > .inlineLink { margin-top: 1.25rem; }
+.contact { min-width: 0; border-radius: 1.25rem; background: var(--color-primary); color: white; padding: clamp(1.5rem, 3vw, 2.5rem); }
+.contactKicker { color: var(--color-paper); font-size: .875rem; font-weight: 700; }
+.page .contact h2 { color: white; margin-top: .75rem; }
+.contact > p:not(.contactKicker) { max-width: 38rem; color: #edf2f5; line-height: 1.8; margin-top: 1.125rem; }
+.phone { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; color: white; text-decoration: none; font-size: clamp(1.375rem, 2.4vw, 2rem); font-weight: 750; line-height: 1.5; }
+.phone:hover { color: var(--color-paper); }
+.contact address { font-style: normal; color: #edf2f5; line-height: 1.7; margin-top: .5rem; }
+.contactLink { display: inline-flex; align-items: center; gap: .8rem; min-height: 2.75rem; padding: .55rem 1rem; margin-top: 1.5rem; background: var(--color-paper); color: var(--color-primary); border-radius: .6875rem; text-decoration: none; font-size: .875rem; font-weight: 700; }
+.contactLink:hover { background: white; }
+.page .contact :is(a):focus-visible { outline-color: white; }
+@media (max-width: 899px) {
+  .principles { grid-template-columns: 1fr; gap: 2rem; }
+  .principleIntro { max-width: 50rem; }
+  .closingGrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 599px) {
+  .factGrid, .sceneGrid { grid-template-columns: 1fr; gap: .75rem; }
+  .fact { padding: 1.125rem 1.25rem; }
+  .fact dd { margin-top: .5rem; }
+  .principles { margin-top: 3rem; padding-block: 2.5rem; }
+  .principleList li { grid-template-columns: 1fr; gap: .5rem; }
+  .sceneGrid li { padding: 1.25rem; }
+  .closingGrid { margin-top: 3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .policy summary span { transition: none; }
+}
