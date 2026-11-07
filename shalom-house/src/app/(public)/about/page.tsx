@@ -8,10 +8,15 @@ import {
   getPublicFacilityOverview,
 } from "@/features/site-content/site-content.repository";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
+import styles from "./about-v2.module.css";
 
 export const metadata = createPublicPageMetadata("/about");
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function Arrow() {
+  return <span aria-hidden="true">↗</span>;
+}
 
 export default async function AboutPage() {
   const [content, contact] = await Promise.all([getPublicFacilityOverview(), getPublicContactInformation()]);
@@ -26,122 +31,86 @@ export default async function AboutPage() {
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개" }]}
         adminAction={<PublicAdminEditLink href="/admin/site-content/facility-overview" />}
       />
-      <div className="mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-10">
-        <section aria-labelledby="about-summary-heading">
-          <h2 id="about-summary-heading" className="text-heading font-bold">
-            시설 기본정보
-          </h2>
-          <dl className="mt-5 grid gap-px overflow-hidden rounded-panel bg-border sm:grid-cols-3">
+      <div className={styles.page}>
+        <section className={styles.facts} aria-labelledby="about-summary-heading">
+          <div className={styles.sectionLead}>
+            <div>
+              <p className={styles.kicker}>샬롬의집 안내</p>
+              <h2 id="about-summary-heading">시설 기본정보</h2>
+            </div>
+            <p className={styles.sectionHint}>샬롬의집의 기본 정보를 확인하실 수 있습니다.</p>
+          </div>
+          <dl className={styles.factGrid}>
             {content.facts.map((item, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-[4.5rem_minmax(0,1fr)] items-baseline gap-3 bg-paper px-5 py-5 sm:block sm:px-7 sm:py-7"
-              >
-                <dt className="text-safe-wrap text-small font-medium text-muted-foreground">{item.label}</dt>
-                <dd className="text-safe-wrap text-lg leading-relaxed font-bold text-primary sm:mt-3 sm:text-xl">
-                  {item.value}
-                </dd>
+              <div key={index} className={styles.fact}>
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
               </div>
             ))}
           </dl>
         </section>
-        <div className="mt-10 grid items-start gap-10 sm:mt-12 lg:grid-cols-12 lg:gap-12">
-          <div className="min-w-0 space-y-10 sm:space-y-12 lg:col-span-8">
-            <section aria-labelledby="about-principles-heading">
-              <h2
-                id="about-principles-heading"
-                className="text-safe-wrap text-2xl font-bold tracking-tight sm:text-[1.75rem]"
-              >
-                {content.principlesEyebrow}
-              </h2>
-              <p className="text-safe-wrap mt-5 text-lg font-semibold">{content.principlesTitle}</p>
-              <p className="text-safe-wrap mt-2 max-w-2xl text-body text-muted-foreground">
-                {content.principlesDescription}
-              </p>
-              <ul className="mt-6 divide-y divide-border border-y border-border">
-                {content.principles.map((item, index) => (
-                  <li key={index} className="grid gap-2 py-5 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-5">
-                    <h3 className="text-safe-wrap text-lg font-semibold">{item.title}</h3>
-                    <p className="text-safe-wrap text-small leading-7 text-muted-foreground">{item.description}</p>
-                  </li>
-                ))}
-              </ul>
-            </section>
-            <section aria-labelledby="about-scenes-heading">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2
-                  id="about-scenes-heading"
-                  className="text-safe-wrap text-2xl font-bold tracking-tight sm:text-[1.75rem]"
-                >
-                  {content.scenesEyebrow}
-                </h2>
-                <Link className="institution-link text-small" href="/life">
-                  생활이야기 보기 <span aria-hidden="true">→</span>
-                </Link>
-              </div>
-              <p className="text-safe-wrap mt-5 text-lg font-semibold">{content.scenesTitle}</p>
-              <p className="text-safe-wrap mt-2 max-w-2xl text-body text-muted-foreground">
-                {content.scenesDescription}
-              </p>
-              <ul className="mt-6 grid gap-x-6 sm:grid-cols-3">
-                {content.scenes.map((item, index) => (
-                  <li key={index} className="min-w-0 border-t border-border py-5">
-                    <p className="text-small font-semibold text-accent">{item.label}</p>
-                    <div className="mt-3 min-w-0">
-                      <h3 className="text-safe-wrap text-lg font-bold">{item.title}</h3>
-                      <p className="text-safe-wrap mt-2 text-small leading-7 text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-            <div>
-              <details className="border-y border-border">
-                <summary className="text-safe-wrap min-h-12 cursor-pointer py-3 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-                  {content.policyEyebrow}
-                </summary>
-                <div className="pb-5">
-                  <h2 className="text-safe-wrap font-medium">{content.policyTitle}</h2>
-                  <ul className="mt-4 space-y-4">
-                    {content.policyItems.map((item, index) => (
-                      <li key={index}>
-                        <h3 className="font-semibold">{item.title}</h3>
-                        <p className="text-safe-wrap mt-1 text-small leading-7 text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </details>
-              <Link className="institution-link mt-3" href="/transparency">
-                자료공개 보기 <span aria-hidden="true">→</span>
-              </Link>
-            </div>
+
+        <section className={styles.principles} aria-labelledby="about-principles-heading">
+          <div className={styles.principleIntro}>
+            <p className={styles.kicker}>{content.principlesEyebrow}</p>
+            <h2 id="about-principles-heading">{content.principlesTitle}</h2>
+            <p className={styles.introDescription}>{content.principlesDescription}</p>
           </div>
-          <aside aria-label="시설 안내와 방문 문의" className="min-w-0 lg:col-span-4">
-            <section aria-labelledby="about-contact-heading" className="mt-8 px-1">
-              <h2 id="about-contact-heading" className="text-heading font-bold">
-                {contact.visitInquiryTitle}
-              </h2>
-              <p className="text-safe-wrap mt-3 text-small leading-7 text-muted-foreground">
-                {contact.visitInquiryDescription}
-              </p>
-              <a
-                className="institution-link mt-3 text-[1.75rem] tracking-tight"
-                href={createTelephoneHref(contact.phone)}
-              >
-                {contact.phone}
-              </a>
-              <address className="text-safe-wrap mt-2 text-small leading-7 not-italic text-muted-foreground">
-                {contact.address}
-              </address>
-              <Link className="institution-link mt-2" href="/about/directions">
-                찾아오시는 길 <span aria-hidden="true">→</span>
-              </Link>
-            </section>
+          <ul className={styles.principleList}>
+            {content.principles.map((item, index) => (
+              <li key={index}>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className={styles.scenes} aria-labelledby="about-scenes-heading">
+          <div className={styles.sectionLead}>
+            <div>
+              <p className={styles.kicker}>{content.scenesEyebrow}</p>
+              <h2 id="about-scenes-heading">{content.scenesTitle}</h2>
+            </div>
+            <Link className={styles.inlineLink} href="/life">생활이야기 보기 <Arrow /></Link>
+          </div>
+          <p className={styles.scenesDescription}>{content.scenesDescription}</p>
+          <ul className={styles.sceneGrid}>
+            {content.scenes.map((item, index) => (
+              <li key={index}>
+                <p className={styles.sceneLabel}>{item.label}</p>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <div className={styles.closingGrid}>
+          <div className={styles.policy}>
+            <details>
+              <summary>{content.policyEyebrow}<span aria-hidden="true">＋</span></summary>
+              <div className={styles.policyContent}>
+                <h2>{content.policyTitle}</h2>
+                <ul>
+                  {content.policyItems.map((item, index) => (
+                    <li key={index}>
+                      <h3>{item.title}</h3>
+                      <p>{item.description}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+            <Link className={styles.inlineLink} href="/transparency">자료공개 보기 <Arrow /></Link>
+          </div>
+          <aside className={styles.contact} aria-labelledby="about-contact-heading">
+            <p className={styles.contactKicker}>문의와 방문</p>
+            <h2 id="about-contact-heading">{contact.visitInquiryTitle}</h2>
+            <p>{contact.visitInquiryDescription}</p>
+            <a className={styles.phone} href={createTelephoneHref(contact.phone)}>{contact.phone} <Arrow /></a>
+            <address>{contact.address}</address>
+            <Link className={styles.contactLink} href="/about/directions">찾아오시는 길 <Arrow /></Link>
           </aside>
         </div>
       </div>
