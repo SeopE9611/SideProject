@@ -1,0 +1,143 @@
+.canvas {
+  min-width: 0;
+}
+
+/* Keep reading width inside the canvas: shared rail CSS resets its direct child. */
+.article {
+  width: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+  color: var(--color-foreground);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.introduction {
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.status {
+  width: fit-content;
+  max-width: 100%;
+  padding: .375rem .625rem;
+  border-radius: .5rem;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: .875rem;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.title {
+  margin-top: .875rem;
+  color: var(--color-primary);
+  font-size: clamp(1.625rem, 2.7vw, 2.25rem);
+  font-weight: 750;
+  line-height: 1.45;
+  letter-spacing: -.025em;
+}
+
+.title:first-child {
+  margin-top: 0;
+}
+
+.message {
+  margin-top: 1.75rem;
+}
+
+.paragraphs {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.paragraph {
+  font-size: 1.0625rem;
+  line-height: 1.95;
+  white-space: pre-wrap;
+}
+
+.signer {
+  margin-top: 2rem;
+  color: var(--color-primary);
+  text-align: right;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.8;
+}
+
+.notice {
+  margin-top: 2rem;
+  padding: .875rem 1rem;
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-paper);
+  color: var(--color-muted-foreground);
+  font-size: .875rem;
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+
+.navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.25rem;
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.75rem;
+  max-width: 100%;
+  padding: .5rem .625rem;
+  border-radius: .5rem;
+  color: var(--color-accent);
+  font-size: .9375rem;
+  font-weight: 650;
+  line-height: 1.7;
+  text-decoration: none;
+}
+
+.link:hover {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-hover);
+  text-decoration: none;
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+.error {
+  padding-block: 1.5rem;
+  border-block: 1px solid var(--color-border);
+}
+
+.errorTitle {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.errorDescription {
+  margin-block: .75rem;
+  color: var(--color-muted-foreground);
+  font-size: .9375rem;
+  line-height: 1.8;
+}
+
+@media (max-width: 767px) {
+  .paragraph {
+    font-size: 1rem;
+    line-height: 1.9;
+  }
+
+  .navigation {
+    margin-top: 2rem;
+  }
+}
