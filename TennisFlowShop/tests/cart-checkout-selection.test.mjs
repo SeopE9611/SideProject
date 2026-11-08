@@ -138,7 +138,7 @@ test("success cleanup은 valid selection만 제거하고 invalid payload에서�
 test("checkout 검증 effect는 초기 빈 스냅샷을 보존하고 복원 후에만 검증한다", () => {
   const checkout = readFileSync(new URL("../app/checkout/page.tsx", import.meta.url), "utf8");
   // 실제 effect 본문을 재사용해 hydration 첫 렌더와 StrictMode 재실행을 확인한다.
-  const effect = checkout.match(/useEffect\(\(\) => \{\n(    if \(mode === "buynow" \|\| !isCartSelectionSource\)[\s\S]*?)\n  \}, \[cartItems, cartSelectionValidationVersion, hasCartHydrated, isCartSelectionSource, mode\]\)/);
+  const effect = checkout.match(/useEffect\(\(\) => \{\n( {4}if \(mode === "buynow" \|\| !isCartSelectionSource\)[\s\S]*?)\n  \}, \[cartItems, cartSelectionValidationVersion, hasCartHydrated, isCartSelectionSource, mode\]\)/);
   assert.ok(effect);
   assert.match(checkout, /\[hasCartHydrated, setHasCartHydrated\] = useState\(false\)/);
   assert.match(checkout, /onFinishHydration\(\(\) => setHasCartHydrated\(true\)\)/);
