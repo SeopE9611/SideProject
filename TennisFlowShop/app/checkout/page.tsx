@@ -429,6 +429,7 @@ export default function CheckoutPage() {
   const allowGuestCheckout = guestOrderMode === "on";
 
   const { items: cartItems } = useCartStore();
+  const [hasCartHydrated, setHasCartHydrated] = useState(false);
   const [selectedLineKeys, setSelectedLineKeys] = useState<string[] | null>(null);
   const {
     item: buyNowItem,
@@ -508,11 +509,24 @@ export default function CheckoutPage() {
   ]);
 
   useEffect(() => {
+    const unsubscribeHydrate = useCartStore.persist.onHydrate(() => setHasCartHydrated(false));
+    const unsubscribeFinish = useCartStore.persist.onFinishHydration(() => setHasCartHydrated(true));
+    // 첫 hydration 렌더는 persist 복원 후에도 서버의 빈 초기 스냅샷을 사용할 수 있다.
+    setHasCartHydrated(useCartStore.persist.hasHydrated());
+    return () => {
+      unsubscribeHydrate();
+      unsubscribeFinish();
+    };
+  }, []);
+
+  useEffect(() => {
     if (mode === "buynow" || !isCartSelectionSource) {
       setSelectedLineKeys(null);
       clearCartCheckoutSelectionStorage(sessionStorage);
       return;
     }
+
+    if (!hasCartHydrated) return;
 
     const selection = validateCartCheckoutSelection(
       sessionStorage.getItem(CART_CHECKOUT_SELECTION_KEY),
@@ -536,7 +550,7 @@ export default function CheckoutPage() {
       Math.max(0, selection.expiresAt - Date.now()),
     );
     return () => window.clearTimeout(timeoutId);
-  }, [cartItems, cartSelectionValidationVersion, isCartSelectionSource, mode]);
+  }, [cartItems, cartSelectionValidationVersion, hasCartHydrated, isCartSelectionSource, mode]);
 
   const selectedCartItems = useMemo(() => {
     if (!isCartSelectionSource) return [];
