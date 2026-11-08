@@ -8,7 +8,7 @@ export function createRootMetadata(): Metadata {
   const indexing = isSearchIndexingEnabled();
   const verified = indexing ? getSearchVerification() : { google: undefined, naver: undefined };
   return { metadataBase: getMetadataBase(), title: { default: name, template: `%s | ${name}` },
-    icons: { icon: [{ url: "/brand/logo-symbol.svg", type: "image/svg+xml", sizes: "any" }] },
+    icons: { icon: [{ url: "/brand/favicon.svg", type: "image/svg+xml", sizes: "any" }] },
     description: findPublicSeoRoute("/").description, applicationName: name, creator: name, publisher: name,
     robots: { index: indexing, follow: indexing }, verification: indexing ? {
       ...(verified.google ? { google: verified.google } : {}),
