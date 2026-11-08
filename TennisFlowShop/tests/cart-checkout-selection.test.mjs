@@ -134,3 +134,72 @@ test("success cleanup은 valid selection만 제거하고 invalid payload에서�
     assert.strictEqual(removeSelectedCartItems(baseCart, selection), baseCart);
   });
 });
+
+test("checkout 검증 effect는 초기 빈 스냅샷을 보존하고 복원 후에만 검증한다", () => {
+  const checkout = readFileSync(new URL("../app/checkout/page.tsx", import.meta.url), "utf8");
+  // 실제 effect 본문을 재사용해 hydration 첫 렌더와 StrictMode 재실행을 확인한다.
+  const effect = checkout.match(/useEffect\(\(\) => \{\n(    if \(mode === "buynow" \|\| !isCartSelectionSource\)[\s\S]*?)\n  \}, \[cartItems, cartSelectionValidationVersion, hasCartHydrated, isCartSelectionSource, mode\]\)/);
+  assert.ok(effect);
+  assert.match(checkout, /\[hasCartHydrated, setHasCartHydrated\] = useState\(false\)/);
+  assert.match(checkout, /onFinishHydration\(\(\) => setHasCartHydrated\(true\)\)/);
+  assert.match(checkout, /setHasCartHydrated\(useCartStore\.persist\.hasHydrated\(\)\)/);
+
+  const values = new Map([[CART_CHECKOUT_SELECTION_KEY, rawSelection()]]);
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    removeItem: (key) => values.delete(key),
+  };
+  let selected = null;
+  let toasts = 0;
+  let expire;
+  const toastRef = { current: false };
+  const run = (hasCartHydrated, cartItems, now = 1_001) => {
+    const bindings = {
+      mode: null,
+      isCartSelectionSource: true,
+      hasCartHydrated,
+      cartItems,
+      sessionStorage: storage,
+      CART_CHECKOUT_SELECTION_KEY,
+      clearCartCheckoutSelectionStorage,
+      validateCartCheckoutSelection: (raw, items) => validateCartCheckoutSelection(raw, items, now),
+      setSelectedLineKeys: (keys) => { selected = keys; },
+      cartSelectionToastShownRef: toastRef,
+      showErrorToast: () => { toasts += 1; },
+      setCartSelectionValidationVersion: () => {},
+      Date: { now: () => now },
+      window: {
+        setTimeout: (callback, delay) => { expire = { callback, delay }; return 1; },
+        clearTimeout: () => {},
+      },
+    };
+    return new Function(...Object.keys(bindings), effect[1])(...Object.values(bindings));
+  };
+
+  run(false, []);
+  run(false, []);
+  assert.equal(values.get(CART_CHECKOUT_SELECTION_KEY), rawSelection());
+  assert.equal(selected, null);
+  assert.equal(toasts, 0);
+  const cleanup = run(true, baseCart);
+  assert.deepEqual(selected, [getCartLineKey(baseCart[0])]);
+  assert.deepEqual(baseCart.filter((item) => selected.includes(getCartLineKey(item))), [baseCart[0]]);
+  assert.equal(expire.delay, 1_000 + TTL_MS - 1_001);
+  cleanup();
+  run(true, baseCart); // StrictMode 재실행도 정상 선택 정보를 보존한다.
+  assert.equal(values.size, 1);
+
+  for (const [cart, now] of [
+    [baseCart, 1_000 + TTL_MS],
+    [[baseCart[1]], 1_001],
+    [[{ ...baseCart[0], quantity: 3 }, baseCart[1]], 1_001],
+    [[{ ...baseCart[0], selectedGauge: "1.30" }, baseCart[1]], 1_001],
+    [[{ ...baseCart[0], selectedColor: "white" }, baseCart[1]], 1_001],
+  ]) {
+    values.set(CART_CHECKOUT_SELECTION_KEY, rawSelection());
+    run(true, cart, now);
+    assert.deepEqual(selected, []);
+    assert.equal(values.size, 0);
+  }
+  assert.equal(toasts, 1);
+});
