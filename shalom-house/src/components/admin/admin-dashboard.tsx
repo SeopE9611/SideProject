@@ -90,13 +90,13 @@ export function AdminDashboard({
         </aside>
       </div>
       <footer className="desk-process">
-        <strong>콘텐츠 공개 순서</strong>
+        <strong>게시물 공개 순서</strong>
         <span>초안 작성</span>
         <span aria-hidden="true">→</span>
         <span>검토·승인</span>
         <span aria-hidden="true">→</span>
         <span>게시</span>
-        <p>저장한 내용은 바로 공개되지 않습니다.</p>
+        <p>소식 등 게시물은 저장만으로 공개되지 않습니다. 시설개요·인사말·연락처·후원 안내는 저장하면 공개 페이지에 반영되며, 직원·생활공간 소개는 별도의 공개 상태에 따라 표시됩니다.</p>
       </footer>
     </div>
   );

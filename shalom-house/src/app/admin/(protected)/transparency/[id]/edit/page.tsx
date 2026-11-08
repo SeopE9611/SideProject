@@ -17,7 +17,7 @@ export default async function EditTransparencyPage({ params }: { params: Promise
         backLabel="상세로 돌아가기"
         eyebrow="자료공개 · 수정"
         title="자료공개 초안 수정"
-        description="메타데이터만 수정하며 PDF는 교체하지 않습니다."
+        description="제목·분류·기간 등 문서 정보만 수정합니다. PDF 파일은 교체되지 않습니다."
       />
       <section aria-labelledby="admin-transparency-edit-form-heading">
         <h2 id="admin-transparency-edit-form-heading" className="sr-only">

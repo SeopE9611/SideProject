@@ -44,7 +44,7 @@ export function AdminContentRestoreForm({
           if (!response.ok) {
             const messages: Record<string, string> = {
               edit_conflict: "다른 관리자가 먼저 변경했습니다.",
-              slug_conflict: "같은 slug의 활성 콘텐츠가 있어 복구할 수 없습니다.",
+              slug_conflict: "같은 공개 주소 식별자를 사용 중인 콘텐츠가 있어 복구할 수 없습니다.",
               document_duplicate: "같은 PDF 문서가 있어 복구할 수 없습니다.",
               not_restorable: "이미 복구되었거나 복구할 수 없는 상태입니다.",
             };
