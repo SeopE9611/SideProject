@@ -3,6 +3,7 @@ import { SectionPageHeader } from "@/components/layout/section-page-header";
 import { PublicAdminEditLink } from "@/components/admin/public-admin-edit-link";
 import { getPublicGreeting } from "@/features/site-content/site-content.repository";
 import { createPublicPageMetadata } from "@/features/seo/metadata";
+import styles from "./greeting-v2.module.css";
 
 export const metadata = createPublicPageMetadata("/about/greeting");
 export const runtime = "nodejs";
@@ -26,31 +27,31 @@ export default async function GreetingPage() {
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개", href: "/about" }, { label: "인사말" }]}
         adminAction={<PublicAdminEditLink href="/admin/site-content/greeting" />}
       />
-      <div className="mx-auto max-w-site px-page py-9 sm:px-page-wide sm:py-12">
-        <article className="grid items-start gap-8 lg:grid-cols-12 lg:gap-12" aria-labelledby="greeting-heading">
+      <div className={styles.canvas}>
+        <article className={styles.article} aria-labelledby="greeting-heading">
           {greeting ? (
             <>
-              <header className="rounded-panel bg-paper p-6 sm:p-9 lg:col-span-4">
+              <header className={styles.introduction}>
                 {greeting.statusLabel.trim() ? (
-                  <p className="text-safe-wrap text-small font-bold text-accent">{greeting.statusLabel}</p>
+                  <p className={styles.status}>{greeting.statusLabel}</p>
                 ) : null}
                 <h2
                   id="greeting-heading"
-                  className="text-safe-wrap mt-3 text-[1.75rem] font-bold leading-snug sm:text-title"
+                  className={styles.title}
                 >
                   {greeting.title}
                 </h2>
               </header>
-              <div className="lg:col-span-7 lg:col-start-6">
-                <div className="space-y-6 border-t border-border pt-6">
+              <div className={styles.message}>
+                <div className={styles.paragraphs}>
                   {greeting.paragraphs.map((paragraph, index) => (
-                    <p key={index} className="text-safe-wrap whitespace-pre-wrap text-body leading-8">
+                    <p key={index} className={styles.paragraph}>
                       {paragraph}
                     </p>
                   ))}
                 </div>
                 {greeting.signerRole.trim() || signerName ? (
-                  <p className="text-safe-wrap mt-7 border-t border-border pt-5 font-semibold">
+                  <p className={styles.signer}>
                     {greeting.signerRole}
                     {greeting.signerRole.trim() && signerName ? " · " : ""}
                     {signerName}
@@ -59,7 +60,7 @@ export default async function GreetingPage() {
                 {greeting.notice.trim() ? (
                   <aside
                     aria-label="인사말 게시 안내"
-                    className="text-safe-wrap mt-7 border-l-4 border-accent bg-surface-subtle px-4 py-3 text-small leading-7 text-muted-foreground"
+                    className={styles.notice}
                   >
                     {greeting.notice}
                   </aside>
@@ -67,25 +68,25 @@ export default async function GreetingPage() {
               </div>
             </>
           ) : (
-            <div role="status" className="border-y border-border py-6 lg:col-span-8">
-              <h2 id="greeting-heading" className="text-lg font-semibold">
+            <div role="status" className={styles.error}>
+              <h2 id="greeting-heading" className={styles.errorTitle}>
                 인사말을 불러오지 못했습니다.
               </h2>
-              <p className="mt-2 text-small text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
-              <a href="/about/greeting" className="institution-link mt-3">
+              <p className={styles.errorDescription}>잠시 후 다시 시도해 주세요.</p>
+              <a href="/about/greeting" className={styles.link}>
                 다시 불러오기
               </a>
             </div>
           )}
           <nav
             aria-label="시설 관련 안내"
-            className="flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-4 lg:col-span-7 lg:col-start-6"
+            className={styles.navigation}
           >
-            <Link className="institution-link" href="/about">
-              시설개요
+            <Link className={styles.link} href="/about">
+              시설개요 <span aria-hidden="true">↗</span>
             </Link>
-            <Link className="institution-link" href="/about/directions">
-              찾아오시는 길
+            <Link className={styles.link} href="/about/directions">
+              찾아오시는 길 <span aria-hidden="true">↗</span>
             </Link>
           </nav>
         </article>
