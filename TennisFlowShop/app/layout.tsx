@@ -40,7 +40,11 @@ export const metadata: Metadata = {
     "도깨비테니스는 테니스 스트링, 라켓, 장착 서비스, 대여 서비스를 제공하는 테니스 전문 쇼핑몰입니다.",
   icons: {
     icon: [
-      { url: "/brand/symbol-light.png", type: "image/png" },
+      {
+        url: "/brand/symbol-light.png",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
       {
         url: "/brand/symbol-dark.png",
         type: "image/png",
