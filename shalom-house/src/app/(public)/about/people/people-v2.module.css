@@ -1,0 +1,152 @@
+.canvas {
+  min-width: 0;
+}
+
+/* The shared rail resets its direct child; constrain the inner content instead. */
+.content {
+  width: 100%;
+  max-width: 52rem;
+  margin-inline: auto;
+  color: var(--color-foreground);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.introduction {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.kicker {
+  color: var(--color-accent);
+  font-size: .875rem;
+  font-weight: 700;
+}
+
+.title {
+  margin-top: .625rem;
+  color: var(--color-primary);
+  font-size: clamp(1.625rem, 2.7vw, 2.25rem);
+  font-weight: 750;
+  line-height: 1.4;
+  letter-spacing: -.025em;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr);
+  align-items: start;
+  gap: 1rem 2.5rem;
+  padding-block: 1.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: .375rem 1rem;
+  min-width: 0;
+}
+
+.role {
+  grid-column: 1;
+  color: var(--color-primary);
+  font-size: 1.1875rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.name {
+  grid-column: 1;
+  color: var(--color-muted-foreground);
+  font-size: .9375rem;
+  line-height: 1.7;
+}
+
+.number {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--color-muted-foreground);
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.responsibility {
+  min-width: 0;
+  max-width: 42rem;
+  font-size: 1rem;
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+
+.navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 2.75rem;
+  max-width: 100%;
+  padding: .5rem .625rem;
+  border-radius: .5rem;
+  color: var(--color-accent);
+  font-size: .9375rem;
+  font-weight: 650;
+  line-height: 1.7;
+  text-decoration: none;
+}
+
+.link:hover {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-hover);
+  text-decoration: none;
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+.error {
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.errorTitle {
+  color: var(--color-primary);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.errorDescription {
+  margin-block: .75rem;
+  color: var(--color-muted-foreground);
+  font-size: .9375rem;
+  line-height: 1.8;
+}
+
+@media (max-width: 1199px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: .75rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .row {
+    padding-block: 1.5rem;
+  }
+}
