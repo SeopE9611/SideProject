@@ -271,7 +271,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
           className={controlClass}
         />
         <p id="admin-news-summary-help" className="text-small text-muted-foreground">
-          뉴스 목록과 검색 설명에 사용될 짧은 내용을 입력합니다.
+          소식 목록과 검색 결과에 표시할 짧은 요약을 입력합니다.
         </p>
         <FieldError field="summary" errors={fieldErrors} />
       </div>

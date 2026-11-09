@@ -98,11 +98,11 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
         </>}
         actions={<>
           {canCreate ? <Link href="/admin/news/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">새 게시물 작성</Link> : null}
-          <Link href="/news" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">공개 뉴스 페이지 보기</Link>
+          <Link href="/news" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">공개 소식 페이지 보기</Link>
         </>}
       />
 
-      <AdminFilterPanel headingId="admin-news-filter-heading" title="뉴스 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
+      <AdminFilterPanel headingId="admin-news-filter-heading" title="소식 필터" totalItems={result.totalItems} page={result.page} totalPages={result.totalPages}>
         <form key={filterFormKey} method="get" action="/admin/news" className="mt-4 grid gap-3 lg:grid-cols-3">
           <label className="grid min-w-0 gap-2 font-semibold lg:col-span-3">
             제목 검색
@@ -172,7 +172,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
 
       <section className={styles.list} aria-labelledby="admin-news-list-heading">
         <h2 id="admin-news-list-heading" className="sr-only">
-          뉴스 게시물 목록
+          소식 게시물 목록
         </h2>
         {result.items.length > 0 ? (
           <>
@@ -244,7 +244,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
           </>
         ) : (
           <EmptyState
-            title={hasFilters ? "선택한 조건에 맞는 게시물이 없습니다." : "아직 등록된 뉴스 게시물이 없습니다."}
+            title={hasFilters ? "선택한 조건에 맞는 게시물이 없습니다." : "아직 등록된 소식이 없습니다."}
             description={
               !hasFilters ? (
                 <p className="mt-3 text-muted-foreground">
@@ -267,7 +267,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
       </section>
 
       <AdminListPagination
-        label="뉴스 목록 페이지 이동"
+        label="소식 목록 페이지 이동"
         page={result.page}
         totalPages={result.totalPages}
         previousHref={createAdminNewsPageHref(result.page - 1, filters, q)}
