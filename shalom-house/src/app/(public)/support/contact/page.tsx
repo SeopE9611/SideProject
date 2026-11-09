@@ -34,9 +34,6 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
           <h2 id="inquiry-heading" className="mt-2 text-[1.75rem] font-bold tracking-[-0.025em]">
             문의 내용을 남겨 주세요
           </h2>
-          <p className="text-safe-wrap mt-3 text-small leading-7 text-muted-foreground">
-            문의 종류를 선택하고 내용을 남겨 주세요. 후원·자원봉사·방문 문의도 이곳에서 접수합니다.
-          </p>
           <PublicInquiryForm key={initialKind} initialKind={initialKind} phoneFallback={contact.phone} />
         </section>
         <aside
