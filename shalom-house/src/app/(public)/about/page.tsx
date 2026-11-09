@@ -38,7 +38,6 @@ export default async function AboutPage() {
               <p className={styles.kicker}>샬롬의집 안내</p>
               <h2 id="about-summary-heading">시설 기본정보</h2>
             </div>
-            <p className={styles.sectionHint}>샬롬의집의 기본 정보를 확인하실 수 있습니다.</p>
           </div>
           <dl className={styles.factGrid}>
             {content.facts.map((item, index) => (
