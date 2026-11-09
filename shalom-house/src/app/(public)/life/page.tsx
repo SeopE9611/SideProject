@@ -83,7 +83,7 @@ export default async function LifePage() {
         compact
         sectionHref="/life"
         eyebrow="생활·프로그램"
-        title="생활이야기"
+        title="생활·활동"
         description="샬롬의집의 활동 소식과 사진 기록을 모아 전합니다."
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "생활·활동" }]}
       />

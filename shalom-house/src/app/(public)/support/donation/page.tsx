@@ -21,9 +21,9 @@ export default async function DonationPage() {
         compact
         sectionHref="/support"
         eyebrow="함께하기"
-        title="후원하기"
+        title="후원 안내"
         description={guidance.pageDescription}
-        breadcrumbs={[{ label: "홈", href: "/" }, { label: "후원·봉사", href: "/support" }, { label: "후원하기" }]}
+        breadcrumbs={[{ label: "홈", href: "/" }, { label: "후원·봉사", href: "/support" }, { label: "후원 안내" }]}
         adminAction={<PublicAdminEditLink href="/admin/site-content/donation-guidance" />}
       />
       <div className="mx-auto grid max-w-site items-start gap-9 px-page py-9 sm:px-page-wide sm:py-12 lg:grid-cols-12 lg:gap-12">

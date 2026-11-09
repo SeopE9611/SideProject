@@ -72,7 +72,7 @@ export default async function AboutPage() {
               <p className={styles.kicker}>{content.scenesEyebrow}</p>
               <h2 id="about-scenes-heading">{content.scenesTitle}</h2>
             </div>
-            <Link className={styles.inlineLink} href="/life">생활이야기 보기 <Arrow /></Link>
+            <Link className={styles.inlineLink} href="/life">생활·활동 보기 <Arrow /></Link>
           </div>
           <p className={styles.scenesDescription}>{content.scenesDescription}</p>
           <ul className={styles.sceneGrid}>
