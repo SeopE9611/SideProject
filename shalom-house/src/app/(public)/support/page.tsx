@@ -34,7 +34,7 @@ export default async function SupportPage() {
         compact
         sectionHref="/support"
         eyebrow="함께하기"
-        title="함께하기"
+        title="후원·봉사"
         description="후원·자원봉사 안내와 목적에 맞는 문의 경로를 찾아보세요."
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "후원·봉사" }]}
       />

@@ -99,13 +99,13 @@ export default async function ProgramsPage() {
             title="아직 등록된 프로그램 안내가 없습니다."
             description={
               <p className="text-safe-wrap mt-2 text-small text-muted-foreground">
-                활동 기록은 생활이야기와 활동소식에서 확인할 수 있습니다.
+                활동사진과 최근 소식도 살펴보세요.
               </p>
             }
             actions={
               <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
                 <Link className="institution-link" href="/life">
-                  생활이야기
+                  생활·활동 보기
                 </Link>
                 <Link className="institution-link" href="/news/activities">
                   활동소식

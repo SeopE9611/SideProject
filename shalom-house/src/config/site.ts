@@ -12,7 +12,7 @@ export const siteConfig = {
       emphasis: false,
       children: [
         {
-          label: "기관개요",
+          label: "시설개요",
           description: "샬롬의집 기본 정보",
           href: "/about",
         },
@@ -45,7 +45,7 @@ export const siteConfig = {
       href: "/life",
       emphasis: false,
       children: [
-        { label: "생활·지원 안내", description: "일상과 활동 기록", href: "/life" },
+        { label: "전체 보기", description: "일상과 활동 기록", href: "/life" },
         {
           label: "프로그램",
           description: "프로그램 분류와 안내",
@@ -115,7 +115,7 @@ export const siteConfig = {
       href: "/life/gallery",
     },
     {
-      label: "후원하기",
+      label: "후원 안내",
       href: "/support/donation",
     },
     {
