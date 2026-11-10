@@ -15,7 +15,7 @@ export const publicSeoRoutes: readonly PublicSeoRoute[] = [
   ["/news/activities", "활동소식", "샬롬의집에서 공개한 최근 활동과 프로그램 소식을 전합니다."],
   ["/transparency", "자료공개", "샬롬의집의 운영 및 후원 관련 공개자료를 확인할 수 있습니다."],
   ["/support", "후원·봉사", "샬롬의집 후원, 자원봉사와 문의 참여 방법을 안내합니다."],
-  ["/support/donation", "후원 안내", "샬롬의집 후원 절차, 사용 원칙과 문의 방법을 안내합니다."],
+  ["/support/donation", "후원 안내", "샬롬의집 후원 방법과 문의 연락처, 후원금 영수증·내역 문의 경로를 안내합니다."],
   ["/support/volunteer", "자원봉사", "샬롬의집 자원봉사 신청 절차와 활동 전 확인 사항을 안내합니다."],
   ["/support/contact", "문의하기", "일반·방문·자원봉사·후원 문의를 안전하게 접수하는 방법을 안내합니다."],
 ].map(([path, title, description]) => ({ path, title, description }));

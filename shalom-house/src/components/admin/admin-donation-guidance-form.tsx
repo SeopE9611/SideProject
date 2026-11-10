@@ -33,15 +33,6 @@ export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }:
     setContent((current) => ({ ...current, [key]: value }));
     setConfirmed(false);
   }
-  function updateStep(index: number, value: string) {
-    setContent((current) => ({
-      ...current,
-      steps: current.steps.map((step, stepIndex) =>
-        stepIndex === index ? value : step,
-      ) as unknown as DonationGuidanceContent["steps"],
-    }));
-    setConfirmed(false);
-  }
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!confirmed || busy) return;
@@ -89,33 +80,6 @@ export function AdminDonationGuidanceForm({ initialContent, expectedUpdatedAt }:
       {fields.slice(0, 2).map(({ key, label, multiline }) => (
         <TextField key={key} {...{ keyName: key, label, multiline, value: content[key], errors, updateText }} />
       ))}
-      <fieldset className="space-y-4">
-        <legend className="text-heading font-bold">후원 절차</legend>
-        {content.steps.map((step, index) => {
-          const id = `donation-steps-${index}`;
-          const error = errors[`steps.${index}`] ?? (index === 0 ? errors.steps : undefined);
-          return (
-            <div key={id} className="grid gap-2 border-b border-border pb-6">
-              <label className="block font-semibold" htmlFor={id}>
-                후원 절차 {index + 1}
-              </label>
-              <input
-                id={id}
-                value={step}
-                onChange={(event) => updateStep(index, event.target.value)}
-                aria-describedby={error ? `${id}-error` : undefined}
-                aria-invalid={error ? true : undefined}
-                className="w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              />
-              {error ? (
-                <p id={`${id}-error`} role="alert" className="text-small font-semibold text-danger">
-                  {error}
-                </p>
-              ) : null}
-            </div>
-          );
-        })}
-      </fieldset>
       {fields.slice(2).map(({ key, label, multiline }) => (
         <TextField key={key} {...{ keyName: key, label, multiline, value: content[key], errors, updateText }} />
       ))}
