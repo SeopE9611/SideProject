@@ -170,10 +170,10 @@ export function AdminGreetingForm({
             aria-describedby={signerDisclosureDescriptionId}
             className="size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           />
-          <span>원장 이름 공개</span>
+          <span>서명 이름 공개</span>
         </label>
         <p id={signerDisclosureDescriptionId} className="text-small text-muted-foreground">
-          체크한 경우에만 입력한 원장 이름이 공개 페이지에 표시됩니다.
+          체크한 경우에만 입력한 서명 이름이 공개 페이지에 표시됩니다. 서명 직책은 별도로 표시될 수 있습니다.
         </p>
       </div>
       <div className="border-l-4 border-warning bg-warning-soft p-4">

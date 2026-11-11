@@ -19,12 +19,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
       <AdminFormPageHeader
         backHref="/admin/site-content"
         backLabel="공식 콘텐츠 관리"
-        eyebrow="시설 공식 정보 · 원장 인사말"
-        title="원장 인사말 편집"
-        description="공개 홈페이지의 원장 인사말과 서명 표시를 관리합니다."
+        eyebrow="시설 공식 정보 · 인사말"
+        title="인사말 편집"
+        description="공개 홈페이지의 인사말 본문과 서명 표시를 관리합니다."
       />
       <AdminFormGuidance title="공개 전 확인" description="저장하면 현재 공개 인사말이 즉시 변경됩니다.">
-        인사말 본문과 원장 이름 공개 여부를 확인해 주세요.
+        인사말 본문과 서명 이름 공개 여부를 확인해 주세요.
       </AdminFormGuidance>
       <AdminGreetingForm content={detail.content} updatedAt={detail.updatedAt} />
       <AdminAuditHistory items={audit} />
