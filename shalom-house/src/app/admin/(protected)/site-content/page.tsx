@@ -24,7 +24,7 @@ export default async function SiteContentPage() {
     <div className="space-y-6">
       <AdminPageHeader
         title="공식 콘텐츠 관리"
-        description="시설개요, 원장 인사말, 연락처·찾아오시는 길, 후원 안내, 함께하는 사람들과 생활공간을 관리합니다."
+        description="시설개요, 인사말, 연락처·찾아오시는 길, 후원 안내, 함께하는 사람들과 생활공간을 관리합니다."
       />
       <div className="grid gap-5">
         {items.map((item) => (
@@ -33,7 +33,7 @@ export default async function SiteContentPage() {
               {item.key === "facility-overview"
                 ? "시설개요"
                 : item.key === "greeting"
-                  ? "원장 인사말"
+                  ? "인사말"
                   : item.key === "contact-information"
                     ? "연락처·찾아오시는 길"
                     : "후원 안내"}
