@@ -27,30 +27,13 @@ export default async function DonationPage() {
         adminAction={<PublicAdminEditLink href="/admin/site-content/donation-guidance" />}
       />
       <div className="mx-auto grid max-w-site items-start gap-9 px-page py-9 sm:px-page-wide sm:py-12 lg:grid-cols-12 lg:gap-12">
-        <section aria-labelledby="donation-steps-heading" className="min-w-0 lg:col-span-8">
-          <p className="text-small font-bold text-accent">확인 순서</p>
-          <h2 id="donation-steps-heading" className="mt-2 text-[1.75rem] font-bold tracking-[-0.025em]">
-            후원 방식 확인 절차
+        <section aria-labelledby="donation-method-heading" className="min-w-0 lg:col-span-8">
+          <h2 id="donation-method-heading" className="mt-2 text-[1.75rem] font-bold tracking-[-0.025em]">
+            후원 방법
           </h2>
           <p className="text-safe-wrap mt-5 border-l-4 border-accent bg-surface-subtle px-5 py-4 text-small leading-7">
             {guidance.notice}
           </p>
-          <ol className="mt-6 border-t border-border">
-            {guidance.steps.map((step, index) => (
-              <li
-                className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 border-b border-border py-6 sm:grid-cols-[4.5rem_minmax(0,1fr)]"
-                key={index}
-              >
-                <span
-                  className="inline-flex size-11 items-center justify-center rounded-full bg-primary-soft text-base font-semibold text-accent"
-                  aria-hidden="true"
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <p className="text-safe-wrap text-body leading-8">{step}</p>
-              </li>
-            ))}
-          </ol>
           <Link className="institution-link mt-5" href="/transparency">
             {guidance.transparencyLinkLabel} <span aria-hidden="true">→</span>
           </Link>

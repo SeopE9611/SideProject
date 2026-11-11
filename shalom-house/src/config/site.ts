@@ -73,7 +73,7 @@ export const siteConfig = {
       children: [
         {
           label: "후원 안내",
-          description: "후원 절차 확인",
+          description: "후원 방법·문의 안내",
           href: "/support/donation",
         },
         {

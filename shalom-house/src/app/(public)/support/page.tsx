@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 const participation = [
   {
     title: "후원",
-    description: "후원 방법과 안내 절차를 확인하거나 후원 관련 문의를 접수합니다.",
+    description: "후원 관련 안내를 확인하고, 가능한 참여 방법은 문의해 주세요.",
     href: "/support/donation",
     inquiry: "/support/contact?kind=donation#inquiry-form",
     inquiryLabel: "후원 문의 접수",
