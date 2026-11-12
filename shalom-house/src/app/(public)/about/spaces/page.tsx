@@ -25,7 +25,7 @@ export default async function SpacesPage() {
         title="생활공간"
         description="시설의 공간과 쓰임을 안내합니다."
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개", href: "/about" }, { label: "생활공간" }]}
-        adminAction={<PublicAdminEditLink href="/admin/site-content/spaces" />}
+        adminAction={<PublicAdminEditLink href="/admin/site-content/spaces" label="생활공간 수정" />}
       />
       <div className={styles.canvas}>
         <section aria-labelledby="spaces-heading" className={styles.content}>
