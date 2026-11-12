@@ -130,6 +130,16 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
               <li
                 key={item.href}
                 className="relative"
+                onPointerEnter={hasChildren ? (event) => {
+                  if (event.pointerType !== "mouse" || !window.matchMedia(`${DESKTOP_MEDIA_QUERY} and (any-hover: hover)`).matches) return;
+                  const focusedSubmenu = navigationRef.current?.querySelector("[data-desktop-submenu]:focus-within");
+                  if (focusedSubmenu && !event.currentTarget.contains(focusedSubmenu)) return;
+                  setOpenDesktopHref(item.href);
+                } : undefined}
+                onPointerLeave={hasChildren ? (event) => {
+                  if (event.pointerType !== "mouse" || event.currentTarget.querySelector("[data-desktop-submenu]:focus-within")) return;
+                  setOpenDesktopHref((current) => (current === item.href ? null : current));
+                } : undefined}
                 onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget)) {
                     setOpenDesktopHref((current) => (current === item.href ? null : current));
@@ -185,8 +195,11 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
                 {hasChildren ? (
                   <div
                     id={submenuId}
-                    className={`absolute top-full w-72 pt-3 ${index === siteConfig.mainNavigation.length - 1 ? "right-0" : "left-0"}`}
-                    hidden={!isSubmenuOpen}
+                    className={`site-menu-dropdown absolute top-full w-72 pt-3 ${index === siteConfig.mainNavigation.length - 1 ? "right-0" : "left-0"}`}
+                    data-desktop-submenu
+                    data-open={isSubmenuOpen}
+                    inert={!isSubmenuOpen}
+                    aria-hidden={!isSubmenuOpen}
                   >
                     <div className="site-menu-panel">
                       <p className="text-safe-wrap border-b border-border px-3 pb-3 pt-1 text-xs font-semibold text-muted-foreground">
