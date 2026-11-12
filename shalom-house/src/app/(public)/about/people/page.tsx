@@ -25,7 +25,7 @@ export default async function PeoplePage() {
         title="함께하는 사람들"
         description="직원의 역할과 담당 업무를 소개합니다."
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개", href: "/about" }, { label: "함께하는 사람들" }]}
-        adminAction={<PublicAdminEditLink href="/admin/site-content/people" />}
+        adminAction={<PublicAdminEditLink href="/admin/site-content/people" label="함께하는 사람들 수정" />}
       />
       <div className={styles.canvas}>
         <section aria-labelledby="staff-heading" className={styles.content}>

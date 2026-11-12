@@ -29,7 +29,7 @@ export default async function AboutPage() {
         title="시설개요"
         description={content.pageDescription}
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개" }]}
-        adminAction={<PublicAdminEditLink href="/admin/site-content/facility-overview" />}
+        adminAction={<PublicAdminEditLink href="/admin/site-content/facility-overview" label="시설개요 수정" />}
       />
       <div className={styles.page}>
         <section className={styles.facts} aria-labelledby="about-summary-heading">

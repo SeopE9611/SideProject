@@ -25,7 +25,7 @@ export default async function GreetingPage() {
         title="인사말"
         description={greeting?.pageDescription ?? "시설 운영 책임자의 인사말을 전합니다."}
         breadcrumbs={[{ label: "홈", href: "/" }, { label: "기관소개", href: "/about" }, { label: "인사말" }]}
-        adminAction={<PublicAdminEditLink href="/admin/site-content/greeting" />}
+        adminAction={<PublicAdminEditLink href="/admin/site-content/greeting" label="인사말 수정" />}
       />
       <div className={styles.canvas}>
         <article className={styles.article} aria-labelledby="greeting-heading">
