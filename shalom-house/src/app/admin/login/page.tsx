@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { AdminLoginForm } from "@/components/admin/admin-login-form";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -55,58 +56,7 @@ export default async function AdminLoginPage({
             <p className="text-safe-wrap mt-3 text-small text-muted-foreground">등록된 관리자 이메일과 비밀번호를 입력해 주세요.</p>
           </div>
 
-          <form
-            method="post"
-            action="/api/admin/auth/login"
-            aria-describedby={error ? "login-error" : undefined}
-            className="mt-8 space-y-6"
-          >
-            {error ? (
-              <p
-                id="login-error"
-                role="alert"
-                className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger"
-              >
-                {error}
-              </p>
-            ) : null}
-            <div>
-              <label htmlFor="email" className="block text-small font-bold">
-                이메일 <span className="text-danger">*</span>
-              </label>
-              <input
-                id="email"
-                type="email"
-                name="email"
-                required
-                maxLength={254}
-                autoComplete="username"
-                autoCapitalize="none"
-                spellCheck={false}
-                className="mt-2 min-h-12 w-full rounded-control border border-border-strong bg-surface px-4 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-small font-bold">
-                비밀번호 <span className="text-danger">*</span>
-              </label>
-              <input
-                id="password"
-                type="password"
-                name="password"
-                required
-                maxLength={128}
-                autoComplete="current-password"
-                className="mt-2 min-h-12 w-full rounded-control border border-border-strong bg-surface px-4 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              />
-            </div>
-            <button
-              type="submit"
-              className="min-h-12 w-full rounded-control bg-primary px-5 py-3 font-bold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-            >
-              로그인
-            </button>
-          </form>
+          <AdminLoginForm error={error} />
 
           <Link
             href="/"

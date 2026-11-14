@@ -204,12 +204,8 @@ export function PublicHomeV2({ overview, contact, notices, activities, programs,
         </section>
       </div>
 
-      <section className={styles.contactBand} aria-labelledby="home-v2-contact-heading">
-        <div className={`${styles.container} ${styles.contactGrid}`}>
-          <div>
-            <h2 id="home-v2-contact-heading">문의와 방문</h2>
-            <p className={styles.description}>{contact.visitInquiryDescription}</p>
-          </div>
+      <section className={styles.contactBand} aria-label="문의와 방문">
+        <div className={styles.container}>
           <div className={styles.contactInformation}>
             <a className={styles.phone} href={createTelephoneHref(contact.phone)}>
               {contact.phone}<Arrow />
