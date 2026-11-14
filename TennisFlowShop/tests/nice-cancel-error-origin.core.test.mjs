@@ -24,6 +24,9 @@ function fixture(t, route, scenario = {}) {
     paymentStatus: "결제완료", paymentInfo: { provider: "nicepay", tid: "mock-tid", total: 10000 },
     amount: { deposit: 5000 }, cancelRequest: { status: "requested" }, items: [],
   };
+  if (scenario.localPaymentStatus) document.paymentInfo.status = scenario.localPaymentStatus;
+  if (scenario.claimStatus) document.cancelRequest.pgCancelClaim = { status: scenario.claimStatus };
+  if (scenario.externallyCanceled) { document.paymentStatus = "결제취소"; document.paymentInfo.status = "canceled"; }
   const updates = [];
   const histories = [];
   const calls = { get: [], cancel: [], transactions: 0 };
@@ -87,12 +90,12 @@ function fixture(t, route, scenario = {}) {
         calls.get.push(params);
         if (calls.get.length === 1 && scenario.beforeError) throw scenario.beforeError;
         if (calls.get.length === 2 && scenario.afterError) throw scenario.afterError;
-        return calls.get.length === 1 ? { resultCode: "0000", status: "paid", balanceAmt: "10000" } : { resultCode: "0000", status: "partialcanceled", balanceAmt: "5000" };
+        return calls.get.length === 1 ? { resultCode: "0000", status: "paid", tid: "mock-tid", orderId: "mock-order", amount: "10000", balanceAmt: "10000", ...scenario.pgRaw } : { resultCode: "0000", status: "partialcanceled", balanceAmt: "5000" };
       },
       cancelNicePaymentByTid: async (params) => {
         calls.cancel.push(params);
         if (scenario.cancelError) throw scenario.cancelError;
-        return { resultCode: scenario.cancelCode ?? "0000", resultMsg: "mock PG response", status: "canceled" };
+        return { resultCode: scenario.cancelCode ?? "0000", resultMsg: "mock PG response", status: "canceled", tid: "mock-tid", amount: "10000", balanceAmt: "0", ...scenario.cancelRaw };
       },
     },
   };
@@ -173,7 +176,8 @@ for (const route of Object.keys(paths)) {
     assert.equal(response.status, 200);
     assert.equal(body.ok, true);
     assert.equal(f.calls.cancel.length, 1);
-    assert.equal(f.calls.cancel[0].cancelAmt, route === "deposit" ? 5000 : 10000);
+    assert.equal(f.calls.cancel[0].cancelAmt, route === "order" ? undefined : route === "deposit" ? 5000 : 10000);
+    if (route === "order") assert.equal(Object.hasOwn(f.calls.cancel[0], "cancelAmt"), false);
     assert.equal(f.calls.transactions, 1);
     if (route === "deposit") assert.equal(f.document.paymentInfo.depositRefund.status, "completed");
     else assert.equal(f.document.paymentStatus, "결제취소");
@@ -192,5 +196,90 @@ for (const kind of ["provider_business", "timeout", "network"]) {
     assert.equal(f.document.paymentInfo.depositRefund.status, "needs_reconciliation");
     assert.equal(f.document.depositRefundedAt, undefined);
     assertNoShortage(f);
+  });
+}
+
+for (const status of ["partialcanceled", "partialCancelled"]) {
+  test(`order: ${status} retains explicit remaining-balance cancellation`, async (t) => {
+    const f = fixture(t, "order", { pgRaw: { status, balanceAmt: "6000" } });
+    assert.equal((await f.run()).response.status, 200);
+    assert.equal(f.calls.cancel[0].cancelAmt, 6000);
+    assert.equal(f.calls.transactions, 1);
+  });
+}
+for (const pgRaw of [
+  { balanceAmt: undefined }, { balanceAmt: "" }, { balanceAmt: "0" },
+  { balanceAmt: "9999" }, { balanceAmt: "10000.5" }, { balanceAmt: "Infinity" },
+  { amount: "9000" }, { tid: "wrong-tid" }, { orderId: "wrong-order" },
+  { status: "partialcanceled", balanceAmt: "10000" },
+  { status: "partialcanceled", balanceAmt: "0" },
+  { status: "canceled", balanceAmt: "1" }, { status: "ready" },
+]) {
+  test(`order: inconsistent PG state is rejected before POST: ${JSON.stringify(pgRaw)}`, async (t) => {
+    const f = fixture(t, "order", { pgRaw });
+    assert.equal((await f.run()).response.status, 400);
+    assert.equal(f.calls.cancel.length, 0);
+    assert.equal(f.calls.transactions, 0);
+    assert.equal(f.document.paymentStatus, "결제완료");
+  });
+}
+for (const thrown of [false, true]) {
+  test(`order: explicit 2033 rejection never finalizes (throw=${thrown})`, async (t) => {
+    const f = fixture(t, "order", thrown ? { cancelError: postError("2033") } : { cancelCode: "2033" });
+    const { body } = await f.run();
+    assert.equal(body.errorCode, "NICE_CANCEL_FAILED");
+    assert.equal(f.document.cancelRequest.pgCancelClaim.status, "failed");
+    assert.equal(f.document.paymentStatus, "결제완료");
+    assert.equal(f.calls.transactions, 0);
+  });
+}
+for (const cancelRaw of [{ resultCode: "" }, { status: "paid" }, { status: "partialcanceled", balanceAmt: "1000" }, { balanceAmt: undefined }, { tid: "wrong-tid" }]) {
+  test(`order: uncertain POST response never finalizes or resends: ${JSON.stringify(cancelRaw)}`, async (t) => {
+    const f = fixture(t, "order", { cancelRaw });
+    assert.equal((await f.run()).body.errorCode, "NICE_CANCEL_NEEDS_RECONCILIATION");
+    assert.equal(f.document.cancelRequest.pgCancelClaim.status, "needs_reconciliation");
+    assert.equal(f.calls.cancel.length, 1);
+    assert.equal(f.calls.transactions, 0);
+  });
+}
+for (const claimStatus of ["needs_reconciliation", "pg_canceled"]) {
+  for (const canceled of [false, true]) {
+    test(`order: ${claimStatus} only finalizes confirmed canceled lookup (${canceled})`, async (t) => {
+      const f = fixture(t, "order", { claimStatus, pgRaw: canceled ? { status: "canceled", balanceAmt: "0" } : {} });
+      const { response } = await f.run();
+      assert.equal(response.status, canceled ? 200 : 502);
+      assert.equal(f.calls.cancel.length, 0);
+      assert.equal(f.calls.transactions, canceled ? 1 : 0);
+      if (!canceled) assert.equal(f.document.cancelRequest.pgCancelClaim.status, "needs_reconciliation");
+    });
+  }
+}
+test("order: lookup failure preserves an uncertain prior cancellation", async (t) => {
+  const f = fixture(t, "order", { claimStatus: "needs_reconciliation", beforeError: lookupError("network") });
+  assert.equal((await f.run()).body.errorCode, "NICE_CANCEL_NEEDS_RECONCILIATION");
+  assert.equal(f.document.cancelRequest.pgCancelClaim.status, "needs_reconciliation");
+  assert.equal(f.calls.cancel.length, 0);
+});
+for (const externallyCanceled of [false, true]) {
+  test(`order: external full cancellation never sends POST (local evidence=${externallyCanceled})`, async (t) => {
+    const f = fixture(t, "order", { externallyCanceled, pgRaw: { status: "cancelled", balanceAmt: "0" } });
+    assert.equal((await f.run()).response.status, 200);
+    assert.equal(f.calls.cancel.length, 0);
+    assert.equal(f.calls.get.length, externallyCanceled ? 0 : 1);
+    assert.equal(f.calls.transactions, 1);
+  });
+}
+
+test("order: local partial cancellation cannot become a full POST from a paid lookup", async (t) => {
+  const f = fixture(t, "order", { localPaymentStatus: "partialcanceled" });
+  assert.equal((await f.run()).response.status, 400);
+  assert.equal(f.calls.cancel.length, 0);
+  assert.equal(f.calls.transactions, 0);
+});
+for (const cancelCode of ["2001", "2211"]) {
+  test(`order: documented cancel success code ${cancelCode} retains finalization`, async (t) => {
+    const f = fixture(t, "order", { cancelCode });
+    assert.equal((await f.run()).response.status, 200);
+    assert.equal(f.calls.transactions, 1);
   });
 }

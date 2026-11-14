@@ -594,6 +594,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ ok: false, errorCode: "NICE_ORDER_ID_REQUIRED", message: "NICE 취소에 필요한 원 결제 주문번호(orderId)가 없어 자동 취소를 진행할 수 없습니다." }, { status: 400 });
     }
 
+    const priorPgCancelStatus = existing.cancelRequest?.pgCancelClaim?.status;
+    const reconciliationRequired = ["needs_reconciliation", "pg_canceled"].includes(priorPgCancelStatus);
     const claimToken = randomUUID();
     const claimedAt = new Date();
     const claimResult: any = await orders.findOneAndUpdate(
@@ -644,30 +646,53 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const lookupCode = String(pgRaw.resultCode ?? pgRaw.ResultCode ?? "").trim();
         if (lookupCode && lookupCode !== "0000") throw Object.assign(new Error(String(pgRaw.resultMsg ?? "NICE 상태 조회 실패")), { beforeCancel: true });
         pgStatus = String(pgRaw.status ?? pgRaw.Status ?? "").trim().toLowerCase().replace("cancelled", "canceled");
-        const localExpectedAmount = Math.floor(Number(existing.paymentInfo?.total ?? existing.totalPrice ?? 0));
-        pgBalanceAmount = Math.floor(Number(pgRaw.balanceAmt ?? 0));
+        const localExpectedAmount = Number(existing.paymentInfo?.total ?? existing.totalPrice);
+        const pgAmount = Number(pgRaw.amount);
+        pgBalanceAmount = Number(pgRaw.balanceAmt);
+        const validAmount = (value: unknown) => typeof value === "string" && /^\d+$/.test(value) && Number.isSafeInteger(Number(value));
+        if (String(pgRaw.tid ?? "").trim() !== tid || String(pgRaw.orderId ?? "").trim() !== originalNiceOrderId ||
+            !Number.isSafeInteger(localExpectedAmount) || localExpectedAmount <= 0 ||
+            !validAmount(pgRaw.amount) || pgAmount !== localExpectedAmount ||
+            !validAmount(pgRaw.balanceAmt) || pgBalanceAmount < 0 || pgBalanceAmount > pgAmount ||
+            (pgStatus === "canceled" && pgBalanceAmount !== 0)) {
+          throw Object.assign(new Error("NICE 거래 식별자 또는 결제 금액·잔액을 확인할 수 없습니다."), { beforeCancel: true });
+        }
         let successRaw = pgRaw;
         let resultCode = lookupCode || "0000";
         let resultMsg = String(pgRaw.resultMsg ?? pgRaw.ResultMsg ?? "").trim();
         cancelAmount = Math.max(0, Math.floor(Number(pgRaw.cancAmt ?? pgRaw.cancelAmount ?? 0)));
 
         if (pgStatus !== "canceled") {
+          if (reconciliationRequired) {
+            throw Object.assign(new Error("이전 NICE 취소 결과의 확인이 필요합니다."), { afterCancel: true });
+          }
           if (pgStatus !== "paid" && pgStatus !== "partialcanceled") {
             throw Object.assign(new Error("NICE 결제 상태가 취소 가능한 상태가 아닙니다."), { beforeCancel: true });
           }
-          cancelAmount = pgBalanceAmount > 0 ? pgBalanceAmount : pgStatus === "paid" ? localExpectedAmount : 0;
-          if (!Number.isFinite(cancelAmount) || cancelAmount <= 0) {
+          const locallyPartialCanceled = existing.paymentStatus === "부분취소" ||
+            [existing.paymentInfo?.status, existing.paymentInfo?.niceSync?.pgStatus].some(
+              (status) => ["partialcanceled", "partialcancelled"].includes(String(status ?? "").toLowerCase()),
+            );
+          if (pgStatus === "paid" && locallyPartialCanceled) {
+            throw Object.assign(new Error("부분 취소 이력과 NICE 결제 상태가 일치하지 않습니다."), { beforeCancel: true });
+          }
+          // 전체 취소는 원금과 잔액이 같아야 한다. 부분 취소는 검증된 잔액만 취소한다.
+          cancelAmount = pgBalanceAmount;
+          if (cancelAmount <= 0 || (pgStatus === "paid" ? cancelAmount !== pgAmount : cancelAmount >= pgAmount)) {
             throw Object.assign(new Error("NICE 취소 금액을 확인할 수 없습니다."), { beforeCancel: true });
           }
           cancelOrderId = createNiceCancelOrderId(existing._id);
           cancelCalled = true;
           cancelPostPending = true;
-          successRaw = await cancelNicePaymentByTid({ tid, orderId: cancelOrderId, cancelAmt: cancelAmount, reason: "관리자 주문 취소 승인 처리", clientKey, secretKey });
+          successRaw = await cancelNicePaymentByTid({ tid, orderId: cancelOrderId, ...(pgStatus === "partialcanceled" ? { cancelAmt: cancelAmount } : {}), reason: "관리자 주문 취소 승인 처리", clientKey, secretKey });
           cancelPostPending = false;
           resultCode = String(successRaw.resultCode ?? successRaw.ResultCode ?? "").trim();
           resultMsg = String(successRaw.resultMsg ?? successRaw.ResultMsg ?? "").trim();
           if (resultCode === "2026") {
             return handleUnsettledAmountShortage(resultMsg);
+          }
+          if (!/^\d{4}$/.test(resultCode)) {
+            throw Object.assign(new Error("NICE 취소 응답을 확인할 수 없습니다."), { afterCancel: true });
           }
           if (!new Set(["0000", "2001", "2211"]).has(resultCode)) {
             await orders.updateOne({ _id, "cancelRequest.pgCancelClaim.token": claimToken }, { $set: { "cancelRequest.pgCancelClaim.status": "failed", "cancelRequest.pgCancelClaim.updatedAt": new Date() } });
@@ -675,6 +700,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           }
         }
 
+        const successStatus = String(successRaw.status ?? successRaw.Status ?? "").trim().toLowerCase().replace("cancelled", "canceled");
+        if (successStatus !== "canceled" || String(successRaw.tid ?? "").trim() !== tid ||
+            !validAmount(successRaw.balanceAmt) || Number(successRaw.balanceAmt) !== 0 ||
+            !validAmount(successRaw.amount) || Number(successRaw.amount) !== localExpectedAmount) {
+          throw Object.assign(new Error("NICE 전체 취소 완료 상태를 확인할 수 없습니다."), { afterCancel: true });
+        }
         const persistedAt = new Date();
         const canceledAt = String(successRaw.canceledAt ?? successRaw.cancelledAt ?? successRaw.cancelDate ?? "").trim() || persistedAt.toISOString();
         const persisted = await orders.updateOne(
@@ -695,10 +726,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           const errorResultMsg = String(error?.resultMsg ?? error?.message ?? "").trim();
           return handleUnsettledAmountShortage(errorResultMsg);
         }
-        const reconciliation = cancelCalled || error?.afterCancel;
+        const explicitRejection = cancelPostPending && /^\d{4}$/.test(errorResultCode) &&
+          !new Set(["0000", "2001", "2211"]).has(errorResultCode);
+        const reconciliation = reconciliationRequired || error?.afterCancel || (cancelCalled && !explicitRejection);
         const lookupFailed = error?.operation === "lookup";
         await orders.updateOne({ _id, "cancelRequest.pgCancelClaim.token": claimToken }, { $set: { "cancelRequest.pgCancelClaim.status": reconciliation ? "needs_reconciliation" : "failed", "cancelRequest.pgCancelClaim.updatedAt": new Date() } });
-        return NextResponse.json({ ok: false, errorCode: reconciliation ? "NICE_CANCEL_NEEDS_RECONCILIATION" : lookupFailed ? "NICE_PAYMENT_LOOKUP_FAILED" : "NICE_CANCEL_FAILED", message: reconciliation ? "NICE 취소 결과 확인이 필요합니다. 다시 시도하면 PG 상태를 먼저 확인합니다." : lookupFailed ? "NICE 거래 조회에 실패하여 이번 요청의 취소를 진행하지 않았습니다." : String(error?.message || "NICE 결제 취소 중 오류가 발생했습니다.") }, { status: reconciliation || lookupFailed ? 502 : 400 });
+        return NextResponse.json({ ok: false, errorCode: reconciliation ? "NICE_CANCEL_NEEDS_RECONCILIATION" : lookupFailed ? "NICE_PAYMENT_LOOKUP_FAILED" : "NICE_CANCEL_FAILED", message: reconciliation ? "NICE 취소 결과 확인이 필요합니다. PG 상태를 다시 조회하며 전체 취소가 확인되기 전에는 취소 요청을 재전송하지 않습니다." : lookupFailed ? "NICE 거래 조회에 실패하여 이번 요청의 취소를 진행하지 않았습니다." : String(error?.message || "NICE 결제 취소 중 오류가 발생했습니다.") }, { status: reconciliation || lookupFailed ? 502 : 400 });
       }
     }
   }
