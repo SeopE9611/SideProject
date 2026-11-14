@@ -406,39 +406,73 @@ test("offline package use and revert routes retain caller-owned transactions and
   assert.equal(m.effects, 2);
 });
 for (const representation of ["ObjectId", "string"]) {
-  test(`existing order cancellation restores linked ${representation} application in its original transaction`, async () => {
-    const m = model(seed());
-    m.data.orders[0].paymentStatus = "결제완료";
-    m.data.orders[0].paymentInfo = { provider: "bank_transfer" };
-    m.data.orders[0].cancelRequest = { status: "requested" };
-    m.data.stringing_applications[0].orderId = representation === "string" ? String(orderId) : orderId;
-    const finalization = load("lib/orders/cancel-finalization.ts");
-    const guard = load("lib/orders/cancel-write-guard.ts", {
-      "@/lib/orders/cancel-finalization": finalization,
-      "@/lib/status/flow-status": load("lib/status/flow-status.ts"),
-    });
-    const path = "app/api/orders/[id]/cancel-approve/route.ts";
-    const route = load(path, stubImports(path, {
-      mongodb: { ObjectId }, "next/server": { NextResponse: Response },
-      "next/headers": { cookies: async () => ({ get: () => ({ value: "synthetic" }) }) },
-      "@/lib/mongodb": { default: Promise.resolve(m.db.client) },
-      "@/lib/auth.utils": { verifyAccessToken: () => ({ sub: String(userId), role: "admin" }) },
-      "@/lib/admin/portfolio-demo-readonly.server": { getPortfolioDemoAdminMutationBlock: () => null },
-      "@/lib/orders/cancel-write-guard": guard,
-      "@/lib/orders/cancel-finalization": finalization,
-      "@/lib/orders/cancel-refund-policy": load("lib/orders/cancel-refund-policy.ts"),
-      "@/lib/passes.service": passes,
-      "@/lib/admin/appendAdminAudit": { appendAdminAudit: async () => { m.effects++; } },
-      "@/lib/risk/recordCancelRefundSignal": { buildCancelRefundSubject: () => ({}), recordCancelRefundSignal: async () => { m.effects++; } },
-    }));
-    const response = await route.POST(request(), { params: Promise.resolve({ id: String(orderId) }) });
-    assert.equal(response.status, 200, await response.text());
-    assert.equal(m.commits, 1);
-    assert.equal(m.data.orders[0].status, "취소");
-    assert.equal(m.data.stringing_applications[0].status, "취소");
-    assert.equal(m.data.service_passes[0].remainingCount, 3);
-    assert.equal(m.data.products[0].inventory.stock, 11);
-  });
+  for (const provider of ["bank_transfer", "nicepay"]) {
+    for (const failure of [null, "products", "service_passes", "stringing_applications", "orders"]) {
+      test(`order finalization: ${representation}, ${provider}, failure=${failure}`, async () => {
+        const m = model(seed());
+        m.data.orders[0].paymentStatus = provider === "nicepay" ? "결제취소" : "결제완료";
+        m.data.orders[0].paymentInfo = { provider, status: provider === "nicepay" ? "canceled" : "paid" };
+        m.data.orders[0].shippingInfo = { shippingMethod: "visit" };
+        m.data.users[0].pointsBalance = 50;
+        m.data.points_transactions = [
+          { refKey: `order:${orderId}:spend`, status: "confirmed", amount: -100 },
+          { refKey: `order_reward:${orderId}`, status: "confirmed", amount: 50 },
+        ];
+        m.data.orders[0].cancelRequest = { status: "requested" };
+        m.data.stringing_applications[0].orderId = representation === "string" ? String(orderId) : orderId;
+        const finalization = load("lib/orders/cancel-finalization.ts");
+        const guard = load("lib/orders/cancel-write-guard.ts", {
+          "@/lib/orders/cancel-finalization": finalization,
+          "@/lib/status/flow-status": load("lib/status/flow-status.ts"),
+        });
+        const path = "app/api/orders/[id]/cancel-approve/route.ts";
+        const route = load(path, stubImports(path, {
+          mongodb: { ObjectId }, "next/server": { NextResponse: Response },
+          "next/headers": { cookies: async () => ({ get: () => ({ value: "synthetic" }) }) },
+          "@/lib/mongodb": { default: Promise.resolve(m.db.client) },
+          "@/lib/auth.utils": { verifyAccessToken: () => ({ sub: String(userId), role: "admin" }) },
+          "@/lib/admin/portfolio-demo-readonly.server": { getPortfolioDemoAdminMutationBlock: () => null },
+          "@/lib/orders/cancel-write-guard": guard,
+          "@/lib/orders/cancel-finalization": finalization,
+          "@/lib/orders/cancel-refund-policy": load("lib/orders/cancel-refund-policy.ts"),
+          "@/lib/passes.service": passes,
+          // Model ledger/balance writes to verify route ownership of the transaction
+          // and refKey guards; this does not exercise points.service internals.
+          "@/lib/points.service": Object.fromEntries(["grantPoints", "deductPoints"].map((name) => [name, async (db, params, options) => {
+            assert.ok(options.session.inTransaction());
+            await db.collection("points_transactions").insertOne(params, options);
+            await db.collection("users").updateOne({ _id: userId }, { $inc: { pointsBalance: name === "grantPoints" ? params.amount : -params.amount } }, options);
+          }])),
+          "@/lib/admin/appendAdminAudit": { appendAdminAudit: async () => { m.effects++; } },
+          "@/lib/risk/recordCancelRefundSignal": { buildCancelRefundSubject: () => ({}), recordCancelRefundSignal: async () => { m.effects++; } },
+        }));
+        const before = clone(m.data);
+        m.fail = (name) => name === failure;
+        const response = await route.POST(request(), { params: Promise.resolve({ id: String(orderId) }) });
+        if (failure) {
+          assert.ok(response.status >= 400);
+          assert.deepEqual(m.data, before);
+          assert.equal(m.effects, 0);
+          m.fail = null;
+          const retry = await route.POST(request(), { params: Promise.resolve({ id: String(orderId) }) });
+          assert.equal(retry.status, 200, await retry.text());
+        } else {
+          assert.equal(response.status, 200, await response.text());
+        }
+        assert.equal(m.commits, 1);
+        assert.equal(m.data.orders[0].status, "취소");
+        assert.equal(m.data.stringing_applications[0].status, "취소");
+        assert.equal(m.data.service_passes[0].remainingCount, 3);
+        assert.equal(m.data.products[0].inventory.stock, 11);
+        assert.equal(m.data.users[0].pointsBalance, 100);
+        assert.equal(m.data.points_transactions.length, 4);
+        const finalized = clone(m.data);
+        assert.equal((await route.POST(request(), { params: Promise.resolve({ id: String(orderId) }) })).status, 400);
+        assert.deepEqual(m.data, finalized);
+        assert.equal(m.pg, 0);
+      });
+    }
+  }
 }
 test("simultaneous approvals of one independent application restore once", async () => {
   const m = model(seed()); const h = handlers(m);
