@@ -7,6 +7,7 @@ import { isAdminRole, type AdminRole, type AdminUserStatus } from "./admin-auth.
 export const ADMIN_USERS_COLLECTION_NAME = "admin_users";
 export const ADMIN_SESSIONS_COLLECTION_NAME = "admin_sessions";
 export const ADMIN_LOGIN_ATTEMPTS_COLLECTION_NAME = "admin_login_attempts";
+export const ADMIN_SESSION_IDLE_TIMEOUT_SECONDS = 60 * 30;
 
 export type AdminUserDocument = {
   _id: ObjectId;
@@ -27,6 +28,7 @@ export type AdminSessionDocument = {
   tokenHash: string;
   createdAt: Date;
   expiresAt: Date;
+  lastActivityAt?: Date;
   revokedAt: Date | null;
 };
 
@@ -66,6 +68,7 @@ export async function createAdminSession(input: {
   await database.collection<AdminSessionDocument>(ADMIN_SESSIONS_COLLECTION_NAME).insertOne({
     _id: new ObjectId(),
     ...input,
+    lastActivityAt: input.createdAt,
     revokedAt: null,
   });
 }
@@ -75,6 +78,7 @@ export async function findActiveAdminBySessionHash(tokenHash: string, now: Date)
   const sessionFilter: Filter<AdminSessionDocument> = {
     tokenHash,
     expiresAt: { $gt: now },
+    lastActivityAt: { $type: "date", $gt: new Date(now.getTime() - ADMIN_SESSION_IDLE_TIMEOUT_SECONDS * 1000) },
     $or: [{ revokedAt: null }, { revokedAt: { $exists: false } }],
   };
   const session = await database.collection<AdminSessionDocument>(ADMIN_SESSIONS_COLLECTION_NAME).findOne(sessionFilter);
@@ -84,7 +88,23 @@ export async function findActiveAdminBySessionHash(tokenHash: string, now: Date)
     _id: session.userId,
     status: "active",
   });
-  return admin && isAdminRole(admin.role) ? admin : null;
+  if (!admin || !isAdminRole(admin.role)) return null;
+
+  // 관리자 조회 중 만료·폐기될 수 있으므로 갱신 시점의 DB 시각으로 다시 판정한다.
+  const activity = await database.collection<AdminSessionDocument>(ADMIN_SESSIONS_COLLECTION_NAME).updateOne(
+    {
+      ...sessionFilter,
+      _id: session._id,
+      $expr: {
+        $and: [
+          { $gt: ["$expiresAt", "$$NOW"] },
+          { $gt: ["$lastActivityAt", { $subtract: ["$$NOW", ADMIN_SESSION_IDLE_TIMEOUT_SECONDS * 1000] }] },
+        ],
+      },
+    },
+    [{ $set: { lastActivityAt: { $max: ["$lastActivityAt", "$$NOW"] } } }],
+  );
+  return activity.matchedCount === 1 ? admin : null;
 }
 
 export async function revokeAdminSession(tokenHash: string, now: Date) {
