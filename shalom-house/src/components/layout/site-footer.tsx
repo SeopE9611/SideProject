@@ -1,12 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
+import { unstable_rethrow } from "next/navigation";
 
 import { siteConfig } from "@/config/site";
+import { getCurrentAdmin } from "@/features/admin-auth/admin-auth.service";
 import { getPublicContactInformation } from "@/features/site-content/site-content.repository";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
 export async function SiteFooter() {
-  const contact = await getPublicContactInformation();
+  const [contact, admin] = await Promise.all([
+    getPublicContactInformation(),
+    getCurrentAdmin().catch((error) => {
+      unstable_rethrow(error);
+      console.error("푸터 관리자 상태 조회 실패");
+      return null;
+    }),
+  ]);
   return (
     <footer className="site-footer">
       <div className="mx-auto max-w-site px-page py-7 sm:px-page-wide sm:py-9">
@@ -66,8 +75,18 @@ export async function SiteFooter() {
                 prefetch={false}
                 className="inline-flex min-h-11 items-center underline-offset-4 hover:text-primary-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface"
               >
-                관리자 로그인
+                {admin ? "관리자 페이지" : "관리자 로그인"}
               </Link>
+              {admin ? (
+                <form method="post" action="/api/admin/auth/logout" className="inline-flex">
+                  <button
+                    type="submit"
+                    className="inline-flex min-h-11 items-center underline-offset-4 hover:text-primary-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-surface"
+                  >
+                    로그아웃
+                  </button>
+                </form>
+              ) : null}
             </div>
           </div>
         </div>
