@@ -119,6 +119,10 @@ async function ensureIndexes(db, collectionName, specs) {
  * - 그래서 이 스크립트가 런타임 인덱스와 공개 목록 성능 인덱스의 "배포 전 선반영" 책임을 맡는다.
  */
 const INDEX_SPECS = {
+  product_stock_events: [
+    { name: "product_stock_events_product_time", keys: { productId: 1, occurredAt: -1, _id: -1 }, options: {} },
+    { name: "product_stock_events_operation_product", keys: { operationId: 1, productId: 1 }, options: { unique: true } },
+  ],
   apps_in_toss_payment_intents: [
     { name: "apps_in_toss_payment_intents_attemptId_unique", keys: { attemptId: 1 }, options: { unique: true } },
     { name: "apps_in_toss_payment_intents_orderNo_unique", keys: { orderNo: 1 }, options: { unique: true } },
