@@ -1,5 +1,7 @@
 "use client";
 
+import { resolveOrderStringingDisplay, type OrderStringingDisplay } from "@/lib/admin/order-stringing-display";
+
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
 import OrderStatusSelect from "@/app/features/orders/components/OrderStatusSelect";
@@ -126,6 +128,7 @@ const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) 
 
 // 타입 정의 (서버에서 내려받는 주문 정보 형태)
 interface OrderDetail {
+  linkedStringingDisplay?: OrderStringingDisplay;
   portfolioDemoDataKind?: import("@/types/portfolio-demo").PortfolioDemoDataKind | null;
   _id: string;
   stringingApplicationId?: string;
@@ -584,6 +587,11 @@ export default function OrderDetailClient({ orderId, readOnly = false }: Props) 
 
   // 대표 stage 카드/연결 가이드용 기준 신청서: 서버에서 선별한 latestActiveLinkedApplication 우선 사용
   const latestLinkedApplication = orderDetail.latestActiveLinkedApplication ?? null;
+  const linkedStringingDisplay = orderDetail.linkedStringingDisplay ?? resolveOrderStringingDisplay({
+    applications: orderDetail.stringingApplications ?? [],
+    activeApplicationId: latestLinkedApplication?.id,
+    storedApplicationId: orderDetail.stringingApplicationId,
+  });
   const isLinkedStageBlockedByOrder = isOrderBlockedForLinkedAutomation(localStatus);
   const isLinkedStageBlockedByApplication = latestLinkedApplication
     ? isApplicationClosedForLinkedAutomation({
@@ -609,14 +617,14 @@ export default function OrderDetailClient({ orderId, readOnly = false }: Props) 
   const hasActiveLinkedStringingApplication = Boolean(linkedStringingAppId);
 
   const needsStringingApplication =
-    expectsStringingApplication && !hasActiveLinkedStringingApplication;
+    expectsStringingApplication && linkedStringingDisplay.kind === "none";
 
   const isShippingManagedByApplication = hasActiveLinkedStringingApplication;
 
   const isLinkedStringingOrder =
     expectsStringingApplication ||
     orderDetail.isStringServiceApplied === true ||
-    hasActiveLinkedStringingApplication;
+    hasActiveLinkedStringingApplication || linkedStringingDisplay.kind !== "none";
 
   // 관리자 상세에서 “수령/배송(사용자가 체크아웃에서 선택한 값)”을 한눈에 보기 위한 배지
   // - 목록(/admin/orders)에서 쓰는 규칙과 동일한 기준으로 표시한다.
@@ -771,7 +779,9 @@ export default function OrderDetailClient({ orderId, readOnly = false }: Props) 
       }
       return `교체 서비스 사용 현황: 총 ${latestPackageSize}회 / 사용 ${latestPackageUsedCount}회 / 남은 ${latestPackageRemainingCount}회`;
     }
-    return "이 주문은 교체서비스 신청서와 연결되어 있습니다. 핵심 접수 정보는 우측 요약에서 확인하세요.";
+    return linkedStringingDisplay.kind === "canceled" || linkedStringingDisplay.kind === "error"
+      ? linkedStringingDisplay.description
+      : "이 주문은 교체서비스 신청서와 연결되어 있습니다. 핵심 접수 정보는 우측 요약에서 확인하세요.";
   })();
 
   const orderGuide = inferNextActionForOperationGroup([
@@ -869,6 +879,14 @@ export default function OrderDetailClient({ orderId, readOnly = false }: Props) 
           actionLabel: "주문 취소 후처리",
           actionHref: "#admin-order-cancel-controls",
         }
+      : linkedStringingDisplay.kind === "canceled" || linkedStringingDisplay.kind === "error"
+        ? {
+            tone: linkedStringingDisplay.kind === "error" ? "warning" : "info",
+            title: linkedStringingDisplay.label,
+            description: linkedStringingDisplay.description,
+            actionLabel: linkedStringingDisplay.applicationId ? "연결 신청서 이력 보기" : undefined,
+            actionHref: linkedStringingDisplay.applicationId ? `/admin/applications/stringing/${linkedStringingDisplay.applicationId}` : undefined,
+          }
       : needsPaymentCheck
         ? {
             tone: "warning",
@@ -1314,31 +1332,22 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                 density="compact"
                 title="연결 교체 작업"
                 value={
-                  needsStringingApplication ? (
+                  needsStringingApplication || linkedStringingDisplay.kind === "error" ? (
                     <Badge
                       className={cn(
                         summaryBadgeClass,
                         "border-warning/30 bg-warning/10 text-warning",
                       )}
                     >
-                      신청서 미접수
+                      {linkedStringingDisplay.label}
                     </Badge>
                   ) : (
-                    "주문에 포함된 교체 작업"
+                    linkedStringingDisplay.label
                   )
                 }
-                description={
-                  needsStringingApplication
-                    ? "교체서비스 포함 주문이지만 활성 신청서가 없습니다."
-                    : latestLinkedApplication?.status
-                      ? `작업 상태 ${
-                          getCommonApplicationStatusLabel(latestLinkedApplication.status) ??
-                          latestLinkedApplication.status
-                        }`
-                      : "교체 작업 문서 확인 필요"
-                }
+                description={linkedStringingDisplay.description}
                 icon={LinkIcon}
-                tone={needsStringingApplication ? "warning" : "primary"}
+                tone={needsStringingApplication || linkedStringingDisplay.kind === "error" ? "warning" : linkedStringingDisplay.kind === "canceled" ? "neutral" : "primary"}
               />
             ) : (
               <AdminStatusCard
@@ -1487,9 +1496,7 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                       주문에 포함된 교체 작업
                     </CardTitle>
                     <CardDescription className={cn("mt-1", adminTypography.meta)}>
-                      {needsStringingApplication
-                        ? "교체서비스 포함 의사표시는 있으나 활성 신청서가 아직 없습니다."
-                        : "주문에 연결된 교체 작업의 진행 단계와 접수 정보를 확인합니다."}
+                      {linkedStringingDisplay.description}
                     </CardDescription>
                   </div>
                   <Badge
@@ -1501,11 +1508,16 @@ NICE 미정산금액 부족으로 자동취소가 실패했습니다.
                         : "border-primary/30 text-primary",
                     )}
                   >
-                    {needsStringingApplication ? "신청서 미접수" : "주문 결제에 포함됨"}
+                    {linkedStringingDisplay.label}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
+                {linkedStringingDisplay.kind !== "active" && linkedStringingDisplay.applicationId && (
+                  <p className={adminTypography.body}>
+                    {linkedStringingDisplay.label} · <Link className="underline" href={`/admin/applications/stringing/${linkedStringingDisplay.applicationId}`}>연결 신청서 이력 보기</Link>
+                  </p>
+                )}
                 {needsStringingApplication ? (
                   <div className="rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
                     <p className="text-ui-body-sm font-semibold text-foreground">

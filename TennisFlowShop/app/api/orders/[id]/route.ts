@@ -1,5 +1,6 @@
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { normalizeOrderStatus } from "@/lib/admin-ops-normalize";
+import { resolveOrderStringingDisplay } from "@/lib/admin/order-stringing-display";
 import {
   LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES,
   LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES,
@@ -761,6 +762,18 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         }),
       ) ?? null;
 
+    // 활성 stage 대상은 유지하고, 이력 표시용으로만 draft/취소를 구분한다.
+    const draftApp = displayApps.length === 0
+      ? await db.collection("stringing_applications").findOne({
+          orderId: { $in: [order._id, String(order._id)] }, status: "draft",
+        }, { projection: { _id: 1, status: 1 }, sort: { updatedAt: -1, createdAt: -1 } })
+      : null;
+    const linkedStringingDisplay = resolveOrderStringingDisplay({
+      applications: draftApp ? [{ id: String(draftApp._id), status: "draft" }] : stringingApplications,
+      activeApplicationId: latestActiveLinkedApplication?.id,
+      storedApplicationId: order.stringingApplicationId ? String(order.stringingApplicationId) : null,
+    });
+
     console.info("[orders][detail][response_ready]", {
       orderId: String(order._id),
       itemCount: enrichedItems.length,
@@ -821,6 +834,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       },
       // 대표 stage 카드용 신청서(서버 변경 대상과 동일 기준)
       latestActiveLinkedApplication,
+      linkedStringingDisplay,
       // 주문 1건에 연결된 모든 신청서 요약 리스트
       stringingApplications,
     });
