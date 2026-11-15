@@ -41,6 +41,8 @@ export type OfflineSettlementReference = {
 };
 
 export type SettlementSnapshot = {
+  accountingBasis?: "payment_events_v1";
+  notice?: string;
   yyyymm: string;
   totals: SettlementTotals;
   breakdown: SettlementBreakdown;
@@ -50,6 +52,8 @@ export type SettlementSnapshot = {
 };
 
 export type SettlementLiveResponse = {
+  accountingBasis?: "payment_events_v1";
+  notice?: string;
   range: { from: string; to: string };
   totals: SettlementTotals;
   breakdown: Required<SettlementBreakdown>;

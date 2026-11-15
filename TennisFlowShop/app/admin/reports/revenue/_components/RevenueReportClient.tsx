@@ -105,7 +105,7 @@ function buildSnapshotDiffRows(
       snapshot: snapshot.online.paidAmount,
     },
     {
-      label: "개인결제 환불",
+      label: "온라인 환불",
       unit: "currency",
       current: current.online.refundedAmount,
       snapshot: snapshot.online.refundedAmount,
@@ -715,6 +715,7 @@ export default function RevenueReportClient() {
 
       {report ? (
         <>
+          {report.online.notice && <p className={adminTypography.caption}>{report.online.notice}</p>}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <SummaryCard
               title="온라인 매출"
@@ -766,7 +767,7 @@ export default function RevenueReportClient() {
                   "발급 보정",
                   `${Number(report.offline.issueFailedCount ?? 0).toLocaleString("ko-KR")}건`,
                 ],
-                ["개인결제 환불", formatKRW(report.online.refundedAmount)],
+                ["온라인 환불", formatKRW(report.online.refundedAmount)],
                 ["오프라인 환불", formatKRW(report.offline.refundedAmount)],
                 ["오프라인 미결제", formatKRW(report.offline.pendingAmount)],
               ].map(([label, value]) => (
@@ -1042,7 +1043,6 @@ export default function RevenueReportClient() {
                       label="개인결제 환불"
                       value={formatKRW(
                         report.online.privatePayments?.refundAmount ??
-                          report.online.refundedAmount ??
                           0,
                       )}
                     />
