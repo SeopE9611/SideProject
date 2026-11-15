@@ -7,13 +7,13 @@ import ts from "typescript";
 // 기존 core 테스트와 동일하게 TS를 격리 로드한다. DB·PG 연결은 제공하지 않는다.
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 function load(path, dependencies = {}) {
-  const module = { exports: {} };
+  const compiledModule = { exports: {} };
   const { outputText } = ts.transpileModule(read(path), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
   vm.runInNewContext(`(function(require,module,exports){${outputText}\n})`, { Date })((id) => {
     assert.ok(Object.hasOwn(dependencies, id), `미지정 의존성: ${id}`);
     return dependencies[id];
-  }, module, module.exports);
-  return module.exports;
+  }, compiledModule, compiledModule.exports);
+  return compiledModule.exports;
 }
 const policy = load("app/api/settlements/_lib/settlementPolicy.ts");
 const events = load("app/api/settlements/_lib/paymentEvents.ts", {
