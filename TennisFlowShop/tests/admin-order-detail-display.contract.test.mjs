@@ -5,12 +5,49 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { resolveHistoricalOrderItemPrice } from "../lib/orders/historical-order-item-price.ts";
 import { resolveOrderItemIsMountableString } from "../lib/orders/string-mounting-policy.ts";
+import { resolveOrderStringingDisplay } from "../lib/admin/order-stringing-display.ts";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 function read(relPath) {
   return readFileSync(join(REPO_ROOT, relPath), "utf8");
 }
+
+test("연결 신청서 생성 이력 없음과 draft 접수 대기를 구분한다", () => {
+  assert.equal(resolveOrderStringingDisplay({ applications: [] }).kind, "none");
+  const id = "507f1f77bcf86cd799439011";
+  const display = resolveOrderStringingDisplay({ applications: [{ id, status: "draft" }] });
+  assert.equal(display.kind, "pending");
+  assert.equal(display.applicationId, id);
+  assert.match(display.label, /작성 중/);
+});
+
+test("취소 이력은 미접수로 취급하지 않고 연결 문서 ID를 유지한다", () => {
+  const id = "507f1f77bcf86cd799439012";
+  const display = resolveOrderStringingDisplay({ applications: [{ id, status: "취소", cancelRequestStatus: "approved" }] });
+  assert.equal(display.kind, "canceled");
+  assert.equal(display.applicationId, id);
+  assert.equal(display.status, "취소");
+  assert.doesNotMatch(display.label, /미접수/);
+});
+
+test("활성 신청서가 있으면 더 최근의 취소 이력보다 우선 표시한다", () => {
+  const id = "507f1f77bcf86cd799439013";
+  const applications = [{ id: "507f1f77bcf86cd799439014", status: "취소" }, { id, status: "작업 중" }];
+  const display = resolveOrderStringingDisplay({ applications, activeApplicationId: id });
+  assert.equal(display.kind, "active");
+  assert.equal(display.applicationId, id);
+  assert.equal(resolveOrderStringingDisplay({ applications: [{ id, status: "검토 중" }], activeApplicationId: id }).kind, "pending");
+});
+
+test("연결 문서 누락과 취소 승인·작업 상태 불일치를 확인 필요로 표시한다", () => {
+  const id = "507f1f77bcf86cd799439015";
+  assert.equal(resolveOrderStringingDisplay({ applications: [], storedApplicationId: id }).kind, "error");
+  assert.equal(resolveOrderStringingDisplay({ applications: [{ id, status: "작업 중", cancelRequestStatus: "approved" }] }).kind, "error");
+  const broken = resolveOrderStringingDisplay({ applications: [{ id: "invalid", status: "취소" }] });
+  assert.equal(broken.kind, "error");
+  assert.equal(broken.applicationId, null);
+});
 
 test("주문 상세 상태 선택은 상품준비중과 현재 이후 단계만 제공한다", () => {
   const statusSelect = read("app/features/orders/components/OrderStatusSelect.tsx");
