@@ -427,7 +427,9 @@ for (const representation of ["ObjectId", "string"]) {
           "@/lib/status/flow-status": load("lib/status/flow-status.ts"),
         });
         const path = "app/api/orders/[id]/cancel-approve/route.ts";
+        let uuidSequence = 0;
         const route = load(path, stubImports(path, {
+          "node:crypto": { randomUUID: () => `00000000-0000-4000-8000-${String(++uuidSequence).padStart(12, "0")}` },
           "@/lib/product-stock-audit": stockAudit,
           mongodb: { ObjectId }, "next/server": { NextResponse: Response },
           "next/headers": { cookies: async () => ({ get: () => ({ value: "synthetic" }) }) },
@@ -638,8 +640,8 @@ test("재고 차감·복원은 전후 수량을 기록하고 같은 작업의 �
   const session = m.db.client.startSession();
   const context = { operationId: "synthetic-stock", reason: "order_created", mode: "automatic", orderId: String(orderId) };
   await session.withTransaction(async () => {
-    await stockAudit.updateProductStockWithAudit(m.db, context, { _id: productId }, { $inc: { "inventory.stock": -1, "gaugeInventories.$.stock": -1 } }, { session });
-    await stockAudit.updateProductStockWithAudit(m.db, context, { _id: productId }, { $inc: { "colorInventories.$.stock": -1 } }, { session });
+    await stockAudit.updateProductStockWithAudit(m.db, context, { _id: productId, "gaugeInventories.value": "1.25" }, { $inc: { "inventory.stock": -1, "gaugeInventories.$.stock": -1 } }, { session });
+    await stockAudit.updateProductStockWithAudit(m.db, context, { _id: productId, "colorInventories.value": "red" }, { $inc: { "colorInventories.$.stock": -1 } }, { session });
   });
   assert.equal(m.data.products[0].inventory.stock, 9);
   assert.equal(m.data.product_stock_events.length, 1);
@@ -647,6 +649,13 @@ test("재고 차감·복원은 전후 수량을 기록하고 같은 작업의 �
   assert.equal(total.before, 10);
   assert.equal(total.delta, -1);
   assert.equal(total.after, 9);
+  for (const [axis, option, value] of [["gauge", "gauge", "1.25"], ["color", "color", "red"]]) {
+    const change = m.data.product_stock_events[0].changes.find((row) => row.axis === axis);
+    assert.equal(change[option], value);
+    assert.equal(change.before, 10);
+    assert.equal(change.delta, -1);
+    assert.equal(change.after, 9);
+  }
   await session.withTransaction(async () => {
     await stockAudit.updateProductStockWithAudit(m.db, { ...context, operationId: "synthetic-restore", reason: "order_canceled" }, { _id: productId }, { $inc: { "inventory.stock": 1 } }, { session });
   });
@@ -656,11 +665,19 @@ test("감사 저장 실패 시 재고와 기록이 모두 롤백된다", async (
   const m = model(seed());
   const session = m.db.client.startSession();
   const originalCollection = m.db.collection;
+  let attemptedLog = false;
   m.db.collection = (name) => name === "product_stock_events"
-    ? { ...originalCollection(name), insertOne: async () => { throw new Error("SYNTHETIC_LOG_FAILURE"); } }
+    ? { ...originalCollection(name), insertOne: async (_doc, options) => {
+      assert.ok(options.session.inTransaction());
+      assert.equal(options.session.local.products[0].inventory.stock, 9);
+      attemptedLog = true;
+      throw new Error("SYNTHETIC_LOG_FAILURE");
+    } }
     : originalCollection(name);
   const before = clone(m.data);
-  await assert.rejects(session.withTransaction(() => stockAudit.updateProductStockWithAudit(m.db, { operationId: "synthetic-failure", reason: "order_created", mode: "automatic" }, { _id: productId }, { $inc: { "inventory.stock": -1 } }, { session })));
+  await assert.rejects(session.withTransaction(() => stockAudit.updateProductStockWithAudit(m.db, { operationId: "synthetic-failure", reason: "order_created", mode: "automatic" }, { _id: productId }, { $inc: { "inventory.stock": -1 } }, { session })), /SYNTHETIC_LOG_FAILURE/);
+  assert.equal(attemptedLog, true);
+  assert.equal(m.rollbacks, 1);
   assert.deepEqual(m.data, before);
 });
 test("변경 실패와 동일 수량 저장은 성공 감사 기록을 생성하지 않는다", async () => {
