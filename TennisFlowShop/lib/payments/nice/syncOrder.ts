@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { niceOrderWriteFilter, nicePaymentUpdatePipeline } from "@/lib/payments/nice/order-write-guard";
+import { normalizeNiceCancelHistory } from "@/lib/payments/nice/cancel-events";
 import {
   extractNiceCardInfo,
   getNicePaymentByTid,
@@ -144,7 +145,7 @@ export async function syncNicePaymentByOrderId(orderId: string) {
       );
     }
 
-    console.info("[nicepay][sync]", { stage: "before_sync", orderId, tid });
+    console.info("[nicepay][sync]", { stage: "before_sync", orderId });
     const pgRaw = await getNicePaymentByTid({
       tid,
       clientKey,
@@ -154,7 +155,6 @@ export async function syncNicePaymentByOrderId(orderId: string) {
     const syncRawSummary = summarizeNiceCardRaw(pgRaw);
     console.info("[nicepay][card][sync_raw_keys]", {
       orderId,
-      tid,
       topLevelKeys: syncRawSummary.topLevelKeys,
       presentCardCandidateKeys: syncRawSummary.presentCandidateKeys,
     });
@@ -164,7 +164,6 @@ export async function syncNicePaymentByOrderId(orderId: string) {
       console.error("[nicepay][sync]", {
         stage: "sync_failed",
         orderId,
-        tid,
         resultCode,
         resultMsg,
       });
@@ -182,10 +181,16 @@ export async function syncNicePaymentByOrderId(orderId: string) {
     const pgStatus = pick(pgRaw, "status", "Status");
     const previousPaymentStatus = String((order as any)?.paymentStatus ?? "").trim();
     const previousPaymentInfoStatus = String((order as any)?.paymentInfo?.status ?? "").trim();
-    const cancelAmount = Math.floor(
-      Number(pick(pgRaw, "cancAmt", "cancelAmount", "cancelAmt")) || 0,
-    );
-    const canceledAt = pick(pgRaw, "canceledAt", "cancelledAt", "cancelDate", "cancelDt");
+    let cancellation: ReturnType<typeof normalizeNiceCancelHistory>;
+    try {
+      cancellation = normalizeNiceCancelHistory(pgRaw, {
+        tid,
+        orderId: String(order.orderId ?? order.paymentInfo?.rawSummary?.orderId ?? "").trim(),
+        amount: Number(order.paymentInfo?.total ?? order.totalPrice),
+      });
+    } catch {
+      return NextResponse.json({ success: false, code: "NICE_PAYMENT_EVIDENCE_INVALID", error: "NICE 거래 식별자·원금·잔액을 확인할 수 없어 동기화하지 않았습니다." }, { status: 502 });
+    }
     const mapped = mapNicePgStatusToInternalPaymentStatus({
       pgStatusRaw: pgStatus,
       previousPaymentStatus,
@@ -194,7 +199,6 @@ export async function syncNicePaymentByOrderId(orderId: string) {
     const syncCardInfo = extractNiceCardInfo(pgRaw);
     console.info("[nicepay][card][sync_extract]", {
       orderId,
-      tid,
       hasNiceCard: Boolean(syncCardInfo),
       cardDisplayName: Boolean(syncCardInfo?.displayName),
       cardCompany: Boolean(syncCardInfo?.issuerName),
@@ -213,7 +217,6 @@ export async function syncNicePaymentByOrderId(orderId: string) {
     const nextNiceCard = currentNiceCard || syncCardInfo || null;
     console.info("[nicepay][card][persist_summary]", {
       orderId,
-      tid,
       source: "manual_sync_api",
       existing: {
         cardDisplayName: Boolean(currentCardDisplayName),
@@ -232,7 +235,6 @@ export async function syncNicePaymentByOrderId(orderId: string) {
     console.info("[nicepay][sync]", {
       stage: "sync_mapping",
       orderId,
-      tid,
       pgStatusRaw: pgStatus || null,
       normalizedPgStatus: mapped.normalizedPgStatus || null,
       previousPaymentStatus: previousPaymentStatus || null,
@@ -268,15 +270,15 @@ export async function syncNicePaymentByOrderId(orderId: string) {
           "paymentInfo.niceSync.pgStatus": pgStatus || null,
           "paymentInfo.niceSync.resultCode": resultCode || "0000",
           "paymentInfo.niceSync.resultMsg": resultMsg || null,
-          "paymentInfo.niceSync.canceledAt": canceledAt || null,
-          "paymentInfo.niceSync.cancelAmount": cancelAmount,
+          "paymentInfo.niceSync.canceledAt": cancellation.canceledAt,
+          "paymentInfo.niceSync.cancelAmount": cancellation.cancelAmount,
+          "paymentInfo.niceSync.cancelHistory": cancellation.history,
           updatedAt: new Date(),
       }),
     );
     console.info("[nicepay][sync]", {
       stage: "after_sync",
       orderId,
-      tid,
       pgStatus: pgStatus || null,
       paymentStatus: mapped.nextPaymentStatus,
       matchedCount: updateResult.matchedCount,
