@@ -6,6 +6,7 @@ const testsDirectory = resolve(process.cwd(), "tests");
 export const coreContractFiles = [
   "stringing-package-atomicity.core.test.mjs",
   "payment-session-indexes.core.test.mjs",
+  "payment-event-reporting.core.test.mjs",
   "toss-payment-lookup.core.test.mjs",
   "nice-cancel-error-origin.core.test.mjs",
   "nice-payment-lookup.core.test.mjs",
