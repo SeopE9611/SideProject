@@ -6,6 +6,7 @@ export function AdminDashboard({
   canCreate = false,
   forbidden = false,
   preview = false,
+  simpleNewsManagement = false,
   pendingSummaries = [],
 }: {
   contentTasks: readonly Task[];
@@ -13,6 +14,7 @@ export function AdminDashboard({
   canCreate?: boolean;
   forbidden?: boolean;
   preview?: boolean;
+  simpleNewsManagement?: boolean;
   pendingSummaries?: readonly { title: string; href: string; count: number | null }[];
 }) {
   const route = (href: string) => (preview ? "/design-preview" + href : href);
@@ -90,13 +92,15 @@ export function AdminDashboard({
         </aside>
       </div>
       <footer className="desk-process">
-        <strong>게시물 공개 순서</strong>
+        <strong>{simpleNewsManagement ? "콘텐츠 공개 안내" : "게시물 공개 순서"}</strong>
+        {!simpleNewsManagement ? <>
         <span>초안 작성</span>
         <span aria-hidden="true">→</span>
         <span>검토·승인</span>
         <span aria-hidden="true">→</span>
         <span>게시</span>
-        <p>소식 등 게시물은 저장만으로 공개되지 않습니다. 시설개요·인사말·연락처·후원 안내는 저장하면 공개 페이지에 반영되며, 직원·생활공간 소개는 별도의 공개 상태에 따라 표시됩니다.</p>
+        </> : <span>소식: 임시저장 또는 바로 게시</span>}
+        <p>{simpleNewsManagement ? "소식은 게시하기를 선택하면 공개되며, 임시저장한 글은 공개되지 않습니다. 다른 콘텐츠의 검토·게시 절차는 유지됩니다." : "소식 등 게시물은 저장만으로 공개되지 않습니다."} 시설개요·인사말·연락처·후원 안내는 저장하면 공개 페이지에 반영되며, 직원·생활공간 소개는 별도의 공개 상태에 따라 표시됩니다.</p>
       </footer>
     </div>
   );

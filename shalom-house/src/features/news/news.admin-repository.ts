@@ -50,6 +50,8 @@ export type AdminNewsListItem = {
 export type AdminNewsDetail = AdminNewsListItem & {
   body: readonly string[];
   isEditable: boolean;
+  isAdminEditable: boolean;
+  canAdminPublish: boolean;
   canRequestReview: boolean;
   canDirectPublish: boolean;
   canDecideReview: boolean;
@@ -166,7 +168,9 @@ export async function createAdminNewsDraft(
   input: ValidatedAdminNewsDraft,
   actor: AdminPrincipal,
   now: Date = new Date(),
+  publishImmediately = false,
 ): Promise<CreateAdminNewsDraftResult> {
+  if (publishImmediately && actor.role !== "admin") throw new Error("즉시 게시 권한이 없습니다.");
   const newsPostId = new ObjectId();
   const eventId = new ObjectId();
   const document: MongoNewsPostDocument = {
@@ -176,9 +180,9 @@ export async function createAdminNewsDraft(
     title: input.title,
     summary: input.summary,
     body: Array.from(input.body),
-    publicationStatus: "draft",
-    approvalStatus: "pending",
-    publishedAt: null,
+    publicationStatus: publishImmediately ? "published" : "draft",
+    approvalStatus: publishImmediately ? "approved" : "pending",
+    publishedAt: publishImmediately ? now : null,
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
@@ -192,7 +196,7 @@ export async function createAdminNewsDraft(
         session,
         eventId,
         newsPostId,
-        action: "draft_created",
+        action: publishImmediately ? "direct_published" : "draft_created",
         actor,
         occurredAt: now,
         fromVersionAt: null,
@@ -246,6 +250,14 @@ function isEditableDraftState(
     (approvalStatus === "pending" || approvalStatus === "rejected") &&
     publishedAt === null
   );
+}
+
+function isAdminEditableNews(document: Pick<MongoNewsPostDocument, "publicationStatus" | "approvalStatus" | "publishedAt">): boolean {
+  return isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt) ||
+    (document.publicationStatus === "review" &&
+      (document.approvalStatus === "pending" || document.approvalStatus === "approved") &&
+      (document.publishedAt === null || isValidDate(document.publishedAt))) ||
+    isPublishedApprovedState(document.publicationStatus, document.approvalStatus, document.publishedAt);
 }
 
 function isPendingReviewState(
@@ -380,6 +392,8 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
   return {
     ...listItem,
     body: document.body,
+    isAdminEditable: isAdminEditableNews(document),
+    canAdminPublish: isAdminEditableNews(document) && document.publicationStatus !== "published",
     isEditable: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
     canDirectPublish: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
     canRequestReview: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
@@ -493,11 +507,11 @@ export async function changeAdminNewsPublicationState(input: {
         input.action === "unpublish"
           ? {
               publicationStatus: "review",
-              publishedAt: null,
+              ...(input.actor.role === "admin" ? {} : { publishedAt: null }),
               updatedAt: nextUpdatedAt,
             }
           : { publicationStatus: "archived", updatedAt: nextUpdatedAt },
-      changedFields: input.action === "unpublish" ? ["publicationStatus", "publishedAt"] : ["publicationStatus"],
+      changedFields: input.action === "unpublish" && input.actor.role !== "admin" ? ["publicationStatus", "publishedAt"] : ["publicationStatus"],
     });
     if (change)
       return {
@@ -535,11 +549,21 @@ export async function directPublishAdminNewsPost(input: {
   actor: AdminPrincipal;
   now?: Date;
 }): Promise<DirectPublishAdminNewsResult> {
+  if (input.actor.role !== "admin") return { ok: false, reason: "not_direct_publishable" };
   if (!isValidAdminNewsId(input.id)) return { ok: false, reason: "not_found" };
   const newsPostId = new ObjectId(input.id);
   const eventId = new ObjectId();
   const transitionAt = createNextUpdatedAt(input.expectedUpdatedAt, input.now ?? new Date());
   return runNewsAdminTransaction(async ({ database, session }) => {
+    const current = await database.collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
+      .findOne({ _id: newsPostId, ...activeDocumentFilter }, { session });
+    if (!current) return { ok: false, reason: "not_found" };
+    if (!toAdminNewsListItem(current, transitionAt) || !isAdminEditableNews(current) ||
+        current.publicationStatus === "published" || !Array.isArray(current.body) ||
+        current.body.length === 0 || !current.body.every(isNonEmptyString) || !isValidStoredNewsMedia(current))
+      return { ok: false, reason: "not_direct_publishable" };
+    if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" };
+    const publicationTime = current.publishedAt ?? transitionAt;
     const change = await changeNewsAndInsertAudit({
       database,
       session,
@@ -551,15 +575,15 @@ export async function directPublishAdminNewsPost(input: {
       filter: {
         _id: newsPostId,
         ...activeDocumentFilter,
-        publicationStatus: "draft",
-        approvalStatus: { $in: ["pending", "rejected"] },
-        publishedAt: null,
+        publicationStatus: current.publicationStatus,
+        approvalStatus: current.approvalStatus,
+        publishedAt: current.publishedAt,
         updatedAt: input.expectedUpdatedAt,
       },
       set: {
         publicationStatus: "published",
         approvalStatus: "approved",
-        publishedAt: transitionAt,
+        publishedAt: publicationTime,
         updatedAt: transitionAt,
       },
       changedFields: ["publicationStatus", "approvalStatus", "publishedAt"],
@@ -569,17 +593,9 @@ export async function directPublishAdminNewsPost(input: {
         ok: true,
         id: input.id,
         slug: change.after.slug,
-        publishedAt: transitionAt.toISOString(),
+        publishedAt: publicationTime.toISOString(),
         updatedAt: transitionAt.toISOString(),
       };
-    const current = await database
-      .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
-      .findOne({ _id: newsPostId }, { session });
-    if (!current || current.deletedAt != null) return { ok: false, reason: "not_found" };
-    if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
-      return { ok: false, reason: "not_direct_publishable" };
-    if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime())
-      return { ok: false, reason: "edit_conflict" };
     return { ok: false, reason: "edit_conflict" };
   });
 }
@@ -649,31 +665,40 @@ export async function updateAdminNewsDraft(input: {
   const nextUpdatedAt = createNextUpdatedAt(input.expectedUpdatedAt, input.now ?? new Date());
   try {
     return await runNewsAdminTransaction(async ({ database, session }) => {
+      const current = await database.collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
+        .findOne({ _id: newsPostId, ...activeDocumentFilter }, { session });
+      if (!current) return { ok: false, reason: "not_found" };
+      const editable = input.actor.role === "admin" ? isAdminEditableNews(current) :
+        isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt);
+      if (!editable || !toAdminNewsListItem(current, nextUpdatedAt) || !Array.isArray(current.body) ||
+          current.body.length === 0 || !current.body.every(isNonEmptyString) || !isValidStoredNewsMedia(current)) return { ok: false, reason: "not_editable" };
+      if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" };
+      const draft = input.actor.role === "admin" ? { ...input.draft, slug: current.slug } : input.draft;
       const change = await changeNewsAndInsertAudit({
         database,
         session,
         newsPostId,
         eventId,
         actor: input.actor,
-        action: "draft_updated",
+        action: input.actor.role === "admin" ? "content_updated" : "draft_updated",
         toVersionAt: nextUpdatedAt,
         filter: {
           _id: newsPostId,
           ...activeDocumentFilter,
-          publicationStatus: "draft",
-          approvalStatus: { $in: ["pending", "rejected"] },
-          publishedAt: null,
+          publicationStatus: current.publicationStatus,
+          approvalStatus: current.approvalStatus,
+          publishedAt: current.publishedAt,
           updatedAt: input.expectedUpdatedAt,
         },
         set: {
-          slug: input.draft.slug,
-          category: input.draft.category,
-          title: input.draft.title,
-          summary: input.draft.summary,
-          body: Array.from(input.draft.body),
+          slug: draft.slug,
+          category: draft.category,
+          title: draft.title,
+          summary: draft.summary,
+          body: Array.from(draft.body),
           updatedAt: nextUpdatedAt,
         },
-        changedFields: (before) => getDraftChangedFields(before, input.draft),
+        changedFields: (before) => getDraftChangedFields(before, draft),
       });
       if (change)
         return {
@@ -682,12 +707,6 @@ export async function updateAdminNewsDraft(input: {
           slug: change.after.slug,
           updatedAt: nextUpdatedAt.toISOString(),
         };
-      const current = await database
-        .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
-        .findOne({ _id: newsPostId }, { session });
-      if (!current || current.deletedAt != null) return { ok: false, reason: "not_found" };
-      if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
-        return { ok: false, reason: "not_editable" };
       return { ok: false, reason: "edit_conflict" };
     });
   } catch (error) {

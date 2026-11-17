@@ -7,7 +7,7 @@ import { notFound, redirect } from "next/navigation";
 import { AdminFormPageHeader } from "@/components/admin/admin-form-page-header";
 import { AdminNewsDraftForm } from "@/components/admin/admin-news-draft-form";
 import { findAdminNewsPostById } from "@/features/news/news.admin-repository";
-import { getNewsPublicationStatusLabel } from "@/features/news/news.types";
+import { getNewsPublicationStatusLabel, getNewsManagementStatusLabel } from "@/features/news/news.types";
 
 export const metadata: Metadata = {
   title: "소식 수정",
@@ -20,6 +20,8 @@ export default async function AdminNewsEditPage({ params }: { params: Promise<{ 
   if (!post) notFound();
   const admin = await getCurrentAdmin();
   if (!admin || !hasAdminPermission(admin, "content.update")) redirect("/admin?forbidden=1");
+  const simpleManagement = admin.role === "admin";
+  const editable = simpleManagement ? post.isAdminEditable : post.isEditable;
   const isPendingReview = post.publicationStatus === "review" && post.approvalStatus === "pending";
   const isRejectedDraft = post.publicationStatus === "draft" && post.approvalStatus === "rejected";
 
@@ -32,12 +34,12 @@ export default async function AdminNewsEditPage({ params }: { params: Promise<{ 
         title="소식 수정"
         description={
           <>
-            현재 게시 상태는 {getNewsPublicationStatusLabel(post.publicationStatus)}입니다.
+            현재 게시 상태는 {simpleManagement ? getNewsManagementStatusLabel(post.publicationStatus) : getNewsPublicationStatusLabel(post.publicationStatus)}입니다.
           </>
         }
       />
 
-      {!post.isEditable ? (
+      {!editable ? (
         <aside className="admin-notice">
           {isPendingReview ? (
             <>
@@ -61,7 +63,7 @@ export default async function AdminNewsEditPage({ params }: { params: Promise<{ 
         </aside>
       ) : (
         <>
-          {isRejectedDraft ? (
+          {!simpleManagement && isRejectedDraft ? (
             <aside className="max-w-3xl admin-notice">
               <p className="font-semibold">이 게시물은 검토에서 반려됐습니다.</p>
               <p className="mt-2 text-small text-muted-foreground">
@@ -76,7 +78,7 @@ export default async function AdminNewsEditPage({ params }: { params: Promise<{ 
             <ul className="mt-4 list-disc space-y-2 pl-5 text-small">
               <li>개인정보·민감정보·내부 행정자료 저장 금지</li>
               <li>공개 권한이 확인되지 않은 정보 저장 금지</li>
-              <li>저장 후에도 자동 공개되지 않음</li>
+              <li>{post.isPubliclyVisible ? "저장하면 공개된 내용에 반영됩니다." : "내용 수정만으로 공개되지 않습니다."}</li>
             </ul>
           </aside>
           <section aria-labelledby="admin-news-edit-form-heading">
@@ -85,6 +87,7 @@ export default async function AdminNewsEditPage({ params }: { params: Promise<{ 
             </h2>
             <AdminNewsDraftForm
               mode="edit"
+              simpleManagement={simpleManagement}
               postId={post.id}
               expectedUpdatedAt={post.updatedAt}
               initialValues={{

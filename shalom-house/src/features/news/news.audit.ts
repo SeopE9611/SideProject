@@ -8,6 +8,7 @@ import type { NewsApprovalStatus, NewsCategory, NewsPublicationStatus } from "./
 export const newsAuditActions = [
   "draft_created",
   "draft_updated",
+  "content_updated",
   "review_requested",
   "review_approved",
   "review_rejected",

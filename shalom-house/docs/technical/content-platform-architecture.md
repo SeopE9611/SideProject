@@ -396,3 +396,9 @@ PDF binary는 Supabase private Storage에 `shalom-house/transparency/<ObjectId>/
 # 검색 노출 계층
 
 SEO 계층은 정적 route metadata와 각 공개 repository의 sitemap 전용 조회를 사용한다. 일반 목록 제한과 sitemap 최대 항목 수는 분리하며, 한 콘텐츠 영역의 조회 실패가 정적 route나 다른 영역을 제거하지 않도록 격리한다. 세부 정책은 `seo-search-discovery.md`를 참고한다.
+
+## 공지사항·활동소식의 시스템 관리자 직접 운영
+
+공지사항·활동소식의 `admin` 운영에는 [콘텐츠 운영 정책](../content-governance.md#공지사항활동소식의-시스템-관리자-직접-운영)을 적용하며, 앞 절의 초안 전용 수정·검토 잠금 설명보다 이 정책이 우선한다. 다른 역할과 콘텐츠 유형의 기존 검토 절차는 유지한다.
+
+작성 API의 선택적 `publishImmediately`는 시스템 관리자만 사용할 수 있다. 문서와 감사 이벤트를 같은 트랜잭션에서 생성하며, 기존 API 요청에서 이 값이 없으면 임시저장한다. 수정·직접 게시는 트랜잭션 내부에서 현재 상태를 읽고 상태·승인 값·게시일·`expectedUpdatedAt`·미삭제 조건을 함께 비교해 갱신한다. 내용 수정은 `content_updated` 감사 이벤트로 기록하며 slug·게시 상태·게시일·미디어 참조를 보존한다. `review`는 관리자 UI에서 비공개로 표시하고, 공개 조회의 `published/approved` 조건과 기존 컬렉션·인덱스는 유지한다.

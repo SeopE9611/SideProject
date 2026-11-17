@@ -25,16 +25,16 @@ export default async function AdminNewsCreatePage() {
         title="소식 작성"
         description={
           <>
-          공지사항 또는 활동 소식의 초안을 작성합니다.
+          공지사항 또는 활동소식을 작성합니다.
           <br />
-          저장된 게시물은 작성 중·승인 대기 상태이며 자동으로 공개되지 않습니다.
+          {admin.role === "admin" ? "임시저장하거나, 공개 가능 여부를 확인한 뒤 게시할 수 있습니다." : "현재 역할의 권한에 따라 초안을 저장하고 기존 게시 절차를 진행합니다."}
           </>
         }
       />
 
       <AdminFormGuidance
         title="저장 전 안전 확인"
-        description="초안도 게시 전 검토 대상입니다. 다음 정보는 초안에 저장하지 마세요."
+        description="임시저장과 게시 전에 공개 가능한 내용인지 확인하세요. 다음 정보는 저장하지 마세요."
       >
         <ul className="list-disc space-y-2 pl-5">
           <li>거주인 이름·장애·건강·가족관계 등 개인을 식별할 수 있는 정보</li>
@@ -46,9 +46,9 @@ export default async function AdminNewsCreatePage() {
 
       <section aria-labelledby="admin-news-form-heading">
         <h2 id="admin-news-form-heading" className="sr-only">
-          소식 초안 입력
+          소식 입력
         </h2>
-        <AdminNewsDraftForm mode="create" />
+        <AdminNewsDraftForm mode="create" simpleManagement={admin.role === "admin"} />
       </section>
     </div>
   );
