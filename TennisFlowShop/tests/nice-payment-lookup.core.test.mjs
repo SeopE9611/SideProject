@@ -64,6 +64,18 @@ test("GET timeout is classified without retry", async (t) => {
   assert.equal(mocks.fetch.mock.callCount(), 1);
 });
 
+test("GET 취소 배열의 거래번호·금액·시각을 평탄화 계약으로 보존한다", async (t) => {
+  setup(t, async () => new Response(JSON.stringify({ ...success, status: "cancelled", balanceAmt: 0,
+    cancelledAt: "2026-11-14T11:17:24.000+0900",
+    cancels: [{ tid: "synthetic-cancel", amount: 5000, cancelledAt: "2026-11-14T11:17:24.000+0900" }],
+  })));
+  const raw = await getNicePaymentByTid(params);
+  assert.equal(raw.cancels, "[array]");
+  assert.equal(raw["cancels.0.tid"], "synthetic-cancel");
+  assert.equal(raw["cancels.0.amount"], "5000");
+  assert.equal(raw["cancels.0.cancelledAt"], "2026-11-14T11:17:24.000+0900");
+});
+
 test("GET network failure preserves cause without retry", async (t) => {
   const cause = new Error("mock DNS failure");
   const { fetch } = setup(t, async () => { throw cause; });

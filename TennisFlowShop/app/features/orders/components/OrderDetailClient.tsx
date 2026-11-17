@@ -64,6 +64,7 @@ import {
   normalizeAdminCancelRequestStatus,
 } from "@/lib/cancel-request/admin-cancel-request-view";
 import { stringColorLabel } from "@/lib/constants";
+import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   trackingSWRFetcher,
@@ -484,11 +485,10 @@ export default function OrderDetailClient({ orderId, readOnly = false }: Props) 
     if (readOnly || !orderDetail || isSyncingNice) return;
     setIsSyncingNice(true);
     try {
-      const res = await fetch(`/api/payments/nice/sync/${orderDetail._id}`, {
+      const json = await adminMutator<{ success?: boolean; error?: string }>(`/api/payments/nice/sync/${orderDetail._id}`, {
         method: "POST",
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json?.success) {
+      if (!json?.success) {
         throw new Error(json?.error || "PG 상태 재동기화에 실패했습니다.");
       }
       await mutateOrder();
