@@ -1,9 +1,130 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
 
 function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+}
+
+// UI 콜백·공통 fetcher·서버 CSRF 검증기를 격리 실행한다. 실제 네트워크와 PG는 제공하지 않는다.
+function loadSecurityTs(source, dependencies = {}, globals = {}) {
+  const compiledModule = { exports: {} };
+  const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
+  vm.runInNewContext(`(function(require,module,exports){${outputText}\n})`, { Headers, Request, Response, URL, ...globals })((id) => {
+    assert.ok(Object.hasOwn(dependencies, id), `미지정 의존성: ${id}`);
+    return dependencies[id];
+  }, compiledModule, compiledModule.exports);
+  return compiledModule.exports;
+}
+function niceSyncSecurityFixture(options = {}) {
+  const origin = "https://synthetic.invalid";
+  const clientToken = options.clientToken ?? "synthetic-csrf";
+  const serverToken = options.serverToken ?? clientToken;
+  const csrfKeys = loadSecurityTs(read("lib/admin/adminCsrf.ts"));
+  const csrf = loadSecurityTs(read("lib/admin/verifyAdminCsrf.ts"), {
+    "next/server": { NextResponse: Response },
+    "@/lib/admin/adminCsrf": csrfKeys,
+    "@/lib/admin/portfolio-demo-readonly.server": { getPortfolioDemoAdminMutationBlock: () => null },
+  }, { process: { env: { ADMIN_CSRF_ORIGIN_ALLOWLIST: origin } } });
+  const calls = { requests: 0, syncs: 0, refreshes: 0, cacheRefreshes: 0, success: [], errors: [], loading: [] };
+  const route = loadSecurityTs(read("app/api/payments/nice/sync/[orderId]/route.ts"), {
+    "@/lib/admin.guard": { requireAdmin: async () => ({ ok: true }) },
+    "@/lib/admin/verifyAdminCsrf": csrf,
+    "@/lib/payments/nice/syncOrder": { syncNicePaymentByOrderId: async (id) => {
+      assert.equal(id, "synthetic-order");
+      calls.syncs++;
+      return Response.json(options.payload ?? { success: true }, { status: options.status ?? 200 });
+    } },
+  });
+  const fetcher = loadSecurityTs(read("lib/admin/adminFetcher.ts"), { "@/lib/admin/adminCsrf": csrfKeys }, {
+    document: { cookie: clientToken ? `${csrfKeys.ADMIN_CSRF_COOKIE_KEY}=${clientToken}` : "" },
+    fetch: async (path, init) => {
+      calls.requests++;
+      assert.equal(path, "/api/payments/nice/sync/synthetic-order");
+      assert.equal(init.method, "POST");
+      assert.equal(init.credentials, "include");
+      assert.equal(init.headers.get(csrfKeys.ADMIN_CSRF_HEADER_KEY), clientToken || null);
+      const headers = new Headers(init.headers);
+      headers.set("origin", options.origin ?? origin);
+      if (serverToken) headers.set("cookie", `${csrfKeys.ADMIN_CSRF_COOKIE_KEY}=${serverToken}`);
+      return route.POST(new Request(`${origin}${path}`, { ...init, headers }), { params: Promise.resolve({ orderId: "synthetic-order" }) });
+    },
+  });
+  const file = ts.createSourceFile("OrderDetailClient.tsx", read("app/features/orders/components/OrderDetailClient.tsx"), ts.ScriptTarget.ES2022, true, ts.ScriptKind.TSX);
+  let callback;
+  const visit = (node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(file) === "handleNiceSync") callback = node.initializer;
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  assert.ok(callback, "실제 handleNiceSync 콜백을 검증해야 합니다.");
+  const handler = loadSecurityTs(`export const run = ${callback.getText(file)};`, {}, {
+    adminMutator: fetcher.adminMutator,
+    readOnly: options.readOnly ?? false,
+    orderDetail: options.missingOrder ? null : { _id: "synthetic-order" },
+    isSyncingNice: options.isSyncingNice ?? false,
+    setIsSyncingNice: (value) => calls.loading.push(value),
+    mutateOrder: async () => { calls.refreshes++; },
+    mutateGlobal: async (predicate) => {
+      assert.equal(predicate("/api/orders/synthetic-order"), true);
+      assert.equal(predicate("/api/admin/operations?limit=20"), true);
+      assert.equal(predicate("/api/products"), false);
+      calls.cacheRefreshes++;
+    },
+    showSuccessToast: (message) => calls.success.push(message),
+    showErrorToast: (message) => calls.errors.push(message),
+  });
+  return { calls, run: handler.run };
+}
+
+test("주문 PG 재동기화는 adminMutator로 CSRF를 전달하고 기존 성공 처리를 유지한다", async () => {
+  const { calls, run } = niceSyncSecurityFixture();
+  await run();
+  assert.equal(calls.requests, 1);
+  assert.equal(calls.syncs, 1);
+  assert.equal(calls.refreshes, 1);
+  assert.equal(calls.cacheRefreshes, 1);
+  assert.deepEqual(calls.success, ["PG 결제 상태를 확인했습니다."]);
+  assert.deepEqual(calls.errors, []);
+  assert.deepEqual(calls.loading, [true, false]);
+  const sync = read("lib/payments/nice/syncOrder.ts");
+  assert.ok(sync.includes("getNicePaymentByTid"));
+  assert.doesNotMatch(sync, /cancelNicePaymentByTid|approveNicePaymentByTid/);
+});
+for (const options of [{ clientToken: "" }, { serverToken: "mismatch" }, { origin: "https://untrusted.invalid" }]) {
+  test(`주문 PG 재동기화의 CSRF 실패는 조회 전에 차단한다: ${JSON.stringify(options)}`, async () => {
+    const { calls, run } = niceSyncSecurityFixture(options);
+    await run();
+    assert.equal(calls.syncs, 0);
+    assert.equal(calls.refreshes, 0);
+    assert.equal(calls.cacheRefreshes, 0);
+    assert.deepEqual(calls.success, []);
+    assert.deepEqual(calls.errors, ["Forbidden"]);
+    assert.deepEqual(calls.loading, [true, false]);
+  });
+}
+for (const options of [{ status: 502, payload: { error: "모의 조회 오류" } }, { status: 200, payload: { success: false, error: "모의 동기화 실패" } }]) {
+  test(`주문 PG 재동기화의 HTTP·업무 실패는 오류 토스트와 로딩 해제를 유지한다: ${options.status}`, async () => {
+    const { calls, run } = niceSyncSecurityFixture(options);
+    await run();
+    assert.equal(calls.syncs, 1);
+    assert.equal(calls.refreshes, 0);
+    assert.equal(calls.cacheRefreshes, 0);
+    assert.deepEqual(calls.success, []);
+    assert.deepEqual(calls.errors, [options.payload.error]);
+    assert.deepEqual(calls.loading, [true, false]);
+  });
+}
+for (const options of [{ readOnly: true }, { isSyncingNice: true }, { missingOrder: true }]) {
+  test(`주문 PG 재동기화의 읽기 전용·중복·주문 없음 차단을 유지한다: ${JSON.stringify(options)}`, async () => {
+    const { calls, run } = niceSyncSecurityFixture(options);
+    await run();
+    assert.equal(calls.requests, 0);
+    assert.deepEqual(calls.loading, []);
+    assert.deepEqual(calls.errors, []);
+  });
 }
 
 test("보안 계약: CSRF 실패, Origin 불일치, 토큰 오류, 재전송(멱등성) 케이스를 강제한다", () => {
