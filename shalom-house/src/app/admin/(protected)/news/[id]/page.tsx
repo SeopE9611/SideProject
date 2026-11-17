@@ -31,6 +31,7 @@ import {
   getNewsApprovalStatusLabel,
   getNewsCategoryLabel,
   getNewsPublicationStatusLabel,
+  getNewsManagementStatusLabel,
 } from "@/features/news/news.types";
 
 const publicationTone = {
@@ -67,11 +68,13 @@ export default async function AdminNewsDetailPage({
   const post = await findAdminNewsPostById(id);
   if (!post) notFound();
   const admin = await getCurrentAdmin();
+  const simpleManagement = admin?.role === "admin";
+  const editable = simpleManagement ? post.isAdminEditable : post.isEditable;
   const canUpdate = Boolean(admin && hasAdminPermission(admin, "content.update"));
   const canDelete = Boolean(admin && hasAdminPermission(admin, "content.delete"));
-  const canRequestReview = Boolean(admin && hasAdminPermission(admin, "content.request_review"));
-  const canDecideReview = Boolean(admin && hasAdminPermission(admin, "content.decide_review"));
-  const canPublish = Boolean(admin && hasAdminPermission(admin, "content.publish"));
+  const canRequestReview = Boolean(!simpleManagement && admin && hasAdminPermission(admin, "content.request_review"));
+  const canDecideReview = Boolean(!simpleManagement && admin && hasAdminPermission(admin, "content.decide_review"));
+  const canPublish = Boolean(!simpleManagement && admin && hasAdminPermission(admin, "content.publish"));
   const canDirectPublish = Boolean(admin && hasAdminPermission(admin, "content.direct_publish"));
   const auditHistory = await listAdminNewsAuditHistory({ contentId: post.id });
   const coverOptions = await listAdminPublicGalleryCoverOptions();
@@ -95,7 +98,7 @@ export default async function AdminNewsDetailPage({
           title={post.title}
           actions={
             <>
-              {post.isEditable && canUpdate ? (
+              {editable && canUpdate ? (
                 <Link
                   href={`/admin/news/${post.id}/edit`}
                   className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
@@ -118,8 +121,8 @@ export default async function AdminNewsDetailPage({
       summary={
         <AdminStatusSummary
           items={[
-            { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[post.publicationStatus]}>{getNewsPublicationStatusLabel(post.publicationStatus)}</SemanticStatusBadge> },
-            { label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[post.approvalStatus]}>{getNewsApprovalStatusLabel(post.approvalStatus)}</SemanticStatusBadge> },
+            { label: "게시 상태", value: <SemanticStatusBadge tone={publicationTone[post.publicationStatus]}>{simpleManagement ? getNewsManagementStatusLabel(post.publicationStatus) : getNewsPublicationStatusLabel(post.publicationStatus)}</SemanticStatusBadge> },
+            ...(!simpleManagement ? [{ label: "승인 상태", value: <SemanticStatusBadge tone={approvalTone[post.approvalStatus]}>{getNewsApprovalStatusLabel(post.approvalStatus)}</SemanticStatusBadge> }] : []),
             { label: "공개 여부", value: <SemanticStatusBadge tone={post.isPubliclyVisible ? "success" : "neutral"}>{post.isPubliclyVisible ? "공개 중" : "비공개"}</SemanticStatusBadge>, emphasized: true },
             { label: "최근 수정", value: <DateValue value={post.updatedAt} /> },
           ]}
@@ -130,7 +133,7 @@ export default async function AdminNewsDetailPage({
           items={[
             { id: "admin-news-content-heading", label: "내용" },
             { id: "news-media-heading", label: "미디어 관리" },
-            ...(post.canDirectPublish && canDirectPublish
+            ...((simpleManagement ? post.canAdminPublish : post.canDirectPublish) && canDirectPublish
               ? [{ id: "admin-news-direct-publish-heading", label: "바로 게시" }]
               : []),
             ...(post.canRequestReview && canRequestReview
@@ -140,7 +143,7 @@ export default async function AdminNewsDetailPage({
               ? [{ id: "admin-news-decide-review-heading", label: "검토 결과 처리" }]
               : []),
             ...(post.canPublish && canPublish ? [{ id: "admin-news-publish-heading", label: "게시" }] : []),
-            ...(post.canManagePublicationState && canPublish
+            ...(post.canManagePublicationState && (simpleManagement || canPublish)
               ? [{ id: "admin-news-publication-state-heading", label: "게시 상태 변경" }]
               : []),
             { id: "admin-news-management-heading", label: "관리 정보" },
@@ -150,7 +153,7 @@ export default async function AdminNewsDetailPage({
         />
       }
     >
-      {!post.isEditable ? (
+      {!editable ? (
         <aside className="admin-notice">
           {isPendingReview ? (
             <>
@@ -187,7 +190,7 @@ export default async function AdminNewsDetailPage({
         </aside>
       ) : null}
 
-      {isRejectedDraft ? (
+      {!simpleManagement && isRejectedDraft ? (
         <aside className="admin-notice">
           <p className="font-semibold">검토 결과 반려된 게시물입니다.</p>
           <p className="mt-2 text-small text-muted-foreground">내용을 수정한 뒤 다시 검토를 요청할 수 있습니다.</p>
@@ -243,16 +246,16 @@ export default async function AdminNewsDetailPage({
         }
       />
 
-      {post.canDirectPublish && canDirectPublish ? (
+      {(simpleManagement ? post.canAdminPublish : post.canDirectPublish) && canDirectPublish ? (
         <AdminWorkflowPanel
           id="admin-news-direct-publish-heading"
-          title="바로 게시"
+          title={post.publishedAt ? "재게시" : "게시하기"}
           description={
             <>
               <p>
                 시스템 관리자는 별도의 검토·승인 단계를 거치지 않고 현재 게시물을 즉시 공개할 수 있습니다.
                 <br />
-                역할을 나눠 검토하려면 아래의 검토 요청 절차를 사용해 주세요.
+                기존 게시물의 주소와 게시일은 유지됩니다.
               </p>
             </>
           }
@@ -262,6 +265,7 @@ export default async function AdminNewsDetailPage({
             endpoint={`/api/admin/news/${post.id}/direct-publish`}
             expectedUpdatedAt={post.updatedAt}
             contentLabel="게시물"
+            submitLabel={post.publishedAt ? "재게시" : "게시하기"}
           />
         </AdminWorkflowPanel>
       ) : null}
@@ -272,7 +276,7 @@ export default async function AdminNewsDetailPage({
           title={isRejectedDraft ? "재검토 요청" : "검토 요청"}
           description={
             <>
-              {isRejectedDraft ? (
+              {!simpleManagement && isRejectedDraft ? (
                 <p>
                   반려 사항을 반영한 뒤 다시 검토 중 상태로 전환합니다.
                   <br />
@@ -327,21 +331,20 @@ export default async function AdminNewsDetailPage({
         </AdminWorkflowPanel>
       ) : null}
 
-      {post.canManagePublicationState && canPublish ? (
+      {post.canManagePublicationState && (simpleManagement || canPublish) ? (
         <AdminWorkflowPanel
           id="admin-news-publication-state-heading"
-          title="게시 상태 변경"
+          title={simpleManagement ? "비공개 전환" : "게시 상태 변경"}
           description={
             <>
               <p>
-                게시 중단은 공개를 종료한 뒤 다시 게시할 수 있는 승인 완료 상태로 되돌립니다.
-                <br />
-                보관은 공개를 종료하고 현재 작업 범위에서 복구할 수 없는 보관 상태로 전환합니다.
+                {simpleManagement ? "비공개로 전환하면 공개 목록과 상세에서 제외됩니다. 내용과 첨부파일은 유지되며 수정·재게시할 수 있습니다." : "게시 중단은 공개를 종료한 뒤 다시 게시할 수 있는 승인 완료 상태로 되돌립니다."}
+                {!simpleManagement ? <><br />보관은 공개를 종료하고 현재 작업 범위에서 복구할 수 없는 보관 상태로 전환합니다.</> : null}
               </p>
             </>
           }
         >
-          <AdminNewsPublicationStateForm postId={post.id} expectedUpdatedAt={post.updatedAt} />
+          <AdminNewsPublicationStateForm postId={post.id} expectedUpdatedAt={post.updatedAt} simpleManagement={simpleManagement} />
         </AdminWorkflowPanel>
       ) : null}
 

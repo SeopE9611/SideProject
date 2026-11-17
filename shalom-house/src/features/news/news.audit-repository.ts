@@ -131,6 +131,7 @@ export async function insertNewsAuditEvent(input: InsertNewsAuditEventInput): Pr
 
 const adminAuditActionLabels: Record<string, string> = {
   draft_created: "초안 생성",
+  content_updated: "내용 수정",
   draft_updated: "초안 수정",
   review_requested: "검토 요청",
   review_approved: "승인",

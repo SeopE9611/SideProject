@@ -10,6 +10,7 @@ import {
 } from "@/features/news/news.admin-validation";
 
 export type AdminNewsPublicationStateFormProps = {
+  simpleManagement?: boolean;
   postId: string;
   expectedUpdatedAt: string;
 };
@@ -40,7 +41,7 @@ export function AdminNewsPublicationStateForm(props: AdminNewsPublicationStateFo
     const formData = new FormData(event.currentTarget);
     const input = {
       expectedUpdatedAt: props.expectedUpdatedAt,
-      action: formData.get("action"),
+      action: props.simpleManagement ? "unpublish" : formData.get("action"),
       transitionConfirmed: formData.get("transitionConfirmed") === "on",
     };
     const validation = validateAdminNewsPublicationStateInput(input);
@@ -116,6 +117,7 @@ export function AdminNewsPublicationStateForm(props: AdminNewsPublicationStateFo
           {formError}
         </div>
       ) : null}
+      {!props.simpleManagement ? (
       <fieldset
         aria-describedby={fieldErrors.action ? "admin-news-publication-action-error" : undefined}
         className="space-y-4"
@@ -132,7 +134,7 @@ export function AdminNewsPublicationStateForm(props: AdminNewsPublicationStateFo
           <label htmlFor="admin-news-publication-action-unpublish">
             <span className="font-semibold">게시 중단</span>
             <span className="mt-1 block text-small text-muted-foreground">
-              홈페이지 공개를 즉시 종료하고 승인 완료·미게시 상태로 되돌립니다. 이후 다시 게시할 수 있습니다.
+              홈페이지 공개를 종료합니다. 시스템 관리자는 내용을 수정하거나 다시 게시할 수 있습니다.
             </span>
           </label>
         </div>
@@ -157,6 +159,7 @@ export function AdminNewsPublicationStateForm(props: AdminNewsPublicationStateFo
           </p>
         ) : null}
       </fieldset>
+      ) : null}
       <div className="space-y-2">
         <div className="flex items-start gap-3">
           <input
@@ -184,7 +187,7 @@ export function AdminNewsPublicationStateForm(props: AdminNewsPublicationStateFo
         disabled={isSubmitting}
         className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isSubmitting ? "처리 중…" : "게시 상태 변경"}
+        {isSubmitting ? "처리 중…" : props.simpleManagement ? "비공개로 전환" : "게시 상태 변경"}
       </button>
     </form>
   );

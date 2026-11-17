@@ -108,3 +108,7 @@ export function isValidNewsSlug(value: unknown): value is string {
 export function isPublicNewsReservedSlug(value: string): value is PublicNewsReservedSlug {
   return PUBLIC_NEWS_RESERVED_SLUGS.includes(value as PublicNewsReservedSlug);
 }
+
+export function getNewsManagementStatusLabel(status: NewsPublicationStatus): string {
+  return { draft: "임시저장", review: "비공개", published: "게시 중", archived: "보관" }[status];
+}

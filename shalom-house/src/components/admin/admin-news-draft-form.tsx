@@ -51,9 +51,10 @@ export type AdminNewsDraftFormInitialValues = {
 };
 
 export type AdminNewsDraftFormProps =
-  | { mode: "create" }
+  | { mode: "create"; simpleManagement?: boolean }
   | {
       mode: "edit";
+      simpleManagement?: boolean;
       postId: string;
       expectedUpdatedAt: string;
       initialValues: AdminNewsDraftFormInitialValues;
@@ -108,6 +109,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
     const form = event.currentTarget;
     const formData = new FormData(form);
     const input = {
+      publishImmediately: props.mode === "create" && props.simpleManagement === true && (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "publish",
       category: formData.get("category"),
       title: formData.get("title"),
       slug: formData.get("slug"),
@@ -167,7 +169,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       } else if (props.mode === "edit" && response.status === 409 && error === "not_editable") {
         setFormError("현재 게시 상태에서는 내용을 수정할 수 없습니다.");
       } else {
-        setFormError("현재 초안을 저장할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+        setFormError("현재 게시물을 저장할 수 없습니다. 잠시 후 다시 시도해 주세요.");
       }
     } catch {
       setFormError("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
@@ -233,6 +235,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <input
           id="admin-news-slug"
           name="slug"
+          readOnly={props.mode === "edit" && props.simpleManagement}
           type="text"
           required
           defaultValue={props.mode === "edit" ? props.initialValues.slug : ""}
@@ -252,6 +255,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
           <br />
           {PUBLIC_NEWS_RESERVED_SLUGS.join(", ")}는 분류 페이지 주소이므로 사용할 수 없습니다.
         </p>
+        {props.mode === "edit" && props.simpleManagement ? <p className="text-small text-muted-foreground">기존 글의 공개 주소는 변경하지 않습니다.</p> : null}
         <FieldError field="slug" errors={fieldErrors} />
       </div>
 
@@ -312,7 +316,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
             className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
           />
           <label htmlFor="admin-news-content-safety" className="text-small leading-relaxed">
-            거주인·직원·보호자 등의 개인정보, 민감정보와 공개 금지 정보가 포함되지 않았으며 홈페이지 검토용으로 저장해도
+            거주인·직원·보호자 등의 개인정보, 민감정보와 공개 금지 정보가 포함되지 않았으며 홈페이지에 공개해도
             되는 내용임을 확인했습니다.
           </label>
         </div>
@@ -325,8 +329,13 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
           disabled={isSubmitting}
           className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting ? "저장 중…" : props.mode === "create" ? "초안 저장" : "변경 사항 저장"}
+          {isSubmitting ? "저장 중…" : props.mode === "create" ? "임시저장" : "변경 사항 저장"}
         </button>
+        {props.mode === "create" && props.simpleManagement ? (
+          <button type="submit" value="publish" disabled={isSubmitting} className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60">
+            {isSubmitting ? "저장 중…" : "게시하기"}
+          </button>
+        ) : null}
         <Link
           href={props.mode === "create" ? "/admin/news" : `/admin/news/${props.postId}`}
           className="inline-flex min-h-12 items-center rounded-control border border-border-strong px-6 py-2 font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"

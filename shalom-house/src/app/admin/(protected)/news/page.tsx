@@ -16,6 +16,7 @@ import {
   getNewsApprovalStatusLabel,
   getNewsCategoryLabel,
   getNewsPublicationStatusLabel,
+  getNewsManagementStatusLabel,
   isNewsApprovalStatus,
   isNewsCategory,
   isNewsPublicationStatus,
@@ -71,6 +72,7 @@ function createAdminNewsPageHref(page: number, filters: AdminNewsListFilters, q:
 
 export default async function AdminNewsPage({ searchParams }: { searchParams: Promise<AdminNewsSearchParams> }) {
   const admin = await getCurrentAdmin();
+  const simpleManagement = admin?.role === "admin";
   const canCreate = Boolean(admin && hasAdminPermission(admin, "content.create"));
   const query = await searchParams;
   const q = normalizeAdminTitleSearch(query.q);
@@ -78,7 +80,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
   const publicationStatus =
     typeof query.publication === "string" && isNewsPublicationStatus(query.publication) ? query.publication : undefined;
   const approvalStatus =
-    typeof query.approval === "string" && isNewsApprovalStatus(query.approval) ? query.approval : undefined;
+    !simpleManagement && typeof query.approval === "string" && isNewsApprovalStatus(query.approval) ? query.approval : undefined;
   const filters = { category, publicationStatus, approvalStatus };
   const requestedPage = normalizeAdminNewsPage(typeof query.page === "string" ? query.page : undefined);
   const result = await listAdminNewsPosts({ page: requestedPage, filters, q });
@@ -90,12 +92,8 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
     <div className="admin-list-layout text-safe-wrap">
       <AdminPageHeader
         title="소식 관리"
-        description="공지사항과 활동 소식의 게시 상태와 승인 상태를 확인합니다."
-        supportingContent={<>
-          새 게시물은 작성 중·승인 대기 상태로 저장됩니다.
-          <br />
-          저장 후 상세 화면에서 수정·검토·승인과 공개 상태를 관리할 수 있습니다.
-        </>}
+        description="공지사항과 활동소식을 작성하고 공개 상태를 관리합니다."
+        supportingContent={simpleManagement ? "임시저장·게시·비공개 전환과 내용 수정을 할 수 있습니다." : "기존 역할에 따른 작성·검토·게시 권한이 적용됩니다."}
         actions={<>
           {canCreate ? <Link href="/admin/news/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">새 게시물 작성</Link> : null}
           <Link href="/news" className="inline-flex min-h-11 items-center rounded-control border border-border-strong px-4 py-2 font-semibold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">공개 소식 페이지 보기</Link>
@@ -134,12 +132,13 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
               className="min-h-11 rounded-control border border-border-strong bg-background px-3 py-2 font-normal"
             >
               <option value="">전체 게시 상태</option>
-              <option value="draft">작성 중</option>
-              <option value="review">검토 중</option>
-              <option value="published">게시</option>
+              <option value="draft">{simpleManagement ? "임시저장" : "작성 중"}</option>
+              <option value="review">{simpleManagement ? "비공개" : "검토 중"}</option>
+              <option value="published">게시 중</option>
               <option value="archived">보관</option>
             </select>
           </label>
+          {!simpleManagement ? (
           <label className="grid gap-2 font-semibold">
             승인 상태
             <select
@@ -153,6 +152,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
               <option value="rejected">공개 거부</option>
             </select>
           </label>
+          ) : null}
           <div className="flex flex-wrap gap-3 lg:col-span-3">
             <button
               type="submit"
@@ -181,7 +181,7 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
             >
               <span>소식</span>
               <span>게시 상태</span>
-              <span>승인 상태</span>
+              <span>{simpleManagement ? "작성일" : "승인 상태"}</span>
               <span>공개 여부</span>
               <span>게시일</span>
               <span>최근 수정</span>
@@ -208,12 +208,12 @@ export default async function AdminNewsPage({ searchParams }: { searchParams: Pr
                     <div className="min-w-0">
                       <p className={styles.label}>게시 상태</p>
                       <p className="mt-1 break-words">
-                        <SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{getNewsPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge>
+                        <SemanticStatusBadge tone={publicationTone[item.publicationStatus]}>{simpleManagement ? getNewsManagementStatusLabel(item.publicationStatus) : getNewsPublicationStatusLabel(item.publicationStatus)}</SemanticStatusBadge>
                       </p>
                     </div>
                     <div className="min-w-0">
-                      <p className={styles.label}>승인 상태</p>
-                      <p className="mt-1 break-words"><SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getNewsApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge></p>
+                      <p className={styles.label}>{simpleManagement ? "작성일" : "승인 상태"}</p>
+                      <p className="mt-1 break-words">{simpleManagement ? formatDate(item.createdAt) : <SemanticStatusBadge tone={approvalTone[item.approvalStatus]}>{getNewsApprovalStatusLabel(item.approvalStatus)}</SemanticStatusBadge>}</p>
                     </div>
                     <div className="min-w-0">
                       <p className={styles.label}>공개 여부</p>

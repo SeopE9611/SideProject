@@ -8,6 +8,7 @@ type AdminDirectPublishFormProps = {
   endpoint: string;
   expectedUpdatedAt: string;
   contentLabel: string;
+  submitLabel?: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -107,7 +108,7 @@ export function AdminDirectPublishForm(props: AdminDirectPublishFormProps) {
         disabled={busy}
         className="inline-flex min-h-11 items-center justify-center rounded-control bg-primary px-5 py-2 font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {busy ? "바로 게시 중…" : `${props.contentLabel} 바로 게시`}
+        {busy ? "바로 게시 중…" : props.submitLabel ?? `${props.contentLabel} 바로 게시`}
       </button>
     </form>
   );

@@ -86,12 +86,16 @@ export async function POST(request: Request) {
       );
     }
 
+    if (typeof input === "object" && input !== null && "publishImmediately" in input && typeof input.publishImmediately !== "boolean")
+      return jsonResponse({ ok: false, error: "validation" }, 400);
+    const publishImmediately = typeof input === "object" && input !== null && "publishImmediately" in input && input.publishImmediately === true;
+    if (publishImmediately && admin.role !== "admin") return jsonResponse({ ok: false, error: "forbidden" }, 403);
     const validation = validateAdminNewsDraftInput(input);
     if (!validation.ok) {
       return jsonResponse({ ok: false, error: "validation", fieldErrors: validation.fieldErrors }, 400);
     }
 
-    const result = await createAdminNewsDraft(validation.value, admin);
+    const result = await createAdminNewsDraft(validation.value, admin, new Date(), publishImmediately);
     if (!result.ok) {
       return jsonResponse(
         {
@@ -108,7 +112,7 @@ export async function POST(request: Request) {
         ok: true,
         id: result.id,
         slug: result.slug,
-        redirectTo: "/admin/news?created=1",
+        redirectTo: publishImmediately ? `/admin/news/${result.id}?directPublished=1` : "/admin/news?created=1",
       },
       201,
     );

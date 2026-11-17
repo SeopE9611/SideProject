@@ -38,12 +38,14 @@ export default async function AdminDashboardPage({
       href: "/admin/inquiries?status=received",
       count: countReceivedAdminInquiries,
     }] : []),
-    ...(canReview ? [
+    ...(canReview && admin?.role !== "admin" ? [
       {
         title: "소식 검토 대기",
         href: "/admin/news?publication=review&approval=pending",
         count: () => countAdminNewsPosts({ publicationStatus: "review", approvalStatus: "pending" }),
       },
+    ] : []),
+    ...(canReview ? [
       {
         title: "프로그램 검토 대기",
         href: "/admin/programs?publicationStatus=review&approvalStatus=pending",
@@ -90,7 +92,9 @@ export default async function AdminDashboardPage({
   return (
     <AdminDashboard
       forbidden={forbidden}
-      contentTasks={contentTasks}
+      contentTasks={contentTasks.map((task) => task.href === "/admin/news" && admin?.role === "admin"
+        ? { ...task, description: "공지와 활동소식을 임시저장·게시하거나 수정합니다." } : task)}
+      simpleNewsManagement={admin?.role === "admin"}
       operationTasks={operationTasks.filter((task) => task.available)}
       canCreate={Boolean(admin && hasAdminPermission(admin, "content.create"))}
       pendingSummaries={pendingSummaries}
