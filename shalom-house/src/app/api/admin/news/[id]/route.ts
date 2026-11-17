@@ -99,7 +99,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const validation = validateAdminNewsDraftUpdateInput(input);
+    const validation = validateAdminNewsDraftUpdateInput(input, admin.role === "admin");
     if (!validation.ok) {
       if (validation.formError === "invalid_version") {
         return jsonResponse(
