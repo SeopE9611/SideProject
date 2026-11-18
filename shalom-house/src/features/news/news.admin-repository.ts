@@ -21,6 +21,7 @@ import type {
   AdminNewsReviewDecision,
   ValidatedAdminNewsDraft,
 } from "./news.admin-validation";
+import { createAdminNewsSummary } from "./news.admin-validation";
 import { ADMIN_NEWS_MAXIMUM_PAGE, ADMIN_NEWS_PAGE_SIZE } from "./news.pagination";
 import { isValidStoredNewsAttachment, isValidStoredNewsMedia } from "./news.media-validation";
 import {
@@ -175,10 +176,10 @@ export async function createAdminNewsDraft(
   const eventId = new ObjectId();
   const document: MongoNewsPostDocument = {
     _id: newsPostId,
-    slug: input.slug,
+    slug: actor.role === "admin" ? `news-${newsPostId.toHexString()}` : input.slug,
     category: input.category,
     title: input.title,
-    summary: input.summary,
+    summary: actor.role === "admin" ? createAdminNewsSummary(input.body) : input.summary,
     body: Array.from(input.body),
     publicationStatus: publishImmediately ? "published" : "draft",
     approvalStatus: publishImmediately ? "approved" : "pending",
@@ -214,7 +215,7 @@ export async function createAdminNewsDraft(
           "publishedAt",
         ],
       });
-      return { ok: true, id: newsPostId.toString(), slug: input.slug };
+      return { ok: true, id: newsPostId.toString(), slug: document.slug };
     });
   } catch (error) {
     if (isNewsSlugConflict(error)) {
@@ -673,7 +674,13 @@ export async function updateAdminNewsDraft(input: {
       if (!editable || !toAdminNewsListItem(current, nextUpdatedAt) || !Array.isArray(current.body) ||
           current.body.length === 0 || !current.body.every(isNonEmptyString) || !isValidStoredNewsMedia(current)) return { ok: false, reason: "not_editable" };
       if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" };
-      const draft = input.actor.role === "admin" ? { ...input.draft, slug: current.slug } : input.draft;
+      const bodyChanged = current.body.length !== input.draft.body.length ||
+        current.body.some((paragraph, index) => paragraph !== input.draft.body[index]);
+      const draft = input.actor.role === "admin" ? {
+        ...input.draft,
+        slug: current.slug,
+        summary: bodyChanged ? createAdminNewsSummary(input.draft.body) : current.summary,
+      } : input.draft;
       const change = await changeNewsAndInsertAudit({
         database,
         session,

@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       return jsonResponse({ ok: false, error: "validation" }, 400);
     const publishImmediately = typeof input === "object" && input !== null && "publishImmediately" in input && input.publishImmediately === true;
     if (publishImmediately && admin.role !== "admin") return jsonResponse({ ok: false, error: "forbidden" }, 403);
-    const validation = validateAdminNewsDraftInput(input);
+    const validation = validateAdminNewsDraftInput(input, admin.role === "admin");
     if (!validation.ok) {
       return jsonResponse({ ok: false, error: "validation", fieldErrors: validation.fieldErrors }, 400);
     }
@@ -101,7 +101,9 @@ export async function POST(request: Request) {
         {
           ok: false,
           error: "slug_conflict",
-          fieldErrors: { slug: "이미 사용 중인 슬러그입니다." },
+          ...(admin.role === "admin"
+            ? { message: "공개 주소를 생성하지 못했습니다. 다시 시도해 주세요." }
+            : { fieldErrors: { slug: "이미 사용 중인 슬러그입니다." } }),
         },
         409,
       );

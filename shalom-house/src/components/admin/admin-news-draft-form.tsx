@@ -112,13 +112,15 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       publishImmediately: props.mode === "create" && props.simpleManagement === true && (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "publish",
       category: formData.get("category"),
       title: formData.get("title"),
-      slug: formData.get("slug"),
-      summary: formData.get("summary"),
+      ...(!props.simpleManagement ? {
+        slug: formData.get("slug"),
+        summary: formData.get("summary"),
+      } : {}),
       body: formData.get("body"),
       contentSafetyConfirmed: formData.get("contentSafetyConfirmed") === "on",
       ...(props.mode === "edit" ? { expectedUpdatedAt: props.expectedUpdatedAt } : {}),
     };
-    const validation = validateAdminNewsDraftInput(input);
+    const validation = validateAdminNewsDraftInput(input, props.simpleManagement === true);
 
     setFormError(null);
     if (!validation.ok) {
@@ -228,6 +230,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <FieldError field="title" errors={fieldErrors} />
       </div>
 
+      {!props.simpleManagement ? <>
       <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="admin-news-slug" className="font-semibold">
           공개 주소 식별자 <span className="text-danger">*</span>
@@ -235,7 +238,6 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <input
           id="admin-news-slug"
           name="slug"
-          readOnly={props.mode === "edit" && props.simpleManagement}
           type="text"
           required
           defaultValue={props.mode === "edit" ? props.initialValues.slug : ""}
@@ -255,7 +257,6 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
           <br />
           {PUBLIC_NEWS_RESERVED_SLUGS.join(", ")}는 분류 페이지 주소이므로 사용할 수 없습니다.
         </p>
-        {props.mode === "edit" && props.simpleManagement ? <p className="text-small text-muted-foreground">기존 글의 공개 주소는 변경하지 않습니다.</p> : null}
         <FieldError field="slug" errors={fieldErrors} />
       </div>
 
@@ -279,6 +280,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         </p>
         <FieldError field="summary" errors={fieldErrors} />
       </div>
+      </> : null}
 
       <div className="grid gap-2 border-b border-border pb-6">
         <label htmlFor="admin-news-body" className="font-semibold">
@@ -299,6 +301,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
           빈 줄로 문단을 구분합니다.
           <br />
           HTML과 Markdown이 아닌 일반 텍스트로 저장됩니다.
+          {props.simpleManagement ? <><br />목록과 검색에 표시할 요약은 본문에서 자동 생성됩니다. 기존 글은 본문을 변경할 때만 요약이 갱신됩니다.</> : null}
         </p>
         <FieldError field="body" errors={fieldErrors} />
       </div>
