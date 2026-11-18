@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { AdminNewsRichEditor } from "./admin-news-rich-editor";
+import { newsBodyToDocument, type NewsBodyDocument } from "@/features/news/news.rich-text";
 import { AdminStickyFormActions } from "./admin-sticky-form-actions";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -58,6 +60,8 @@ export type AdminNewsDraftFormProps =
       postId: string;
       expectedUpdatedAt: string;
       initialValues: AdminNewsDraftFormInitialValues;
+      initialBody?: readonly string[];
+      bodyDocument?: NewsBodyDocument;
     };
 
 async function readJsonResponse(response: Response): Promise<unknown | null> {
@@ -101,6 +105,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
   const [fieldErrors, setFieldErrors] = useState<AdminNewsDraftFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bodyDocument, setBodyDocument] = useState<unknown>(undefined);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -116,7 +121,8 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         slug: formData.get("slug"),
         summary: formData.get("summary"),
       } : {}),
-      body: formData.get("body"),
+      body: props.simpleManagement ? props.mode === "edit" ? props.initialValues.body : "" : formData.get("body"),
+      ...(bodyDocument !== undefined && props.simpleManagement ? { bodyDocument } : {}),
       contentSafetyConfirmed: formData.get("contentSafetyConfirmed") === "on",
       ...(props.mode === "edit" ? { expectedUpdatedAt: props.expectedUpdatedAt } : {}),
     };
@@ -168,6 +174,10 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         setFormError(
           "다른 관리자가 이 게시물을 먼저 수정했습니다. 입력 내용을 복사한 뒤 상세 화면을 새로 확인해 주세요.",
         );
+      } else if (response.status === 409 && error === "rich_text_required") {
+        setFormError("본문 서식을 보존하려면 최신 편집 화면에서 수정해 주세요. 입력 내용을 복사한 뒤 다시 확인해 주세요.");
+      } else if (response.status === 409 && error === "invalid_body_document") {
+        setFormError("저장된 본문 서식을 확인할 수 없어 수정하지 않았습니다. 관리자에게 확인해 주세요.");
       } else if (props.mode === "edit" && response.status === 409 && error === "not_editable") {
         setFormError("현재 게시 상태에서는 내용을 수정할 수 없습니다.");
       } else {
@@ -283,24 +293,28 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       </> : null}
 
       <div className="grid gap-2 border-b border-border pb-6">
-        <label htmlFor="admin-news-body" className="font-semibold">
+        <label id="admin-news-body-label" htmlFor={props.simpleManagement ? undefined : "admin-news-body"} className="font-semibold">
           본문 <span className="text-danger">*</span>
         </label>
-        <textarea
+        {props.simpleManagement ? <AdminNewsRichEditor
+          key={props.mode === "edit" ? props.expectedUpdatedAt : "new"}
+          initialDocument={props.mode === "edit" ? props.bodyDocument ?? newsBodyToDocument(props.initialBody ?? [props.initialValues.body]) : newsBodyToDocument([])}
+          disabled={isSubmitting} invalid={Boolean(fieldErrors.body)} describedBy={describedBy("body", fieldErrors, "admin-news-body-help")}
+          onChange={(value) => { setBodyDocument(value); markDirty(); }}
+        /> : <textarea
           id="admin-news-body"
           name="body"
           required
           defaultValue={props.mode === "edit" ? props.initialValues.body : ""}
           maxLength={ADMIN_NEWS_BODY_MAX_LENGTH}
           rows={18}
+          disabled={isSubmitting}
           aria-invalid={fieldErrors.body ? true : undefined}
           aria-describedby={describedBy("body", fieldErrors, "admin-news-body-help")}
           className={controlClass}
-        />
+        />}
         <p id="admin-news-body-help" className="text-small text-muted-foreground">
-          빈 줄로 문단을 구분합니다.
-          <br />
-          HTML과 Markdown이 아닌 일반 텍스트로 저장됩니다.
+          {props.simpleManagement ? "본문에 문단·제목·목록·링크 서식을 사용할 수 있습니다." : "빈 줄로 문단을 구분하며 HTML과 Markdown이 아닌 일반 텍스트로 저장됩니다."}
           {props.simpleManagement ? <><br />목록과 검색에 표시할 요약은 본문에서 자동 생성됩니다. 기존 글은 본문을 변경할 때만 요약이 갱신됩니다.</> : null}
         </p>
         <FieldError field="body" errors={fieldErrors} />

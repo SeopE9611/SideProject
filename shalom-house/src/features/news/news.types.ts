@@ -1,3 +1,5 @@
+import type { NewsBodyDocument } from "./news.rich-text";
+
 export const newsCategories = ["notice", "activity"] as const;
 
 export type NewsCategory = (typeof newsCategories)[number];
@@ -35,6 +37,7 @@ export type PublicNewsPost = {
   title: string;
   summary: string;
   body: readonly string[];
+  bodyDocument?: NewsBodyDocument;
   publishedAt: string;
   updatedAt: string;
   isDemo: boolean;
@@ -42,7 +45,7 @@ export type PublicNewsPost = {
   attachment: PublicNewsAttachment | null;
 };
 
-export type PublicNewsPostSummary = Omit<PublicNewsPost, "body">;
+export type PublicNewsPostSummary = Omit<PublicNewsPost, "body" | "bodyDocument">;
 
 export type PublicNewsSearchOptions = {
   q?: string;
