@@ -286,9 +286,15 @@ async function main() {
       }
     } catch {
       cleanupFailed = true;
-      console.error(`FAIL 정리 확인 필요: ${runId}; 상품 ID: ${productIds.map(String).join(",")}`);
-      throw new Error("CLEANUP_FAILED");
-    } finally { await client.close(); }
+      process.exitCode = 1;
+      console.error(`FAIL CLEANUP_FAILED 정리 확인 필요: ${runId}; 상품 ID: ${productIds.map(String).join(",")}`);
+    } finally {
+      try { await client.close(); }
+      catch {
+        process.exitCode = 1;
+        console.error(`FAIL CONNECTION_CLOSE_FAILED: ${runId}`);
+      }
+    }
   }
 }
 
