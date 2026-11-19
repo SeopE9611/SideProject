@@ -1,5 +1,7 @@
 import { isValidProgramSlug } from "./program.types";
 
+import { newsDocumentToBody, parseNewsBodyDocument, type NewsBodyDocument } from "../news/news.rich-text";
+
 export const ADMIN_PROGRAM_CATEGORY_MAX_LENGTH = 40;
 export const ADMIN_PROGRAM_TITLE_MAX_LENGTH = 100;
 export const ADMIN_PROGRAM_SLUG_MAX_LENGTH = 80;
@@ -130,6 +132,7 @@ export type ValidatedAdminProgramDraft = {
   summary: string;
   purpose: string;
   body: readonly string[];
+  bodyDocument?: NewsBodyDocument;
   operationStatusLabel: string | null;
   sortOrder: number;
 };
@@ -234,13 +237,16 @@ export function validateAdminProgramDraftInput(input: unknown): AdminProgramDraf
   const summary = typeof value.summary === "string" ? value.summary.trim() : "";
   const purpose = typeof value.purpose === "string" ? value.purpose.trim() : "";
   const operationStatusLabel = typeof value.operationStatusLabel === "string" ? value.operationStatusLabel.trim() : "";
-  const normalizedBody = typeof value.body === "string" ? value.body.replace(/\r\n?/g, "\n").trim() : "";
-  const body = normalizedBody
+  const hasDocument = Object.hasOwn(value, "bodyDocument");
+  const bodyDocument = hasDocument ? parseNewsBodyDocument(value.bodyDocument) : null;
+  const richBody = bodyDocument ? newsDocumentToBody(bodyDocument) : undefined;
+  const normalizedBody = richBody ? richBody.join("\n\n") : typeof value.body === "string" ? value.body.replace(/\r\n?/g, "\n").trim() : "";
+  const body = richBody ?? (normalizedBody
     ? normalizedBody
         .split(/\n[\t ]*\n+/)
         .map((p) => p.trim())
         .filter(Boolean)
-    : [];
+    : []);
   const rawSortOrder =
     typeof value.sortOrder === "string" && value.sortOrder.trim() !== "" ? Number(value.sortOrder) : value.sortOrder;
   const sortOrder = typeof rawSortOrder === "number" ? rawSortOrder : Number.NaN;
@@ -257,7 +263,8 @@ export function validateAdminProgramDraftInput(input: unknown): AdminProgramDraf
   if (!purpose) fieldErrors.purpose = "프로그램 목적을 입력해 주세요.";
   else if (purpose.length > ADMIN_PROGRAM_PURPOSE_MAX_LENGTH)
     fieldErrors.purpose = "프로그램 목적은 500자 이하여야 합니다.";
-  if (!normalizedBody) fieldErrors.body = "본문을 입력해 주세요.";
+  if (hasDocument && !bodyDocument) fieldErrors.body = "본문 서식이나 길이를 확인해 주세요.";
+  else if (!richBody && !normalizedBody) fieldErrors.body = "본문을 입력해 주세요.";
   else if (normalizedBody.length > ADMIN_PROGRAM_BODY_MAX_LENGTH) fieldErrors.body = "본문은 10,000자 이하여야 합니다.";
   else if (body.length > ADMIN_PROGRAM_BODY_MAX_PARAGRAPHS)
     fieldErrors.body = "본문은 최대 50개 문단까지 작성할 수 있습니다.";
@@ -283,6 +290,7 @@ export function validateAdminProgramDraftInput(input: unknown): AdminProgramDraf
       summary,
       purpose,
       body,
+      ...(bodyDocument ? { bodyDocument } : {}),
       operationStatusLabel: operationStatusLabel || null,
       sortOrder,
     },

@@ -51,8 +51,12 @@ function navigateToolbar(event: KeyboardEvent<HTMLDivElement>) {
   buttons[next]?.focus();
 }
 
-export function AdminNewsRichEditor({ initialDocument, disabled, invalid, describedBy, onChange }: {
+export function AdminNewsRichEditor({ initialDocument, disabled, invalid, describedBy, onChange, bodyId = "admin-news-body", labelId = "admin-news-body-label", linkId = "news-editor-link", maxLength = ADMIN_NEWS_BODY_MAX_LENGTH }: {
   initialDocument: NewsBodyDocument;
+  bodyId?: string;
+  labelId?: string;
+  linkId?: string;
+  maxLength?: number;
   disabled: boolean;
   invalid: boolean;
   describedBy?: string;
@@ -80,7 +84,7 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
         isAllowedUri: (href) => isSafeNewsLink(href),
         HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } },
     })],
-    editorProps: { attributes: { id: "admin-news-body", role: "textbox", "aria-multiline": "true", "aria-labelledby": "admin-news-body-label", "aria-required": "true", "aria-placeholder": placeholder, "aria-invalid": invalid ? "true" : "false", "aria-describedby": describedBy ?? "", class: "min-h-80 min-w-0 p-4 leading-7 outline-none whitespace-pre-wrap [overflow-wrap:anywhere] [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-bold [&_p]:my-3 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_a]:underline" } },
+    editorProps: { attributes: { id: bodyId, role: "textbox", "aria-multiline": "true", "aria-labelledby": labelId, "aria-required": "true", "aria-placeholder": placeholder, "aria-invalid": invalid ? "true" : "false", "aria-describedby": describedBy ?? "", class: "min-h-80 min-w-0 p-4 leading-7 outline-none whitespace-pre-wrap [overflow-wrap:anywhere] [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-bold [&_p]:my-3 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_a]:underline" } },
     onUpdate: ({ editor: current }) => callback.current({ version: 1, document: documentForStorage(current.getJSON()) }),
   });
   // 읽기 전용 전환이 초기화·저장 시 문서 변경 이벤트를 만들지 않도록 합니다.
@@ -101,7 +105,7 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
       <button type="button" disabled={unavailable || blocked} aria-label={label} title={label}
         aria-pressed={active}
         aria-expanded={icon === "link" ? linkOpen : undefined}
-        aria-controls={icon === "link" && linkOpen ? "news-editor-link-panel" : undefined}
+        aria-controls={icon === "link" && linkOpen ? `${linkId}-panel` : undefined}
         onMouseDown={(event) => event.preventDefault()} onClick={action}
         className="inline-flex size-11 shrink-0 items-center justify-center rounded-control border border-transparent text-foreground enabled:hover:bg-primary-soft aria-pressed:border-primary aria-pressed:bg-primary-soft aria-pressed:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-40 lg:size-9"
       >
@@ -152,15 +156,15 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
         {button("redo", "다시 실행", undefined, () => editor?.chain().focus().redo().run(), !state?.redo)}
       </div>
     </div>
-    {linkOpen ? <div id="news-editor-link-panel" className="grid min-w-0 gap-2 border-b border-border bg-surface p-3">
-      <label htmlFor="news-editor-link" className="text-small font-semibold">링크 주소</label>
-      <input ref={linkInput} id="news-editor-link" type="text" inputMode="url" data-unsaved-ignore value={url} maxLength={2048} disabled={unavailable}
-        aria-invalid={Boolean(linkError)} aria-describedby={linkError ? "news-editor-link-error" : undefined}
+    {linkOpen ? <div id={`${linkId}-panel`} className="grid min-w-0 gap-2 border-b border-border bg-surface p-3">
+      <label htmlFor={linkId} className="text-small font-semibold">링크 주소</label>
+      <input ref={linkInput} id={linkId} type="text" inputMode="url" data-unsaved-ignore value={url} maxLength={2048} disabled={unavailable}
+        aria-invalid={Boolean(linkError)} aria-describedby={linkError ? `${linkId}-error` : undefined}
         onChange={(event) => setUrl(event.target.value)} onKeyDown={(event) => {
           if (event.key === "Enter") { event.preventDefault(); applyLink(); }
           if (event.key === "Escape") { event.preventDefault(); closeLink(); }
         }} className="min-h-11 w-full min-w-0 rounded-control border border-border-strong px-3 focus-visible:outline-2 focus-visible:outline-focus-ring" />
-      {linkError ? <p id="news-editor-link-error" role="alert" className="text-small text-danger">{linkError}</p> : null}
+      {linkError ? <p id={`${linkId}-error`} role="alert" className="text-small text-danger">{linkError}</p> : null}
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={unavailable} onClick={applyLink} className="min-h-11 rounded-control bg-primary px-4 text-small font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-40">링크 적용</button>
         <button type="button" disabled={unavailable} onClick={closeLink} className="min-h-11 rounded-control border border-border-strong px-4 text-small font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-40">닫기</button>
@@ -172,9 +176,9 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
       <EditorContent editor={editor} />
     </div>
     <div className="flex flex-wrap justify-end gap-x-2 border-t border-border px-4 py-2 text-small text-muted-foreground">
-      {(state?.count ?? 0) > ADMIN_NEWS_BODY_MAX_LENGTH ? <span className="font-semibold text-danger">본문 글자 수 초과</span> : null}
+      {(state?.count ?? 0) > maxLength ? <span className="font-semibold text-danger">본문 글자 수 초과</span> : null}
       <span aria-label="본문 글자 수" title="일반 텍스트와 문단 사이 줄바꿈 기준" className="tabular-nums">
-        {countFormat.format(state?.count ?? 0)} / {countFormat.format(ADMIN_NEWS_BODY_MAX_LENGTH)}자
+        {countFormat.format(state?.count ?? 0)} / {countFormat.format(maxLength)}자
       </span>
     </div>
   </div>;

@@ -118,3 +118,67 @@ test("과거 감사 스냅샷은 해시 없이 유지하고 신규 서식은 해
   assert.match(snapshot.bodyDocumentHash, /^[a-f0-9]{64}$/);
   assert.equal(Object.hasOwn(snapshot, "bodyDocument"), false);
 });
+
+const programValidation = load(resolve(root, "src/features/programs/program.admin-validation.ts"));
+const programAudit = load(resolve(root, "src/features/programs/program.audit.ts"));
+const programFields = {
+  category: "일상생활",
+  slug: "daily-life",
+  title: "프로그램",
+  summary: "수동 요약",
+  purpose: "수동 목적",
+  operationStatusLabel: "운영 중",
+  sortOrder: 100,
+  contentSafetyConfirmed: true,
+};
+
+test("프로그램의 기존 문단과 제목·목적·요약 편집은 서식 문서를 만들지 않음", () => {
+  const body = ["  첫 문단 <안내>\n줄바꿈 😀  ", "두 번째 문단"];
+  const draft = programValidation.validateAdminProgramDraftInput({ ...programFields, body: body.join("\n\n") });
+  assert.equal(draft.ok, true);
+  assert.equal(draft.value.bodyDocument, undefined);
+  assert.deepEqual(rich.resolveNewsBodyUpdate(body, undefined, draft.value.body), { ok: true, body });
+  assert.deepEqual(rich.newsDocumentToBody(rich.newsBodyToDocument(body)), body);
+});
+
+test("프로그램 서식 요청의 본문은 JSON에서 추출하고 수동 필드를 보존", () => {
+  const draft = programValidation.validateAdminProgramDraftInput({ ...programFields, body: "무시할 본문", bodyDocument: bold });
+  assert.equal(draft.ok, true);
+  assert.deepEqual(draft.value.body, ["기존 본문 😀"]);
+  for (const key of ["slug", "summary", "purpose", "operationStatusLabel", "sortOrder"])
+    assert.equal(draft.value[key], programFields[key]);
+  assert.deepEqual(rich.resolveNewsBodyUpdate(draft.value.body, draft.value.bodyDocument, draft.value.body).bodyDocument, draft.value.bodyDocument);
+  assert.equal(rich.resolveNewsBodyUpdate(draft.value.body, draft.value.bodyDocument, ["다른 본문"]).reason, "rich_text_required");
+});
+
+test("프로그램 요청에서도 위험한 링크, 노드, 속성, 길이와 목록 깊이를 거부", () => {
+  let nested = paragraph(text("안내"));
+  for (let i = 0; i < 4; i++)
+    nested = { type: "bulletList", content: [{ type: "listItem", content: [paragraph(text("목록")), nested] }] };
+  const rejected = [
+    doc(paragraph(text("안내", [{ type: "link", attrs: { href: "javascript:alert(1)" } }]))),
+    doc({ type: "image", attrs: { src: "https://example.com/test.png" } }),
+    doc({ ...paragraph(text("안내")), attrs: { class: "example" } }),
+    doc(paragraph(text("가".repeat(2001)))),
+    doc(nested),
+  ];
+  for (const bodyDocument of rejected) {
+    const draft = programValidation.validateAdminProgramDraftInput({ ...programFields, body: "유효한 일반 본문", bodyDocument });
+    assert.equal(draft.ok, false);
+    assert.ok(draft.fieldErrors.body);
+  }
+});
+
+test("프로그램 서식·링크 변경은 본문과 구분해 기록하고 기존 감사 본문을 보존", () => {
+  const link = (href) => parse(doc(paragraph(text("기존 본문 😀", [{ type: "link", attrs: { href } }]))));
+  const before = { ...programFields, body: ["기존 본문 😀"], publicationStatus: "draft", approvalStatus: "pending", publishedAt: null };
+  const linked = { ...before, bodyDocument: link("https://example.com/first") };
+  const updated = { ...linked, bodyDocument: link("https://example.com/second") };
+  assert.deepEqual(programAudit.getDraftChangedFields(before, linked), ["bodyDocument"]);
+  assert.deepEqual(programAudit.getDraftChangedFields(linked, updated), ["bodyDocument"]);
+  assert.deepEqual(programAudit.createProgramAuditSnapshot(before).body, before.body);
+  assert.equal(programAudit.createProgramAuditSnapshot(before).bodyDocumentHash, undefined);
+  const snapshot = programAudit.createProgramAuditSnapshot(updated);
+  assert.match(snapshot.bodyDocumentHash, /^[a-f0-9]{64}$/);
+  assert.equal(Object.hasOwn(snapshot, "bodyDocument"), false);
+});

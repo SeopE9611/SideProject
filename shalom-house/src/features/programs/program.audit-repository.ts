@@ -47,6 +47,8 @@ function validSnapshot(value: unknown): value is ProgramAuditSnapshot {
       Number(item.byteSize) <= ADMIN_PROGRAM_ATTACHMENT_MAX_BYTES && item.contentType === "application/pdf";
   })();
   const text = (item: unknown) => typeof item === "string" && item.trim().length > 0;
+  if (snapshot.bodyDocumentHash !== undefined &&
+      (typeof snapshot.bodyDocumentHash !== "string" || !/^[a-f0-9]{64}$/.test(snapshot.bodyDocumentHash))) return false;
   if (!coverValid || !attachmentValid || !isValidProgramSlug(snapshot.slug) ||
       !text(snapshot.category) || !text(snapshot.title) || !text(snapshot.summary) || !text(snapshot.purpose) ||
       !Array.isArray(snapshot.body) || snapshot.body.length === 0 || !snapshot.body.every(text) ||
@@ -149,6 +151,7 @@ const adminAuditFieldLabels: Record<string, string> = {
   summary: "요약",
   purpose: "목적",
   body: "본문",
+  bodyDocument: "본문 서식",
   operationStatusLabel: "운영 상태",
   sortOrder: "표시 순서",
   deletedAt: "삭제일",

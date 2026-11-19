@@ -1,3 +1,5 @@
+import type { NewsBodyDocument } from "../news/news.rich-text";
+
 export const programPublicationStatuses = ["draft", "review", "published", "archived"] as const;
 export type ProgramPublicationStatus = (typeof programPublicationStatuses)[number];
 export const programApprovalStatuses = ["pending", "approved", "rejected"] as const;
@@ -23,6 +25,7 @@ export type PublicProgram = {
   summary: string;
   purpose: string;
   body: readonly string[];
+  bodyDocument?: NewsBodyDocument;
   operationStatusLabel: string | null;
   sortOrder: number;
   publishedAt: string;
@@ -30,7 +33,7 @@ export type PublicProgram = {
   coverImage: PublicProgramCoverImage | null;
   attachment: PublicProgramAttachment | null;
 };
-export type PublicProgramSummary = Omit<PublicProgram, "body">;
+export type PublicProgramSummary = Omit<PublicProgram, "body" | "bodyDocument">;
 
 const publicationStatusLabels: Record<ProgramPublicationStatus, string> = {
   draft: "작성 중",

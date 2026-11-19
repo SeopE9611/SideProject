@@ -1,3 +1,4 @@
+import { newsDocumentToBody, parseNewsBodyDocument, resolveNewsBodyUpdate, sameNewsBodyText, type NewsBodyDocument } from "../news/news.rich-text";
 import { createAdminTitleSearchExpression } from "@/lib/admin-title-search";
 import { MongoServerError, ObjectId, type ClientSession, type Db, type Filter, type WithId } from "mongodb";
 
@@ -53,6 +54,8 @@ export type AdminProgramListItem = {
 export type AdminProgramDetail = AdminProgramListItem & {
   purpose: string;
   body: readonly string[];
+  bodyDocument?: NewsBodyDocument;
+  bodyDocumentInvalid: boolean;
   isEditable: boolean;
   canRequestReview: boolean;
   canDirectPublish: boolean;
@@ -84,7 +87,7 @@ export type UpdateAdminProgramDraftResult =
   | { ok: true; id: string; slug: string; updatedAt: string }
   | {
       ok: false;
-      reason: "slug_conflict" | "not_found" | "not_editable" | "edit_conflict";
+      reason: "slug_conflict" | "not_found" | "not_editable" | "edit_conflict" | "invalid_body_document" | "rich_text_required";
     };
 
 export type RequestAdminProgramReviewResult =
@@ -183,6 +186,7 @@ export async function createAdminProgramDraft(
     summary: input.summary,
     purpose: input.purpose,
     body: Array.from(input.body),
+    ...(input.bodyDocument ? { bodyDocument: input.bodyDocument } : {}),
     operationStatusLabel: input.operationStatusLabel,
     sortOrder: input.sortOrder,
     publicationStatus: "draft",
@@ -217,6 +221,7 @@ export async function createAdminProgramDraft(
           "summary",
           "purpose",
           "body",
+          ...(input.bodyDocument ? ["bodyDocument" as const] : []),
           "operationStatusLabel",
           "sortOrder",
           "publicationStatus",
@@ -401,6 +406,7 @@ export async function findAdminProgramPostById(id: string, now: Date = new Date(
         summary: 1,
         purpose: 1,
         body: 1,
+        bodyDocument: 1,
         operationStatusLabel: 1,
         sortOrder: 1,
         publicationStatus: 1,
@@ -425,8 +431,12 @@ export async function findAdminProgramPostById(id: string, now: Date = new Date(
     return null;
   }
 
+  const rich = parseNewsBodyDocument(document.bodyDocument);
+  const validRich = rich && sameNewsBodyText(document.body, newsDocumentToBody(rich));
   return {
     ...listItem,
+    ...(validRich ? { bodyDocument: rich } : {}),
+    bodyDocumentInvalid: document.bodyDocument !== undefined && !validRich,
     purpose: document.purpose,
     body: document.body,
     isEditable: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
@@ -481,6 +491,7 @@ async function changeProgramAndInsertAudit(input: {
     summary: input.set.summary ?? before.summary,
     purpose: input.set.purpose ?? before.purpose,
     body: input.set.body ?? before.body,
+    bodyDocument: input.set.bodyDocument ?? before.bodyDocument,
     operationStatusLabel:
       input.set.operationStatusLabel === undefined ? before.operationStatusLabel : input.set.operationStatusLabel,
     sortOrder: input.set.sortOrder ?? before.sortOrder,
@@ -705,6 +716,19 @@ export async function updateAdminProgramDraft(input: {
   const nextUpdatedAt = createNextUpdatedAt(input.expectedUpdatedAt, input.now ?? new Date());
   try {
     return await runProgramAdminTransaction(async ({ database, session }) => {
+      const current = await database
+        .collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME)
+        .findOne({ _id: programId }, { session });
+      if (!current || current.deletedAt != null) return { ok: false, reason: "not_found" };
+      if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
+        return { ok: false, reason: "not_editable" };
+      if (!isValidDate(current.updatedAt) || current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime())
+        return { ok: false, reason: "edit_conflict" };
+      if (!Array.isArray(current.body) || !current.body.every(isNonEmptyString))
+        return { ok: false, reason: "not_editable" };
+      const resolved = resolveNewsBodyUpdate(current.body, current.bodyDocument, input.draft.body, input.draft.bodyDocument);
+      if (!resolved.ok) return resolved;
+      const draft = { ...input.draft, body: resolved.body, bodyDocument: resolved.bodyDocument };
       const change = await changeProgramAndInsertAudit({
         database,
         session,
@@ -722,17 +746,18 @@ export async function updateAdminProgramDraft(input: {
           updatedAt: input.expectedUpdatedAt,
         },
         set: {
-          slug: input.draft.slug,
-          category: input.draft.category,
-          title: input.draft.title,
-          summary: input.draft.summary,
-          purpose: input.draft.purpose,
-          body: Array.from(input.draft.body),
-          operationStatusLabel: input.draft.operationStatusLabel,
-          sortOrder: input.draft.sortOrder,
+          slug: draft.slug,
+          category: draft.category,
+          title: draft.title,
+          summary: draft.summary,
+          purpose: draft.purpose,
+          body: Array.from(draft.body),
+          ...(draft.bodyDocument ? { bodyDocument: draft.bodyDocument } : {}),
+          operationStatusLabel: draft.operationStatusLabel,
+          sortOrder: draft.sortOrder,
           updatedAt: nextUpdatedAt,
         },
-        changedFields: (before) => getDraftChangedFields(before, input.draft),
+        changedFields: (before) => getDraftChangedFields(before, draft),
       });
       if (change)
         return {
@@ -741,12 +766,6 @@ export async function updateAdminProgramDraft(input: {
           slug: change.after.slug,
           updatedAt: nextUpdatedAt.toISOString(),
         };
-      const current = await database
-        .collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME)
-        .findOne({ _id: programId }, { session });
-      if (!current || current.deletedAt != null) return { ok: false, reason: "not_found" };
-      if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
-        return { ok: false, reason: "not_editable" };
       return { ok: false, reason: "edit_conflict" };
     });
   } catch (error) {
