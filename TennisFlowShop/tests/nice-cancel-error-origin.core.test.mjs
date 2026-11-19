@@ -69,6 +69,7 @@ function fixture(t, route, scenario = {}) {
     }),
   };
   const stubs = {
+    "@/lib/product-stock-audit": { updateProductStockWithAudit: async () => { throw new Error("예상하지 않은 재고 변경"); } },
     "next/server": { NextResponse: Response },
     "mongodb": { ObjectId },
     "@/lib/mongodb": { default: Promise.resolve(client) },

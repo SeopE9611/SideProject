@@ -169,6 +169,7 @@ function seed(consumed = true) {
       colorInventories: [{ value: "red", stock: 10 }], variantInventories: [{ colorValue: "red", gaugeValue: "1.25", stock: 10 }] }],
   };
 }
+const stockAudit = load("lib/product-stock-audit.ts", { mongodb: { ObjectId } });
 const passes = load("lib/passes.service.ts", { mongodb: { ObjectId }, "@/lib/pass-status": load("lib/pass-status.ts") });
 function stubImports(path, overrides) {
   const source = ts.createSourceFile(path, read(path), ts.ScriptTarget.ES2022, true);
@@ -426,7 +427,10 @@ for (const representation of ["ObjectId", "string"]) {
           "@/lib/status/flow-status": load("lib/status/flow-status.ts"),
         });
         const path = "app/api/orders/[id]/cancel-approve/route.ts";
+        let uuidSequence = 0;
         const route = load(path, stubImports(path, {
+          "node:crypto": { randomUUID: () => `00000000-0000-4000-8000-${String(++uuidSequence).padStart(12, "0")}` },
+          "@/lib/product-stock-audit": stockAudit,
           mongodb: { ObjectId }, "next/server": { NextResponse: Response },
           "next/headers": { cookies: async () => ({ get: () => ({ value: "synthetic" }) }) },
           "@/lib/mongodb": { default: Promise.resolve(m.db.client) },
@@ -628,4 +632,93 @@ for (const state of [
   const before = clone(m.data);
   const response = await handlers(m).handlePatchStringingApplication(patchRequest({ name: "changed" }), String(appId), { isAdmin: false });
   assert.equal(response.status, 409); assert.deepEqual(m.data, before);
+});
+
+// 실제 감사 기록 도우미를 기존 합성 트랜잭션 모델에서 검증한다.
+test("재고 차감·복원은 전후 수량을 기록하고 같은 작업의 옵션 변경을 합친다", async () => {
+  const m = model(seed());
+  const session = m.db.client.startSession();
+  const context = { operationId: "synthetic-stock", reason: "order_created", mode: "automatic", orderId: String(orderId) };
+  await session.withTransaction(async () => {
+    await stockAudit.updateProductStockWithAudit(m.db, context, { _id: productId, "gaugeInventories.value": "1.25" }, { $inc: { "inventory.stock": -1, "gaugeInventories.$.stock": -1 } }, { session });
+    await stockAudit.updateProductStockWithAudit(m.db, context, { _id: productId, "colorInventories.value": "red" }, { $inc: { "colorInventories.$.stock": -1 } }, { session });
+  });
+  assert.equal(m.data.products[0].inventory.stock, 9);
+  assert.equal(m.data.product_stock_events.length, 1);
+  const total = m.data.product_stock_events[0].changes.find((row) => row.axis === "total");
+  assert.equal(total.before, 10);
+  assert.equal(total.delta, -1);
+  assert.equal(total.after, 9);
+  for (const [axis, option, value] of [["gauge", "gauge", "1.25"], ["color", "color", "red"]]) {
+    const change = m.data.product_stock_events[0].changes.find((row) => row.axis === axis);
+    assert.equal(change[option], value);
+    assert.equal(change.before, 10);
+    assert.equal(change.delta, -1);
+    assert.equal(change.after, 9);
+  }
+  await session.withTransaction(async () => {
+    await stockAudit.updateProductStockWithAudit(m.db, { ...context, operationId: "synthetic-restore", reason: "order_canceled" }, { _id: productId }, { $inc: { "inventory.stock": 1 } }, { session });
+  });
+  assert.equal(m.data.product_stock_events[1].changes[0].after, 10);
+});
+test("감사 저장 실패 시 재고와 기록이 모두 롤백된다", async () => {
+  const m = model(seed());
+  const session = m.db.client.startSession();
+  const originalCollection = m.db.collection;
+  let attemptedLog = false;
+  m.db.collection = (name) => name === "product_stock_events"
+    ? { ...originalCollection(name), insertOne: async (_doc, options) => {
+      assert.ok(options.session.inTransaction());
+      assert.equal(options.session.local.products[0].inventory.stock, 9);
+      attemptedLog = true;
+      throw new Error("SYNTHETIC_LOG_FAILURE");
+    } }
+    : originalCollection(name);
+  const before = clone(m.data);
+  await assert.rejects(session.withTransaction(() => stockAudit.updateProductStockWithAudit(m.db, { operationId: "synthetic-failure", reason: "order_created", mode: "automatic" }, { _id: productId }, { $inc: { "inventory.stock": -1 } }, { session })), /SYNTHETIC_LOG_FAILURE/);
+  assert.equal(attemptedLog, true);
+  assert.equal(m.rollbacks, 1);
+  assert.deepEqual(m.data, before);
+});
+test("변경 실패와 동일 수량 저장은 성공 감사 기록을 생성하지 않는다", async () => {
+  const m = model(seed());
+  const session = m.db.client.startSession();
+  await session.withTransaction(async () => {
+    const context = { operationId: "synthetic-noop", reason: "admin_product_updated", mode: "admin" };
+    await stockAudit.updateProductStockWithAudit(m.db, context, { _id: new ObjectId() }, { $inc: { "inventory.stock": 1 } }, { session });
+    await stockAudit.updateProductStockWithAudit(m.db, context, { _id: productId }, { $set: { "inventory.stock": 10 } }, { session });
+  });
+  assert.equal(m.data.product_stock_events?.length ?? 0, 0);
+});
+test("관리자 재고 이력 조회는 인증·페이지 제한·최신순을 유지한다", () => {
+  const route = read("app/api/admin/products/[id]/stock-history/route.ts");
+  assert.match(route, /requireAdmin\(req\)/);
+  assert.match(route, /page > 10000/);
+  assert.match(route, /occurredAt: -1, _id: -1/);
+  assert.match(route, /skip\(\(page - 1\) \* limit\)/);
+  assert.doesNotMatch(route, /beforeStock: 1/);
+});
+
+test("동시 차감은 재시도 후 직전 확정 수량을 before로 기록한다", async () => {
+  const m = model(seed());
+  await Promise.all(["first", "second"].map(async (operationId) => {
+    const session = m.db.client.startSession();
+    await session.withTransaction(() => stockAudit.updateProductStockWithAudit(m.db, { operationId, reason: "order_created", mode: "automatic" }, { _id: productId }, { $inc: { "inventory.stock": -1 } }, { session }));
+  }));
+  assert.equal(m.data.products[0].inventory.stock, 8);
+  assert.equal(m.data.product_stock_events.length, 2);
+  const changes = m.data.product_stock_events.map((event) => event.changes.find((row) => row.axis === "total")).sort((a, b) => b.before - a.before);
+  assert.equal(changes[0].before, 10);
+  assert.equal(changes[0].after, 9);
+  assert.equal(changes[1].before, 9);
+  assert.equal(changes[1].after, 8);
+});
+test("관리자 수동 재고 수정은 저장된 최신 값과 비교한다", async () => {
+  const m = model(seed());
+  await stockAudit.updateProductStockWithAudit(m.db, { operationId: "manual", reason: "admin_product_updated", mode: "admin", actorId: String(userId) }, { _id: productId }, { $set: { "inventory.stock": 7 } });
+  const row = m.data.product_stock_events[0].changes.find((change) => change.axis === "total");
+  assert.equal(row.before, 10);
+  assert.equal(row.after, 7);
+  assert.equal(row.delta, -3);
+  assert.equal(m.data.product_stock_events[0].actorId, String(userId));
 });

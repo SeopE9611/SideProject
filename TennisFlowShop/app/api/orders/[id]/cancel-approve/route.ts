@@ -1,3 +1,4 @@
+import { updateProductStockWithAudit, type StockAuditContext } from "@/lib/product-stock-audit";
 import { orderCancelSnapshot } from "@/lib/orders/cancel-write-guard";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { verifyAccessToken } from "@/lib/auth.utils";
@@ -114,6 +115,7 @@ async function restoreLinkedApplicationStockIfNeeded(
   appDoc: Document,
   now: Date,
   session: ClientSession,
+  stockAuditContext: StockAuditContext,
 ): Promise<Record<string, unknown>> {
   const mode = String(appDoc.stockDeduction?.mode ?? "").trim();
   const setFields: Record<string, unknown> = {};
@@ -138,7 +140,7 @@ async function restoreLinkedApplicationStockIfNeeded(
     if (!productId || !color || !gauge) {
       throw new CancelFinalizationError("VARIANT_STOCK_RESTORE_FAILED", "연결 신청서의 상품·조합 옵션을 확인할 수 없습니다.");
     }
-    const restored = await db.collection("products").updateOne({
+    const restored = await updateProductStockWithAudit(db, { ...stockAuditContext, applicationId: String(appDoc._id) }, {
       _id: productId,
       sold: { $gte: 1 },
       variantInventories: { $elemMatch: { colorValue: color, gaugeValue: gauge } },
@@ -176,7 +178,7 @@ async function restoreLinkedApplicationStockIfNeeded(
     throw new CancelFinalizationError("LINKED_STOCK_RESTORE_FAILED", "연결 신청서의 상품·재고 옵션을 확인할 수 없습니다.");
   }
   if (restoreGauge) {
-    const restored = await db.collection("products").updateOne({
+    const restored = await updateProductStockWithAudit(db, { ...stockAuditContext, applicationId: String(appDoc._id) }, {
       _id: productId, sold: { $gte: 1 }, "gaugeInventories.value": selectedGauge,
     }, { $inc: { "gaugeInventories.$.stock": 1, "inventory.stock": 1, sold: -1 } }, { session });
     if (!restored.matchedCount || !restored.modifiedCount) {
@@ -189,7 +191,7 @@ async function restoreLinkedApplicationStockIfNeeded(
     // 제출 시 게이지가 선택된 색상 차감은 색상만 줄인다. 게이지가 부모
     // 주문에서 차감된 경우도 있으므로 신청서 게이지 마커만으로 판단하지 않는다.
     const restoreGlobal = !selectedGauge && !hasGaugeDeducted;
-    const restored = await db.collection("products").updateOne({
+    const restored = await updateProductStockWithAudit(db, { ...stockAuditContext, applicationId: String(appDoc._id) }, {
       _id: productId,
       "colorInventories.value": selectedColor,
       ...(restoreGlobal ? { sold: { $gte: 1 } } : {}),
@@ -212,6 +214,7 @@ async function restoreOrderVariantStockIfNeeded(
   existing: any,
   now: Date,
   session: ClientSession,
+  stockAuditContext: StockAuditContext,
 ) {
   const alreadyRestored = Boolean(existing?.stockRestore?.variantStockRestoredAt);
   if (alreadyRestored) {
@@ -275,9 +278,8 @@ async function restoreOrderVariantStockIfNeeded(
     return { setFields: {} as Record<string, unknown> };
   }
 
-  const products = db.collection("products");
   for (const restoreItem of restoreMap.values()) {
-    const restoreResult = await products.updateOne(
+    const restoreResult = await updateProductStockWithAudit(db, stockAuditContext,
       {
         _id: restoreItem.productObjectId,
         sold: { $gte: restoreItem.quantity },
@@ -331,6 +333,7 @@ async function restoreOrderGaugeStockIfNeeded(
   existing: any,
   now: Date,
   session: ClientSession,
+  stockAuditContext: StockAuditContext,
 ) {
   const alreadyRestored = Boolean(existing?.stockRestore?.gaugeStockRestoredAt);
   if (alreadyRestored) {
@@ -376,9 +379,8 @@ async function restoreOrderGaugeStockIfNeeded(
     return { setFields: {} as Record<string, unknown> };
   }
 
-  const products = db.collection("products");
   for (const restoreItem of restoreMap.values()) {
-    const restoreResult = await products.updateOne(
+    const restoreResult = await updateProductStockWithAudit(db, stockAuditContext,
       {
         _id: restoreItem.productObjectId,
         sold: { $gte: restoreItem.quantity },
@@ -414,6 +416,7 @@ async function restoreOrderColorStockIfNeeded(
   existing: any,
   now: Date,
   session: ClientSession,
+  stockAuditContext: StockAuditContext,
 ) {
   const alreadyRestored = Boolean(existing?.stockRestore?.colorStockRestoredAt);
   if (alreadyRestored) {
@@ -468,10 +471,9 @@ async function restoreOrderColorStockIfNeeded(
     return { setFields: {} as Record<string, unknown> };
   }
 
-  const products = db.collection("products");
   let restoredAnyManagedColorStock = false;
   for (const restoreItem of restoreMap.values()) {
-    const product = await products.findOne(
+    const product = await db.collection("products").findOne(
       { _id: restoreItem.productObjectId },
       {
         projection: { colorInventories: 1 },
@@ -485,7 +487,7 @@ async function restoreOrderColorStockIfNeeded(
       continue;
     }
 
-    const restoreResult = await products.updateOne(
+    const restoreResult = await updateProductStockWithAudit(db, stockAuditContext,
       restoreItem.hasSelectedGauge
         ? {
             _id: restoreItem.productObjectId,
@@ -736,6 +738,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
   }
 
+  const stockAuditContext: StockAuditContext = { operationId: randomUUID(), reason: "order_canceled", mode: "automatic", orderId: id, actorId: String(user.sub) };
   const session = client.startSession();
   let linkedApplicationCount = 0;
   try {
@@ -750,9 +753,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       }
       const finalizedAt = new Date();
       const updateFields: Record<string, unknown> = {};
-      Object.assign(updateFields, (await restoreOrderVariantStockIfNeeded(db, current, finalizedAt, session)).setFields);
-      Object.assign(updateFields, (await restoreOrderGaugeStockIfNeeded(db, current, finalizedAt, session)).setFields);
-      Object.assign(updateFields, (await restoreOrderColorStockIfNeeded(db, current, finalizedAt, session)).setFields);
+      Object.assign(updateFields, (await restoreOrderVariantStockIfNeeded(db, current, finalizedAt, session, stockAuditContext)).setFields);
+      Object.assign(updateFields, (await restoreOrderGaugeStockIfNeeded(db, current, finalizedAt, session, stockAuditContext)).setFields);
+      Object.assign(updateFields, (await restoreOrderColorStockIfNeeded(db, current, finalizedAt, session, stockAuditContext)).setFields);
 
       const uidStr = current.userId ? String(current.userId) : "";
       if (ObjectId.isValid(uidStr)) {
@@ -778,7 +781,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         if (appDoc.status === "취소") continue;
         if (appDoc.packageApplied && appDoc.packagePassId) await revertConsumption(db, appDoc.packagePassId, appDoc._id, { session });
         const appSet: Record<string, unknown> = { status: "취소", cancelRequest: { ...(appDoc.cancelRequest ?? {}), status: "approved", approvedAt: finalizedAt } };
-        Object.assign(appSet, await restoreLinkedApplicationStockIfNeeded(db, appDoc, finalizedAt, session));
+        Object.assign(appSet, await restoreLinkedApplicationStockIfNeeded(db, appDoc, finalizedAt, session, stockAuditContext));
         const appSaved = await appsCol.updateOne({ _id: appDoc._id }, { $set: appSet, $push: { history: { status: "취소", date: finalizedAt, description: "주문 취소 승인에 따라 신청도 함께 취소되었습니다." } } } as any, { session });
         if (!appSaved.matchedCount || !appSaved.modifiedCount) throw new CancelFinalizationError("ORDER_CANCEL_CONFLICT", "연결 신청서 취소 저장에 실패했습니다.");
       }
