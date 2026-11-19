@@ -1,3 +1,4 @@
+import { NewsRichBody } from "@/components/news/news-rich-body";
 import { formatAdminDate } from "@/lib/format-admin-date";
 import { AdminContentDetailLayout } from "@/components/admin/admin-content-detail-layout";
 import { getAdminListReturnHref } from "@/lib/admin-list-return";
@@ -153,6 +154,7 @@ export default async function AdminNewsDetailPage({
         />
       }
     >
+      {post.bodyDocumentInvalid ? <p role="alert" className="admin-notice">저장된 본문 서식을 확인할 수 없어 일반 텍스트로 표시합니다. 편집 전에 확인이 필요합니다.</p> : null}
       {!editable ? (
         <aside className="admin-notice">
           {isPendingReview ? (
@@ -208,7 +210,7 @@ export default async function AdminNewsDetailPage({
         <div>
           <h3 className="font-bold">본문</h3>
           <div className="mt-2 space-y-4">
-            {post.body.map((paragraph, index) => (
+            {post.bodyDocument ? <NewsRichBody bodyDocument={post.bodyDocument} /> : post.body.map((paragraph, index) => (
               <p key={index} className="whitespace-pre-wrap break-words">
                 {paragraph}
               </p>

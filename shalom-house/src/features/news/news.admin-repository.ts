@@ -1,3 +1,4 @@
+import { parseNewsBodyDocument, newsDocumentToBody, sameNewsBodyText, resolveNewsBodyUpdate, type NewsBodyDocument } from "./news.rich-text";
 import { createAdminTitleSearchExpression } from "@/lib/admin-title-search";
 import { MongoServerError, ObjectId, type ClientSession, type Db, type Filter, type WithId } from "mongodb";
 
@@ -50,6 +51,8 @@ export type AdminNewsListItem = {
 
 export type AdminNewsDetail = AdminNewsListItem & {
   body: readonly string[];
+  bodyDocument?: NewsBodyDocument;
+  bodyDocumentInvalid: boolean;
   isEditable: boolean;
   isAdminEditable: boolean;
   canAdminPublish: boolean;
@@ -83,7 +86,7 @@ export type UpdateAdminNewsDraftResult =
   | { ok: true; id: string; slug: string; updatedAt: string }
   | {
       ok: false;
-      reason: "slug_conflict" | "not_found" | "not_editable" | "edit_conflict";
+      reason: "slug_conflict" | "not_found" | "not_editable" | "edit_conflict" | "rich_text_required" | "invalid_body_document";
     };
 
 export type RequestAdminNewsReviewResult =
@@ -181,6 +184,7 @@ export async function createAdminNewsDraft(
     title: input.title,
     summary: actor.role === "admin" ? createAdminNewsSummary(input.body) : input.summary,
     body: Array.from(input.body),
+    ...(input.bodyDocument && actor.role === "admin" ? { bodyDocument: input.bodyDocument } : {}),
     publicationStatus: publishImmediately ? "published" : "draft",
     approvalStatus: publishImmediately ? "approved" : "pending",
     publishedAt: publishImmediately ? now : null,
@@ -210,6 +214,7 @@ export async function createAdminNewsDraft(
           "title",
           "summary",
           "body",
+          ...(input.bodyDocument ? ["bodyDocument" as const] : []),
           "publicationStatus",
           "approvalStatus",
           "publishedAt",
@@ -369,6 +374,7 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
         title: 1,
         summary: 1,
         body: 1,
+        bodyDocument: 1,
         publicationStatus: 1,
         approvalStatus: 1,
         publishedAt: 1,
@@ -390,11 +396,15 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
     return null;
   }
 
+  const rich = document.bodyDocument === undefined ? null : parseNewsBodyDocument(document.bodyDocument);
+  const bodyDocumentInvalid = document.bodyDocument !== undefined && (!rich || !sameNewsBodyText(document.body, newsDocumentToBody(rich)));
   return {
     ...listItem,
     body: document.body,
+    ...(!bodyDocumentInvalid && rich ? { bodyDocument: rich } : {}),
+    bodyDocumentInvalid,
     isAdminEditable: isAdminEditableNews(document),
-    canAdminPublish: isAdminEditableNews(document) && document.publicationStatus !== "published",
+    canAdminPublish: !bodyDocumentInvalid && isAdminEditableNews(document) && document.publicationStatus !== "published",
     isEditable: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
     canDirectPublish: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
     canRequestReview: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
@@ -446,6 +456,7 @@ async function changeNewsAndInsertAudit(input: {
     title: input.set.title ?? before.title,
     summary: input.set.summary ?? before.summary,
     body: input.set.body ?? before.body,
+    ...(input.set.bodyDocument ?? before.bodyDocument ? { bodyDocument: input.set.bodyDocument ?? before.bodyDocument } : {}),
     publicationStatus: input.set.publicationStatus ?? before.publicationStatus,
     approvalStatus: input.set.approvalStatus ?? before.approvalStatus,
     publishedAt: input.set.publishedAt === undefined ? before.publishedAt : input.set.publishedAt,
@@ -564,6 +575,10 @@ export async function directPublishAdminNewsPost(input: {
         current.body.length === 0 || !current.body.every(isNonEmptyString) || !isValidStoredNewsMedia(current))
       return { ok: false, reason: "not_direct_publishable" };
     if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" };
+    if (current.bodyDocument !== undefined) {
+      const rich = parseNewsBodyDocument(current.bodyDocument);
+      if (!rich || !sameNewsBodyText(current.body, newsDocumentToBody(rich))) return { ok: false, reason: "not_direct_publishable" };
+    }
     const publicationTime = current.publishedAt ?? transitionAt;
     const change = await changeNewsAndInsertAudit({
       database,
@@ -674,13 +689,17 @@ export async function updateAdminNewsDraft(input: {
       if (!editable || !toAdminNewsListItem(current, nextUpdatedAt) || !Array.isArray(current.body) ||
           current.body.length === 0 || !current.body.every(isNonEmptyString) || !isValidStoredNewsMedia(current)) return { ok: false, reason: "not_editable" };
       if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" };
-      const bodyChanged = current.body.length !== input.draft.body.length ||
-        current.body.some((paragraph, index) => paragraph !== input.draft.body[index]);
+      if (input.draft.bodyDocument && input.actor.role !== "admin") return { ok: false, reason: "not_editable" };
+      const resolved = resolveNewsBodyUpdate(current.body, current.bodyDocument, input.draft.body, input.draft.bodyDocument);
+      if (!resolved.ok) return resolved;
+      const bodyChanged = !sameNewsBodyText(current.body, resolved.body);
       const draft = input.actor.role === "admin" ? {
         ...input.draft,
+        body: resolved.body,
+        ...(resolved.bodyDocument ? { bodyDocument: resolved.bodyDocument } : {}),
         slug: current.slug,
-        summary: bodyChanged ? createAdminNewsSummary(input.draft.body) : current.summary,
-      } : input.draft;
+        summary: bodyChanged ? createAdminNewsSummary(resolved.body) : current.summary,
+      } : { ...input.draft, body: resolved.body, ...(resolved.bodyDocument ? { bodyDocument: resolved.bodyDocument } : {}) };
       const change = await changeNewsAndInsertAudit({
         database,
         session,
@@ -703,6 +722,7 @@ export async function updateAdminNewsDraft(input: {
           title: draft.title,
           summary: draft.summary,
           body: Array.from(draft.body),
+          ...(draft.bodyDocument ? { bodyDocument: draft.bodyDocument } : {}),
           updatedAt: nextUpdatedAt,
         },
         changedFields: (before) => getDraftChangedFields(before, draft),

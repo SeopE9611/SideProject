@@ -1,4 +1,5 @@
 import { isNewsCategory, isPublicNewsReservedSlug, isValidNewsSlug, type NewsCategory } from "./news.types";
+import { parseNewsBodyDocument, newsDocumentToBody, type NewsBodyDocument } from "./news.rich-text";
 
 export const ADMIN_NEWS_TITLE_MAX_LENGTH = 100;
 export const ADMIN_NEWS_SLUG_MAX_LENGTH = 80;
@@ -121,6 +122,7 @@ export type ValidatedAdminNewsDraft = {
   title: string;
   summary: string;
   body: readonly string[];
+  bodyDocument?: NewsBodyDocument;
 };
 
 export type AdminNewsDraftField = "category" | "slug" | "title" | "summary" | "body" | "contentSafetyConfirmed";
@@ -244,8 +246,11 @@ export function validateAdminNewsDraftInput(input: unknown, automaticFields = fa
     fieldErrors.summary = "요약은 300자 이하여야 합니다.";
   }
 
-  const normalizedBody = typeof value.body === "string" ? value.body.replace(/\r\n?/g, "\n").trim() : "";
-  const body = normalizedBody
+  const hasDocument = Object.prototype.hasOwnProperty.call(value, "bodyDocument");
+  const bodyDocument = hasDocument && automaticFields ? parseNewsBodyDocument(value.bodyDocument) : null;
+  if (hasDocument && !bodyDocument) fieldErrors.body = "본문 서식이 올바르지 않거나 현재 역할에서 사용할 수 없습니다.";
+  const normalizedBody = bodyDocument ? newsDocumentToBody(bodyDocument).join("\n\n") : typeof value.body === "string" ? value.body.replace(/\r\n?/g, "\n").trim() : "";
+  const body = bodyDocument ? newsDocumentToBody(bodyDocument) : normalizedBody
     ? normalizedBody
         .split(/\n[\t ]*\n+/)
         .map((paragraph) => paragraph.trim())
@@ -277,6 +282,7 @@ export function validateAdminNewsDraftInput(input: unknown, automaticFields = fa
       title,
       summary: automaticFields ? createAdminNewsSummary(body) : summary,
       body,
+      ...(bodyDocument ? { bodyDocument } : {}),
     },
   };
 }

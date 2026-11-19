@@ -90,6 +90,8 @@ export async function POST(request: Request) {
       return jsonResponse({ ok: false, error: "validation" }, 400);
     const publishImmediately = typeof input === "object" && input !== null && "publishImmediately" in input && input.publishImmediately === true;
     if (publishImmediately && admin.role !== "admin") return jsonResponse({ ok: false, error: "forbidden" }, 403);
+    if (admin.role !== "admin" && typeof input === "object" && input !== null && "bodyDocument" in input)
+      return jsonResponse({ ok: false, error: "forbidden" }, 403);
     const validation = validateAdminNewsDraftInput(input, admin.role === "admin");
     if (!validation.ok) {
       return jsonResponse({ ok: false, error: "validation", fieldErrors: validation.fieldErrors }, 400);

@@ -1,3 +1,4 @@
+import { NewsRichBody } from "@/components/news/news-rich-body";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -127,7 +128,7 @@ export default async function NewsPostPage({ params, searchParams }: NewsPostPag
               />
             ) : null}
             <div className="space-y-5">
-              {post.body.map((paragraph, index) => (
+              {post.bodyDocument ? <NewsRichBody bodyDocument={post.bodyDocument} /> : post.body.map((paragraph, index) => (
                 <p key={index} className="text-safe-wrap whitespace-pre-wrap text-body leading-8">
                   {paragraph}
                 </p>

@@ -1,6 +1,7 @@
 import type { ObjectId } from "mongodb";
 
 import type { NewsApprovalStatus, NewsCategory, NewsPublicationStatus } from "./news.types";
+import type { NewsBodyDocument } from "./news.rich-text";
 
 export const NEWS_COLLECTION_NAME = "news_posts";
 
@@ -21,6 +22,7 @@ export type MongoNewsPostDocument = {
   title: string;
   summary: string;
   body: string[];
+  bodyDocument?: NewsBodyDocument;
   publicationStatus: NewsPublicationStatus;
   approvalStatus: NewsApprovalStatus;
   publishedAt: Date | null;
