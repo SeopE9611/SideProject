@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { parseNewsBodyDocument, sameNewsDocument } from "../news/news.rich-text";
 import type { ObjectId } from "mongodb";
 import type { AdminRole } from "../admin-auth/admin-auth.types";
 import type { ValidatedAdminProgramDraft } from "./program.admin-validation";
@@ -24,6 +26,7 @@ export const programAuditChangedFields = [
   "summary",
   "purpose",
   "body",
+  "bodyDocument",
   "operationStatusLabel",
   "sortOrder",
   "publicationStatus",
@@ -41,6 +44,7 @@ export type ProgramAuditSnapshot = {
   summary: string;
   purpose: string;
   body: string[];
+  bodyDocumentHash?: string;
   operationStatusLabel: string | null;
   sortOrder: number;
   publicationStatus: ProgramPublicationStatus;
@@ -56,7 +60,9 @@ export type ProgramAuditActor = {
   role: AdminRole;
 };
 export function createProgramAuditSnapshot(document: MongoProgramDocument): ProgramAuditSnapshot {
+  const rich = parseNewsBodyDocument(document.bodyDocument);
   return {
+    ...(rich ? { bodyDocumentHash: createHash("sha256").update(JSON.stringify(rich)).digest("hex") } : {}),
     slug: document.slug,
     category: document.category,
     title: document.title,
@@ -81,5 +87,6 @@ export function getDraftChangedFields(
   for (const key of ["slug", "category", "title", "summary", "purpose", "operationStatusLabel", "sortOrder"] as const)
     if (before[key] !== after[key]) fields.push(key);
   if (before.body.length !== after.body.length || before.body.some((p, i) => p !== after.body[i])) fields.push("body");
+  if (!sameNewsDocument(parseNewsBodyDocument(before.bodyDocument) ?? undefined, after.bodyDocument)) fields.push("bodyDocument");
   return fields;
 }

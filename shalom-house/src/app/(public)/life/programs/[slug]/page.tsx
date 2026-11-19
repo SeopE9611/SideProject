@@ -1,3 +1,4 @@
+import { NewsRichBody } from "@/components/news/news-rich-body";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -116,7 +117,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
               활동 내용
             </h2>
             <div className="mt-4 space-y-5">
-              {program.body.map((paragraph, index) => (
+              {program.bodyDocument ? <NewsRichBody bodyDocument={program.bodyDocument} /> : program.body.map((paragraph, index) => (
                 <p className="text-safe-wrap whitespace-pre-wrap text-body leading-8" key={index}>
                   {paragraph}
                 </p>

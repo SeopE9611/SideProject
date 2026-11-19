@@ -1,3 +1,5 @@
+import type { NewsBodyDocument } from "../news/news.rich-text";
+
 import type { ObjectId } from "mongodb";
 import type { ProgramApprovalStatus, ProgramPublicationStatus } from "./program.types";
 export const PROGRAM_COLLECTION_NAME = "program_posts";
@@ -18,6 +20,7 @@ export type MongoProgramDocument = {
   summary: string;
   purpose: string;
   body: string[];
+  bodyDocument?: NewsBodyDocument;
   operationStatusLabel: string | null;
   sortOrder: number;
   publicationStatus: ProgramPublicationStatus;

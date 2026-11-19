@@ -1,4 +1,6 @@
 "use client";
+import { AdminNewsRichEditor } from "./admin-news-rich-editor";
+import { newsBodyToDocument, type NewsBodyDocument } from "@/features/news/news.rich-text";
 import Link from "next/link";
 import { AdminStickyFormActions } from "./admin-sticky-form-actions";
 import { useRouter } from "next/navigation";
@@ -23,6 +25,8 @@ export type AdminProgramDraftFormProps =
       mode: "edit";
       programId: string;
       expectedUpdatedAt: string;
+      initialBody: readonly string[];
+      bodyDocument?: NewsBodyDocument;
       initialValue: {
         category: string;
         slug: string;
@@ -49,6 +53,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
   const { markDirty, navigateAfterSave } = useAdminFormDirtyGuard();
   const [errors, setErrors] = useState<AdminProgramDraftFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [editedDocument, setEditedDocument] = useState<unknown>();
   const [busy, setBusy] = useState(false);
   const initial =
     props.mode === "edit"
@@ -73,7 +78,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
       title: d.get("title"),
       summary: d.get("summary"),
       purpose: d.get("purpose"),
-      body: d.get("body"),
+      ...(editedDocument === undefined ? { body: initial.body } : { bodyDocument: editedDocument }),
       operationStatusLabel: d.get("operationStatusLabel"),
       sortOrder: d.get("sortOrder"),
       contentSafetyConfirmed: d.get("contentSafetyConfirmed") === "on",
@@ -120,7 +125,11 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
       setFormError(
         body?.error === "edit_conflict"
           ? "다른 관리자가 먼저 수정했습니다. 상세 화면을 새로 확인해 주세요."
-          : "프로그램을 저장할 수 없습니다. 입력 내용을 확인해 주세요.",
+          : body?.error === "rich_text_required"
+            ? "본문 서식을 보존하려면 최신 편집 화면에서 다시 시도해 주세요."
+            : body?.error === "invalid_body_document"
+              ? "저장된 본문 서식을 확인할 수 없어 변경을 저장하지 않았습니다."
+              : "프로그램을 저장할 수 없습니다. 입력 내용을 확인해 주세요.",
       );
     } catch {
       setFormError("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
@@ -140,7 +149,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
           name === "slug"
             ? "공개 주소의 마지막 부분입니다. 영문 소문자, 숫자와 하이픈(-)으로 입력해 주세요. 예를 들어 daily-life를 입력하면 /life/programs/daily-life 주소로 연결됩니다."
             : name === "body"
-              ? "빈 줄을 기준으로 문단을 구분합니다."
+              ? "본문에 제목·목록·링크를 추가할 수 있습니다."
               : name === "operationStatusLabel"
                 ? "공개 화면에 표시할 공식 상태 문구가 있을 때만 입력합니다."
                 : name === "sortOrder"
@@ -169,19 +178,34 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
                   ? ADMIN_PROGRAM_SUMMARY_MAX_LENGTH
                   : name === "purpose"
                     ? ADMIN_PROGRAM_PURPOSE_MAX_LENGTH
-                    : name === "body"
-                      ? ADMIN_PROGRAM_BODY_MAX_LENGTH
-                      : name === "operationStatusLabel"
-                        ? ADMIN_PROGRAM_OPERATION_STATUS_MAX_LENGTH
-                        : undefined;
+                    : name === "operationStatusLabel"
+                      ? ADMIN_PROGRAM_OPERATION_STATUS_MAX_LENGTH
+                      : undefined;
         return (
           <div key={name} className="grid gap-2 border-b border-border pb-6 last:border-b-0">
-            <label htmlFor={id} className="font-semibold">
+            <label id={`${id}-label`} htmlFor={name === "body" ? undefined : id} className="font-semibold">
               {label}
               {required ? <span className="ml-1 text-danger">*</span> : " (선택)"}
             </label>
-            {kind === "textarea" ? (
-              <textarea {...common} required={required} maxLength={maxLength} rows={name === "body" ? 14 : 4} />
+            {name === "body" ? (
+              <AdminNewsRichEditor
+                bodyId={id}
+                labelId={`${id}-label`}
+                linkId="program-editor-link"
+                maxLength={ADMIN_PROGRAM_BODY_MAX_LENGTH}
+                initialDocument={props.mode === "edit"
+                  ? props.bodyDocument ?? newsBodyToDocument(props.initialBody)
+                  : newsBodyToDocument([])}
+                disabled={busy}
+                invalid={Boolean(error)}
+                describedBy={common["aria-describedby"]}
+                onChange={(document) => {
+                  setEditedDocument(document);
+                  markDirty();
+                }}
+              />
+            ) : kind === "textarea" ? (
+              <textarea {...common} required={required} maxLength={maxLength} rows={4} />
             ) : (
               <input
                 {...common}
