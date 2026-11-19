@@ -89,15 +89,16 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
   });
   // 읽기 전용 전환이 초기화·저장 시 문서 변경 이벤트를 만들지 않도록 합니다.
   useEffect(() => { editor?.setEditable(!disabled, false); }, [editor, disabled]);
-  const state = useEditorState({ editor, selector: ({ editor: current }) => ({
-    count: current ? newsDocumentToBody({ version: 1, document: current.getJSON() as NewsRichNode }).join("\n\n").length : 0,
-    empty: current?.isEmpty ?? true,
-    paragraph: current?.isActive("paragraph") ?? false,
-    bold: current?.isActive("bold") ?? false, italic: current?.isActive("italic") ?? false,
-    h2: current?.isActive("heading", { level: 2 }) ?? false, h3: current?.isActive("heading", { level: 3 }) ?? false,
-    bullet: current?.isActive("bulletList") ?? false, ordered: current?.isActive("orderedList") ?? false,
-    link: current?.isActive("link") ?? false,
-    undo: current?.can().undo() ?? false, redo: current?.can().redo() ?? false,
+  // 구독 스냅샷은 첫 트랜잭션 전까지 null을 유지할 수 있으므로 현재 인스턴스를 읽습니다.
+  const state = useEditorState({ editor, selector: () => ({
+    count: editor ? newsDocumentToBody({ version: 1, document: editor.getJSON() as NewsRichNode }).join("\n\n").length : 0,
+    empty: editor?.isEmpty ?? true,
+    paragraph: editor?.isActive("paragraph") ?? false,
+    bold: editor?.isActive("bold") ?? false, italic: editor?.isActive("italic") ?? false,
+    h2: editor?.isActive("heading", { level: 2 }) ?? false, h3: editor?.isActive("heading", { level: 3 }) ?? false,
+    bullet: editor?.isActive("bulletList") ?? false, ordered: editor?.isActive("orderedList") ?? false,
+    link: editor?.isActive("link") ?? false,
+    undo: editor?.can().undo() ?? false, redo: editor?.can().redo() ?? false,
   }) });
   const unavailable = disabled || !editor;
   function button(icon: keyof typeof toolbarPaths, label: string, active: boolean | undefined, action: () => void, blocked = false) {
