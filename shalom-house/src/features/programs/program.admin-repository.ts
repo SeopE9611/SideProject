@@ -81,7 +81,7 @@ export type AdminProgramListResult = {
 };
 
 export type CreateAdminProgramDraftResult =
-  { ok: true; id: string; slug: string } | { ok: false; reason: "slug_conflict" };
+  { ok: true; id: string; slug: string; updatedAt: string } | { ok: false; reason: "slug_conflict" };
 
 export type UpdateAdminProgramDraftResult =
   | { ok: true; id: string; slug: string; updatedAt: string }
@@ -229,7 +229,7 @@ export async function createAdminProgramDraft(
           "publishedAt",
         ],
       });
-      return { ok: true, id: programId.toString(), slug: input.slug };
+      return { ok: true, id: programId.toString(), slug: input.slug, updatedAt: now.toISOString() };
     });
   } catch (error) {
     if (isProgramSlugConflict(error)) {

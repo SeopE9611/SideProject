@@ -1,5 +1,5 @@
 import "server-only";
-import { getSupabaseAdminClient } from "@/lib/supabase-admin";
+import { getSupabaseAdminClient, signedPdfRedirect } from "@/lib/supabase-admin";
 
 const canonicalObjectIdPattern = /^[a-f0-9]{24}$/;
 export const getProgramPrivateBucketName = () => {
@@ -17,15 +17,13 @@ export function isValidPrivateProgramAttachmentPathForProgram(programId: string,
 export async function uploadPrivateProgramAttachment(programId: string, objectPath: string, buffer: Buffer) {
   const bucket = getProgramPrivateBucketName(); assertLocation(programId, bucket, objectPath);
   const { data, error } = await getSupabaseAdminClient().storage.from(bucket).upload(objectPath, buffer,
-    { contentType: "application/pdf", upsert: false });
+    { contentType: "application/pdf", cacheControl: "0", upsert: false });
   if (error || data?.path !== objectPath) throw new Error("PDF 업로드에 실패했습니다.");
   return { bucket, objectPath };
 }
-export async function downloadPrivateProgramAttachment(programId: string, bucket: string, objectPath: string) {
+export function redirectPrivateProgramAttachment(programId: string, bucket: string, objectPath: string, fileName: string) {
   assertLocation(programId, bucket, objectPath);
-  const { data, error } = await getSupabaseAdminClient().storage.from(bucket).download(objectPath);
-  if (error || !data) throw new Error("PDF 다운로드에 실패했습니다.");
-  return data;
+  return signedPdfRedirect(bucket, objectPath, fileName);
 }
 export async function removePrivateProgramAttachment(programId: string, bucket: string, objectPath: string) {
   assertLocation(programId, bucket, objectPath);

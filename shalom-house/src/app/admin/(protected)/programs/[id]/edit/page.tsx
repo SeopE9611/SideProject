@@ -92,6 +92,12 @@ export default async function AdminProgramEditPage({ params }: { params: Promise
               mode="edit"
               programId={post.id}
               expectedUpdatedAt={post.updatedAt}
+              pdfEditable={post.isEditable}
+              attachment={post.attachment ? {
+                label: post.attachment.label,
+                byteSize: post.attachment.byteSize,
+                originalFileName: post.attachment.originalFileName,
+              } : null}
               initialValue={{
                 category: post.category,
                 slug: post.slug,

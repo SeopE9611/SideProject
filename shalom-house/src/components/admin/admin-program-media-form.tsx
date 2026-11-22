@@ -1,5 +1,6 @@
 "use client";
 import { FormEvent, useState } from "react";
+import { uploadAdminPdf } from "@/lib/client-pdf-transfer";
 import { AdminContentMediaSummary } from "./admin-content-media-summary";
 import { useAdminFormDirtyGuard } from "@/lib/use-admin-unsaved-changes-guard";
 export type AdminProgramMediaFormProps = {
@@ -13,6 +14,13 @@ export type AdminProgramMediaFormProps = {
 };
 type ResponseBody = { ok?: boolean; redirectTo?: string; error?: string };
 const messages: Record<string, string> = {
+  invalid_pdf: "파일 크기, PDF 형식 또는 파일 서명을 확인해 주세요.",
+  validation: "PDF 파일과 공개 링크 문구를 확인해 주세요.",
+  invalid_upload_intent: "업로드 권한이 만료되었습니다. 현재 첨부 상태를 확인한 뒤 다시 시도해 주세요.",
+  upload_failed: "PDF를 전송하지 못했습니다. 네트워크를 확인해 주세요.",
+  attachment_outcome_unknown: "첨부 저장 결과를 확인할 수 없습니다. 새로고침하여 현재 첨부를 확인해 주세요.",
+  attachment_cleanup_pending: "첨부 변경은 저장되었으나 이전 또는 임시 파일 정리를 완료하지 못했습니다. 현재 첨부를 확인해 주세요.",
+  staging_cleanup_pending: "임시 파일 정리를 완료하지 못했습니다. 현재 첨부를 확인한 뒤 다시 시도해 주세요.",
   edit_conflict: "다른 관리자가 먼저 수정했습니다. 새로고침 후 다시 확인해 주세요.",
   not_editable: "현재 게시 상태에서는 대표 이미지와 첨부파일을 변경할 수 없습니다.",
   invalid_gallery_item: "선택한 활동사진 정보를 확인할 수 없습니다.",
@@ -149,15 +157,12 @@ function EditableAdminProgramMediaForm(props: AdminProgramMediaFormProps) {
     setAttachmentBusy(true);
     setAttachmentErrors({});
     try {
-      const data = new FormData();
-      data.set("file", file!);
-      data.set("label", label);
-      data.set("expectedUpdatedAt", props.expectedUpdatedAt);
-      data.set("contentSafetyConfirmed", "true");
-      const response = await fetch(`/api/admin/programs/${props.programId}/attachment`, { method: "PUT", body: data });
+      const response = await uploadAdminPdf(
+        `/api/admin/programs/${props.programId}/attachment`, file!, props.expectedUpdatedAt, label.trim(), safe,
+      );
       acceptResponse(response, await responseJson(response), setAttachmentErrors);
     } catch {
-      setAttachmentErrors({ form: "네트워크 연결을 확인한 뒤 다시 시도해 주세요." });
+      setAttachmentErrors({ form: "첨부 저장 결과를 확인할 수 없습니다. 새로고침하여 현재 첨부를 확인해 주세요." });
     } finally {
       setAttachmentBusy(false);
     }

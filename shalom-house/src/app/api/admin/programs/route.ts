@@ -108,6 +108,7 @@ export async function POST(request: Request) {
         ok: true,
         id: result.id,
         slug: result.slug,
+        updatedAt: result.updatedAt,
         redirectTo: "/admin/programs?created=1",
       },
       201,

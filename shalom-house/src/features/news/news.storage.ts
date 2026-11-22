@@ -1,5 +1,5 @@
 import "server-only";
-import { getSupabaseAdminClient } from "@/lib/supabase-admin";
+import { getSupabaseAdminClient, signedPdfRedirect } from "@/lib/supabase-admin";
 
 const canonicalObjectIdPattern = /^[a-f0-9]{24}$/;
 export const getNewsPrivateBucketName = () => {
@@ -17,15 +17,13 @@ export function isValidPrivateNewsAttachmentPathForNews(newsPostId: string, obje
 export async function uploadPrivateNewsAttachment(newsPostId: string, objectPath: string, buffer: Buffer) {
   const bucket = getNewsPrivateBucketName(); assertLocation(newsPostId, bucket, objectPath);
   const { data, error } = await getSupabaseAdminClient().storage.from(bucket).upload(objectPath, buffer,
-    { contentType: "application/pdf", upsert: false });
+    { contentType: "application/pdf", cacheControl: "0", upsert: false });
   if (error || data?.path !== objectPath) throw new Error("PDF 업로드에 실패했습니다.");
   return { bucket, objectPath };
 }
-export async function downloadPrivateNewsAttachment(newsPostId: string, bucket: string, objectPath: string) {
+export function redirectPrivateNewsAttachment(newsPostId: string, bucket: string, objectPath: string, fileName: string) {
   assertLocation(newsPostId, bucket, objectPath);
-  const { data, error } = await getSupabaseAdminClient().storage.from(bucket).download(objectPath);
-  if (error || !data) throw new Error("PDF 다운로드에 실패했습니다.");
-  return data;
+  return signedPdfRedirect(bucket, objectPath, fileName);
 }
 export async function removePrivateNewsAttachment(newsPostId: string, bucket: string, objectPath: string) {
   assertLocation(newsPostId, bucket, objectPath);

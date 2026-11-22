@@ -80,7 +80,7 @@ export type AdminNewsListResult = {
 };
 
 export type CreateAdminNewsDraftResult =
-  { ok: true; id: string; slug: string } | { ok: false; reason: "slug_conflict" };
+  { ok: true; id: string; slug: string; updatedAt: string } | { ok: false; reason: "slug_conflict" };
 
 export type UpdateAdminNewsDraftResult =
   | { ok: true; id: string; slug: string; updatedAt: string }
@@ -220,7 +220,7 @@ export async function createAdminNewsDraft(
           "publishedAt",
         ],
       });
-      return { ok: true, id: newsPostId.toString(), slug: document.slug };
+      return { ok: true, id: newsPostId.toString(), slug: document.slug, updatedAt: now.toISOString() };
     });
   } catch (error) {
     if (isNewsSlugConflict(error)) {

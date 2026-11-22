@@ -93,6 +93,12 @@ export default async function AdminNewsEditPage({ params }: { params: Promise<{ 
               simpleManagement={simpleManagement}
               postId={post.id}
               expectedUpdatedAt={post.updatedAt}
+              pdfEditable={post.isEditable}
+              attachment={post.attachment ? {
+                label: post.attachment.label,
+                byteSize: post.attachment.byteSize,
+                originalFileName: post.attachment.originalFileName,
+              } : null}
               initialBody={post.body}
               bodyDocument={post.bodyDocument}
               initialValues={{
