@@ -1,3 +1,4 @@
+import { updateProductStockWithAudit } from "@/lib/product-stock-audit";
 import { createStringingApplicationFromOrder } from "@/app/features/stringing-applications/api/create-from-order";
 import {
   submitStringingApplicationCore,
@@ -449,6 +450,7 @@ export async function createOrder(
     }
 
     // 트랜잭션: 재고 차감 + 주문 생성 + (옵션) 신청서 생성
+    const stockAuditContext = { operationId: new ObjectId().toHexString(), reason: "order_created" as const, mode: "automatic" as const };
     const session = client.startSession();
     let createdOrderId: ObjectId | null = null;
     let createdStringingApplicationId: ObjectId | null = null;
@@ -539,7 +541,7 @@ export async function createOrder(
 
         if (shouldPreservePortfolioDemoInventory()) return { status: "deducted" };
 
-        const variantUpdated = await db.collection("products").updateOne(
+        const variantUpdated = await updateProductStockWithAudit(db, stockAuditContext,
           {
             _id: productId,
             ...productVisibilityFilterFor(visibilityViewer),
@@ -643,7 +645,7 @@ export async function createOrder(
         }
         if (shouldPreservePortfolioDemoInventory()) return { status: "deducted" };
 
-        const colorUpdated = await db.collection("products").updateOne(
+        const colorUpdated = await updateProductStockWithAudit(db, stockAuditContext,
           {
             _id: productId,
             ...productVisibilityFilterFor(visibilityViewer),
@@ -803,7 +805,7 @@ export async function createOrder(
 
               const gaugeUpdated = shouldPreservePortfolioDemoInventory()
                 ? { matchedCount: 1, modifiedCount: 1 }
-                : await db.collection("products").updateOne(
+                : await updateProductStockWithAudit(db, stockAuditContext,
                 {
                   _id: productId,
                   ...productVisibilityFilterFor(visibilityViewer),
@@ -872,7 +874,7 @@ export async function createOrder(
               });
             }
 
-            if (!shouldPreservePortfolioDemoInventory()) await db.collection("products").updateOne(
+            if (!shouldPreservePortfolioDemoInventory()) await updateProductStockWithAudit(db, stockAuditContext,
               {
                 _id: productId,
                 ...productVisibilityFilterFor(visibilityViewer),
@@ -1343,6 +1345,7 @@ export async function createOrder(
         // insert
         const inserted = await ordersCol.insertOne(order, { session });
         createdOrderId = inserted.insertedId as ObjectId;
+        await db.collection("product_stock_events").updateMany({ operationId: stockAuditContext.operationId }, { $set: { orderId: String(createdOrderId) } }, { session });
         createdOrderSnapshot = order;
 
         // 포인트 차감(회원 + pointsToUse>0 일 때만)

@@ -69,6 +69,7 @@ import type React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import ProductEditDialogs from "./dialogs/ProductEditDialogs";
+import StockHistory from "./StockHistory";
 import { createSearchKeywords } from "./hooks/useKeywordGenerator";
 import {
   MAX_PRODUCT_IMAGE_COUNT,
@@ -2773,6 +2774,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
             </>
           )}
         </form>
+        <StockHistory productId={productId} />
       </AdminPageShell>
       <ProductEditDialogs
         open={leaveDialogOpen}

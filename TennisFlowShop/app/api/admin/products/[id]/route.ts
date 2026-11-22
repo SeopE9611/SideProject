@@ -1,3 +1,4 @@
+import { updateProductStockWithAudit } from "@/lib/product-stock-audit";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { getHangulInitials } from "@/lib/hangul-utils";
@@ -258,9 +259,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const beforeDoc = (await db
       .collection("products")
       .findOne({ _id: new ObjectId(id) })) as Record<string, unknown> | null;
-    const result = await db
-      .collection("products")
-      .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+    const result = await updateProductStockWithAudit(db, { operationId: new ObjectId().toHexString(), reason: "admin_product_updated", mode: "admin", actorId: String(guard.admin._id) }, { _id: new ObjectId(id) }, { $set: updateData });
     if (result.matchedCount === 0) {
       return NextResponse.json({ message: "상품 업데이트 실패" }, { status: 500 });
     }
