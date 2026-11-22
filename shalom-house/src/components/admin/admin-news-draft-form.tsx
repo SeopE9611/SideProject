@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminDraftPdf, saveDraftPdf, type DraftPdf, type DraftPdfChange } from "./admin-draft-pdf";
 import Link from "next/link";
 import { AdminNewsRichEditor } from "./admin-news-rich-editor";
 import { newsBodyToDocument, type NewsBodyDocument } from "@/features/news/news.rich-text";
@@ -59,6 +60,8 @@ export type AdminNewsDraftFormProps =
       simpleManagement?: boolean;
       postId: string;
       expectedUpdatedAt: string;
+      pdfEditable?: boolean;
+      attachment?: DraftPdf | null;
       initialValues: AdminNewsDraftFormInitialValues;
       initialBody?: readonly string[];
       bodyDocument?: NewsBodyDocument;
@@ -107,14 +110,20 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bodyDocument, setBodyDocument] = useState<unknown>(undefined);
 
+  const [pdfChange, setPdfChange] = useState<DraftPdfChange>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [pdfRecoveryHref, setPdfRecoveryHref] = useState<string | null>(null);
+  const attachment = props.mode === "edit" ? props.attachment : null;
+  const canEditPdf = props.mode === "create" || props.pdfEditable === true;
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting || pdfError || pdfRecoveryHref) return;
 
     const form = event.currentTarget;
     const formData = new FormData(form);
     const input = {
-      publishImmediately: props.mode === "create" && props.simpleManagement === true && (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "publish",
+      publishImmediately: !pdfChange && props.mode === "create" && props.simpleManagement === true && (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "publish",
       category: formData.get("category"),
       title: formData.get("title"),
       ...(!props.simpleManagement ? {
@@ -152,6 +161,23 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       const responseBody = await readJsonResponse(response);
       const expectedSuccessStatus = props.mode === "create" ? 201 : 200;
       if (response.status === expectedSuccessStatus && isRecord(responseBody) && responseBody.ok === true) {
+        if (pdfChange) {
+          const saved = await saveDraftPdf("news", { id: responseBody.id, updatedAt: responseBody.updatedAt },
+            pdfChange, attachment?.label ?? "첨부 PDF", formData.get("draftPdfSafetyConfirmed") === "on");
+          const id = responseBody.id;
+          const mediaHref = typeof id === "string" && /^[a-f0-9]{24}$/.test(id)
+            ? `/admin/news/${id}#news-media-heading`
+            : "/admin/news";
+          if (!saved) {
+            setPdfRecoveryHref(mediaHref);
+            return;
+          }
+          navigateAfterSave(() => {
+            router.push(mediaHref);
+            router.refresh();
+          });
+          return;
+        }
         const fallback = props.mode === "create" ? "/admin/news?created=1" : `/admin/news/${props.postId}?updated=1`;
         navigateAfterSave(() => {
           router.push(getSafeRedirect(responseBody) ?? fallback);
@@ -193,8 +219,23 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
   const controlClass =
     "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
 
+  if (pdfRecoveryHref) {
+    return (
+      <div className="space-y-3">
+        <p role="alert" className="font-semibold text-danger">
+          본문은 저장했습니다. PDF 처리 결과를 확인하지 못했습니다. 미디어 관리에서 현재 첨부를 확인한 뒤 필요한 경우 다시 시도해 주세요.
+        </p>
+        <button type="button" className="min-h-11 font-semibold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring"
+          onClick={() => navigateAfterSave(() => { router.push(pdfRecoveryHref); router.refresh(); })}>
+          저장된 글의 미디어 관리로 이동
+        </button>
+      </div>
+    );
+  }
+
   return (
     <form onChangeCapture={markDirty} onSubmit={handleSubmit} aria-busy={isSubmitting ? true : undefined} className="max-w-4xl space-y-6">
+      <fieldset disabled={isSubmitting} className="min-w-0 space-y-6">
       {formError ? (
         <div role="alert" className="border-l-4 border-danger bg-danger-soft p-4 font-semibold text-danger">
           {formError}
@@ -340,16 +381,27 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         <FieldError field="contentSafetyConfirmed" errors={fieldErrors} />
       </div>
 
+      {canEditPdf ? (
+        <AdminDraftPdf existing={attachment} change={pdfChange} disabled={isSubmitting}
+          error={pdfError} onError={setPdfError}
+          onChange={(next) => { setPdfChange(next); markDirty(); }} />
+      ) : attachment ? (
+        <p className="break-words text-small">현재 첨부 PDF · {attachment.originalFileName}</p>
+      ) : null}
+      {props.mode === "create" && props.simpleManagement && pdfChange ? (
+        <p className="text-small text-muted-foreground">PDF를 첨부하려면 임시저장 후 상세 화면에서 게시해 주세요.</p>
+      ) : null}
+      </fieldset>
       <AdminStickyFormActions>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || Boolean(pdfError)}
           className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "저장 중…" : props.mode === "create" ? "임시저장" : "변경 사항 저장"}
         </button>
         {props.mode === "create" && props.simpleManagement ? (
-          <button type="submit" value="publish" disabled={isSubmitting} className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60">
+          <button type="submit" value="publish" disabled={isSubmitting || Boolean(pdfChange) || Boolean(pdfError)} className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60">
             {isSubmitting ? "저장 중…" : "게시하기"}
           </button>
         ) : null}

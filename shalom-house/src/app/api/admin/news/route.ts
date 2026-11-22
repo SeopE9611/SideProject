@@ -116,6 +116,7 @@ export async function POST(request: Request) {
         ok: true,
         id: result.id,
         slug: result.slug,
+        updatedAt: result.updatedAt,
         redirectTo: publishImmediately ? `/admin/news/${result.id}?directPublished=1` : "/admin/news?created=1",
       },
       201,
