@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminDraftPdf, saveDraftPdf, type DraftPdf, type DraftPdfChange } from "./admin-draft-pdf";
+import { AdminDraftPdf, draftPdfRecoveryMessage, saveDraftPdf, type DraftPdf, type DraftPdfChange } from "./admin-draft-pdf";
 import Link from "next/link";
 import { AdminNewsRichEditor } from "./admin-news-rich-editor";
 import { newsBodyToDocument, type NewsBodyDocument } from "@/features/news/news.rich-text";
@@ -112,13 +112,13 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
 
   const [pdfChange, setPdfChange] = useState<DraftPdfChange>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
-  const [pdfRecoveryHref, setPdfRecoveryHref] = useState<string | null>(null);
+  const [pdfRecovery, setPdfRecovery] = useState<{ href: string; error: string } | null>(null);
   const attachment = props.mode === "edit" ? props.attachment : null;
   const canEditPdf = props.mode === "create" || props.pdfEditable === true;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSubmitting || pdfError || pdfRecoveryHref) return;
+    if (isSubmitting || pdfError || pdfRecovery) return;
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -162,14 +162,14 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       const expectedSuccessStatus = props.mode === "create" ? 201 : 200;
       if (response.status === expectedSuccessStatus && isRecord(responseBody) && responseBody.ok === true) {
         if (pdfChange) {
-          const saved = await saveDraftPdf("news", { id: responseBody.id, updatedAt: responseBody.updatedAt },
+          const error = await saveDraftPdf("news", { id: responseBody.id, updatedAt: responseBody.updatedAt },
             pdfChange, attachment?.label ?? "첨부 PDF", formData.get("draftPdfSafetyConfirmed") === "on");
           const id = responseBody.id;
           const mediaHref = typeof id === "string" && /^[a-f0-9]{24}$/.test(id)
             ? `/admin/news/${id}#news-media-heading`
             : "/admin/news";
-          if (!saved) {
-            setPdfRecoveryHref(mediaHref);
+          if (error) {
+            setPdfRecovery({ href: mediaHref, error });
             return;
           }
           navigateAfterSave(() => {
@@ -219,14 +219,14 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
   const controlClass =
     "w-full min-w-0 rounded-control border border-border-strong bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
 
-  if (pdfRecoveryHref) {
+  if (pdfRecovery) {
     return (
       <div className="space-y-3">
         <p role="alert" className="font-semibold text-danger">
-          본문은 저장했습니다. PDF 처리 결과를 확인하지 못했습니다. 미디어 관리에서 현재 첨부를 확인한 뒤 필요한 경우 다시 시도해 주세요.
+          {draftPdfRecoveryMessage(pdfRecovery.error)} 미디어 관리에서 현재 첨부를 확인한 뒤 필요한 경우 다시 시도해 주세요.
         </p>
         <button type="button" className="min-h-11 font-semibold text-primary underline focus-visible:outline-2 focus-visible:outline-focus-ring"
-          onClick={() => navigateAfterSave(() => { router.push(pdfRecoveryHref); router.refresh(); })}>
+          onClick={() => navigateAfterSave(() => { router.push(pdfRecovery.href); router.refresh(); })}>
           저장된 글의 미디어 관리로 이동
         </button>
       </div>

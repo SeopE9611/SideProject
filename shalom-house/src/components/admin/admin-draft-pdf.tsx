@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useRef } from "react";
+import { uploadAdminPdf } from "@/lib/client-pdf-transfer";
 
 export type DraftPdf = { label: string; originalFileName: string; byteSize: number };
 export type DraftPdfChange = { file: File } | { remove: true } | null;
@@ -13,19 +14,14 @@ export async function saveDraftPdf(
   change: NonNullable<DraftPdfChange>,
   label: string,
   confirmed: boolean,
-): Promise<boolean> {
+): Promise<string | null> {
   if (typeof saved.id !== "string" || !/^[a-f0-9]{24}$/.test(saved.id) ||
-      typeof saved.updatedAt !== "string") return false;
+      typeof saved.updatedAt !== "string") return "attachment_outcome_unknown";
   const endpoint = `/api/admin/${domain}/${saved.id}/attachment`;
   try {
     let response: Response;
     if ("file" in change) {
-      const data = new FormData();
-      data.set("file", change.file);
-      data.set("expectedUpdatedAt", saved.updatedAt);
-      data.set("label", label);
-      data.set("contentSafetyConfirmed", String(confirmed));
-      response = await fetch(endpoint, { method: "PUT", body: data });
+      response = await uploadAdminPdf(endpoint, change.file, saved.updatedAt, label, confirmed);
     } else {
       response = await fetch(endpoint, {
         method: "DELETE",
@@ -33,9 +29,30 @@ export async function saveDraftPdf(
         body: JSON.stringify({ expectedUpdatedAt: saved.updatedAt, removeConfirmed: true }),
       });
     }
-    return response.ok && (await response.json()).ok === true;
+    const result = await response.json();
+    if (response.ok && result?.ok === true) return null;
+    return typeof result?.error === "string" ? result.error : "attachment_outcome_unknown";
   } catch {
-    return false;
+    return "attachment_outcome_unknown";
+  }
+}
+
+export function draftPdfRecoveryMessage(error: string): string {
+  switch (error) {
+    case "attachment_cleanup_pending":
+      return "본문과 첨부 변경은 저장했습니다. 이전 파일 또는 임시 파일 정리에 실패했습니다.";
+    case "upload_failed":
+      return "본문은 저장했습니다. PDF 전송에 실패했습니다.";
+    case "invalid_pdf":
+    case "validation":
+      return "본문은 저장했습니다. PDF 크기·형식·파일 서명을 확인해 주세요.";
+    case "edit_conflict":
+    case "not_editable":
+      return "본문은 저장했습니다. 글이 다시 수정됐거나 게시 상태가 바뀌어 PDF 변경을 적용하지 못했습니다.";
+    case "staging_cleanup_pending":
+      return "본문은 저장했습니다. PDF 처리를 완료하지 못했고 파일 정리가 필요합니다.";
+    default:
+      return "본문은 저장했습니다. PDF 처리 결과를 확인하지 못했습니다.";
   }
 }
 
