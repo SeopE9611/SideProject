@@ -1,17 +1,6 @@
 import { NextResponse } from "next/server";
-import { EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import { requireAdmin } from "@/lib/admin.guard";
-import {
-  orderPaidAmount,
-  applicationPaidAmount,
-  refundsAmount,
-  isStandaloneStringingApplication,
-  buildPaidMatch,
-  buildRentalPaidMatch,
-  rentalPaidAmount,
-  rentalDepositAmount,
-  buildPrivatePaymentSettlementSummary,
-} from "@/app/api/settlements/_lib/settlementPolicy";
+import { buildOnlinePaymentEvents } from "@/app/api/settlements/_lib/paymentEvents";
 import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
 import { buildOfflineSettlementReference } from "@/app/api/settlements/_lib/offlineReference";
@@ -67,104 +56,8 @@ export async function GET(req: Request) {
 
     const start = kstDayStartUtc(from);
     const endExclusive = kstDayEndExclusiveUtc(to);
-    const paidMatch = buildPaidMatch(["paymentStatus", "paymentInfo.status"]);
-
-    const orders = await db
-      .collection("orders")
-      .find(
-        {
-          $and: [{ createdAt: { $gte: start, $lt: endExclusive } }, paidMatch],
-        },
-        {
-          projection: {
-            paidAmount: 1,
-            totalPrice: 1,
-            refunds: 1,
-            paymentStatus: 1,
-            paymentInfo: 1,
-          },
-        },
-      )
-      .toArray();
-
-    const apps = await db
-      .collection("stringing_applications")
-      .find(
-        {
-          $and: [{ createdAt: { $gte: start, $lt: endExclusive } }, paidMatch],
-        },
-        {
-          projection: {
-            totalPrice: 1,
-            serviceAmount: 1,
-            orderId: 1,
-            rentalId: 1,
-            refunds: 1,
-            paymentStatus: 1,
-            paymentInfo: 1,
-          },
-        },
-      )
-      .toArray();
-
-    const packages = await db
-      .collection("packageOrders")
-      .find(
-        {
-          $and: [
-            EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
-            { createdAt: { $gte: start, $lt: endExclusive } },
-            paidMatch,
-          ],
-        },
-        {
-          projection: {
-            totalPrice: 1,
-            paidAmount: 1,
-            refunds: 1,
-            paymentStatus: 1,
-            paymentInfo: 1,
-          },
-        },
-      )
-      .toArray();
-
-    const rentals = await db
-      .collection("rental_orders")
-      .find(
-        {
-          $and: [{ createdAt: { $gte: start, $lt: endExclusive } }, buildRentalPaidMatch()],
-        },
-        {
-          projection: {
-            status: 1,
-            paidAt: 1,
-            payment: 1,
-            amount: 1,
-            createdAt: 1,
-          },
-        },
-      )
-      .toArray();
-
-    const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
-    const privatePayments = await buildPrivatePaymentSettlementSummary(db, {
-      from: start,
-      toExclusive: endExclusive,
-    });
-
-    const paidOrders = orders.reduce((s, o: any) => s + orderPaidAmount(o), 0);
-    const paidApps = standaloneApps.reduce((s, a: any) => s + applicationPaidAmount(a), 0);
-    const pkgPaid = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
-    const rentalPaid = rentals.reduce((s: number, r: any) => s + rentalPaidAmount(r), 0);
-    const rentalDeposit = rentals.reduce((s: number, r: any) => s + rentalDepositAmount(r), 0);
-    const paid = paidOrders + paidApps + pkgPaid + rentalPaid + privatePayments.paidAmount;
-
-    const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
-    const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
-    const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
-    const refund = refundOrders + refundApps + refundPackages + privatePayments.refundAmount;
-    const net = paid - refund;
+    const online = await buildOnlinePaymentEvents(db, start, endExclusive);
+    const { paid, refund, net, rentalDeposit } = online.totals;
     const offline = await buildOfflineSettlementReference(db, {
       from: start,
       toExclusive: endExclusive,
@@ -174,16 +67,9 @@ export async function GET(req: Request) {
       NextResponse.json({
         range: { from, to },
         totals: { paid, refund, net, rentalDeposit },
-        breakdown: {
-          orders: orders.length,
-          applications: standaloneApps.length,
-          packages: packages.length,
-          rentals: rentals.length,
-          privatePaymentsPaidAmount: privatePayments.paidAmount,
-          privatePaymentsRefundAmount: privatePayments.refundAmount,
-          privatePaymentsPaidCount: privatePayments.paidCount,
-          privatePaymentsRefundCount: privatePayments.refundCount,
-        },
+        breakdown: online.breakdown,
+        accountingBasis: online.accountingBasis,
+        notice: online.notice,
         offline,
       }),
     );

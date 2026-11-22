@@ -1,3 +1,5 @@
+import type { NewsBodyDocument } from "./news.rich-text";
+
 export const newsCategories = ["notice", "activity"] as const;
 
 export type NewsCategory = (typeof newsCategories)[number];
@@ -35,6 +37,7 @@ export type PublicNewsPost = {
   title: string;
   summary: string;
   body: readonly string[];
+  bodyDocument?: NewsBodyDocument;
   publishedAt: string;
   updatedAt: string;
   isDemo: boolean;
@@ -42,7 +45,7 @@ export type PublicNewsPost = {
   attachment: PublicNewsAttachment | null;
 };
 
-export type PublicNewsPostSummary = Omit<PublicNewsPost, "body">;
+export type PublicNewsPostSummary = Omit<PublicNewsPost, "body" | "bodyDocument">;
 
 export type PublicNewsSearchOptions = {
   q?: string;
@@ -107,4 +110,8 @@ export function isValidNewsSlug(value: unknown): value is string {
 
 export function isPublicNewsReservedSlug(value: string): value is PublicNewsReservedSlug {
   return PUBLIC_NEWS_RESERVED_SLUGS.includes(value as PublicNewsReservedSlug);
+}
+
+export function getNewsManagementStatusLabel(status: NewsPublicationStatus): string {
+  return { draft: "임시저장", review: "비공개", published: "게시 중", archived: "보관" }[status];
 }

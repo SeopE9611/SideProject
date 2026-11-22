@@ -1,4 +1,5 @@
 import { isNewsCategory, isPublicNewsReservedSlug, isValidNewsSlug, type NewsCategory } from "./news.types";
+import { parseNewsBodyDocument, newsDocumentToBody, type NewsBodyDocument } from "./news.rich-text";
 
 export const ADMIN_NEWS_TITLE_MAX_LENGTH = 100;
 export const ADMIN_NEWS_SLUG_MAX_LENGTH = 80;
@@ -121,6 +122,7 @@ export type ValidatedAdminNewsDraft = {
   title: string;
   summary: string;
   body: readonly string[];
+  bodyDocument?: NewsBodyDocument;
 };
 
 export type AdminNewsDraftField = "category" | "slug" | "title" | "summary" | "body" | "contentSafetyConfirmed";
@@ -203,7 +205,15 @@ export function validateAdminNewsPublicationStateInput(input: unknown): AdminNew
   };
 }
 
-export function validateAdminNewsDraftInput(input: unknown): AdminNewsDraftValidationResult {
+export function createAdminNewsSummary(body: readonly string[]): string {
+  const text = body.join(" ").replace(/\s+/gu, " ").trim();
+  // 코드 포인트 단위로 잘라 서로게이트 쌍과 기존 300자(UTF-16) 제한을 보존합니다.
+  return Array.from(text).slice(0, 150).join("");
+}
+
+// automaticFields는 서버가 확인한 admin 역할과 해당 작성 UI에서만 사용합니다.
+// 자동 입력 모드의 빈 slug는 저장소에서 신규 ID 또는 기존 문서 값으로 확정합니다.
+export function validateAdminNewsDraftInput(input: unknown, automaticFields = false): AdminNewsDraftValidationResult {
   const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const fieldErrors: AdminNewsDraftFieldErrors = {};
 
@@ -211,12 +221,12 @@ export function validateAdminNewsDraftInput(input: unknown): AdminNewsDraftValid
     fieldErrors.category = "소식 분류를 선택해 주세요.";
   }
 
-  const slug = typeof value.slug === "string" ? value.slug.trim().toLowerCase() : "";
-  if (!slug) {
+  const slug = !automaticFields && typeof value.slug === "string" ? value.slug.trim().toLowerCase() : "";
+  if (!automaticFields && !slug) {
     fieldErrors.slug = "슬러그를 입력해 주세요.";
   } else if (slug.length > ADMIN_NEWS_SLUG_MAX_LENGTH) {
     fieldErrors.slug = "슬러그는 80자 이하여야 합니다.";
-  } else if (!isValidNewsSlug(slug)) {
+  } else if (!automaticFields && !isValidNewsSlug(slug)) {
     fieldErrors.slug = "슬러그는 영문 소문자, 숫자와 하이픈만 사용할 수 있습니다.";
   } else if (isPublicNewsReservedSlug(slug)) {
     fieldErrors.slug = "이 주소는 소식 분류 페이지에서 사용 중입니다. 다른 슬러그를 입력해 주세요.";
@@ -229,15 +239,18 @@ export function validateAdminNewsDraftInput(input: unknown): AdminNewsDraftValid
     fieldErrors.title = "제목은 100자 이하여야 합니다.";
   }
 
-  const summary = typeof value.summary === "string" ? value.summary.trim() : "";
-  if (!summary) {
+  const summary = !automaticFields && typeof value.summary === "string" ? value.summary.trim() : "";
+  if (!automaticFields && !summary) {
     fieldErrors.summary = "요약을 입력해 주세요.";
   } else if (summary.length > ADMIN_NEWS_SUMMARY_MAX_LENGTH) {
     fieldErrors.summary = "요약은 300자 이하여야 합니다.";
   }
 
-  const normalizedBody = typeof value.body === "string" ? value.body.replace(/\r\n?/g, "\n").trim() : "";
-  const body = normalizedBody
+  const hasDocument = Object.prototype.hasOwnProperty.call(value, "bodyDocument");
+  const bodyDocument = hasDocument && automaticFields ? parseNewsBodyDocument(value.bodyDocument) : null;
+  if (hasDocument && !bodyDocument) fieldErrors.body = "본문 서식이 올바르지 않거나 현재 역할에서 사용할 수 없습니다.";
+  const normalizedBody = bodyDocument ? newsDocumentToBody(bodyDocument).join("\n\n") : typeof value.body === "string" ? value.body.replace(/\r\n?/g, "\n").trim() : "";
+  const body = bodyDocument ? newsDocumentToBody(bodyDocument) : normalizedBody
     ? normalizedBody
         .split(/\n[\t ]*\n+/)
         .map((paragraph) => paragraph.trim())
@@ -267,14 +280,15 @@ export function validateAdminNewsDraftInput(input: unknown): AdminNewsDraftValid
       category: value.category as NewsCategory,
       slug,
       title,
-      summary,
+      summary: automaticFields ? createAdminNewsSummary(body) : summary,
       body,
+      ...(bodyDocument ? { bodyDocument } : {}),
     },
   };
 }
 
-export function validateAdminNewsDraftUpdateInput(input: unknown): AdminNewsDraftUpdateValidationResult {
-  const draftValidation = validateAdminNewsDraftInput(input);
+export function validateAdminNewsDraftUpdateInput(input: unknown, automaticFields = false): AdminNewsDraftUpdateValidationResult {
+  const draftValidation = validateAdminNewsDraftInput(input, automaticFields);
   const value = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const expectedUpdatedAt = parseCanonicalIsoDate(value.expectedUpdatedAt);
   const hasValidVersion = expectedUpdatedAt !== null;

@@ -1,3 +1,4 @@
+import { parseNewsBodyDocument, newsDocumentToBody, sameNewsBodyText, resolveNewsBodyUpdate, type NewsBodyDocument } from "./news.rich-text";
 import { createAdminTitleSearchExpression } from "@/lib/admin-title-search";
 import { MongoServerError, ObjectId, type ClientSession, type Db, type Filter, type WithId } from "mongodb";
 
@@ -21,6 +22,7 @@ import type {
   AdminNewsReviewDecision,
   ValidatedAdminNewsDraft,
 } from "./news.admin-validation";
+import { createAdminNewsSummary } from "./news.admin-validation";
 import { ADMIN_NEWS_MAXIMUM_PAGE, ADMIN_NEWS_PAGE_SIZE } from "./news.pagination";
 import { isValidStoredNewsAttachment, isValidStoredNewsMedia } from "./news.media-validation";
 import {
@@ -49,7 +51,11 @@ export type AdminNewsListItem = {
 
 export type AdminNewsDetail = AdminNewsListItem & {
   body: readonly string[];
+  bodyDocument?: NewsBodyDocument;
+  bodyDocumentInvalid: boolean;
   isEditable: boolean;
+  isAdminEditable: boolean;
+  canAdminPublish: boolean;
   canRequestReview: boolean;
   canDirectPublish: boolean;
   canDecideReview: boolean;
@@ -80,7 +86,7 @@ export type UpdateAdminNewsDraftResult =
   | { ok: true; id: string; slug: string; updatedAt: string }
   | {
       ok: false;
-      reason: "slug_conflict" | "not_found" | "not_editable" | "edit_conflict";
+      reason: "slug_conflict" | "not_found" | "not_editable" | "edit_conflict" | "rich_text_required" | "invalid_body_document";
     };
 
 export type RequestAdminNewsReviewResult =
@@ -166,19 +172,22 @@ export async function createAdminNewsDraft(
   input: ValidatedAdminNewsDraft,
   actor: AdminPrincipal,
   now: Date = new Date(),
+  publishImmediately = false,
 ): Promise<CreateAdminNewsDraftResult> {
+  if (publishImmediately && actor.role !== "admin") throw new Error("즉시 게시 권한이 없습니다.");
   const newsPostId = new ObjectId();
   const eventId = new ObjectId();
   const document: MongoNewsPostDocument = {
     _id: newsPostId,
-    slug: input.slug,
+    slug: actor.role === "admin" ? `news-${newsPostId.toHexString()}` : input.slug,
     category: input.category,
     title: input.title,
-    summary: input.summary,
+    summary: actor.role === "admin" ? createAdminNewsSummary(input.body) : input.summary,
     body: Array.from(input.body),
-    publicationStatus: "draft",
-    approvalStatus: "pending",
-    publishedAt: null,
+    ...(input.bodyDocument && actor.role === "admin" ? { bodyDocument: input.bodyDocument } : {}),
+    publicationStatus: publishImmediately ? "published" : "draft",
+    approvalStatus: publishImmediately ? "approved" : "pending",
+    publishedAt: publishImmediately ? now : null,
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
@@ -192,7 +201,7 @@ export async function createAdminNewsDraft(
         session,
         eventId,
         newsPostId,
-        action: "draft_created",
+        action: publishImmediately ? "direct_published" : "draft_created",
         actor,
         occurredAt: now,
         fromVersionAt: null,
@@ -205,12 +214,13 @@ export async function createAdminNewsDraft(
           "title",
           "summary",
           "body",
+          ...(input.bodyDocument ? ["bodyDocument" as const] : []),
           "publicationStatus",
           "approvalStatus",
           "publishedAt",
         ],
       });
-      return { ok: true, id: newsPostId.toString(), slug: input.slug };
+      return { ok: true, id: newsPostId.toString(), slug: document.slug };
     });
   } catch (error) {
     if (isNewsSlugConflict(error)) {
@@ -246,6 +256,14 @@ function isEditableDraftState(
     (approvalStatus === "pending" || approvalStatus === "rejected") &&
     publishedAt === null
   );
+}
+
+function isAdminEditableNews(document: Pick<MongoNewsPostDocument, "publicationStatus" | "approvalStatus" | "publishedAt">): boolean {
+  return isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt) ||
+    (document.publicationStatus === "review" &&
+      (document.approvalStatus === "pending" || document.approvalStatus === "approved") &&
+      (document.publishedAt === null || isValidDate(document.publishedAt))) ||
+    isPublishedApprovedState(document.publicationStatus, document.approvalStatus, document.publishedAt);
 }
 
 function isPendingReviewState(
@@ -356,6 +374,7 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
         title: 1,
         summary: 1,
         body: 1,
+        bodyDocument: 1,
         publicationStatus: 1,
         approvalStatus: 1,
         publishedAt: 1,
@@ -377,9 +396,15 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
     return null;
   }
 
+  const rich = document.bodyDocument === undefined ? null : parseNewsBodyDocument(document.bodyDocument);
+  const bodyDocumentInvalid = document.bodyDocument !== undefined && (!rich || !sameNewsBodyText(document.body, newsDocumentToBody(rich)));
   return {
     ...listItem,
     body: document.body,
+    ...(!bodyDocumentInvalid && rich ? { bodyDocument: rich } : {}),
+    bodyDocumentInvalid,
+    isAdminEditable: isAdminEditableNews(document),
+    canAdminPublish: !bodyDocumentInvalid && isAdminEditableNews(document) && document.publicationStatus !== "published",
     isEditable: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
     canDirectPublish: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
     canRequestReview: isEditableDraftState(document.publicationStatus, document.approvalStatus, document.publishedAt),
@@ -431,6 +456,7 @@ async function changeNewsAndInsertAudit(input: {
     title: input.set.title ?? before.title,
     summary: input.set.summary ?? before.summary,
     body: input.set.body ?? before.body,
+    ...(input.set.bodyDocument ?? before.bodyDocument ? { bodyDocument: input.set.bodyDocument ?? before.bodyDocument } : {}),
     publicationStatus: input.set.publicationStatus ?? before.publicationStatus,
     approvalStatus: input.set.approvalStatus ?? before.approvalStatus,
     publishedAt: input.set.publishedAt === undefined ? before.publishedAt : input.set.publishedAt,
@@ -493,11 +519,11 @@ export async function changeAdminNewsPublicationState(input: {
         input.action === "unpublish"
           ? {
               publicationStatus: "review",
-              publishedAt: null,
+              ...(input.actor.role === "admin" ? {} : { publishedAt: null }),
               updatedAt: nextUpdatedAt,
             }
           : { publicationStatus: "archived", updatedAt: nextUpdatedAt },
-      changedFields: input.action === "unpublish" ? ["publicationStatus", "publishedAt"] : ["publicationStatus"],
+      changedFields: input.action === "unpublish" && input.actor.role !== "admin" ? ["publicationStatus", "publishedAt"] : ["publicationStatus"],
     });
     if (change)
       return {
@@ -535,11 +561,25 @@ export async function directPublishAdminNewsPost(input: {
   actor: AdminPrincipal;
   now?: Date;
 }): Promise<DirectPublishAdminNewsResult> {
+  if (input.actor.role !== "admin") return { ok: false, reason: "not_direct_publishable" };
   if (!isValidAdminNewsId(input.id)) return { ok: false, reason: "not_found" };
   const newsPostId = new ObjectId(input.id);
   const eventId = new ObjectId();
   const transitionAt = createNextUpdatedAt(input.expectedUpdatedAt, input.now ?? new Date());
   return runNewsAdminTransaction(async ({ database, session }) => {
+    const current = await database.collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
+      .findOne({ _id: newsPostId, ...activeDocumentFilter }, { session });
+    if (!current) return { ok: false, reason: "not_found" };
+    if (!toAdminNewsListItem(current, transitionAt) || !isAdminEditableNews(current) ||
+        current.publicationStatus === "published" || !Array.isArray(current.body) ||
+        current.body.length === 0 || !current.body.every(isNonEmptyString) || !isValidStoredNewsMedia(current))
+      return { ok: false, reason: "not_direct_publishable" };
+    if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" };
+    if (current.bodyDocument !== undefined) {
+      const rich = parseNewsBodyDocument(current.bodyDocument);
+      if (!rich || !sameNewsBodyText(current.body, newsDocumentToBody(rich))) return { ok: false, reason: "not_direct_publishable" };
+    }
+    const publicationTime = current.publishedAt ?? transitionAt;
     const change = await changeNewsAndInsertAudit({
       database,
       session,
@@ -551,15 +591,15 @@ export async function directPublishAdminNewsPost(input: {
       filter: {
         _id: newsPostId,
         ...activeDocumentFilter,
-        publicationStatus: "draft",
-        approvalStatus: { $in: ["pending", "rejected"] },
-        publishedAt: null,
+        publicationStatus: current.publicationStatus,
+        approvalStatus: current.approvalStatus,
+        publishedAt: current.publishedAt,
         updatedAt: input.expectedUpdatedAt,
       },
       set: {
         publicationStatus: "published",
         approvalStatus: "approved",
-        publishedAt: transitionAt,
+        publishedAt: publicationTime,
         updatedAt: transitionAt,
       },
       changedFields: ["publicationStatus", "approvalStatus", "publishedAt"],
@@ -569,17 +609,9 @@ export async function directPublishAdminNewsPost(input: {
         ok: true,
         id: input.id,
         slug: change.after.slug,
-        publishedAt: transitionAt.toISOString(),
+        publishedAt: publicationTime.toISOString(),
         updatedAt: transitionAt.toISOString(),
       };
-    const current = await database
-      .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
-      .findOne({ _id: newsPostId }, { session });
-    if (!current || current.deletedAt != null) return { ok: false, reason: "not_found" };
-    if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
-      return { ok: false, reason: "not_direct_publishable" };
-    if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime())
-      return { ok: false, reason: "edit_conflict" };
     return { ok: false, reason: "edit_conflict" };
   });
 }
@@ -649,31 +681,51 @@ export async function updateAdminNewsDraft(input: {
   const nextUpdatedAt = createNextUpdatedAt(input.expectedUpdatedAt, input.now ?? new Date());
   try {
     return await runNewsAdminTransaction(async ({ database, session }) => {
+      const current = await database.collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
+        .findOne({ _id: newsPostId, ...activeDocumentFilter }, { session });
+      if (!current) return { ok: false, reason: "not_found" };
+      const editable = input.actor.role === "admin" ? isAdminEditableNews(current) :
+        isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt);
+      if (!editable || !toAdminNewsListItem(current, nextUpdatedAt) || !Array.isArray(current.body) ||
+          current.body.length === 0 || !current.body.every(isNonEmptyString) || !isValidStoredNewsMedia(current)) return { ok: false, reason: "not_editable" };
+      if (current.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) return { ok: false, reason: "edit_conflict" };
+      if (input.draft.bodyDocument && input.actor.role !== "admin") return { ok: false, reason: "not_editable" };
+      const resolved = resolveNewsBodyUpdate(current.body, current.bodyDocument, input.draft.body, input.draft.bodyDocument);
+      if (!resolved.ok) return resolved;
+      const bodyChanged = !sameNewsBodyText(current.body, resolved.body);
+      const draft = input.actor.role === "admin" ? {
+        ...input.draft,
+        body: resolved.body,
+        ...(resolved.bodyDocument ? { bodyDocument: resolved.bodyDocument } : {}),
+        slug: current.slug,
+        summary: bodyChanged ? createAdminNewsSummary(resolved.body) : current.summary,
+      } : { ...input.draft, body: resolved.body, ...(resolved.bodyDocument ? { bodyDocument: resolved.bodyDocument } : {}) };
       const change = await changeNewsAndInsertAudit({
         database,
         session,
         newsPostId,
         eventId,
         actor: input.actor,
-        action: "draft_updated",
+        action: input.actor.role === "admin" ? "content_updated" : "draft_updated",
         toVersionAt: nextUpdatedAt,
         filter: {
           _id: newsPostId,
           ...activeDocumentFilter,
-          publicationStatus: "draft",
-          approvalStatus: { $in: ["pending", "rejected"] },
-          publishedAt: null,
+          publicationStatus: current.publicationStatus,
+          approvalStatus: current.approvalStatus,
+          publishedAt: current.publishedAt,
           updatedAt: input.expectedUpdatedAt,
         },
         set: {
-          slug: input.draft.slug,
-          category: input.draft.category,
-          title: input.draft.title,
-          summary: input.draft.summary,
-          body: Array.from(input.draft.body),
+          slug: draft.slug,
+          category: draft.category,
+          title: draft.title,
+          summary: draft.summary,
+          body: Array.from(draft.body),
+          ...(draft.bodyDocument ? { bodyDocument: draft.bodyDocument } : {}),
           updatedAt: nextUpdatedAt,
         },
-        changedFields: (before) => getDraftChangedFields(before, input.draft),
+        changedFields: (before) => getDraftChangedFields(before, draft),
       });
       if (change)
         return {
@@ -682,12 +734,6 @@ export async function updateAdminNewsDraft(input: {
           slug: change.after.slug,
           updatedAt: nextUpdatedAt.toISOString(),
         };
-      const current = await database
-        .collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
-        .findOne({ _id: newsPostId }, { session });
-      if (!current || current.deletedAt != null) return { ok: false, reason: "not_found" };
-      if (!isEditableDraftState(current.publicationStatus, current.approvalStatus, current.publishedAt))
-        return { ok: false, reason: "not_editable" };
       return { ok: false, reason: "edit_conflict" };
     });
   } catch (error) {

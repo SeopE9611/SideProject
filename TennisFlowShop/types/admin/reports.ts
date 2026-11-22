@@ -3,6 +3,8 @@ import type { OfflinePaymentMethod } from "@/types/admin/offline";
 export type RevenueReportGroupBy = "day" | "month";
 
 export type RevenueReportOnlineBucket = {
+  accountingBasis?: "payment_events_v1";
+  notice?: string;
   paidAmount: number;
   refundedAmount: number;
   netAmount: number;
@@ -46,7 +48,7 @@ export type RevenueReportCombinedPreview = {
 export type RevenueReportSeriesPoint = {
   date: string;
   onlinePaidAmount: number;
-  /** 개인결제 취소 이벤트를 canceledAt 기준 bucket에 반영한 온라인 환불액입니다. */
+  /** 확인 가능한 온라인 취소 이벤트를 발생일에 반영한 환불액입니다. */
   onlineRefundAmount?: number;
   /** onlinePaidAmount - onlineRefundAmount 기준 온라인 순매출입니다. */
   onlineNetAmount?: number;

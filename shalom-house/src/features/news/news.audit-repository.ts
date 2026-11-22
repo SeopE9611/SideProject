@@ -68,6 +68,7 @@ function isValidSnapshot(value: unknown): boolean {
       item.contentType === "application/pdf";
   })();
   return (
+    (snapshot.bodyDocumentHash === undefined || typeof snapshot.bodyDocumentHash === "string" && /^[a-f0-9]{64}$/.test(snapshot.bodyDocumentHash)) &&
     isValidNewsSlug(snapshot.slug) && isNewsCategory(snapshot.category) &&
     typeof snapshot.title === "string" && snapshot.title.trim().length > 0 &&
     isNewsPublicationStatus(snapshot.publicationStatus) && isNewsApprovalStatus(snapshot.approvalStatus) &&
@@ -131,6 +132,7 @@ export async function insertNewsAuditEvent(input: InsertNewsAuditEventInput): Pr
 
 const adminAuditActionLabels: Record<string, string> = {
   draft_created: "초안 생성",
+  content_updated: "내용 수정",
   draft_updated: "초안 수정",
   review_requested: "검토 요청",
   review_approved: "승인",
@@ -149,6 +151,7 @@ const adminAuditFieldLabels: Record<string, string> = {
   title: "제목",
   summary: "요약",
   body: "본문",
+  bodyDocument: "본문 서식",
   deletedAt: "삭제일",
   coverImage: "대표 활동사진",
   attachment: "PDF 첨부파일",

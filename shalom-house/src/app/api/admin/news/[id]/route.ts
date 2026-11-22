@@ -99,7 +99,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const validation = validateAdminNewsDraftUpdateInput(input);
+    if (admin.role !== "admin" && typeof input === "object" && input !== null && "bodyDocument" in input)
+      return jsonResponse({ ok: false, error: "forbidden" }, 403);
+    const validation = validateAdminNewsDraftUpdateInput(input, admin.role === "admin");
     if (!validation.ok) {
       if (validation.formError === "invalid_version") {
         return jsonResponse(
@@ -121,6 +123,8 @@ export async function PATCH(request: Request, context: RouteContext) {
       actor: admin,
     });
     if (!result.ok) {
+      if (result.reason === "rich_text_required" || result.reason === "invalid_body_document")
+        return jsonResponse({ ok: false, error: result.reason }, 409);
       if (result.reason === "slug_conflict") {
         return jsonResponse(
           {

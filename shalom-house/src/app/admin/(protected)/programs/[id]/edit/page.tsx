@@ -37,9 +37,11 @@ export default async function AdminProgramEditPage({ params }: { params: Promise
         }
       />
 
-      {!post.isEditable ? (
+      {!post.isEditable || post.bodyDocumentInvalid ? (
         <aside className="admin-notice">
-          {isPendingReview ? (
+          {post.bodyDocumentInvalid ? (
+            <p role="alert">저장된 본문 서식을 확인할 수 없어 편집을 중단했습니다. 기존 본문은 상세 화면에서 확인할 수 있습니다.</p>
+          ) : isPendingReview ? (
             <>
               <p className="font-semibold">검토 중인 프로그램은 내용을 수정할 수 없습니다.</p>
               <p className="mt-2 text-small text-muted-foreground">상세 화면에서 검토 결과를 처리해 주세요.</p>
@@ -84,6 +86,9 @@ export default async function AdminProgramEditPage({ params }: { params: Promise
               프로그램 초안 수정
             </h2>
             <AdminProgramDraftForm
+              key={post.updatedAt}
+              initialBody={post.body}
+              bodyDocument={post.bodyDocument}
               mode="edit"
               programId={post.id}
               expectedUpdatedAt={post.updatedAt}

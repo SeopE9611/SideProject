@@ -86,18 +86,26 @@ export async function POST(request: Request) {
       );
     }
 
-    const validation = validateAdminNewsDraftInput(input);
+    if (typeof input === "object" && input !== null && "publishImmediately" in input && typeof input.publishImmediately !== "boolean")
+      return jsonResponse({ ok: false, error: "validation" }, 400);
+    const publishImmediately = typeof input === "object" && input !== null && "publishImmediately" in input && input.publishImmediately === true;
+    if (publishImmediately && admin.role !== "admin") return jsonResponse({ ok: false, error: "forbidden" }, 403);
+    if (admin.role !== "admin" && typeof input === "object" && input !== null && "bodyDocument" in input)
+      return jsonResponse({ ok: false, error: "forbidden" }, 403);
+    const validation = validateAdminNewsDraftInput(input, admin.role === "admin");
     if (!validation.ok) {
       return jsonResponse({ ok: false, error: "validation", fieldErrors: validation.fieldErrors }, 400);
     }
 
-    const result = await createAdminNewsDraft(validation.value, admin);
+    const result = await createAdminNewsDraft(validation.value, admin, new Date(), publishImmediately);
     if (!result.ok) {
       return jsonResponse(
         {
           ok: false,
           error: "slug_conflict",
-          fieldErrors: { slug: "이미 사용 중인 슬러그입니다." },
+          ...(admin.role === "admin"
+            ? { message: "공개 주소를 생성하지 못했습니다. 다시 시도해 주세요." }
+            : { fieldErrors: { slug: "이미 사용 중인 슬러그입니다." } }),
         },
         409,
       );
@@ -108,7 +116,7 @@ export async function POST(request: Request) {
         ok: true,
         id: result.id,
         slug: result.slug,
-        redirectTo: "/admin/news?created=1",
+        redirectTo: publishImmediately ? `/admin/news/${result.id}?directPublished=1` : "/admin/news?created=1",
       },
       201,
     );

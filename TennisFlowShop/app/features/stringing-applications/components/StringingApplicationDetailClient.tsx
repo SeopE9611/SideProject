@@ -989,7 +989,9 @@ export default function StringingApplicationDetailClient({
     : linkedRentalId
       ? `/admin/rentals/${encodeURIComponent(String(linkedRentalId))}`
       : null;
-  const linkedStageCtaLabel = data.orderId
+  const linkedStageCtaLabel = isCancelled
+    ? "연결 문서와 취소 이력 보기"
+    : data.orderId
     ? readOnly
       ? "주문 진행 단계 보기"
       : "주문에서 진행 단계 변경"
@@ -1378,7 +1380,15 @@ export default function StringingApplicationDetailClient({
     normalizeAdminCancelRequestStatus(data.cancelRequest?.status) === "requested";
   const hasLinkedDocs = linkedDocs.length > 0;
   const needsShippingCheck = !isLinkedApplication && isCourierShipping && !invoice?.trackingNumber;
-  const nextActionGuide: AdminNextActionGuide = hasCancelRequest
+  const nextActionGuide: AdminNextActionGuide = isCancelled
+    ? {
+        tone: "info",
+        title: "취소된 교체서비스 신청서",
+        description: "이 신청서는 취소되었습니다. 기존 작업 이력과 연결 문서를 확인할 수 있습니다.",
+        actionLabel: linkedAdminHref ? "연결 문서 이력 보기" : undefined,
+        actionHref: linkedAdminHref ?? undefined,
+      }
+    : hasCancelRequest
     ? {
         tone: "urgent",
         title: "취소 요청 검토 필요",

@@ -121,6 +121,8 @@ export async function PATCH(request: Request, context: RouteContext) {
       actor: admin,
     });
     if (!result.ok) {
+      if (result.reason === "rich_text_required" || result.reason === "invalid_body_document")
+        return jsonResponse({ ok: false, error: result.reason }, 409);
       if (result.reason === "slug_conflict") {
         return jsonResponse(
           {

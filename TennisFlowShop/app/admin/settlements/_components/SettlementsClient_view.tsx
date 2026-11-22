@@ -614,6 +614,11 @@ export default function SettlementsClient() {
         }
       />
 
+      <p className={adminTypography.caption}>
+        새 집계는 결제일과 취소일을 각각 반영합니다. 근거가 부족한 거래와 부분 취소 이력은 확인이 필요합니다.
+        기존 스냅샷은 이전 집계 기준일 수 있으며 자동 갱신하지 않습니다.
+      </p>
+
       <div className="grid grid-cols-4 gap-6 mb-8">
         {/* 전체 정산 월 (기존 카드 유지) */}
         <Card className={cn(adminSurface.kpiCard, "overflow-hidden")}>
