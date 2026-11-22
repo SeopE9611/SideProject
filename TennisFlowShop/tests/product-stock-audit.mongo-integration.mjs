@@ -79,9 +79,8 @@ async function verifyAccount(db) {
 }
 
 async function verifyCollections(db) {
-  const definitions = await db.listCollections({ name: { $in: ["products", "product_stock_events"] } }, { nameOnly: false }).toArray();
   for (const name of ["products", "product_stock_events"]) {
-    const definition = definitions.find((item) => item.name === name);
+    const definition = await db.listCollections({ name }, { nameOnly: false }).next();
     requireCondition(definition?.type === "collection" && !definition.options?.capped && !definition.options?.timeseries,
       `PREPARE_NORMAL_COLLECTION_${name}`);
   }
