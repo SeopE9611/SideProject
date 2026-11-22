@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { ObjectId } from "mongodb";
 import { getSupabaseAdminClient } from "@/lib/supabase-admin";
+import { PDF_OBJECT_ID, scanPdfStaging } from "@/lib/pdf-staging-cleanup.mjs";
 import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
 import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
 import type { AdminPrincipal } from "@/features/admin-auth/admin-auth.types";
@@ -29,10 +30,7 @@ type Options = {
     Promise<{ ok: true; previousAttachment?: Attachment | null } | { ok: false; reason: string }>;
 };
 
-const OBJECT_ID = /^[a-f0-9]{24}$/;
 const INTENT_TTL = 10 * 60_000;
-// Supabase 업로드 서명의 2시간 유효 기간과 지연 요청을 고려합니다.
-const STAGING_RETENTION = 3 * 60 * 60_000;
 const MAX_JSON = 16 * 1024;
 type Intent = {
   objectId: string;
@@ -91,7 +89,7 @@ async function readStagedFile(url: string, intent: Intent): Promise<File | null>
 
 export async function handlePrivatePdfTransfer(request: Request, id: string, options: Options) {
   if (!isSameOriginRequest(request)) return fail("forbidden", 403);
-  if (!OBJECT_ID.test(id)) return fail("not_found", 404);
+  if (!PDF_OBJECT_ID.test(id)) return fail("not_found", 404);
   const authorization = await authorizeCurrentAdmin("content.update");
   if (!authorization.ok) return fail(authorization.reason, authorization.reason === "unauthorized" ? 401 : 403);
   if (request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json")
@@ -143,15 +141,7 @@ export async function handlePrivatePdfTransfer(request: Request, id: string, opt
       if (!target) return fail("not_found", 404);
       if (!target.isEditable) return fail("not_editable", 409);
       if (target.updatedAt !== metadata.expectedUpdatedAt.toISOString()) return fail("edit_conflict", 409);
-      const listed = await storage.list(prefix, { limit: 20, sortBy: { column: "name", order: "asc" } });
-      if (listed.error) return fail("staging_cleanup_pending", 503);
-      const expired = listed.data.filter(({ name }) => {
-        const stem = name.slice(0, -4);
-        return name.endsWith(".pdf") && OBJECT_ID.test(stem) &&
-          Date.now() - new ObjectId(stem).getTimestamp().getTime() > STAGING_RETENTION;
-      });
-      for (const file of expired)
-        if (!(await cleanStage(`${prefix}/${file.name}`))) return fail("staging_cleanup_pending", 503);
+      await scanPdfStaging(storage, { domain: options.domain, postId: id, apply: true, maxPages: 5 });
       const objectId = new ObjectId().toHexString();
       const { data: signed, error } = await storage.createSignedUploadUrl(`${prefix}/${objectId}.pdf`, { upsert: false });
       if (error || !signed) return fail("unavailable", 503);
