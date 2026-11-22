@@ -1,8 +1,13 @@
+import Image from "next/image";
+import { bodyImageUrl, type BodyImageDomain } from "@/features/news/body-image-reference";
 import { Fragment, type ReactNode } from "react";
 import { parseNewsBodyDocument, type NewsBodyDocument, type NewsRichNode } from "@/features/news/news.rich-text";
 
 // 호출부와 별개로 문서를 재검증하고, 허용한 속성만 고정된 React 요소에 전달합니다.
-export function NewsRichBody({ bodyDocument }: { bodyDocument: NewsBodyDocument }) {
+export function NewsRichBody({ bodyDocument, images }: {
+  bodyDocument: NewsBodyDocument;
+  images?: { domain: BodyImageDomain; owner: string; admin: boolean; sizes?: Record<string, { width: number; height: number }> };
+}) {
   const valid = parseNewsBodyDocument(bodyDocument);
   if (!valid) return null;
   function render(node: NewsRichNode, key: number): ReactNode {
@@ -24,6 +29,14 @@ export function NewsRichBody({ bodyDocument }: { bodyDocument: NewsBodyDocument 
       case "orderedList": return <ol key={key} start={node.attrs?.start ?? 1} className="list-decimal space-y-2 pl-6">{content}</ol>;
       case "listItem": return <li key={key} className="min-w-0 space-y-2">{content}</li>;
       case "hardBreak": return <br key={key} />;
+      case "bodyImage": {
+        const id = node.attrs?.imageId;
+        const size = id ? images?.sizes?.[id] : undefined;
+        if (!images || !id || !size) return null;
+        return <Image key={key} src={bodyImageUrl(images.domain, images.owner, id, images.admin)}
+          alt={node.attrs?.alt ?? ""} width={size.width} height={size.height}
+          unoptimized className="block h-auto max-w-full rounded-control" />;
+      }
     }
   }
   return render(valid.document, 0);

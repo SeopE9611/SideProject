@@ -1,3 +1,4 @@
+import { bodyImageReferences } from "@/features/news/news.rich-text";
 import { authorizeCurrentAdmin } from "@/features/admin-auth/admin-authorization";
 import { isSameOriginRequest } from "@/features/admin-auth/admin-auth.service";
 import { createAdminProgramDraft } from "@/features/programs/program.admin-repository";
@@ -90,6 +91,9 @@ export async function POST(request: Request) {
     if (!validation.ok) {
       return jsonResponse({ ok: false, error: "validation", fieldErrors: validation.fieldErrors }, 400);
     }
+
+    if (bodyImageReferences(validation.value.bodyDocument).length > 0)
+      return jsonResponse({ ok: false, error: "validation", fieldErrors: { body: "초안을 저장한 뒤 본문 이미지를 삽입해 주세요." } }, 400);
 
     const result = await createAdminProgramDraft(validation.value, admin);
     if (!result.ok) {

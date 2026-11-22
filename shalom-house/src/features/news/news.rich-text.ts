@@ -1,8 +1,10 @@
+import { BODY_IMAGE_ALT_LIMIT, BODY_IMAGE_LIMIT, isBodyImageId, type BodyImageReference } from "./body-image-reference";
+
 export type NewsRichMark = { type: "bold" | "italic" | "link"; attrs?: { href: string } };
 export type NewsRichNode = {
-  type: "doc" | "paragraph" | "heading" | "text" | "hardBreak" | "bulletList" | "orderedList" | "listItem";
+  type: "doc" | "paragraph" | "heading" | "text" | "hardBreak" | "bulletList" | "orderedList" | "listItem" | "bodyImage";
   text?: string;
-  attrs?: { level?: 2 | 3; start?: number };
+  attrs?: { level?: 2 | 3; start?: number; imageId?: string; alt?: string };
   marks?: NewsRichMark[];
   content?: NewsRichNode[];
 };
@@ -63,9 +65,19 @@ export function parseNewsBodyDocument(input: unknown): NewsBodyDocument | null {
   let count = 0;
   let paragraphs = 0;
   let textLength = 0;
+  const imageIds = new Set<string>();
   function parse(value: unknown, depth: number, lists: number): NewsRichNode | null {
     if (++count > MAX_NODES || depth > MAX_DEPTH || !record(value) || typeof value.type !== "string") return null;
     const type = value.type;
+    if (type === "bodyImage") {
+      if (depth !== 1 || !keys(value, ["type", "attrs"]) || !record(value.attrs) ||
+          !keys(value.attrs, ["imageId", "alt"])) return null;
+      const { imageId, alt } = value.attrs;
+      if (!isBodyImageId(imageId) || imageIds.has(imageId) || imageIds.size >= BODY_IMAGE_LIMIT ||
+          typeof alt !== "string" || !alt.trim() || alt.length > BODY_IMAGE_ALT_LIMIT || /[\u0000-\u001f\u007f]/u.test(alt)) return null;
+      imageIds.add(imageId);
+      return { type, attrs: { imageId, alt: alt.trim() } };
+    }
     if (type === "text") {
       if (!keys(value, ["type", "text", "marks"]) || typeof value.text !== "string" || !value.text.length || value.text.length > 10000) return null;
       textLength += value.text.length;
@@ -111,7 +123,7 @@ export function parseNewsBodyDocument(input: unknown): NewsBodyDocument | null {
       const node = parse(child, depth + 1, nextLists);
       if (!node) return null;
       const allowed = type === "paragraph" || type === "heading" ? ["text", "hardBreak"] :
-        isList ? ["listItem"] : type === "listItem" ? ["paragraph", "bulletList", "orderedList"] : ["paragraph", "heading", "bulletList", "orderedList"];
+        isList ? ["listItem"] : type === "listItem" ? ["paragraph", "bulletList", "orderedList"] : ["paragraph", "heading", "bulletList", "orderedList", "bodyImage"];
       if (!allowed.includes(node.type)) return null;
       const previous = content[content.length - 1];
       if (node.type === "text" && previous?.type === "text" && JSON.stringify(node.marks) === JSON.stringify(previous.marks)) previous.text += node.text!;
@@ -141,4 +153,10 @@ export function resolveNewsBodyUpdate(currentBody: readonly string[], stored: un
   const baseline = current ?? newsBodyToDocument(currentBody);
   if (sameNewsDocument(baseline, submitted)) return { ok: true, body: currentBody, ...(current ? { bodyDocument: current } : {}) };
   return { ok: true, body: newsDocumentToBody(submitted), bodyDocument: submitted };
+}
+
+export function bodyImageReferences(document?: NewsBodyDocument): BodyImageReference[] {
+  return (document?.document.content ?? []).flatMap((node) =>
+    node.type === "bodyImage" && node.attrs?.imageId && node.attrs.alt
+      ? [{ imageId: node.attrs.imageId, alt: node.attrs.alt }] : []);
 }

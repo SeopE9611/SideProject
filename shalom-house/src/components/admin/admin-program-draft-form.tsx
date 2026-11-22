@@ -71,6 +71,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
           operationStatusLabel: "",
           sortOrder: 100,
         };
+  const [imageUploading, setImageUploading] = useState(false);
   const [pdfChange, setPdfChange] = useState<DraftPdfChange>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [pdfRecovery, setPdfRecovery] = useState<{ href: string; error: string } | null>(null);
@@ -79,7 +80,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (busy || pdfError || pdfRecovery) return;
+    if (busy || imageUploading || pdfError || pdfRecovery) return;
     const d = new FormData(e.currentTarget);
     const input = {
       category: d.get("category"),
@@ -156,7 +157,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
           : body?.error === "rich_text_required"
             ? "본문 서식을 보존하려면 최신 편집 화면에서 다시 시도해 주세요."
             : body?.error === "invalid_body_document"
-              ? "저장된 본문 서식을 확인할 수 없어 변경을 저장하지 않았습니다."
+              ? "본문 서식 또는 이미지 참조를 확인할 수 없어 저장하지 않았습니다. 만료된 이미지는 다시 삽입해 주세요."
               : "프로그램을 저장할 수 없습니다. 입력 내용을 확인해 주세요.",
       );
     } catch {
@@ -236,6 +237,9 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
                 labelId={`${id}-label`}
                 linkId="program-editor-link"
                 maxLength={ADMIN_PROGRAM_BODY_MAX_LENGTH}
+                imageTarget={props.mode === "edit" ? { domain: "programs", postId: props.programId, expectedUpdatedAt: props.expectedUpdatedAt } : undefined}
+                imageUploadEnabled={props.mode === "edit" && props.pdfEditable === true}
+                onImageUploading={setImageUploading}
                 initialDocument={props.mode === "edit"
                   ? props.bodyDocument ?? newsBodyToDocument(props.initialBody)
                   : newsBodyToDocument([])}
@@ -309,7 +313,7 @@ export function AdminProgramDraftForm(props: AdminProgramDraftFormProps) {
       <AdminStickyFormActions>
         <button
           type="submit"
-          disabled={busy || Boolean(pdfError)}
+          disabled={busy || imageUploading || Boolean(pdfError)}
           className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? "저장 중…" : props.mode === "create" ? "프로그램 초안 저장" : "변경 사항 저장"}

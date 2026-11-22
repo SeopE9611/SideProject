@@ -117,7 +117,7 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
               활동 내용
             </h2>
             <div className="mt-4 space-y-5">
-              {program.bodyDocument ? <NewsRichBody bodyDocument={program.bodyDocument} /> : program.body.map((paragraph, index) => (
+              {program.bodyDocument ? <NewsRichBody bodyDocument={program.bodyDocument} images={{ domain: "programs", owner: program.slug, sizes: program.bodyImageSizes, admin: false }} /> : program.body.map((paragraph, index) => (
                 <p className="text-safe-wrap whitespace-pre-wrap text-body leading-8" key={index}>
                   {paragraph}
                 </p>

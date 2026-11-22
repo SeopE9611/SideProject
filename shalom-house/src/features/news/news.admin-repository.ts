@@ -1,3 +1,4 @@
+import { bodyImageSizes, resolveBodyImageAssets } from "@/features/news/body-image-assets";
 import { parseNewsBodyDocument, newsDocumentToBody, sameNewsBodyText, resolveNewsBodyUpdate, type NewsBodyDocument } from "./news.rich-text";
 import { createAdminTitleSearchExpression } from "@/lib/admin-title-search";
 import { MongoServerError, ObjectId, type ClientSession, type Db, type Filter, type WithId } from "mongodb";
@@ -52,6 +53,7 @@ export type AdminNewsListItem = {
 export type AdminNewsDetail = AdminNewsListItem & {
   body: readonly string[];
   bodyDocument?: NewsBodyDocument;
+  bodyImageSizes?: Record<string, { width: number; height: number }>;
   bodyDocumentInvalid: boolean;
   isEditable: boolean;
   isAdminEditable: boolean;
@@ -375,6 +377,7 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
         summary: 1,
         body: 1,
         bodyDocument: 1,
+        bodyImages: 1,
         publicationStatus: 1,
         approvalStatus: 1,
         publishedAt: 1,
@@ -401,7 +404,7 @@ export async function findAdminNewsPostById(id: string, now: Date = new Date()):
   return {
     ...listItem,
     body: document.body,
-    ...(!bodyDocumentInvalid && rich ? { bodyDocument: rich } : {}),
+    ...(!bodyDocumentInvalid && rich ? { bodyDocument: rich, ...(document.bodyImages?.length ? { bodyImageSizes: bodyImageSizes(document.bodyImages, rich) } : {}) } : {}),
     bodyDocumentInvalid,
     isAdminEditable: isAdminEditableNews(document),
     canAdminPublish: !bodyDocumentInvalid && isAdminEditableNews(document) && document.publicationStatus !== "published",
@@ -692,6 +695,11 @@ export async function updateAdminNewsDraft(input: {
       if (input.draft.bodyDocument && input.actor.role !== "admin") return { ok: false, reason: "not_editable" };
       const resolved = resolveNewsBodyUpdate(current.body, current.bodyDocument, input.draft.body, input.draft.bodyDocument);
       if (!resolved.ok) return resolved;
+      const bodyImages = resolveBodyImageAssets(
+        current.bodyImages ?? [], parseNewsBodyDocument(current.bodyDocument) ?? undefined,
+        resolved.bodyDocument, input.now ?? new Date(),
+      );
+      if (!bodyImages) return { ok: false, reason: "invalid_body_document" };
       const bodyChanged = !sameNewsBodyText(current.body, resolved.body);
       const draft = input.actor.role === "admin" ? {
         ...input.draft,
@@ -723,6 +731,7 @@ export async function updateAdminNewsDraft(input: {
           summary: draft.summary,
           body: Array.from(draft.body),
           ...(draft.bodyDocument ? { bodyDocument: draft.bodyDocument } : {}),
+          ...(current.bodyImages?.length ? { bodyImages } : {}),
           updatedAt: nextUpdatedAt,
         },
         changedFields: (before) => getDraftChangedFields(before, draft),

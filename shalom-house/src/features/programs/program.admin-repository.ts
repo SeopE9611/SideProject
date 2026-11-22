@@ -1,3 +1,4 @@
+import { bodyImageSizes, resolveBodyImageAssets } from "@/features/news/body-image-assets";
 import { newsDocumentToBody, parseNewsBodyDocument, resolveNewsBodyUpdate, sameNewsBodyText, type NewsBodyDocument } from "../news/news.rich-text";
 import { createAdminTitleSearchExpression } from "@/lib/admin-title-search";
 import { MongoServerError, ObjectId, type ClientSession, type Db, type Filter, type WithId } from "mongodb";
@@ -55,6 +56,7 @@ export type AdminProgramDetail = AdminProgramListItem & {
   purpose: string;
   body: readonly string[];
   bodyDocument?: NewsBodyDocument;
+  bodyImageSizes?: Record<string, { width: number; height: number }>;
   bodyDocumentInvalid: boolean;
   isEditable: boolean;
   canRequestReview: boolean;
@@ -407,6 +409,7 @@ export async function findAdminProgramPostById(id: string, now: Date = new Date(
         purpose: 1,
         body: 1,
         bodyDocument: 1,
+        bodyImages: 1,
         operationStatusLabel: 1,
         sortOrder: 1,
         publicationStatus: 1,
@@ -435,7 +438,7 @@ export async function findAdminProgramPostById(id: string, now: Date = new Date(
   const validRich = rich && sameNewsBodyText(document.body, newsDocumentToBody(rich));
   return {
     ...listItem,
-    ...(validRich ? { bodyDocument: rich } : {}),
+    ...(validRich ? { bodyDocument: rich, ...(document.bodyImages?.length ? { bodyImageSizes: bodyImageSizes(document.bodyImages, rich) } : {}) } : {}),
     bodyDocumentInvalid: document.bodyDocument !== undefined && !validRich,
     purpose: document.purpose,
     body: document.body,
@@ -728,6 +731,11 @@ export async function updateAdminProgramDraft(input: {
         return { ok: false, reason: "not_editable" };
       const resolved = resolveNewsBodyUpdate(current.body, current.bodyDocument, input.draft.body, input.draft.bodyDocument);
       if (!resolved.ok) return resolved;
+      const bodyImages = resolveBodyImageAssets(
+        current.bodyImages ?? [], parseNewsBodyDocument(current.bodyDocument) ?? undefined,
+        resolved.bodyDocument, input.now ?? new Date(),
+      );
+      if (!bodyImages) return { ok: false, reason: "invalid_body_document" };
       const draft = { ...input.draft, body: resolved.body, bodyDocument: resolved.bodyDocument };
       const change = await changeProgramAndInsertAudit({
         database,
@@ -753,6 +761,7 @@ export async function updateAdminProgramDraft(input: {
           purpose: draft.purpose,
           body: Array.from(draft.body),
           ...(draft.bodyDocument ? { bodyDocument: draft.bodyDocument } : {}),
+          ...(current.bodyImages?.length ? { bodyImages } : {}),
           operationStatusLabel: draft.operationStatusLabel,
           sortOrder: draft.sortOrder,
           updatedAt: nextUpdatedAt,

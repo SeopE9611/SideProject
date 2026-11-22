@@ -1,3 +1,4 @@
+import type { BodyImageAsset } from "@/features/news/body-image-reference";
 import type { ObjectId } from "mongodb";
 
 import type { NewsApprovalStatus, NewsCategory, NewsPublicationStatus } from "./news.types";
@@ -23,6 +24,7 @@ export type MongoNewsPostDocument = {
   summary: string;
   body: string[];
   bodyDocument?: NewsBodyDocument;
+  bodyImages?: BodyImageAsset[];
   publicationStatus: NewsPublicationStatus;
   approvalStatus: NewsApprovalStatus;
   publishedAt: Date | null;

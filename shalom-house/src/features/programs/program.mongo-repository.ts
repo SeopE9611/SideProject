@@ -1,3 +1,4 @@
+import { bodyImageSizes } from "@/features/news/body-image-assets";
 import { newsDocumentToBody, parseNewsBodyDocument, sameNewsBodyText } from "../news/news.rich-text";
 import { ObjectId, type Document, type Filter, type WithId } from "mongodb";
 import { getMongoDatabase } from "@/lib/mongodb";
@@ -88,12 +89,12 @@ export class MongoProgramRepository implements ProgramRepository {
     if (!isValidProgramSlug(slug)) return null;
     const now = new Date();
     const document = await (await getMongoDatabase()).collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME)
-      .findOne({ ...publicFilter(now), slug }, { projection: { ...projection, body: 1, bodyDocument: 1 } });
+      .findOne({ ...publicFilter(now), slug }, { projection: { ...projection, body: 1, bodyDocument: 1, bodyImages: 1 } });
     if (!document || !isValidPublishedProgramDocument(document, { requireBody: true, now })) return null;
     const cover = document.coverGalleryItemId instanceof ObjectId ? await findPublicGalleryCoverById(document.coverGalleryItemId) : null;
     const rich = parseNewsBodyDocument(document.bodyDocument);
     const validRich = rich && sameNewsBodyText(document.body, newsDocumentToBody(rich));
-    return { ...summary(document, cover), body: document.body, ...(validRich ? { bodyDocument: rich } : {}) };
+    return { ...summary(document, cover), body: document.body, ...(validRich ? { bodyDocument: rich, ...(document.bodyImages?.length ? { bodyImageSizes: bodyImageSizes(document.bodyImages, rich) } : {}) } : {}) };
   }
 }
 

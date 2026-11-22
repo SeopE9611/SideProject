@@ -128,7 +128,7 @@ export default async function NewsPostPage({ params, searchParams }: NewsPostPag
               />
             ) : null}
             <div className="space-y-5">
-              {post.bodyDocument ? <NewsRichBody bodyDocument={post.bodyDocument} /> : post.body.map((paragraph, index) => (
+              {post.bodyDocument ? <NewsRichBody bodyDocument={post.bodyDocument} images={{ domain: "news", owner: post.slug, sizes: post.bodyImageSizes, admin: false }} /> : post.body.map((paragraph, index) => (
                 <p key={index} className="text-safe-wrap whitespace-pre-wrap text-body leading-8">
                   {paragraph}
                 </p>
