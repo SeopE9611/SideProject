@@ -65,8 +65,8 @@ const mocks = {
 function load(path) {
   const file = [path + ".ts", path + ".tsx"].find(existsSync);
   if (loaded.has(file)) return loaded.get(file).exports;
-  const module = { exports: {} };
-  loaded.set(file, module);
+  const entry = { exports: {} };
+  loaded.set(file, entry);
   const localRequire = (name) => Object.hasOwn(mocks, name) ? mocks[name]
     : name.startsWith("@/") ? load(resolve(root, name.slice(2)))
     : name.startsWith(".") ? load(resolve(dirname(file), name)) : require(name);
@@ -74,8 +74,8 @@ function load(path) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
       jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
   }).outputText;
-  new Function("require", "module", "exports", code)(localRequire, module, module.exports);
-  return module.exports;
+  new Function("require", "module", "exports", code)(localRequire, entry, entry.exports);
+  return entry.exports;
 }
 
 const rich = load(resolve(root, "features/news/news.rich-text"));
