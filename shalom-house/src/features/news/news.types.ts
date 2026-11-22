@@ -38,6 +38,7 @@ export type PublicNewsPost = {
   summary: string;
   body: readonly string[];
   bodyDocument?: NewsBodyDocument;
+  bodyImageSizes?: Record<string, { width: number; height: number }>;
   publishedAt: string;
   updatedAt: string;
   isDemo: boolean;
@@ -45,7 +46,7 @@ export type PublicNewsPost = {
   attachment: PublicNewsAttachment | null;
 };
 
-export type PublicNewsPostSummary = Omit<PublicNewsPost, "body" | "bodyDocument">;
+export type PublicNewsPostSummary = Omit<PublicNewsPost, "body" | "bodyDocument" | "bodyImageSizes">;
 
 export type PublicNewsSearchOptions = {
   q?: string;

@@ -110,6 +110,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bodyDocument, setBodyDocument] = useState<unknown>(undefined);
 
+  const [imageUploading, setImageUploading] = useState(false);
   const [pdfChange, setPdfChange] = useState<DraftPdfChange>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [pdfRecovery, setPdfRecovery] = useState<{ href: string; error: string } | null>(null);
@@ -118,7 +119,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSubmitting || pdfError || pdfRecovery) return;
+    if (isSubmitting || imageUploading || pdfError || pdfRecovery) return;
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -203,7 +204,7 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       } else if (response.status === 409 && error === "rich_text_required") {
         setFormError("본문 서식을 보존하려면 최신 편집 화면에서 수정해 주세요. 입력 내용을 복사한 뒤 다시 확인해 주세요.");
       } else if (response.status === 409 && error === "invalid_body_document") {
-        setFormError("저장된 본문 서식을 확인할 수 없어 수정하지 않았습니다. 관리자에게 확인해 주세요.");
+        setFormError("본문 서식 또는 이미지 참조를 확인할 수 없어 저장하지 않았습니다. 만료된 이미지는 다시 삽입해 주세요.");
       } else if (props.mode === "edit" && response.status === 409 && error === "not_editable") {
         setFormError("현재 게시 상태에서는 내용을 수정할 수 없습니다.");
       } else {
@@ -339,6 +340,9 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
         </label>
         {props.simpleManagement ? <AdminNewsRichEditor
           key={props.mode === "edit" ? props.expectedUpdatedAt : "new"}
+          imageTarget={props.mode === "edit" ? { domain: "news", postId: props.postId, expectedUpdatedAt: props.expectedUpdatedAt } : undefined}
+          imageUploadEnabled={props.mode === "edit" && props.pdfEditable === true}
+          onImageUploading={setImageUploading}
           initialDocument={props.mode === "edit" ? props.bodyDocument ?? newsBodyToDocument(props.initialBody ?? [props.initialValues.body]) : newsBodyToDocument([])}
           disabled={isSubmitting} invalid={Boolean(fieldErrors.body)} describedBy={describedBy("body", fieldErrors, "admin-news-body-help")}
           onChange={(value) => { setBodyDocument(value); markDirty(); }}
@@ -395,13 +399,13 @@ export function AdminNewsDraftForm(props: AdminNewsDraftFormProps) {
       <AdminStickyFormActions>
         <button
           type="submit"
-          disabled={isSubmitting || Boolean(pdfError)}
+          disabled={isSubmitting || imageUploading || Boolean(pdfError)}
           className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "저장 중…" : props.mode === "create" ? "임시저장" : "변경 사항 저장"}
         </button>
         {props.mode === "create" && props.simpleManagement ? (
-          <button type="submit" value="publish" disabled={isSubmitting || Boolean(pdfChange) || Boolean(pdfError)} className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60">
+          <button type="submit" value="publish" disabled={isSubmitting || Boolean(pdfChange) || imageUploading || Boolean(pdfError)} className="inline-flex min-h-12 items-center justify-center rounded-control bg-primary px-6 py-2 font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-60">
             {isSubmitting ? "저장 중…" : "게시하기"}
           </button>
         ) : null}

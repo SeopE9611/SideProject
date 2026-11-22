@@ -1,3 +1,4 @@
+import { bodyImageSizes } from "@/features/news/body-image-assets";
 import { parseNewsBodyDocument, newsDocumentToBody, sameNewsBodyText } from "./news.rich-text";
 import { ObjectId, type Document, type Filter, type WithId } from "mongodb";
 
@@ -84,7 +85,7 @@ function toPublicPost(document: WithId<Document>, cover?: PublicGalleryCoverRefe
   const rich = document.bodyDocument === undefined ? null : parseNewsBodyDocument(document.bodyDocument);
   const validRich = rich && sameNewsBodyText(document.body, newsDocumentToBody(rich));
   if (document.bodyDocument !== undefined && !validRich) console.error("소식 서식 문서 검증 실패", { documentId: document._id.toString() });
-  return { ...summary, body: document.body, ...(validRich ? { bodyDocument: rich } : {}) };
+  return { ...summary, body: document.body, ...(validRich ? { bodyDocument: rich, ...(document.bodyImages?.length ? { bodyImageSizes: bodyImageSizes(document.bodyImages, rich) } : {}) } : {}) };
 }
 
 function createPublicFilter(now: Date): Filter<MongoNewsPostDocument> {
@@ -199,6 +200,7 @@ export class MongoNewsRepository implements NewsRepository {
           summary: 1,
           body: 1,
           bodyDocument: 1,
+          bodyImages: 1,
           publishedAt: 1,
           updatedAt: 1,
           coverGalleryItemId: 1,

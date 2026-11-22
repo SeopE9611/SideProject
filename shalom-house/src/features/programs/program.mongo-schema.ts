@@ -1,3 +1,4 @@
+import type { BodyImageAsset } from "@/features/news/body-image-reference";
 import type { NewsBodyDocument } from "../news/news.rich-text";
 
 import type { ObjectId } from "mongodb";
@@ -21,6 +22,7 @@ export type MongoProgramDocument = {
   purpose: string;
   body: string[];
   bodyDocument?: NewsBodyDocument;
+  bodyImages?: BodyImageAsset[];
   operationStatusLabel: string | null;
   sortOrder: number;
   publicationStatus: ProgramPublicationStatus;

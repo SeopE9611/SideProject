@@ -210,7 +210,7 @@ export default async function AdminNewsDetailPage({
         <div>
           <h3 className="font-bold">본문</h3>
           <div className="mt-2 space-y-4">
-            {post.bodyDocument ? <NewsRichBody bodyDocument={post.bodyDocument} /> : post.body.map((paragraph, index) => (
+            {post.bodyDocument ? <NewsRichBody bodyDocument={post.bodyDocument} images={{ domain: "news", owner: post.id, sizes: post.bodyImageSizes, admin: true }} /> : post.body.map((paragraph, index) => (
               <p key={index} className="whitespace-pre-wrap break-words">
                 {paragraph}
               </p>

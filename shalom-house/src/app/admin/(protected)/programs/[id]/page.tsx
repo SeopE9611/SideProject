@@ -210,7 +210,7 @@ export default async function AdminProgramDetailPage({
           <h3 className="font-bold">본문</h3>
           <div className="mt-2 space-y-4">
             {post.bodyDocumentInvalid ? <p role="alert" className="text-small text-danger">저장된 본문 서식을 확인할 수 없어 일반 텍스트로 표시합니다.</p> : null}
-            {post.bodyDocument ? <NewsRichBody bodyDocument={post.bodyDocument} /> : post.body.map((paragraph, index) => (
+            {post.bodyDocument ? <NewsRichBody bodyDocument={post.bodyDocument} images={{ domain: "programs", owner: post.id, sizes: post.bodyImageSizes, admin: true }} /> : post.body.map((paragraph, index) => (
               <p key={index} className="whitespace-pre-wrap break-words">
                 {paragraph}
               </p>

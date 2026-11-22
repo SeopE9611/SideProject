@@ -26,6 +26,7 @@ export type PublicProgram = {
   purpose: string;
   body: readonly string[];
   bodyDocument?: NewsBodyDocument;
+  bodyImageSizes?: Record<string, { width: number; height: number }>;
   operationStatusLabel: string | null;
   sortOrder: number;
   publishedAt: string;
@@ -33,7 +34,7 @@ export type PublicProgram = {
   coverImage: PublicProgramCoverImage | null;
   attachment: PublicProgramAttachment | null;
 };
-export type PublicProgramSummary = Omit<PublicProgram, "body" | "bodyDocument">;
+export type PublicProgramSummary = Omit<PublicProgram, "body" | "bodyDocument" | "bodyImageSizes">;
 
 const publicationStatusLabels: Record<ProgramPublicationStatus, string> = {
   draft: "작성 중",
