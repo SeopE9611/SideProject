@@ -9,6 +9,13 @@ import { BODY_IMAGE_ALT_LIMIT, BODY_IMAGE_LIMIT, bodyImageUrl, isBodyImageId, ty
 
 export type ImageTarget = { domain: BodyImageDomain; postId: string; expectedUpdatedAt: string };
 const control = "min-h-11 rounded-control border border-border-strong px-3 text-small focus-visible:outline-2 focus-visible:outline-focus-ring disabled:opacity-50";
+const uploadErrorCodes = new Set([
+  "invalid_image_request",
+  "invalid_webp",
+  "edit_conflict",
+  "image_limit",
+  "image_upload_failed",
+]);
 
 export const BodyImageDocument = Node.create({
   name: "doc",
@@ -83,7 +90,7 @@ export function AdminBodyImagePicker({ editor, target, cursor, uploading, onUplo
   const fileInput = useRef<HTMLInputElement>(null);
   const [alt, setAlt] = useState("");
   const [nonIdentifiable, setNonIdentifiable] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<{ message: string; diagnostic?: { status: number; code: string } }>();
   useAdminUnsavedChangesGuard(uploading, "이미지 업로드 중입니다. 페이지를 벗어나면 본문에 삽입되지 않습니다.");
   useEffect(() => {
     fileInput.current?.focus();
@@ -95,7 +102,7 @@ export function AdminBodyImagePicker({ editor, target, cursor, uploading, onUplo
   async function upload() {
     if (!target || !file || uploading || !nonIdentifiable || !alt.trim()) return;
     if ((editor.$nodes("bodyImage")?.length ?? 0) >= BODY_IMAGE_LIMIT) {
-      setError(`본문 이미지는 ${BODY_IMAGE_LIMIT}개까지 넣을 수 있습니다.`);
+      setError({ message: `본문 이미지는 ${BODY_IMAGE_LIMIT}개까지 넣을 수 있습니다.` });
       return;
     }
     setError(undefined);
@@ -110,21 +117,23 @@ export function AdminBodyImagePicker({ editor, target, cursor, uploading, onUplo
           "X-Non-Identifiable-Image": "true",
         },
       });
-      const data = await response.json().catch(() => null);
+      const data: { id?: unknown; error?: unknown } | null = await response.json().catch(() => null);
       if (!response.ok || !isBodyImageId(data?.id)) {
-        setError(data?.error === "edit_conflict"
+        const code = typeof data?.error === "string" && uploadErrorCodes.has(data.error) ? data.error : "unknown";
+        const message = code === "edit_conflict"
           ? "게시물 상태가 바뀌었습니다. 현재 입력을 확인한 뒤 최신 수정 화면에서 다시 시도해 주세요."
-          : data?.error === "image_limit" ? "이 게시물의 이미지 저장 한도에 도달했습니다."
-          : "이미지를 올리지 못했습니다. 로그인 상태와 파일을 확인한 뒤 다시 시도해 주세요.");
+          : code === "image_limit" ? "이 게시물의 이미지 저장 한도에 도달했습니다."
+          : "이미지를 올리지 못했습니다. 로그인 상태와 파일을 확인한 뒤 다시 시도해 주세요.";
+        setError({ message, diagnostic: { status: response.status, code } });
         return;
       }
       if (!insertBodyImage(editor, cursor, { imageId: data.id, alt: alt.trim() })) {
-        setError("본문에 삽입하지 못했습니다. 닫은 뒤 문단에 커서를 놓고 다시 시도해 주세요.");
+        setError({ message: "본문에 삽입하지 못했습니다. 닫은 뒤 문단에 커서를 놓고 다시 시도해 주세요." });
         return;
       }
       onClose();
     } catch {
-      setError("이미지를 삽입하지 못했습니다. JPEG·PNG·WebP 파일을 확인한 뒤 다시 시도해 주세요.");
+      setError({ message: "이미지를 삽입하지 못했습니다. JPEG·PNG·WebP 파일을 확인한 뒤 다시 시도해 주세요." });
     } finally {
       onUploading(false);
     }
@@ -165,7 +174,10 @@ export function AdminBodyImagePicker({ editor, target, cursor, uploading, onUplo
     </> : <p className="text-small">{hasSavedPost
       ? "저장된 비공개 초안에만 이미지를 올릴 수 있습니다. 게시물 상태를 확인해 주세요."
       : "이미지를 게시물에 연결하려면 비공개 초안이 필요합니다. 초안을 저장한 뒤 상세 화면에서 수정으로 들어와 주세요."}</p>}
-    {error ? <p role="alert" className="text-small text-danger">{error}</p> : null}
+    {error ? <div role="alert" className="text-small text-danger">
+      <p>{error.message}</p>
+      {error.diagnostic ? <p>진단 정보: HTTP {error.diagnostic.status} / {error.diagnostic.code}</p> : null}
+    </div> : null}
     {uploading ? <p role="status" className="text-small">이미지를 올리는 중입니다. 완료 후 게시물을 저장해 주세요.</p> : null}
     <div className="flex flex-wrap gap-2">
       {target ? <button type="button" disabled={uploading || !file || !alt.trim() || !nonIdentifiable}
