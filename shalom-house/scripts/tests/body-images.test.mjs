@@ -80,6 +80,7 @@ function load(path) {
 
 const rich = load(resolve(root, "features/news/news.rich-text"));
 const assets = load(resolve(root, "features/news/body-image-assets"));
+const webpValidation = load(resolve(root, "lib/server-webp-validation"));
 const storage = load(resolve(root, "features/news/body-image-storage"));
 const adminRoute = load(resolve(root, "app/api/admin/body-images/[domain]/[postId]/route"));
 const editor = load(resolve(root, "components/admin/admin-body-image"));
@@ -218,4 +219,61 @@ test("프로그램 본문 이미지 업로드 직후에는 소유 게시물의 �
   const preview = await adminRoute.GET(new Request("https://example.com?image=" + id), ctx);
   assert.equal(preview.status, 200);
   assert.deepEqual(downloads, [`shalom-house/programs/${postId}/body-images/${id}.webp`]);
+});
+
+// Chromium 151에서 480×300 합성 JPEG를 convertImageToWebp로 변환한 Canvas 출력입니다.
+const chromiumWebp = readFileSync(new URL("./fixtures/chromium-canvas-jpeg.webp", import.meta.url));
+const validateWebp = (buffer, type = "image/webp") =>
+  webpValidation.validateServerWebp(new File([buffer], "test.webp", { type }));
+
+test("Chromium Canvas의 ICC 색상 프로필이 있는 정적 WebP를 허용", async () => {
+  const result = await validateWebp(chromiumWebp);
+  assert.equal(result.ok, true);
+  assert.deepEqual([result.value.width, result.value.height], [480, 300]);
+  assert.equal(assets.isBodyImageWebpContainer(result.value.buffer, 480, 300), true);
+  const legacy = await validateWebp(readFileSync(resolve(root, "content/fixtures/assets/square.webp")));
+  assert.equal(legacy.ok, true);
+  assert.equal(assets.isBodyImageWebpContainer(legacy.value.buffer, legacy.value.width, legacy.value.height), true);
+});
+
+test("WebP MIME·서명·크기 제한과 정적 청크 구조를 검증", async () => {
+  const changed = (mutate) => {
+    const bytes = Buffer.from(chromiumWebp);
+    mutate(bytes);
+    return bytes;
+  };
+  assert.equal((await validateWebp(chromiumWebp, "image/png")).ok, false);
+  assert.equal((await validateWebp(changed((b) => b.write("RIFX", 0)))).ok, false);
+  assert.equal((await validateWebp(changed((b) => b.writeUIntLE(4096, 24, 3)))).ok, false);
+  assert.equal((await validateWebp(Buffer.alloc(3 * 1024 * 1024 + 1))).ok, false);
+  const invalidContainers = [
+    changed((b) => b.writeUInt32LE(b.length - 9, 4)),
+    changed((b) => b.writeUInt32LE(b.length, 498)),
+    changed((b) => b.writeUIntLE(480, 24, 3)),
+    changed((b) => { b[20] = 0; }),
+    changed((b) => { b[20] |= 0x02; }),
+    changed((b) => b.write("ANIM", 30)),
+    changed((b) => b.write("EXIF", 30)),
+    changed((b) => b.write("JUNK", 30)),
+    changed((b) => b.write("bad!", 38 + 36)),
+    changed((b) => b.writeUInt32BE(457, 38)),
+    changed((b) => b.writeUInt32BE(456, 38 + 132 + 4)),
+  ];
+  const truncated = Buffer.from(chromiumWebp.subarray(0, -1));
+  truncated.writeUInt32LE(truncated.length - 8, 4);
+  invalidContainers.push(truncated);
+  const duplicateProfile = Buffer.concat([chromiumWebp.subarray(0, 494), chromiumWebp.subarray(30)]);
+  duplicateProfile.writeUInt32LE(duplicateProfile.length - 8, 4);
+  invalidContainers.push(duplicateProfile);
+  const missingProfile = Buffer.concat([chromiumWebp.subarray(0, 30), chromiumWebp.subarray(494)]);
+  missingProfile.writeUInt32LE(missingProfile.length - 8, 4);
+  invalidContainers.push(missingProfile);
+  const misplacedProfile = Buffer.concat([missingProfile, chromiumWebp.subarray(30, 494)]);
+  misplacedProfile.writeUInt32LE(misplacedProfile.length - 8, 4);
+  invalidContainers.push(misplacedProfile);
+  for (const bytes of invalidContainers) {
+    const result = await validateWebp(bytes);
+    assert.equal(result.ok, true);
+    assert.equal(assets.isBodyImageWebpContainer(bytes, result.value.width, result.value.height), false);
+  }
 });
