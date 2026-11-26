@@ -1217,6 +1217,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                   steps={STEPS}
                   currentStep={currentStep.id}
                   completedSteps={completedSteps}
+                  allowFreeNavigation
+                  navigationDisabled={submitting || deleting || uploading}
                   onStepClick={goToStep}
                 />
               </div>
@@ -2757,6 +2759,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 </div>
               </div>
 
+              <StockHistory productId={productId} />
+
               {/* Step Navigation */}
               <div className={cn(adminSurface.stickyToolbar, "p-4")}>
                 <StepNavigation
@@ -2774,7 +2778,6 @@ export default function ProductEditClient({ productId }: { productId: string }) 
             </>
           )}
         </form>
-        <StockHistory productId={productId} />
       </AdminPageShell>
       <ProductEditDialogs
         open={leaveDialogOpen}
