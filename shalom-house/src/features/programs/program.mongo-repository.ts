@@ -1,4 +1,4 @@
-import { findMongoContentNeighbors, type NeighborAnchor } from "@/features/content/public-content-neighbors";
+import { PROGRAM_LIST_ORDER, findMongoContentNeighbors, type NeighborAnchor } from "@/features/content/public-content-neighbors";
 import { bodyImageSizes } from "@/features/news/body-image-assets";
 import { newsDocumentToBody, parseNewsBodyDocument, sameNewsBodyText } from "../news/news.rich-text";
 import { ObjectId, type Document, type Filter, type WithId } from "mongodb";
@@ -6,7 +6,7 @@ import { getMongoDatabase } from "@/lib/mongodb";
 import { findPublicGalleryCoverById, findPublicGalleryCoversByIds, type PublicGalleryCoverReference } from "@/features/gallery/gallery.repository";
 import { isValidStoredProgramAttachment } from "./program.media-validation";
 import { PROGRAM_COLLECTION_NAME, type MongoProgramDocument } from "./program.mongo-schema";
-import { normalizePublicProgramLimit, type ProgramRepository } from "./program.repository";
+import { normalizePublicProgramLimit, PUBLIC_PROGRAM_DEFAULT_LIMIT, type ProgramRepository } from "./program.repository";
 import { isValidProgramSlug, type PublicProgram, type PublicProgramSummary } from "./program.types";
 
 const validDate = (value: unknown): value is Date => value instanceof Date && !Number.isNaN(value.getTime());
@@ -73,7 +73,7 @@ export class MongoProgramRepository implements ProgramRepository {
   async listPublished(options?: { limit?: number }): Promise<readonly PublicProgramSummary[]> {
     const now = new Date();
     const documents = await (await getMongoDatabase()).collection<MongoProgramDocument>(PROGRAM_COLLECTION_NAME)
-      .find(publicFilter(now), { projection }).sort({ sortOrder: 1, publishedAt: -1, _id: -1 })
+      .find(publicFilter(now), { projection }).sort(PROGRAM_LIST_ORDER)
       .limit(normalizePublicProgramLimit(options?.limit)).toArray();
     const valid = documents.filter((document) => isValidPublishedProgramDocument(document, { requireBody: false, now }));
     const ids = valid.flatMap((document) => document.coverGalleryItemId instanceof ObjectId ? [document.coverGalleryItemId] : []);
@@ -90,12 +90,8 @@ export class MongoProgramRepository implements ProgramRepository {
     const now = new Date();
     const collection = (await getMongoDatabase()).collection(PROGRAM_COLLECTION_NAME);
     return findMongoContentNeighbors(collection, current, publicFilter(now),
-      { ...projection, body: 1, bodyDocument: 1 }, (candidate) => {
-        if (!isValidPublishedProgramDocument(candidate, { requireBody: true, now })) return false;
-        if (candidate.bodyDocument === undefined) return true;
-        const rich = parseNewsBodyDocument(candidate.bodyDocument);
-        return rich !== null && sameNewsBodyText(candidate.body, newsDocumentToBody(rich));
-      });
+      { ...projection, body: 1 }, (candidate) => isValidPublishedProgramDocument(candidate, { requireBody: true, now }),
+      { order: PROGRAM_LIST_ORDER, listLimit: PUBLIC_PROGRAM_DEFAULT_LIMIT });
   }
 
   async findPublishedBySlug(slug: string): Promise<PublicProgram | null> {

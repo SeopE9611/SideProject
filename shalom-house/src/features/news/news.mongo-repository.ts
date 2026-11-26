@@ -1,4 +1,4 @@
-import { findMongoContentNeighbors, type NeighborAnchor } from "@/features/content/public-content-neighbors";
+import { NEWS_LIST_ORDER, findMongoContentNeighbors, type NeighborAnchor } from "@/features/content/public-content-neighbors";
 import { bodyImageSizes } from "@/features/news/body-image-assets";
 import { parseNewsBodyDocument, newsDocumentToBody, sameNewsBodyText } from "./news.rich-text";
 import { ObjectId, type Document, type Filter, type WithId } from "mongodb";
@@ -102,6 +102,21 @@ function escapeRegularExpression(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function createPublicSearchFilter(now: Date, options?: Pick<PublicNewsSearchOptions, "q" | "category">) {
+  const visible = createPublicFilter(now);
+  const q = normalizePublicNewsSearchQuery(options?.q);
+  const category = options?.category;
+  if (!q && !category) return visible;
+  const search = q ? new RegExp(escapeRegularExpression(q), "i") : undefined;
+  return {
+    $and: [
+      visible,
+      ...(category ? [{ category }] : []),
+      ...(search ? [{ $or: [{ title: { $regex: search } }, { summary: { $regex: search } }] }] : []),
+    ],
+  };
+}
+
 const publicSummaryProjection = {
   slug: 1,
   category: 1,
@@ -128,7 +143,7 @@ export class MongoNewsRepository implements NewsRepository {
     const { normalizePublicSitemapLimit } = await import("@/features/seo/seo.types");
     const documents = await (await getMongoDatabase()).collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME)
       .find(createPublicFilter(new Date()), { projection: { slug: 1, category: 1, title: 1, summary: 1, body: 1, publishedAt: 1, updatedAt: 1, coverGalleryItemId: 1, attachment: 1 } })
-      .sort({ publishedAt: -1, _id: -1 }).limit(normalizePublicSitemapLimit(options?.limit)).toArray();
+      .sort(NEWS_LIST_ORDER).limit(normalizePublicSitemapLimit(options?.limit)).toArray();
     return documents.flatMap((document) => toPublicPost(document, null) ? [{ slug: document.slug, lastModified: document.updatedAt.toISOString() }] : []);
   }
   async listPublished(options?: { limit?: number }): Promise<readonly PublicNewsPostSummary[]> {
@@ -140,7 +155,7 @@ export class MongoNewsRepository implements NewsRepository {
           ...publicSummaryProjection,
         },
       })
-      .sort({ publishedAt: -1, _id: -1 })
+      .sort(NEWS_LIST_ORDER)
       .limit(normalizePublicNewsLimit(options?.limit))
       .toArray();
 
@@ -148,30 +163,16 @@ export class MongoNewsRepository implements NewsRepository {
   }
 
   async searchPublished(options?: PublicNewsSearchOptions): Promise<PublicNewsSearchResult> {
-    const q = normalizePublicNewsSearchQuery(options?.q);
     const requestedPage = normalizePublicNewsPage(options?.page);
     const pageSize = normalizePublicNewsPageSize(options?.pageSize);
-    const publicFilter = createPublicFilter(new Date());
-    const searchConditions: Filter<MongoNewsPostDocument>[] = [];
-
-    if (options?.category) searchConditions.push({ category: options.category });
-    if (q) {
-      const expression = new RegExp(escapeRegularExpression(q), "i");
-      searchConditions.push({
-        $or: [{ title: { $regex: expression } }, { summary: { $regex: expression } }],
-      });
-    }
-
-    const filter: Filter<MongoNewsPostDocument> = searchConditions.length
-      ? { $and: [publicFilter, ...searchConditions] }
-      : publicFilter;
+    const filter = createPublicSearchFilter(new Date(), options);
     const collection = (await getMongoDatabase()).collection<MongoNewsPostDocument>(NEWS_COLLECTION_NAME);
     const total = await collection.countDocuments(filter);
     const totalPages = Math.ceil(total / pageSize);
     const page = resolvePublicNewsPage(requestedPage, totalPages);
     const documents = await collection
       .find(filter, { projection: publicSummaryProjection })
-      .sort({ publishedAt: -1, _id: -1 })
+      .sort(NEWS_LIST_ORDER)
       .skip((page - 1) * pageSize)
       .limit(pageSize)
       .toArray();
@@ -185,13 +186,11 @@ export class MongoNewsRepository implements NewsRepository {
     };
   }
 
-  async findPublishedNeighbors(current: NeighborAnchor) {
+  async findPublishedNeighbors(current: NeighborAnchor, options?: Pick<PublicNewsSearchOptions, "q" | "category">) {
     const collection = (await getMongoDatabase()).collection(NEWS_COLLECTION_NAME);
-    return findMongoContentNeighbors(collection, current, createPublicFilter(new Date()),
-      { ...publicSummaryProjection, body: 1, bodyDocument: 1 }, (candidate) => {
-        const post = toPublicPost(candidate);
-        return post !== null && post.body.length > 0 && (candidate.bodyDocument === undefined || post.bodyDocument !== undefined);
-      });
+    return findMongoContentNeighbors(collection, current, createPublicSearchFilter(new Date(), options),
+      { ...publicSummaryProjection, body: 1 }, (candidate) => toPublicPost(candidate) !== null,
+      { order: NEWS_LIST_ORDER, checkMembership: Boolean(options?.category || normalizePublicNewsSearchQuery(options?.q)) });
   }
 
   async findPublishedBySlug(slug: string): Promise<PublicNewsPost | null> {

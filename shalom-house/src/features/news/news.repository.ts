@@ -22,7 +22,7 @@ export interface NewsRepository {
 
   searchPublished(options?: PublicNewsSearchOptions): Promise<PublicNewsSearchResult>;
 
-  findPublishedNeighbors(current: NeighborAnchor): Promise<ContentNeighbors>;
+  findPublishedNeighbors(current: NeighborAnchor, options?: Pick<PublicNewsSearchOptions, "q" | "category">): Promise<ContentNeighbors>;
   findPublishedBySlug(slug: string): Promise<PublicNewsPost | null>;
 }
 
@@ -45,6 +45,13 @@ const emptyNewsRepository: NewsRepository = {
     return null;
   },
 };
+
+function searchFixtureNews(options?: PublicNewsSearchOptions) {
+  const query = normalizePublicNewsSearchQuery(options?.q).toLocaleLowerCase("ko-KR");
+  return getPublishedFixtureNewsPosts().filter((post) =>
+    (!options?.category || post.category === options.category) &&
+    (!query || `${post.title} ${post.summary}`.toLocaleLowerCase("ko-KR").includes(query)));
+}
 
 const fixtureNewsRepository: NewsRepository = {
   async listPublishedSitemapEntries(options) {
@@ -70,14 +77,8 @@ const fixtureNewsRepository: NewsRepository = {
       }));
   },
   async searchPublished(options) {
-    const q = normalizePublicNewsSearchQuery(options?.q);
-    const normalizedQuery = q.toLocaleLowerCase("ko-KR");
     const pageSize = normalizePublicNewsPageSize(options?.pageSize);
-    const filtered = getPublishedFixtureNewsPosts().filter(
-      (post) =>
-        (!options?.category || post.category === options.category) &&
-        (!normalizedQuery || `${post.title} ${post.summary}`.toLocaleLowerCase("ko-KR").includes(normalizedQuery)),
-    );
+    const filtered = searchFixtureNews(options);
     const total = filtered.length;
     const totalPages = Math.ceil(total / pageSize);
     const page = resolvePublicNewsPage(normalizePublicNewsPage(options?.page), totalPages);
@@ -89,8 +90,8 @@ const fixtureNewsRepository: NewsRepository = {
 
     return { items, total, page, pageSize, totalPages };
   },
-  async findPublishedNeighbors(current) {
-    return findFixtureContentNeighbors(current, getPublishedFixtureNewsPosts());
+  async findPublishedNeighbors(current, options) {
+    return findFixtureContentNeighbors(current, searchFixtureNews(options));
   },
   async findPublishedBySlug(slug) {
     const post = getPublishedFixtureNewsPosts().find((item) => item.slug === slug);
