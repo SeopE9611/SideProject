@@ -1,10 +1,11 @@
+import { ContentNeighborNavigation } from "@/components/layout/content-neighbor-navigation";
+import { unavailableContentNeighbors } from "@/features/content/public-content-neighbors";
 import { NewsRichBody } from "@/components/news/news-rich-body";
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 import { ContentDetailHeader } from "@/components/layout/content-detail-header";
 import { ContentAttachment } from "@/components/layout/content-attachment";
-import { getPublicNewsReturnHref } from "@/features/news/news.pagination";
+import { getPublicNewsNeighborHref, getPublicNewsReturnHref } from "@/features/news/news.pagination";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
@@ -53,16 +54,10 @@ export default async function NewsPostPage({ params, searchParams }: NewsPostPag
   const post = await getPublishedItem(slug);
   if (!post) notFound();
   const returnHref = getPublicNewsReturnHref(Array.isArray(query.returnTo) ? query.returnTo[0] : query.returnTo);
-  const related = (
-    await getNewsRepository()
-      .listPublished({ limit: 3 })
-      .catch(() => {
-        console.error("관련 소식 조회 실패");
-        return [];
-      })
-  )
-    .filter((item) => item.slug !== post.slug)
-    .slice(0, 2);
+  const neighbors = await getNewsRepository().findPublishedNeighbors(post).catch(() => {
+    console.error("소식 인접 게시물 조회 실패");
+    return unavailableContentNeighbors;
+  });
   const metadata = [
     { label: "게시일", value: formatPublicDate(post.publishedAt), dateTime: post.publishedAt },
     ...(post.updatedAt !== post.publishedAt
@@ -136,28 +131,8 @@ export default async function NewsPostPage({ params, searchParams }: NewsPostPag
             </div>
           </section>
           <ContentAttachment headingId="attachments-heading" attachment={post.attachment} />
-          <Link className="institution-link mt-5" href={returnHref}>
-            <span aria-hidden="true">←</span> 소식 목록으로
-          </Link>
-          {related.length > 0 ? (
-            <section aria-labelledby="related-heading" className="mt-7 border-t border-border pt-6">
-              <h2 id="related-heading" className="text-heading font-bold">
-                관련 소식
-              </h2>
-              <ul className="mt-3 divide-y divide-border">
-                {related.map((item) => (
-                  <li key={item.id} className="py-3">
-                    <Link
-                      className="text-safe-wrap inline-flex min-h-11 items-center font-medium underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                      href={"/news/" + item.slug + "?returnTo=" + encodeURIComponent(returnHref)}
-                    >
-                      {item.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
+          <ContentNeighborNavigation neighbors={neighbors} backHref={returnHref} backLabel="소식 목록으로"
+            hrefForSlug={(targetSlug) => getPublicNewsNeighborHref(targetSlug, returnHref)} />
         </div>
       </article>
     </div>

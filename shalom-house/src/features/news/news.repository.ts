@@ -1,3 +1,4 @@
+import { findFixtureContentNeighbors, noContentNeighbors, type ContentNeighbors, type NeighborAnchor } from "@/features/content/public-content-neighbors";
 import { getPublishedFixtureNewsPosts } from "@/content/fixtures/news.fixture";
 import { MongoNewsRepository } from "./news.mongo-repository";
 import {
@@ -21,6 +22,7 @@ export interface NewsRepository {
 
   searchPublished(options?: PublicNewsSearchOptions): Promise<PublicNewsSearchResult>;
 
+  findPublishedNeighbors(current: NeighborAnchor): Promise<ContentNeighbors>;
   findPublishedBySlug(slug: string): Promise<PublicNewsPost | null>;
 }
 
@@ -38,6 +40,7 @@ const emptyNewsRepository: NewsRepository = {
       totalPages: 0,
     };
   },
+  async findPublishedNeighbors() { return noContentNeighbors; },
   async findPublishedBySlug() {
     return null;
   },
@@ -85,6 +88,9 @@ const fixtureNewsRepository: NewsRepository = {
     }));
 
     return { items, total, page, pageSize, totalPages };
+  },
+  async findPublishedNeighbors(current) {
+    return findFixtureContentNeighbors(current, getPublishedFixtureNewsPosts());
   },
   async findPublishedBySlug(slug) {
     const post = getPublishedFixtureNewsPosts().find((item) => item.slug === slug);

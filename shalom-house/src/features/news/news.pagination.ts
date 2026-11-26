@@ -83,6 +83,10 @@ export function getPublicNewsReturnHref(value?: string): string {
   return params.size ? path + "?" + params.toString() : path;
 }
 
+export function getPublicNewsNeighborHref(slug: string, returnTo?: string): string {
+  return `/news/${encodeURIComponent(slug)}?returnTo=${encodeURIComponent(getPublicNewsReturnHref(returnTo))}`;
+}
+
 export function normalizePublicNewsPage(value?: number): number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0 ? value : 1;
 }

@@ -1,3 +1,5 @@
+import { ContentNeighborNavigation } from "@/components/layout/content-neighbor-navigation";
+import { unavailableContentNeighbors } from "@/features/content/public-content-neighbors";
 import { NewsRichBody } from "@/components/news/news-rich-body";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -42,6 +44,10 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const program = await getProgram(slug);
   if (!program) notFound();
+  const neighbors = await getProgramRepository().findPublishedNeighbors(program).catch(() => {
+    console.error("프로그램 인접 게시물 조회 실패");
+    return unavailableContentNeighbors;
+  });
   const metadata = [
     ...(program.operationStatusLabel ? [{ label: "운영 상태", value: program.operationStatusLabel }] : []),
     { label: "게시일", value: formatPublicDate(program.publishedAt), dateTime: program.publishedAt },
@@ -125,14 +131,12 @@ export default async function ProgramDetailPage({ params }: { params: Promise<{ 
             </div>
           </section>
           <ContentAttachment headingId="program-attachment" attachment={program.attachment} />
-          <div className="mt-5 flex flex-wrap justify-between gap-x-6 gap-y-2">
-            <Link className="institution-link" href="/life/programs">
-              <span aria-hidden="true">←</span> 프로그램 목록으로
-            </Link>
-            <Link className="institution-link text-small" href="/support/contact">
+          <ContentNeighborNavigation neighbors={neighbors} backHref="/life/programs" backLabel="프로그램 목록으로"
+            hrefForSlug={(targetSlug) => `/life/programs/${encodeURIComponent(targetSlug)}`}>
+            <Link className="institution-link inline-flex min-h-11 items-center text-small" href="/support/contact">
               프로그램 문의하기
             </Link>
-          </div>
+          </ContentNeighborNavigation>
         </div>
       </article>
     </div>

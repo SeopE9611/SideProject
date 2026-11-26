@@ -1,3 +1,4 @@
+import { findMongoContentNeighbors, type NeighborAnchor } from "@/features/content/public-content-neighbors";
 import { bodyImageSizes } from "@/features/news/body-image-assets";
 import { parseNewsBodyDocument, newsDocumentToBody, sameNewsBodyText } from "./news.rich-text";
 import { ObjectId, type Document, type Filter, type WithId } from "mongodb";
@@ -88,13 +89,13 @@ function toPublicPost(document: WithId<Document>, cover?: PublicGalleryCoverRefe
   return { ...summary, body: document.body, ...(validRich ? { bodyDocument: rich, ...(document.bodyImages?.length ? { bodyImageSizes: bodyImageSizes(document.bodyImages, rich) } : {}) } : {}) };
 }
 
-function createPublicFilter(now: Date): Filter<MongoNewsPostDocument> {
+function createPublicFilter(now: Date) {
   return {
     publicationStatus: "published",
     approvalStatus: "approved",
     publishedAt: { $ne: null, $lte: now },
     $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }],
-  };
+  } satisfies Filter<MongoNewsPostDocument>;
 }
 
 function escapeRegularExpression(value: string): string {
@@ -182,6 +183,15 @@ export class MongoNewsRepository implements NewsRepository {
       pageSize,
       totalPages,
     };
+  }
+
+  async findPublishedNeighbors(current: NeighborAnchor) {
+    const collection = (await getMongoDatabase()).collection(NEWS_COLLECTION_NAME);
+    return findMongoContentNeighbors(collection, current, createPublicFilter(new Date()),
+      { ...publicSummaryProjection, body: 1, bodyDocument: 1 }, (candidate) => {
+        const post = toPublicPost(candidate);
+        return post !== null && post.body.length > 0 && (candidate.bodyDocument === undefined || post.bodyDocument !== undefined);
+      });
   }
 
   async findPublishedBySlug(slug: string): Promise<PublicNewsPost | null> {
