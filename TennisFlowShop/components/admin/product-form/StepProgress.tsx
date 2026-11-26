@@ -22,6 +22,8 @@ interface StepProgressProps {
   steps: Step[];
   currentStep: string;
   completedSteps: string[];
+  allowFreeNavigation?: boolean;
+  navigationDisabled?: boolean;
   onStepClick?: (stepId: string) => void;
 }
 
@@ -29,18 +31,31 @@ export function StepProgress({
   steps,
   currentStep,
   completedSteps,
+  allowFreeNavigation = false,
+  navigationDisabled = false,
   onStepClick,
 }: StepProgressProps) {
   const currentIndex = steps.findIndex((s) => s.id === currentStep);
 
   return (
-    <nav aria-label="Progress" className="w-full">
+    <nav aria-label="입력 단계" className="w-full">
       <ol className="flex items-start justify-between gap-0 overflow-visible pb-1">
         {steps.map((step, index) => {
           const isCompleted = completedSteps.includes(step.id);
           const isCurrent = step.id === currentStep;
-          const isPast = index < currentIndex;
-          const isClickable = isCompleted || isPast || isCurrent;
+          const isPast = !allowFreeNavigation && index < currentIndex;
+          const isClickable = !navigationDisabled && (allowFreeNavigation || isCompleted || isPast || isCurrent);
+          const label = (
+            <span
+              className={cn(
+                adminTypography.actionLabel,
+                "text-center transition-colors duration-300",
+                (isCurrent || isCompleted) ? "text-primary" : "text-muted-foreground",
+              )}
+            >
+              {step.label}
+            </span>
+          );
 
           return (
             <li key={step.id} className="relative min-w-[4.75rem] flex-1">
@@ -65,43 +80,35 @@ export function StepProgress({
                   />
                 )}
 
-                {/* Step circle */}
                 <button
                   type="button"
-                  onClick={() => isClickable && onStepClick?.(step.id)}
+                  onClick={() => onStepClick?.(step.id)}
                   disabled={!isClickable}
                   className={cn(
-                    "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300",
-                    isCurrent &&
-                      "scale-105 border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20",
-                    isCompleted &&
-                      !isCurrent &&
-                      "border-primary bg-primary text-primary-foreground",
-                    !isCurrent &&
-                      !isCompleted &&
-                      "border-border bg-background text-muted-foreground",
-                    isClickable &&
-                      !isCurrent &&
-                      "cursor-pointer hover:border-primary/70 hover:bg-muted",
-                    !isClickable && "cursor-not-allowed opacity-50",
+                    "relative z-10 flex flex-col items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    allowFreeNavigation && "gap-2",
+                    !isClickable && "cursor-not-allowed",
                   )}
+                  aria-label={step.label}
                   aria-current={isCurrent ? "step" : undefined}
                 >
-                  {isCompleted && !isCurrent ? <Check className="h-4 w-4" /> : step.icon}
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300",
+                      isCurrent &&
+                        "scale-105 border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20",
+                      isCompleted && !isCurrent && "border-primary bg-primary text-primary-foreground",
+                      !isCurrent && !isCompleted && "border-border bg-background text-muted-foreground",
+                      isClickable && !isCurrent && "hover:border-primary/70 hover:bg-muted",
+                      !isClickable && "opacity-50",
+                    )}
+                  >
+                    {isCompleted && !isCurrent ? <Check className="h-4 w-4" /> : step.icon}
+                  </span>
+                  {allowFreeNavigation && label}
                 </button>
-
-                {/* Step label */}
-                <span
-                  className={cn(
-                    adminTypography.actionLabel,
-                    "text-center transition-colors duration-300",
-                    isCurrent && "text-primary",
-                    isCompleted && !isCurrent && "text-primary",
-                    !isCurrent && !isCompleted && "text-muted-foreground",
-                  )}
-                >
-                  {step.label}
-                </span>
+                {!allowFreeNavigation && label}
               </div>
             </li>
           );
