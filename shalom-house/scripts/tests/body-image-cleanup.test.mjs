@@ -260,3 +260,14 @@ test("MongoDB 50건 경계를 넘어도 정리 대상을 모두 집계", async (
   assert.equal(report.candidateBytes, 51 * 125);
   assert.equal(report.incomplete, false);
 });
+
+test("유튜브와 이미지가 함께 저장된 본문에서 이미지 참조를 보존", async () => {
+  const doc = clone(referencing);
+  doc.document.content.splice(1, 0, { type: "youtubeVideo", attrs: { videoId: "Abcd_123-xy", title: "영상" } });
+  const owner = post({ bodyDocument: doc, bodyImages: [asset(), asset({ id: other })] });
+  const fixture = mock({ posts: [owner], objects: [pathFor(owner), pathFor(owner, other)] });
+  const report = await fixture.run();
+  assert.equal(report.preserved, 1);
+  assert.equal(report.candidates, 1);
+  assert.equal(fixture.candidates[0].imageId, other);
+});

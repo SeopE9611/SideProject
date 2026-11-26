@@ -2,6 +2,7 @@
 
 import { EditorContent, useEditor, useEditorState, type JSONContent } from "@tiptap/react";
 import { AdminBodyImagePicker, BodyImageDocument, BodyImageNode, type ImageTarget } from "./admin-body-image";
+import { AdminBodyVideoPicker, BodyVideoNode, type VideoSelection } from "./admin-body-video";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { ADMIN_NEWS_BODY_MAX_LENGTH } from "@/features/news/news.admin-validation";
@@ -14,6 +15,7 @@ function documentForStorage(node: JSONContent): unknown {
     type: node.type,
     ...(node.text !== undefined ? { text: node.text } : {}),
     ...(node.type === "bodyImage" ? { attrs: { imageId: node.attrs?.imageId, alt: node.attrs?.alt } } : {}),
+    ...(node.type === "youtubeVideo" ? { attrs: { videoId: node.attrs?.videoId, title: node.attrs?.title } } : {}),
     ...(node.type === "heading" ? { attrs: { level: node.attrs?.level } } : {}),
     ...(node.type === "orderedList" ? { attrs: { start: node.attrs?.start ?? 1 } } : {}),
     ...(node.marks?.length ? { marks: node.marks.map((mark) => ({ type: mark.type, ...(mark.type === "link" ? { attrs: { href: mark.attrs?.href } } : {}) })) } : {}),
@@ -33,6 +35,7 @@ const toolbarPaths = {
   link: "M10 8l3-3a4 4 0 0 1 6 6l-3 3m-2 2-3 3a4 4 0 0 1-6-6l3-3m1 5 6-6",
   unlink: "M13 5a4 4 0 0 1 6 6l-2 2m-4 4-2 2a4 4 0 0 1-6-6m-2-9 18 16",
   image: "M3 4h18v16H3zM3 17l5-5 4 4 3-3 6 5M15 8h.1",
+  video: "M3 5h18v14H3zM10 9l5 3-5 3z",
   undo: "M8 5l-5 5 5 5m-5-5h11a6 6 0 0 1 6 6v3",
   redo: "M16 5l5 5-5 5m5-5H10a6 6 0 0 0-6 6v3",
 };
@@ -71,6 +74,8 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
   const callback = useRef(onChange);
   useEffect(() => { callback.current = onChange; }, [onChange]);
   const [imageCursor, setImageCursor] = useState<number>();
+  const [videoSelection, setVideoSelection] = useState<VideoSelection>();
+  const videoOpen = videoSelection !== undefined;
   const [uploading, setUploading] = useState(false);
   const imageOpen = imageCursor !== undefined;
   const linkInput = useRef<HTMLInputElement>(null);
@@ -80,12 +85,16 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
   useEffect(() => {
     if (linkOpen && !disabled) linkInput.current?.focus();
   }, [linkOpen, disabled]);
+  function openVideo(selection: VideoSelection) {
+    setLinkOpen(false);
+    setVideoSelection(selection);
+  }
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
     content: initialDocument.document,
     editable: !disabled,
-    extensions: [BodyImageDocument, BodyImageNode.configure({ target: imageTarget }), StarterKit.configure({
+    extensions: [BodyImageDocument, BodyImageNode.configure({ target: imageTarget }), BodyVideoNode.configure({ onEdit: openVideo }), StarterKit.configure({
       document: false,
       heading: { levels: [2, 3] }, hardBreak: { keepMarks: false },
       blockquote: false, code: false, codeBlock: false, horizontalRule: false,
@@ -98,7 +107,7 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
     onUpdate: ({ editor: current }) => callback.current({ version: 1, document: documentForStorage(current.getJSON()) }),
   });
   // 읽기 전용 전환이 초기화·저장 시 문서 변경 이벤트를 만들지 않도록 합니다.
-  useEffect(() => { editor?.setEditable(!disabled && !imageOpen, false); }, [editor, disabled, imageOpen]);
+  useEffect(() => { editor?.setEditable(!disabled && !imageOpen && !videoOpen, false); }, [editor, disabled, imageOpen, videoOpen]);
   // 구독 스냅샷은 첫 트랜잭션 전까지 null을 유지할 수 있으므로 현재 인스턴스를 읽습니다.
   const state = useEditorState({ editor, selector: () => ({
     count: editor ? newsDocumentToBody({ version: 1, document: editor.getJSON() as NewsRichNode }).join("\n\n").length : 0,
@@ -113,10 +122,10 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
   const unavailable = disabled || !editor;
   function button(icon: keyof typeof toolbarPaths, label: string, active: boolean | undefined, action: () => void, blocked = false) {
     return (
-      <button type="button" disabled={unavailable || blocked || (imageOpen && icon !== "image") || uploading} aria-label={label} title={label}
+      <button type="button" disabled={unavailable || blocked || (imageOpen && icon !== "image") || (videoOpen && icon !== "video") || uploading} aria-label={label} title={label}
         aria-pressed={active}
-        aria-expanded={icon === "link" ? linkOpen : icon === "image" ? imageOpen : undefined}
-        aria-controls={icon === "link" && linkOpen ? `${linkId}-panel` : icon === "image" && imageOpen ? `${bodyId}-image-panel` : undefined}
+        aria-expanded={icon === "link" ? linkOpen : icon === "image" ? imageOpen : icon === "video" ? videoOpen : undefined}
+        aria-controls={icon === "link" && linkOpen ? `${linkId}-panel` : icon === "image" && imageOpen ? `${bodyId}-image-panel` : icon === "video" && videoOpen ? `${bodyId}-video-panel` : undefined}
         onMouseDown={(event) => event.preventDefault()} onClick={action}
         className="inline-flex size-11 shrink-0 items-center justify-center rounded-control border border-transparent text-foreground enabled:hover:bg-primary-soft aria-pressed:border-primary aria-pressed:bg-primary-soft aria-pressed:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:opacity-40 lg:size-9"
       >
@@ -125,6 +134,10 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
         </svg>
       </button>
     );
+  }
+  function closeVideo() {
+    setVideoSelection(undefined);
+    editor?.commands.focus();
   }
   function closeImage() {
     setImageCursor(undefined);
@@ -166,12 +179,17 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
         })}
         {button("unlink", "링크 제거", undefined, () => editor?.chain().focus().extendMarkRange("link").unsetLink().run(), !state?.link)}
       </div>
-      <div role="group" aria-label="이미지" className="flex gap-0.5 border-l border-border px-1.5">
+      <div role="group" aria-label="이미지와 영상" className="flex gap-0.5 border-l border-border px-1.5">
         {button("image", "이미지 삽입", undefined, () => {
           if (!editor) return;
           if (imageOpen) { closeImage(); return; }
           setLinkOpen(false);
           setImageCursor(editor.state.selection.from);
+        })}
+        {button("video", "YouTube 영상 삽입", undefined, () => {
+          if (!editor) return;
+          if (videoOpen) { closeVideo(); return; }
+          openVideo({ position: editor.state.selection.from });
         })}
       </div>
       <div role="group" aria-label="편집 기록" className="flex gap-0.5 border-l border-border pl-1.5">
@@ -183,6 +201,8 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
       target={imageUploadEnabled ? imageTarget : undefined} hasSavedPost={Boolean(imageTarget)} fieldId={`${bodyId}-image-panel`}
       uploading={uploading} onUploading={(value) => { setUploading(value); onImageUploading(value); }}
       onClose={closeImage} /> : null}
+    {videoSelection && editor ? <AdminBodyVideoPicker editor={editor} selection={videoSelection}
+      fieldId={`${bodyId}-video-panel`} disabled={unavailable} onClose={closeVideo} /> : null}
     {linkOpen ? <div id={`${linkId}-panel`} className="grid min-w-0 gap-2 border-b border-border bg-surface p-3">
       <label htmlFor={linkId} className="text-small font-semibold">링크 주소</label>
       <input ref={linkInput} id={linkId} type="text" inputMode="url" data-unsaved-ignore value={url} maxLength={2048} disabled={unavailable}
@@ -200,7 +220,7 @@ export function AdminNewsRichEditor({ initialDocument, disabled, invalid, descri
     <div className="relative min-w-0">
       {!editor ? <p role="status" className="min-h-80 p-4 text-small text-muted-foreground">본문 편집기를 준비하고 있습니다.</p> : null}
       {editor && state?.empty ? <p aria-hidden="true" className="pointer-events-none absolute inset-x-4 top-4 my-3 leading-7 text-muted-foreground">{placeholder}</p> : null}
-      <div inert={imageOpen || disabled}><EditorContent editor={editor} /></div>
+      <div inert={imageOpen || videoOpen || disabled}><EditorContent editor={editor} /></div>
     </div>
     <div className="flex flex-wrap justify-end gap-x-2 border-t border-border px-4 py-2 text-small text-muted-foreground">
       {(state?.count ?? 0) > maxLength ? <span className="font-semibold text-danger">본문 글자 수 초과</span> : null}

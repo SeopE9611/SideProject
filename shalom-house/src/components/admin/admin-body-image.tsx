@@ -20,7 +20,7 @@ const uploadErrorCodes = new Set([
 export const BodyImageDocument = Node.create({
   name: "doc",
   topNode: true,
-  content: "(block | bodyImage)+",
+  content: "(block | bodyImage | youtubeVideo)+",
 });
 
 function BodyImageView({ node, editor, selected, deleteNode, extension }: NodeViewProps) {
@@ -52,19 +52,19 @@ export const BodyImageNode = Node.create<{ target?: ImageTarget }>({
   addNodeView: () => ReactNodeViewRenderer(BodyImageView),
 });
 
-export function insertBodyImage(editor: Editor, cursor: number, image: BodyImageReference) {
+export function insertBodyMedia(editor: Editor, cursor: number, type: "bodyImage" | "youtubeVideo", attrs: Record<string, unknown>) {
   if (editor.isDestroyed) return false;
   const transaction = editor.state.tr;
   const point = transaction.doc.resolve(cursor);
   let position = cursor;
-  if (point.depth === 1 && point.parent.isTextblock && point.parent.type.name === "paragraph" &&
+  if (type === "bodyImage" && point.depth === 1 && point.parent.isTextblock && point.parent.type.name === "paragraph" &&
       point.parentOffset > 0 && point.parentOffset < point.parent.content.size) {
     transaction.split(cursor);
     position++;
   } else if (point.depth > 0) {
     position = point.depth === 1 && point.parentOffset === 0 ? point.before(1) : point.after(1);
   }
-  const node = editor.schema.nodes.bodyImage.create(image);
+  const node = editor.schema.nodes[type].create(attrs);
   transaction.insert(position, node);
   const next = position + node.nodeSize;
   if (next === transaction.doc.content.size) transaction.insert(next, editor.schema.nodes.paragraph.create());
@@ -72,6 +72,10 @@ export function insertBodyImage(editor: Editor, cursor: number, image: BodyImage
   const selection = Selection.near(transaction.doc.resolve(next), 1);
   editor.view.dispatch(transaction.setSelection(selection).scrollIntoView());
   return true;
+}
+
+export function insertBodyImage(editor: Editor, cursor: number, image: BodyImageReference) {
+  return insertBodyMedia(editor, cursor, "bodyImage", image);
 }
 
 export function AdminBodyImagePicker({ editor, target, cursor, uploading, onUploading, onClose, fieldId, hasSavedPost }: {

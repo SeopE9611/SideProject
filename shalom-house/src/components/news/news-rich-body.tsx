@@ -1,3 +1,4 @@
+import { NewsBodyVideo } from "./news-body-video";
 import Image from "next/image";
 import { bodyImageUrl, type BodyImageDomain } from "@/features/news/body-image-reference";
 import { Fragment, type ReactNode } from "react";
@@ -29,6 +30,10 @@ export function NewsRichBody({ bodyDocument, images }: {
       case "orderedList": return <ol key={key} start={node.attrs?.start ?? 1} className="list-decimal space-y-2 pl-6">{content}</ol>;
       case "listItem": return <li key={key} className="min-w-0 space-y-2">{content}</li>;
       case "hardBreak": return <br key={key} />;
+      case "youtubeVideo": {
+        const { videoId, title } = node.attrs ?? {};
+        return videoId && title ? <NewsBodyVideo key={`${key}-${videoId}`} videoId={videoId} title={title} /> : null;
+      }
       case "bodyImage": {
         const id = node.attrs?.imageId;
         const size = id ? images?.sizes?.[id] : undefined;
