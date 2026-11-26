@@ -36,7 +36,7 @@ export function getProgramRepository(): ProgramRepository {
         return visualProgramFixtures.slice(0, normalizePublicProgramLimit(options?.limit));
       },
       async findPublishedNeighbors(current) {
-        return findFixtureContentNeighbors(current, visualProgramFixtures);
+        return findFixtureContentNeighbors(current, visualProgramFixtures.slice(0, PUBLIC_PROGRAM_DEFAULT_LIMIT));
       },
       async findPublishedBySlug(slug) {
         return visualProgramFixtures.find((item) => item.slug === slug) ?? null;

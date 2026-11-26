@@ -1,3 +1,5 @@
+import { isNewsCategory, type PublicNewsSearchOptions } from "./news.types";
+
 export const PUBLIC_NEWS_DEFAULT_LIMIT = 20;
 export const PUBLIC_NEWS_MINIMUM_LIMIT = 1;
 export const PUBLIC_NEWS_MAXIMUM_LIMIT = 50;
@@ -81,6 +83,17 @@ export function getPublicNewsReturnHref(value?: string): string {
   if (path === "/news" && (category === "notice" || category === "activity")) params.set("category", category);
   if (page > 1) params.set("page", String(page));
   return params.size ? path + "?" + params.toString() : path;
+}
+
+export function getPublicNewsNeighborScope(returnTo?: string): Pick<PublicNewsSearchOptions, "q" | "category"> {
+  const [path, query] = getPublicNewsReturnHref(returnTo).split("?", 2);
+  const params = new URLSearchParams(query);
+  const category = params.get("category");
+  return {
+    q: normalizePublicNewsSearchQuery(params.get("q") ?? undefined),
+    category: path === "/news/notices" ? "notice" : path === "/news/activities" ? "activity"
+      : isNewsCategory(category) ? category : undefined,
+  };
 }
 
 export function getPublicNewsNeighborHref(slug: string, returnTo?: string): string {

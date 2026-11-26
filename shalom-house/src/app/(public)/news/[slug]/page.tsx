@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { ContentDetailHeader } from "@/components/layout/content-detail-header";
 import { ContentAttachment } from "@/components/layout/content-attachment";
-import { getPublicNewsNeighborHref, getPublicNewsReturnHref } from "@/features/news/news.pagination";
+import { getPublicNewsNeighborHref, getPublicNewsNeighborScope, getPublicNewsReturnHref } from "@/features/news/news.pagination";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
@@ -54,7 +54,7 @@ export default async function NewsPostPage({ params, searchParams }: NewsPostPag
   const post = await getPublishedItem(slug);
   if (!post) notFound();
   const returnHref = getPublicNewsReturnHref(Array.isArray(query.returnTo) ? query.returnTo[0] : query.returnTo);
-  const neighbors = await getNewsRepository().findPublishedNeighbors(post).catch(() => {
+  const neighbors = await getNewsRepository().findPublishedNeighbors(post, getPublicNewsNeighborScope(returnHref)).catch(() => {
     console.error("소식 인접 게시물 조회 실패");
     return unavailableContentNeighbors;
   });
