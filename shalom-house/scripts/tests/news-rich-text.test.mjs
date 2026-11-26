@@ -182,3 +182,65 @@ test("프로그램 서식·링크 변경은 본문과 구분해 기록하고 기
   assert.match(snapshot.bodyDocumentHash, /^[a-f0-9]{64}$/);
   assert.equal(Object.hasOwn(snapshot, "bodyDocument"), false);
 });
+
+const youtubeId = "Abcd_123-xy";
+const video = (attrs = {}) => ({ type: "youtubeVideo", attrs: { videoId: youtubeId, title: "영상 제목", ...attrs } });
+
+test("YouTube 개별 영상 주소에서 ID만 추출", () => {
+  for (const url of [
+    `https://youtube.com/watch?v=${youtubeId}&t=42`,
+    `https://www.youtube.com/watch?v=${youtubeId}&list=playlist`,
+    `https://m.youtube.com/watch?v=${youtubeId}`,
+    `https://youtu.be/${youtubeId}?si=tracking`,
+    `https://youtube.com/shorts/${youtubeId}`,
+    `https://www.youtube.com/shorts/${youtubeId}`,
+    `https://www.youtube.com/embed/${youtubeId}?autoplay=1`,
+    `https://www.youtube-nocookie.com/embed/${youtubeId}`,
+  ]) assert.equal(rich.parseYouTubeVideoUrl(url), youtubeId, url);
+});
+
+test("사칭 호스트, 사용자 정보, 비표준 포트와 잘못된 형식 거부", () => {
+  for (const url of [
+    `https://youtube.com.example.org/watch?v=${youtubeId}`,
+    `https://myyoutube.com/watch?v=${youtubeId}`,
+    `https://user@www.youtube.com/watch?v=${youtubeId}`,
+    `https://@www.youtube.com/watch?v=${youtubeId}`,
+    `https://www.youtube.com:8443/watch?v=${youtubeId}`,
+    `http://www.youtube.com/watch?v=${youtubeId}`,
+    `<iframe src="https://www.youtube.com/embed/${youtubeId}"></iframe>`,
+    "javascript:void(0)", "data:text/html,hello", "https://youtube.com/playlist?list=playlist",
+    "https://youtube.com/@channel", "https://youtube.com/results?search_query=video",
+    "https://youtu.be/bad_id", "https://youtu.be/Abcd_123-xy/extra",
+    `https://www.youtube.com/watch?v=${youtubeId}&v=${youtubeId}`,
+    `https://www.youtube-nocookie.com/watch?v=${youtubeId}`,
+  ]) assert.equal(rich.parseYouTubeVideoUrl(url), null, url);
+});
+
+test("영상은 최상위에 세 개까지 허용하고 ID·제목만 저장", () => {
+  const p = paragraph(text("일반 본문"));
+  const valid = parse(doc(p, video({ title: "  영상  " }), video(), video()));
+  assert.equal(valid.document.content[1].attrs.title, "영상");
+  assert.deepEqual(Object.keys(valid.document.content[1].attrs), ["videoId", "title"]);
+  for (const invalid of [
+    doc(p, video(), video(), video(), video()),
+    doc(video()), doc(paragraph(video())), doc(p, video({ videoId: "short" })),
+    doc(p, video({ title: " " })), doc(p, video({ title: "가".repeat(181) })),
+    doc(p, video({ src: "https://example.org", autoplay: true })),
+  ]) assert.equal(parse(invalid), null);
+});
+
+test("영상 추가·수정·제거가 일반 텍스트와 이미지 참조에 영향 없음", () => {
+  const p = paragraph(text("일반 본문"));
+  const image = { type: "bodyImage", attrs: { imageId: "a".repeat(24), alt: "설명" } };
+  const baseline = parse(doc(p, image));
+  const added = parse(doc(p, video(), image));
+  const edited = parse(doc(p, video({ title: "수정" }), image));
+  for (const [before, after] of [[baseline, added], [added, edited], [edited, baseline]]) {
+    const resolved = rich.resolveNewsBodyUpdate(["일반 본문"], before, ["일반 본문"], after);
+    assert.deepEqual(resolved.body, ["일반 본문"]);
+    assert.deepEqual(resolved.bodyDocument, after);
+    assert.deepEqual(rich.bodyImageReferences(after), [image.attrs]);
+  }
+  const result = validation.validateAdminNewsDraftInput({ ...fields, bodyDocument: added }, true);
+  assert.equal(result.value.summary, "일반 본문");
+});

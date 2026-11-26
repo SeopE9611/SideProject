@@ -84,6 +84,7 @@ const webpValidation = load(resolve(root, "lib/server-webp-validation"));
 const storage = load(resolve(root, "features/news/body-image-storage"));
 const adminRoute = load(resolve(root, "app/api/admin/body-images/[domain]/[postId]/route"));
 const editor = load(resolve(root, "components/admin/admin-body-image"));
+const videoEditor = load(resolve(root, "components/admin/admin-body-video"));
 const { ObjectId } = require("mongodb");
 const { EditorState } = require("@tiptap/pm/state");
 const { getSchema } = require("@tiptap/react");
@@ -137,7 +138,7 @@ test("저장 시 소유·준비·만료 검증, 제거 확정 뒤 권한 철회 
 });
 
 test("Tiptap 스키마에서 커서 위치 삽입, 뒤 문단 유지, 삭제 후 재파싱", () => {
-  const schema = getSchema([editor.BodyImageDocument, editor.BodyImageNode, starter.configure({ document: false })]);
+  const schema = getSchema([editor.BodyImageDocument, editor.BodyImageNode, videoEditor.BodyVideoNode, starter.configure({ document: false })]);
   let state = EditorState.create({ schema, doc: schema.nodeFromJSON(doc(text("앞뒤")).document) });
   const view = { get state() { return state; }, schema, view: { dispatch: (tr) => { state = state.apply(tr); } } };
   assert.equal(editor.insertBodyImage(view, 2, { imageId: one, alt: "정원" }), true);
@@ -276,4 +277,26 @@ test("WebP MIME·서명·크기 제한과 정적 청크 구조를 검증", async
     assert.equal(result.ok, true);
     assert.equal(assets.isBodyImageWebpContainer(bytes, result.value.width, result.value.height), false);
   }
+});
+
+test("문단 중간에서 영상을 넣어도 기존 문장, 이미지와 본문 순서를 보존", () => {
+  const schema = getSchema([editor.BodyImageDocument, editor.BodyImageNode, videoEditor.BodyVideoNode, starter.configure({ document: false })]);
+  const initial = doc(text("앞뒤"), image(one), text("마무리"));
+  let state = EditorState.create({ schema, doc: schema.nodeFromJSON(initial.document) });
+  const view = { get state() { return state; }, schema, view: { dispatch: (tr) => { state = state.apply(tr); } } };
+  assert.equal(editor.insertBodyMedia(view, 2, "youtubeVideo", { videoId: "Abcd_123-xy", title: "영상" }), true);
+  const saved = rich.parseNewsBodyDocument({ version: 1, document: state.doc.toJSON() });
+  assert.deepEqual(rich.newsDocumentToBody(saved), rich.newsDocumentToBody(initial));
+  assert.deepEqual(rich.bodyImageReferences(saved), rich.bodyImageReferences(rich.parseNewsBodyDocument(initial)));
+  assert.deepEqual(saved.document.content.map(({ type }) => type), ["paragraph", "youtubeVideo", "bodyImage", "paragraph"]);
+});
+
+test("첫 상세 렌더링에는 외부 iframe이나 썸네일이 없음", () => {
+  const { createElement } = require("react");
+  const { renderToStaticMarkup } = require("react-dom/server");
+  const { NewsBodyVideo } = load(resolve(root, "components/news/news-body-video"));
+  const html = renderToStaticMarkup(createElement(NewsBodyVideo, { videoId: "Abcd_123-xy", title: "영상 제목" }));
+  assert.match(html, /영상 보기/);
+  assert.match(html, /https:\/\/www\.youtube\.com\/watch\?v=Abcd_123-xy/);
+  assert.doesNotMatch(html, /<iframe|<img|<link|youtube-nocookie/);
 });

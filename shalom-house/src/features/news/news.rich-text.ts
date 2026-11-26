@@ -2,9 +2,9 @@ import { BODY_IMAGE_ALT_LIMIT, BODY_IMAGE_LIMIT, isBodyImageId, type BodyImageRe
 
 export type NewsRichMark = { type: "bold" | "italic" | "link"; attrs?: { href: string } };
 export type NewsRichNode = {
-  type: "doc" | "paragraph" | "heading" | "text" | "hardBreak" | "bulletList" | "orderedList" | "listItem" | "bodyImage";
+  type: "doc" | "paragraph" | "heading" | "text" | "hardBreak" | "bulletList" | "orderedList" | "listItem" | "bodyImage" | "youtubeVideo";
   text?: string;
-  attrs?: { level?: 2 | 3; start?: number; imageId?: string; alt?: string };
+  attrs?: { level?: 2 | 3; start?: number; imageId?: string; alt?: string; videoId?: string; title?: string };
   marks?: NewsRichMark[];
   content?: NewsRichNode[];
 };
@@ -14,6 +14,45 @@ export const NEWS_DOCUMENT_MAX_BYTES = 48 * 1024;
 const MAX_NODES = 2000;
 const MAX_DEPTH = 12;
 const MAX_LIST_DEPTH = 3;
+
+export const BODY_VIDEO_LIMIT = 3;
+export const BODY_VIDEO_TITLE_LIMIT = 180;
+export const isYouTubeVideoId = (value: unknown): value is string =>
+  typeof value === "string" && value.length === 11 && /^[a-zA-Z0-9_-]+$/.test(value);
+
+export function normalizeBodyVideoTitle(value: unknown): string | null {
+  if (typeof value !== "string" || value.length > BODY_VIDEO_TITLE_LIMIT || /[\u0000-\u001f\u007f]/u.test(value)) return null;
+  return value.trim() || null;
+}
+
+export function parseYouTubeVideoUrl(value: string): string | null {
+  const input = value.trim();
+  if (input.length > 2048 || !/^https:\/\//i.test(input) || /[\s\\<>\u0000-\u001f\u007f]/u.test(input) ||
+      input.slice(8).split(/[/?#]/, 1)[0].includes("@")) return null;
+  let url: URL;
+  try { url = new URL(input); } catch { return null; }
+  if (url.protocol !== "https:" || url.username || url.password || url.port) return null;
+
+  const mainHost = url.hostname === "youtube.com" || url.hostname === "www.youtube.com";
+  const watchHost = mainHost || url.hostname === "m.youtube.com";
+  const privacyHost = url.hostname === "www.youtube-nocookie.com" || url.hostname === "youtube-nocookie.com";
+  let id: string | null | undefined;
+  if (watchHost && url.pathname === "/watch") {
+    const values = url.searchParams.getAll("v");
+    if (values.length === 1) id = values[0];
+  } else if (url.hostname === "youtu.be") {
+    id = /^\/([^/]+)$/.exec(url.pathname)?.[1];
+  } else if (mainHost && url.pathname.startsWith("/shorts/")) {
+    id = /^\/shorts\/([^/]+)$/.exec(url.pathname)?.[1];
+  } else if (watchHost || privacyHost) {
+    id = /^\/embed\/([^/]+)$/.exec(url.pathname)?.[1];
+  }
+  return isYouTubeVideoId(id) ? id : null;
+}
+
+export function youtubeWatchUrl(videoId: string) {
+  return `https://www.youtube.com/watch?v=${videoId}`;
+}
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -65,6 +104,7 @@ export function parseNewsBodyDocument(input: unknown): NewsBodyDocument | null {
   let count = 0;
   let paragraphs = 0;
   let textLength = 0;
+  let videos = 0;
   const imageIds = new Set<string>();
   function parse(value: unknown, depth: number, lists: number): NewsRichNode | null {
     if (++count > MAX_NODES || depth > MAX_DEPTH || !record(value) || typeof value.type !== "string") return null;
@@ -77,6 +117,13 @@ export function parseNewsBodyDocument(input: unknown): NewsBodyDocument | null {
           typeof alt !== "string" || !alt.trim() || alt.length > BODY_IMAGE_ALT_LIMIT || /[\u0000-\u001f\u007f]/u.test(alt)) return null;
       imageIds.add(imageId);
       return { type, attrs: { imageId, alt: alt.trim() } };
+    }
+    if (type === "youtubeVideo") {
+      if (depth !== 1 || ++videos > BODY_VIDEO_LIMIT || !keys(value, ["type", "attrs"]) ||
+          !record(value.attrs) || !keys(value.attrs, ["videoId", "title"])) return null;
+      const { videoId } = value.attrs;
+      const title = normalizeBodyVideoTitle(value.attrs.title);
+      return isYouTubeVideoId(videoId) && title ? { type, attrs: { videoId, title } } : null;
     }
     if (type === "text") {
       if (!keys(value, ["type", "text", "marks"]) || typeof value.text !== "string" || !value.text.length || value.text.length > 10000) return null;
@@ -123,7 +170,7 @@ export function parseNewsBodyDocument(input: unknown): NewsBodyDocument | null {
       const node = parse(child, depth + 1, nextLists);
       if (!node) return null;
       const allowed = type === "paragraph" || type === "heading" ? ["text", "hardBreak"] :
-        isList ? ["listItem"] : type === "listItem" ? ["paragraph", "bulletList", "orderedList"] : ["paragraph", "heading", "bulletList", "orderedList", "bodyImage"];
+        isList ? ["listItem"] : type === "listItem" ? ["paragraph", "bulletList", "orderedList"] : ["paragraph", "heading", "bulletList", "orderedList", "bodyImage", "youtubeVideo"];
       if (!allowed.includes(node.type)) return null;
       const previous = content[content.length - 1];
       if (node.type === "text" && previous?.type === "text" && JSON.stringify(node.marks) === JSON.stringify(previous.marks)) previous.text += node.text!;
