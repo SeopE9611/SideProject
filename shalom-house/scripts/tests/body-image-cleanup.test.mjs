@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ObjectId } from "mongodb";
-import { scanBodyImageCleanup } from "../admin/body-image-cleanup.mts";
+import { parseBodyImageCleanupArgs, scanBodyImageCleanup } from "../admin/body-image-cleanup.mts";
 import { loadBodyImageRichText } from "../admin/load-body-image-rich-text.mjs";
 
 const richText = await loadBodyImageRichText();
@@ -36,6 +36,8 @@ function mock({ posts, objects, failedRemove = false, listError = false, infoErr
   const updates = [];
   const deletes = [];
   const orphans = [];
+  const candidates = [];
+  const inspected = [];
   let removeFails = failedRemove;
   const collection = {
     find(filter, options) {
@@ -84,6 +86,7 @@ function mock({ posts, objects, failedRemove = false, listError = false, infoErr
       } };
     },
     async info(name) {
+      inspected.push(name);
       if (infoError) return { error: infoError };
       return paths.has(name) ? { data: { name, bucketId: bucket, size: 125, id: name } }
         : { error: { status: 404, code: "NoSuchKey" } };
@@ -99,22 +102,78 @@ function mock({ posts, objects, failedRemove = false, listError = false, infoErr
     },
   };
   return {
-    paths, updates, deletes, orphans,
-    run: (apply = false) => scanBodyImageCleanup(collection, storage, richText, {
-      domain: "news", bucket, cutoff, apply, onOrphan: (path) => orphans.push(path),
+    paths, updates, deletes, orphans, candidates, inspected,
+    run: (apply = false, target) => scanBodyImageCleanup(collection, storage, richText, {
+      domain: "news", bucket, cutoff, apply, target, onOrphan: (path) => orphans.push(path),
+      onCandidate: (candidate) => candidates.push(candidate),
     }),
   };
 }
 
-test("dry-run은 삭제 가능 건수와 바이트만 집계", async () => {
-  const owner = post();
+test("dry-run은 후보별 상태와 존재 여부를 출력하고 쓰지 않음", async () => {
+  const owner = post({ bodyImages: [asset(), asset({ id: other, state: "discarded" })] });
   const fixture = mock({ posts: [owner], objects: [pathFor(owner)] });
   const result = await fixture.run();
   assert.equal(result.candidates, 1);
   assert.equal(result.candidateBytes, 125);
   assert.equal(result.deleted, 0);
+  assert.equal(result.missing, 1);
+  assert.deepEqual(fixture.candidates, [
+    { domain: "news", postId: owner._id.toHexString(), imageId: id, state: "ready",
+      expiresAt: past.toISOString(), path: pathFor(owner), bytes: 125, exists: true },
+    { domain: "news", postId: owner._id.toHexString(), imageId: other, state: "discarded",
+      expiresAt: past.toISOString(), path: pathFor(owner, other), bytes: null, exists: false },
+  ]);
   assert.deepEqual(fixture.updates, []);
   assert.deepEqual(fixture.deletes, []);
+});
+
+test("지정한 게시물과 이미지 한 건에만 dry-run 및 삭제를 적용", async () => {
+  const owner = post({ bodyImages: [asset(), asset({ id: other })] });
+  const secondOwner = post();
+  const path = pathFor(owner);
+  const target = { domain: "news", postId: owner._id.toHexString(), imageId: id };
+  const fixture = mock({
+    posts: [owner, secondOwner], objects: [path, pathFor(owner, other), pathFor(secondOwner)],
+  });
+  assert.equal((await fixture.run(false, target)).candidates, 1);
+  assert.deepEqual(fixture.inspected, [path]);
+  assert.deepEqual(fixture.updates, []);
+  assert.equal((await fixture.run(true, target)).deleted, 1);
+  assert.deepEqual(fixture.deletes, [path]);
+  assert.deepEqual(owner.bodyImages, [asset({ id: other })]);
+  assert.deepEqual(secondOwner.bodyImages, [asset()]);
+  assert.ok(fixture.updates.every(({ filter }) =>
+    filter._id.equals(owner._id) && filter.bodyImages.$elemMatch.id === id));
+});
+
+test("지정 범위에 소유 레코드가 없는 객체는 보고만 함", async () => {
+  const owner = post();
+  const path = pathFor(owner, other);
+  const fixture = mock({ posts: [owner], objects: [path, pathFor(owner)] });
+  const target = { domain: "news", postId: owner._id.toHexString(), imageId: other };
+  assert.equal((await fixture.run(true, target)).orphaned, 1);
+  assert.deepEqual(fixture.orphans, [path]);
+  assert.deepEqual(fixture.inspected, [path]);
+  assert.deepEqual(fixture.updates, []);
+  assert.deepEqual(fixture.deletes, []);
+});
+
+test("명시적인 전체 삭제나 완전한 단일 이미지 범위만 허용", () => {
+  const target = { domain: "programs", postId: id, imageId: other };
+  const flags = ["--domain", "programs", "--post-id", id, "--image-id", other];
+  assert.deepEqual(parseBodyImageCleanupArgs([]), { apply: false });
+  assert.deepEqual(parseBodyImageCleanupArgs(["--dry-run"]), { apply: false });
+  assert.deepEqual(parseBodyImageCleanupArgs(["--all", "--apply"]), { apply: true });
+  assert.deepEqual(parseBodyImageCleanupArgs(flags), { apply: false, target });
+  assert.deepEqual(parseBodyImageCleanupArgs([...flags, "--apply"]), { apply: true, target });
+  for (const args of [
+    ["--apply"], ["--all"], ["--dry-run", "--apply", "--all"], ["--apply", "--all", ...flags],
+    ["--apply", ...flags.slice(0, 4)], [...flags, "--apply", "--apply"],
+    ["--domain", "gallery", ...flags.slice(2)],
+    [...flags.slice(0, 3), "../invalid", ...flags.slice(4)],
+    [...flags.slice(0, -1), "bad"],
+  ]) assert.equal(parseBodyImageCleanupArgs(args), null, args.join(" "));
 });
 
 test("미참조·만료 객체만 삭제하고 연결·미만료·휴지통 이미지 보존", async () => {

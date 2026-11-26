@@ -19,6 +19,46 @@ const idPattern = /^[a-f0-9]{24}$/;
 const readFields = { updatedAt: 1, deletedAt: 1, body: 1, bodyDocument: 1, bodyImages: 1 };
 const majority = { writeConcern: { w: "majority" as const } };
 
+type CleanupTarget = { domain: BodyImageDomain; postId: string; imageId: string };
+type CleanupCandidate = CleanupTarget & {
+  state: BodyImageAsset["state"];
+  expiresAt: string;
+  path: string;
+  bytes: number | null;
+  exists: boolean;
+};
+
+export function parseBodyImageCleanupArgs(args: string[]): { apply: boolean; target?: CleanupTarget } | null {
+  const options = new Map<string, string | true>();
+  for (let index = 0; index < args.length; index++) {
+    const option = args[index];
+    if (options.has(option)) return null;
+    if (["--apply", "--dry-run", "--all"].includes(option)) {
+      options.set(option, true);
+    } else if (["--domain", "--post-id", "--image-id"].includes(option)) {
+      const value = args[++index];
+      if (!value || value.startsWith("--")) return null;
+      options.set(option, value);
+    } else {
+      return null;
+    }
+  }
+
+  const apply = options.has("--apply");
+  const all = options.has("--all");
+  if ((apply && options.has("--dry-run")) || (all && !apply)) return null;
+  const domain = options.get("--domain");
+  const postId = options.get("--post-id");
+  const imageId = options.get("--image-id");
+  if (domain === undefined && postId === undefined && imageId === undefined) {
+    return apply && !all ? null : { apply };
+  }
+  if (all || (domain !== "news" && domain !== "programs") ||
+      typeof postId !== "string" || !idPattern.test(postId) ||
+      typeof imageId !== "string" || !idPattern.test(imageId)) return null;
+  return { apply, target: { domain, postId, imageId } };
+}
+
 function classify(
   post: CleanupPost,
   asset: BodyImageAsset | undefined,
@@ -114,25 +154,54 @@ async function reportOrphans(
 
 export async function scanBodyImageCleanup(
   collection: Collection<CleanupPost>, storage: Storage, richText: RichText,
-  { domain, bucket, apply = false, cutoff = new Date(), onOrphan = () => {}, onFailure = () => {} }: {
+  { domain, bucket, apply = false, cutoff = new Date(), target,
+    onCandidate = () => {}, onOrphan = () => {}, onFailure = () => {} }: {
     domain: BodyImageDomain;
     bucket: string;
     apply?: boolean;
     cutoff?: Date;
+    target?: CleanupTarget;
+    onCandidate?: (candidate: CleanupCandidate) => void;
     onOrphan?: (path: string) => void;
     onFailure?: (path: string) => void;
   },
 ) {
-  if (domain !== "news" && domain !== "programs") throw new Error("cleanup_scope_invalid");
+  if ((domain !== "news" && domain !== "programs") ||
+      (target && (target.domain !== domain || !idPattern.test(target.postId) || !idPattern.test(target.imageId))))
+    throw new Error("cleanup_scope_invalid");
   const result = {
     candidates: 0, candidateBytes: 0, preserved: 0, skipped: 0, failed: 0,
     orphaned: 0, deleted: 0, missing: 0, metadataOnly: 0, incomplete: false,
   };
   try {
-    result.orphaned = await reportOrphans(collection, storage, domain, onOrphan);
-    for await (const post of postsWithImages(collection)) {
+    let posts: AsyncIterable<CleanupPost> | CleanupPost[];
+    if (target) {
+      const owner = await collection.findOne({ _id: new ObjectId(target.postId) }, { projection: readFields });
+      if (!owner || owner.bodyImages == null ||
+          (Array.isArray(owner.bodyImages) && !owner.bodyImages.some((asset) => asset?.id === target.imageId))) {
+        const path = `shalom-house/${domain}/${target.postId}/body-images/${target.imageId}.webp`;
+        try {
+          if (await storageObject(storage, path, bucket)) {
+            result.orphaned++;
+            onOrphan(path);
+          } else {
+            result.skipped++;
+          }
+        } catch {
+          result.failed++;
+          onFailure(path);
+        }
+        return result;
+      }
+      posts = [owner];
+    } else {
+      result.orphaned = await reportOrphans(collection, storage, domain, onOrphan);
+      posts = postsWithImages(collection);
+    }
+    for await (const post of posts) {
       if (!Array.isArray(post.bodyImages)) { result.skipped++; continue; }
       for (const asset of post.bodyImages) {
+        if (target && (post._id.toHexString() !== target.postId || asset?.id !== target.imageId)) continue;
         const status = classify(post, asset, bucket, cutoff, richText);
         if (status !== "eligible") { result[status]++; continue; }
         const path = `shalom-house/${domain}/${post._id.toHexString()}/body-images/${asset.id}.webp`;
@@ -144,7 +213,13 @@ export async function scanBodyImageCleanup(
           } else {
             result.missing++;
           }
-          if (!apply) continue;
+          if (!apply) {
+            onCandidate({
+              domain, postId: post._id.toHexString(), imageId: asset.id, state: asset.state,
+              expiresAt: asset.expiresAt!.toISOString(), path, bytes: object?.bytes ?? null, exists: object !== null,
+            });
+            continue;
+          }
 
           const latest = await collection.findOne({ _id: post._id }, { projection: readFields });
           const currentAsset = latest?.bodyImages?.find((item) => item?.id === asset.id);
