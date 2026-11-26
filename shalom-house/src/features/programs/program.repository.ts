@@ -1,3 +1,4 @@
+import { findFixtureContentNeighbors, noContentNeighbors, type ContentNeighbors, type NeighborAnchor } from "@/features/content/public-content-neighbors";
 import { MongoProgramRepository } from "./program.mongo-repository";
 import { isVisualFixtureEnabled, visualProgramFixtures } from "@/content/fixtures/visual.fixture";
 import type { PublicProgram, PublicProgramSummary } from "./program.types";
@@ -12,6 +13,7 @@ export function normalizePublicProgramLimit(limit?: number): number {
 export interface ProgramRepository {
   listPublishedSitemapEntries(options?: { limit?: number }): Promise<readonly PublicSitemapEntry[]>;
   listPublished(options?: { limit?: number }): Promise<readonly PublicProgramSummary[]>;
+  findPublishedNeighbors(current: NeighborAnchor): Promise<ContentNeighbors>;
   findPublishedBySlug(slug: string): Promise<PublicProgram | null>;
 }
 const emptyProgramRepository: ProgramRepository = {
@@ -21,6 +23,7 @@ const emptyProgramRepository: ProgramRepository = {
   async listPublished() {
     return [];
   },
+  async findPublishedNeighbors() { return noContentNeighbors; },
   async findPublishedBySlug() {
     return null;
   },
@@ -31,6 +34,9 @@ export function getProgramRepository(): ProgramRepository {
       ...emptyProgramRepository,
       async listPublished(options) {
         return visualProgramFixtures.slice(0, normalizePublicProgramLimit(options?.limit));
+      },
+      async findPublishedNeighbors(current) {
+        return findFixtureContentNeighbors(current, visualProgramFixtures);
       },
       async findPublishedBySlug(slug) {
         return visualProgramFixtures.find((item) => item.slug === slug) ?? null;

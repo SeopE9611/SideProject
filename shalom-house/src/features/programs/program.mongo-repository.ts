@@ -1,3 +1,4 @@
+import { findMongoContentNeighbors, type NeighborAnchor } from "@/features/content/public-content-neighbors";
 import { bodyImageSizes } from "@/features/news/body-image-assets";
 import { newsDocumentToBody, parseNewsBodyDocument, sameNewsBodyText } from "../news/news.rich-text";
 import { ObjectId, type Document, type Filter, type WithId } from "mongodb";
@@ -53,8 +54,8 @@ function summary(document: WithId<Document>, cover?: PublicGalleryCoverReference
     sortOrder: document.sortOrder, publishedAt: document.publishedAt.toISOString(), updatedAt: document.updatedAt.toISOString(),
     coverImage: image(cover), attachment: attachment(document) };
 }
-function publicFilter(now: Date): Filter<MongoProgramDocument> { return { publicationStatus: "published", approvalStatus: "approved",
-  publishedAt: { $ne: null, $lte: now }, $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }] }; }
+function publicFilter(now: Date) { return { publicationStatus: "published", approvalStatus: "approved",
+  publishedAt: { $ne: null, $lte: now }, $or: [{ deletedAt: { $exists: false } }, { deletedAt: null }] } satisfies Filter<MongoProgramDocument>; }
 const projection = { slug: 1, category: 1, title: 1, summary: 1, purpose: 1, operationStatusLabel: 1, sortOrder: 1,
   publicationStatus: 1, approvalStatus: 1, publishedAt: 1, createdAt: 1, updatedAt: 1, deletedAt: 1,
   coverGalleryItemId: 1, attachment: 1 } as const;
@@ -85,6 +86,18 @@ export class MongoProgramRepository implements ProgramRepository {
       return [summary(document, document.coverGalleryItemId instanceof ObjectId ? covers.get(document.coverGalleryItemId.toHexString()) : null)];
     });
   }
+  async findPublishedNeighbors(current: NeighborAnchor) {
+    const now = new Date();
+    const collection = (await getMongoDatabase()).collection(PROGRAM_COLLECTION_NAME);
+    return findMongoContentNeighbors(collection, current, publicFilter(now),
+      { ...projection, body: 1, bodyDocument: 1 }, (candidate) => {
+        if (!isValidPublishedProgramDocument(candidate, { requireBody: true, now })) return false;
+        if (candidate.bodyDocument === undefined) return true;
+        const rich = parseNewsBodyDocument(candidate.bodyDocument);
+        return rich !== null && sameNewsBodyText(candidate.body, newsDocumentToBody(rich));
+      });
+  }
+
   async findPublishedBySlug(slug: string): Promise<PublicProgram | null> {
     if (!isValidProgramSlug(slug)) return null;
     const now = new Date();
