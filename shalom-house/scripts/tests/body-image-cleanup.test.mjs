@@ -31,7 +31,10 @@ function clone(value) {
   return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, clone(item)]));
 }
 
-function mock({ posts, objects, failedRemove = false, listError = false, infoError, beforeClaim }) {
+const productionMissing = { name: "StorageApiError", status: 400, statusCode: "404", code: "NoSuchKey" };
+
+function mock({ posts, objects, failedRemove = false, listError = false, infoError,
+  missingError = { status: 404, code: "NoSuchKey" }, beforeClaim }) {
   const paths = new Set(objects);
   const updates = [];
   const deletes = [];
@@ -89,7 +92,7 @@ function mock({ posts, objects, failedRemove = false, listError = false, infoErr
       inspected.push(name);
       if (infoError) return { error: infoError };
       return paths.has(name) ? { data: { name, bucketId: bucket, size: 125, id: name } }
-        : { error: { status: 404, code: "NoSuchKey" } };
+        : { error: missingError };
     },
     async remove([name]) {
       deletes.push(name);
@@ -241,15 +244,81 @@ test("Storage 목록이 불완전하면 삭제를 시작하지 않음", async ()
   assert.deepEqual(fixture.deletes, []);
 });
 
-test("일반 404는 객체 부재로 간주하지 않고 파일과 메타데이터를 보존", async () => {
-  const owner = post();
-  const fixture = mock({
-    posts: [owner], objects: [pathFor(owner)], infoError: { status: 404, code: "not_found" },
+test("운영 NoSuchKey 응답에서 메타데이터와 객체가 없는 지정 범위는 건너뜀", async () => {
+  const owner = post({ bodyImages: [] });
+  const fixture = mock({ posts: [owner], objects: [], missingError: productionMissing });
+  const target = { domain: "news", postId: owner._id.toHexString(), imageId: id };
+  const report = await fixture.run(false, target);
+  assert.deepEqual(report, {
+    candidates: 0, candidateBytes: 0, preserved: 0, skipped: 1, failed: 0,
+    orphaned: 0, deleted: 0, missing: 0, metadataOnly: 0, incomplete: false,
   });
+  assert.deepEqual(fixture.inspected, [pathFor(owner)]);
+  assert.deepEqual(fixture.updates, []);
+  assert.deepEqual(fixture.deletes, []);
+});
+
+test("운영 NoSuchKey 응답에서 남은 메타데이터만 정리", async () => {
+  const owner = post({ bodyImages: [asset({ state: "discarded" })] });
+  const fixture = mock({ posts: [owner], objects: [], missingError: productionMissing });
+  const target = { domain: "news", postId: owner._id.toHexString(), imageId: id };
+  const report = await fixture.run(true, target);
+  assert.equal(report.missing, 1);
+  assert.equal(report.metadataOnly, 1);
+  assert.equal(report.failed, 0);
+  assert.equal(report.incomplete, false);
+  assert.deepEqual(owner.bodyImages, []);
+  assert.deepEqual(fixture.deletes, []);
+});
+
+test("정상 삭제 뒤 같은 대상의 재조회는 운영 NoSuchKey 응답에서 건너뜀", async () => {
+  const owner = post();
+  const path = pathFor(owner);
+  const fixture = mock({ posts: [owner], objects: [path], missingError: productionMissing });
+  const target = { domain: "news", postId: owner._id.toHexString(), imageId: id };
+  assert.equal((await fixture.run(true, target)).deleted, 1);
+  assert.deepEqual(owner.bodyImages, []);
+  const writes = fixture.updates.length;
+  const report = await fixture.run(false, target);
+  assert.equal(report.skipped, 1);
+  assert.equal(report.failed, 0);
+  assert.equal(report.candidates, 0);
+  assert.equal(report.incomplete, false);
+  assert.equal(fixture.updates.length, writes);
+  assert.deepEqual(fixture.deletes, [path]);
+});
+
+test("기존 HTTP 404의 statusCode NoSuchKey 응답도 계속 건너뜀", async () => {
+  const owner = post({ bodyImages: [] });
+  const fixture = mock({ posts: [owner], objects: [], missingError: { status: 404, statusCode: "NoSuchKey" } });
+  const target = { domain: "news", postId: owner._id.toHexString(), imageId: id };
+  const report = await fixture.run(false, target);
+  assert.equal(report.skipped, 1);
+  assert.equal(report.failed, 0);
+  assert.deepEqual(fixture.updates, []);
+  assert.deepEqual(fixture.deletes, []);
+});
+
+for (const [name, infoError] of [
+  ["일반 400", { status: 400, statusCode: "400", code: "BadRequest" }],
+  ["일반 404", { status: 404, code: "not_found" }],
+  ["코드 불일치", { status: 400, statusCode: "404", code: "not_found" }],
+  ["서비스 코드 누락", { status: 400, statusCode: "404" }],
+  ["상태 코드 불일치", { status: 400, statusCode: "400", code: "NoSuchKey" }],
+  ["인증 오류", { status: 401, statusCode: "401", code: "InvalidJWT" }],
+  ["권한 오류", { status: 403, statusCode: "404", code: "NoSuchKey" }],
+  ["잘못된 버킷", { status: 400, statusCode: "404", code: "BucketNotFound" }],
+  ["서버 오류", { status: 500, statusCode: "404", code: "NoSuchKey" }],
+  ["네트워크 오류", new TypeError("fetch failed")],
+  ["시간 초과", new DOMException("timed out", "TimeoutError")],
+]) test(`${name} 응답에서 파일과 메타데이터를 보존`, async () => {
+  const owner = post();
+  const fixture = mock({ posts: [owner], objects: [pathFor(owner)], infoError });
   assert.equal((await fixture.run(true)).failed, 1);
   assert.equal(owner.bodyImages.length, 1);
   assert.equal(fixture.paths.size, 1);
   assert.deepEqual(fixture.updates, []);
+  assert.deepEqual(fixture.deletes, []);
 });
 
 test("MongoDB 50건 경계를 넘어도 정리 대상을 모두 집계", async () => {

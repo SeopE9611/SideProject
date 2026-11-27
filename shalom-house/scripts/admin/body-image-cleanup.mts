@@ -105,6 +105,8 @@ async function storageObject(storage: Storage, path: string, bucket: string) {
   if (error) {
     const code = "code" in error ? error.code : undefined;
     if (error.status === 404 && (code === "NoSuchKey" || error.statusCode === "NoSuchKey")) return null;
+    // Storage가 HTTP 400으로 감싼 객체 부재 응답도 서비스 코드까지 일치할 때만 허용합니다.
+    if (error.status === 400 && error.statusCode === "404" && code === "NoSuchKey") return null;
     throw new Error("storage_info_failed");
   }
   if (!data || data.name !== path || data.bucketId !== bucket || !data.id ||
