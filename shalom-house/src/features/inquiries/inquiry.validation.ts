@@ -10,7 +10,7 @@ export function validatePublicInquiryInput(raw: unknown) {
     return { ok: false as const, fieldErrors: { form: "허용되지 않은 입력입니다." } };
   const kind = typeof raw.kind === "string" ? raw.kind.trim() : "";
   const name = typeof raw.name === "string" ? raw.name.trim() : "";
-  const phone = typeof raw.phone === "string" ? raw.phone.trim() : "";
+  const phone = typeof raw.phone === "string" ? raw.phone : "";
   const email = typeof raw.email === "string" ? raw.email.trim().toLowerCase() : "";
   const message = typeof raw.message === "string" ? raw.message.trim() : "";
   const website = typeof raw.website === "string" ? raw.website.trim() : "";
@@ -18,10 +18,10 @@ export function validatePublicInquiryInput(raw: unknown) {
   if (name.length < 1 || name.length > 80 || forbidden.test(name) || lineForbidden.test(name))
     e.name = "이름은 한 줄로 1~80자 입력해 주세요.";
   if (
-    phone &&
-    (phone.length < 8 || phone.length > 30 || !/^\+?[0-9 ()-]+$/.test(phone) || (phone.match(/\d/g)?.length ?? 0) < 8)
+    (raw.phone !== undefined && typeof raw.phone !== "string") ||
+    (phone && (phone.length < 8 || phone.length > 30 || /[^0-9]/.test(phone)))
   )
-    e.phone = "전화번호 형식을 확인해 주세요.";
+    e.phone = "전화번호는 숫자만 8~30자로 입력해 주세요.";
   if (email && (email.length > 254 || lineForbidden.test(email) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))
     e.email = "이메일 형식을 확인해 주세요.";
   if (!phone && !email) e.contact = "전화번호 또는 이메일 중 하나 이상 입력해 주세요.";

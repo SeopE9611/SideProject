@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import {
   inquiryKindLabels,
   inquiryKinds,
@@ -20,6 +20,27 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState("");
+  const lastPhoneValue = useRef("");
+  const [phoneInputError, setPhoneInputError] = useState("");
+  function rejectPhoneInput(value: string): boolean {
+    if (/[^0-9]/.test(value)) {
+      setPhoneInputError("숫자가 아닌 문자가 포함되어 입력하지 못했어요.");
+      return true;
+    }
+    if (value.length > 30) {
+      setPhoneInputError("30자를 초과하여 입력하지 못했어요.");
+      return true;
+    }
+    return false;
+  }
+  function handlePhoneInput(input: HTMLInputElement) {
+    if (rejectPhoneInput(input.value)) {
+      input.value = lastPhoneValue.current;
+    } else if (input.value !== lastPhoneValue.current) {
+      lastPhoneValue.current = input.value;
+      setPhoneInputError("");
+    }
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || !consent) return;
@@ -40,6 +61,8 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
           `문의가 접수되었습니다.\n접수번호: ${body.reference}\n담당자가 입력한 연락처로 확인 후 안내드리겠습니다.`,
         );
         form.reset();
+        lastPhoneValue.current = "";
+        setPhoneInputError("");
         setConsent(false);
       } else if (body?.error === "validation") {
         setErrors(body.fieldErrors ?? {});
@@ -125,14 +148,33 @@ export function PublicInquiryForm({ initialKind, phoneFallback }: { initialKind:
             <input
               id="inquiry-phone"
               name="phone"
+              type="tel"
+              inputMode="numeric"
               autoComplete="tel"
-              className={fieldClassName}
+              placeholder="01012345678"
+              className={`${fieldClassName} placeholder:text-muted-foreground placeholder:opacity-100`}
+              onInput={(event) => {
+                if (!event.nativeEvent.isComposing) handlePhoneInput(event.currentTarget);
+              }}
+              onCompositionEnd={(event) => handlePhoneInput(event.currentTarget)}
+              onBlur={(event) => handlePhoneInput(event.currentTarget)}
+              onPaste={(event) => {
+                if (rejectPhoneInput(event.clipboardData.getData("text/plain"))) event.preventDefault();
+              }}
+              onDrop={(event) => {
+                if (rejectPhoneInput(event.dataTransfer.getData("text/plain"))) event.preventDefault();
+              }}
               aria-invalid={errors.phone || errors.contact ? true : undefined}
               aria-describedby={joinDescriptionIds(
+                "inquiry-phone-help",
                 errors.phone && "phone-error",
                 errors.contact && "inquiry-contact-error",
               )}
             />
+            <p id="inquiry-phone-help" className="text-safe-wrap mt-1 text-small text-muted-foreground">
+              숫자만 입력해 주세요.
+              <span aria-live="polite" className="block">{phoneInputError}</span>
+            </p>
             {error("phone")}
           </div>
           <div>
