@@ -85,26 +85,32 @@ export async function NewsListPage({ basePath, title, description, fixedCategory
         ]}
       />
 
-      <div className="mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-12">
+      <div className="@container mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-12">
         <form
           key={queryHref(basePath, currentPage, q, category)}
           action={basePath}
           method="get"
           role="search"
           aria-label="소식 검색"
-          className={`grid items-end gap-4 filter-toolbar p-5 sm:px-7 sm:py-6 ${
+          className={`grid grid-cols-1 items-end gap-4 filter-toolbar p-5 sm:px-7 sm:py-6 ${
             fixedCategory
-              ? "grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]"
-              : "grid-cols-2 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
+              ? "@md:grid-cols-[minmax(0,1fr)_auto]"
+              : "@3xs:grid-cols-2 @xl:grid-cols-[minmax(0,1fr)_10rem_auto]"
           }`}
         >
-          <div className={fixedCategory ? "min-w-0" : "col-span-2 min-w-0 sm:col-span-1"}>
-            <label className="block text-small font-bold" htmlFor="news-query">
-              검색어
-            </label>
+          <div className={fixedCategory ? "min-w-0" : "min-w-0 @3xs:col-span-2 @xl:col-span-1"}>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <label className="text-small font-bold" htmlFor="news-query">
+                검색어
+              </label>
+              <p id="news-query-help" className="text-safe-wrap text-small text-muted-foreground">
+                제목 또는 요약에서 검색합니다.
+              </p>
+            </div>
             <input
-              className="mt-2 min-h-13 w-full rounded-control border border-border-strong bg-surface px-4 text-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+              className="mt-2 min-h-13 w-full rounded-control border border-border-strong bg-surface px-4 text-base placeholder:text-muted-foreground placeholder:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
               id="news-query"
+              aria-describedby="news-query-help"
               name="q"
               type="search"
               defaultValue={q}
