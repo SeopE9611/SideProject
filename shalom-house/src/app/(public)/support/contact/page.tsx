@@ -29,20 +29,12 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
         adminAction={<PublicAdminEditLink href="/admin/site-content/contact-information" label="연락처 정보 수정" />}
       />
       <div className="mx-auto grid max-w-site items-start gap-9 px-page py-9 sm:px-page-wide sm:py-12 lg:grid-cols-12 lg:gap-12">
-        <section id="inquiry-form" aria-labelledby="inquiry-heading" className="min-w-0 lg:col-span-8">
-          <p className="text-small font-bold text-accent">온라인 접수</p>
-          <h2 id="inquiry-heading" className="mt-2 text-[1.75rem] font-bold tracking-[-0.025em]">
-            문의 내용을 남겨 주세요
-          </h2>
-          <PublicInquiryForm key={initialKind} initialKind={initialKind} phoneFallback={contact.phone} />
-        </section>
         <aside
           aria-labelledby="contact-paths-heading"
           className="min-w-0 rounded-panel bg-paper p-6 sm:p-8 lg:col-span-4"
         >
-          <p className="text-small font-bold text-accent">대표 문의</p>
-          <h2 id="contact-paths-heading" className="mt-2 text-heading font-bold">
-            다른 문의 방법
+          <h2 id="contact-paths-heading" className="text-heading font-bold">
+            전화·방문 안내
           </h2>
           <p className="text-safe-wrap mt-3 text-small leading-7 text-muted-foreground">
             {contact.contactIntroduction}
@@ -61,9 +53,14 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               <dd className="text-safe-wrap mt-2 leading-7">{contact.address}</dd>
             </div>
           </dl>
-          <Link className="institution-link mt-2" href="/about/directions">
-            찾아오시는 길 <span aria-hidden="true">→</span>
-          </Link>
+          <div className="mt-2 flex flex-wrap gap-x-4">
+            <Link className="institution-link" href="/about/directions">
+              찾아오시는 길 <span aria-hidden="true">→</span>
+            </Link>
+            <a className="institution-link" href="#inquiry-form">
+              온라인 문의 양식
+            </a>
+          </div>
           {contact.showInstagram && contact.instagramUrl ? (
             <p className="mt-4 border-t border-border pt-4">
               <a className="institution-link" href={contact.instagramUrl} target="_blank" rel="noreferrer">
@@ -72,6 +69,13 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             </p>
           ) : null}
         </aside>
+        <section id="inquiry-form" tabIndex={-1} aria-labelledby="inquiry-heading" className="min-w-0 lg:col-span-8">
+          <p className="text-small font-bold text-accent">온라인 접수</p>
+          <h2 id="inquiry-heading" className="mt-2 text-[1.75rem] font-bold tracking-[-0.025em]">
+            문의 내용을 남겨 주세요
+          </h2>
+          <PublicInquiryForm key={initialKind} initialKind={initialKind} phoneFallback={contact.phone} />
+        </section>
       </div>
     </div>
   );

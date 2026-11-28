@@ -75,13 +75,26 @@ export function PublicHomeV2({ overview, contact, notices, activities, programs,
         <HomeV2Hero photo introduction={overview.pageDescription} principles={overview.principles} slidesOverride={slides} />
         <div className={styles.container}>
           <nav className={styles.purposeNavigation} aria-label="방문 목적별 안내">
-            <Link id="admission" href="/support/contact?kind=general">
+            <div
+              id="admission"
+              role="group"
+              aria-labelledby="home-v2-admission-heading"
+              tabIndex={-1}
+              className={styles.admissionCard}
+            >
               <div>
-                <strong>입소·이용 문의</strong>
+                <strong id="home-v2-admission-heading">입소·이용 문의</strong>
                 <span>대표 연락 경로를 확인합니다</span>
               </div>
-              <Arrow />
-            </Link>
+              <div className={styles.admissionActions}>
+                <a className={styles.primaryButton} href={createTelephoneHref(contact.phone)}>
+                  전화 문의
+                </a>
+                <Link className={styles.secondaryButton} href="/support/contact?kind=general">
+                  온라인 문의
+                </Link>
+              </div>
+            </div>
             <Link href="/support/donation">
               <div>
                 <strong>후원 안내</strong>

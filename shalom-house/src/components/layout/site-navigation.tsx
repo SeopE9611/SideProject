@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 import { siteConfig } from "@/config/site";
 import { createTelephoneHref } from "@/features/site-content/site-content.types";
 
 const DESKTOP_MEDIA_QUERY = "(min-width: 1200px)";
+const ADMISSION_ID = "admission";
+const ADMISSION_HASH = `#${ADMISSION_ID}`;
+const ADMISSION_HREF = `/${ADMISSION_HASH}`;
 
 function isCurrentSection(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -26,9 +29,10 @@ function isCurrentNavigationItem(pathname: string, item: NavigationItem) {
 type SiteNavigationContentProps = {
   pathname: string;
   phone: string;
+  onLinkNavigate: (href: string) => void;
 };
 
-function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) {
+function SiteNavigationContent({ pathname, phone, onLinkNavigate }: SiteNavigationContentProps) {
   const mobileMenuId = useId();
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const navigationRef = useRef<HTMLDivElement>(null);
@@ -98,6 +102,7 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
   function closeMenuOnNavigate(href: string) {
     setIsMobileOpen(false);
     setOpenDesktopHref(null);
+    onLinkNavigate(href);
 
     if (href !== pathname) return;
     if (isMobileOpen) {
@@ -400,6 +405,48 @@ function SiteNavigationContent({ pathname, phone }: SiteNavigationContentProps) 
 
 export function SiteNavigation({ phone }: { phone: string }) {
   const pathname = usePathname();
+  const pendingAdmissionFocus = useRef<AbortController | null>(null);
 
-  return <SiteNavigationContent key={pathname} pathname={pathname} phone={phone} />;
+  useEffect(() => () => pendingAdmissionFocus.current?.abort(), []);
+
+  useLayoutEffect(() => {
+    const pending = pendingAdmissionFocus.current;
+    if (!pending || pending.signal.aborted) return;
+
+    pending.abort();
+    if (pathname !== "/" || window.location.hash !== ADMISSION_HASH || window.location.search) return;
+
+    // 홈의 입소 카드는 경로 전환이 커밋될 때 함께 렌더링된다.
+    document.getElementById(ADMISSION_ID)?.focus({ preventScroll: true });
+  }, [pathname]);
+
+  function handleLinkNavigate(href: string) {
+    pendingAdmissionFocus.current?.abort();
+    if (href !== ADMISSION_HREF) return;
+
+    if (pathname === "/") {
+      const admission = document.getElementById(ADMISSION_ID);
+      if (!window.location.search && window.location.hash === ADMISSION_HASH) {
+        // 같은 URL을 다시 선택하면 Next.js에서 해시 스크롤이 실행되지 않는다.
+        admission?.scrollIntoView();
+      }
+      admission?.focus({ preventScroll: true });
+      return;
+    }
+
+    const pending = new AbortController();
+    pendingAdmissionFocus.current = pending;
+    const { signal } = pending;
+    const cancel = () => pending.abort();
+
+    document.addEventListener("pointerdown", cancel, { capture: true, signal });
+    document.addEventListener("keydown", cancel, { capture: true, signal });
+    document.addEventListener("focusin", (event) => {
+      if (event.target !== document.body) cancel();
+    }, { signal });
+    window.addEventListener("popstate", cancel, { signal });
+    window.addEventListener("pagehide", cancel, { signal });
+  }
+
+  return <SiteNavigationContent key={pathname} pathname={pathname} phone={phone} onLinkNavigate={handleLinkNavigate} />;
 }
