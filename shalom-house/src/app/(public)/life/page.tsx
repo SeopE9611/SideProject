@@ -23,7 +23,11 @@ function GalleryStory({
 }) {
   return (
     <article
-      className={`grid items-start ${featured ? (single ? "gap-6 md:grid-cols-2 md:gap-9" : "gap-4") : "grid-cols-[6rem_minmax(0,1fr)] gap-4 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-5"}`}
+      className={`grid min-w-0 grid-cols-1 items-start ${
+        featured
+          ? (single ? "gap-6 @2xl/gallery:grid-cols-2 @2xl/gallery:gap-9" : "gap-4")
+          : "gap-4 @2xs:grid-cols-[6rem_minmax(0,1fr)] @sm:grid-cols-[9rem_minmax(0,1fr)] @sm:gap-5"
+      }`}
     >
       <Image
         className={`w-full rounded-panel bg-surface-subtle object-cover ${featured ? "aspect-[3/2]" : "aspect-[4/3]"}`}
@@ -89,7 +93,7 @@ export default async function LifePage() {
       />
       <div className="mx-auto max-w-site px-page py-8 sm:px-page-wide sm:py-10">
         {galleries.length > 0 ? (
-          <section aria-labelledby="life-gallery-heading">
+          <section aria-labelledby="life-gallery-heading" className="@container/gallery">
             <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
               <h2 id="life-gallery-heading" className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">
                 사진으로 보는 활동
@@ -99,13 +103,15 @@ export default async function LifePage() {
               </Link>
             </div>
             <div
-              className={`mt-5 grid items-start gap-7 ${galleries.length > 1 ? "md:grid-cols-[1.05fr_1fr] md:gap-9" : ""}`}
+              className={`mt-5 grid grid-cols-1 items-start gap-7 ${
+                galleries.length > 1 ? "@4xl/gallery:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] @4xl/gallery:gap-9" : ""
+              }`}
             >
               <GalleryStory item={galleries[0]} featured single={galleries.length === 1} />
               {galleries.length > 1 ? (
-                <ul className="divide-y divide-border border-y border-border">
+                <ul className="@container divide-y divide-border border-y border-border">
                   {galleries.slice(1).map((item) => (
-                    <li key={item.slug} className="min-w-0 py-5 first:pt-0 md:first:pt-5">
+                    <li key={item.slug} className="min-w-0 py-5 @max-sm:first:pt-0">
                       <GalleryStory item={item} />
                     </li>
                   ))}
